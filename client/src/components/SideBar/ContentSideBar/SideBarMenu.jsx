@@ -4,6 +4,7 @@ import { FiSearch } from 'react-icons/fi';
 import MenuItem from '../../MenuItem/MenuItem';
 import { PiShoppingCartLight, PiUserCircleLight } from 'react-icons/pi';
 import { CiHeart } from 'react-icons/ci';
+import CollapseMenuSidebar from '../../CollapseMenuSidebar/CollapseMenuSidebar';
 
 function SideBarMenu() {
   return (
@@ -23,9 +24,22 @@ function SideBarMenu() {
         <div className='w-fit text-sm text-secondaryColor'>
           <MenuItem text={'TRANG CHỦ'} href={'/'} />
         </div>
-        <div className='w-fit text-sm text-secondaryColor'>
+        {/* <div className='w-fit text-sm text-secondaryColor'>
           <MenuItem text={'SẢN PHẨM'} href={'/'} />
-        </div>
+        </div> */}
+        <CollapseMenuSidebar title={'SẢN PHẨM'}>
+          <div className='flex flex-col gap-2 px-2 mt-2 '>
+            <p>
+              Tất cả sản phẩm
+            </p>
+            <p>
+              Áo thun
+            </p>
+            <p>
+              Quần jeans
+            </p>
+          </div>
+        </CollapseMenuSidebar>
         <div className='w-fit text-sm text-secondaryColor'>
           <MenuItem text={'KHUYẾN MÃI'} href={'/'} />
         </div>

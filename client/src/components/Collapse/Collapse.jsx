@@ -6,7 +6,7 @@ function Collapse({ children, title, isShow = false }) {
 
   const handleToggleCollapse = () => setIsOpen(!isOpen);
   return (
-    <div className='w-full bg-[#F1F1F1]'>
+    <div className='w-full'>
       <button
         onClick={handleToggleCollapse}
         className='flex w-full items-center justify-between rounded-md px-4 py-2 text-left text-white'

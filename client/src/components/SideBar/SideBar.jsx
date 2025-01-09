@@ -30,7 +30,12 @@ function SideBar() {
   return (
     <div className='relative'>
       {/* Overlay */}
-      {isOpen && <div className='fixed inset-0 z-40 bg-black bg-opacity-50' onClick={handleToggleSideBar}></div>}
+      {/* {isOpen && ( */}
+      <div
+        className={`fixed inset-0 z-40 bg-black ${isOpen ? '!visible !bg-opacity-50' : 'invisible bg-opacity-0'} transition-all duration-300 ease-in`}
+        onClick={handleToggleSideBar}
+      ></div>
+      {/* )} */}
       {/* SideBar */}
       <div
         className={`fixed -right-full ease-in ${isOpen ? '!right-0' : ''} top-0 z-[51] h-full bg-white transition-all duration-300`}

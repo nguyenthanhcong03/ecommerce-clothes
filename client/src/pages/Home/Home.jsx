@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import MainLayout from '../../layouts/MainLayout';
 import Banner from '../../components/Banner/Banner';
 import Info from '../../components/Info/Info';
-import HeadingProduct from '../../components/HeadingProduct/HeadingProduct';
+import HeadlineProduct from '../../components/HeadlineProduct/HeadlineProduct';
 import CountDownBanner from '../../components/CountDownBanner/CountDownBanner';
 import countdownBanner1 from '../../assets/images/countdownBanner1.jpeg';
 import PopularProduct from '../../components/PopularProduct/PopularProduct';
@@ -27,7 +27,7 @@ function Home() {
       <Banner />
       <div className='px-5'>
         <Info />
-        <HeadingProduct />
+        <HeadlineProduct />
         {/* Popular Product */}
         {/* <div className='w-full'> */}
         <div className='container mx-auto grid max-w-[1280px] grid-cols-2 justify-items-center gap-5 lg:grid-cols-4'>
@@ -42,7 +42,7 @@ function Home() {
       </div>
       {/* </div> */}
 
-      {/* <SaleHomePage /> */}
+      <SaleHomePage />
     </MainLayout>
   );
 }

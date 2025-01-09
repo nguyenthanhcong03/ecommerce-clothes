@@ -4,7 +4,7 @@ import { CiHeart } from 'react-icons/ci';
 import { BsCartPlus } from 'react-icons/bs';
 import { CiZoomIn } from 'react-icons/ci';
 
-function ProductItem({ src, previewSrc, name, price }) {
+function ProductItem({ src, previewSrc, name, price, isSearchMobile = false }) {
   //   const { isShowGrid } = useContext(OurShopContext);
 
   return (
@@ -27,7 +27,7 @@ function ProductItem({ src, previewSrc, name, price }) {
           </div>
         </div>
       </div>
-      <div className='flex h-full w-full flex-col items-start justify-between gap-[10px] p-3 sm:p-5'>
+      <div className={`flex h-full w-full flex-col items-start justify-between gap-[10px] p-3 sm:p-5 ${isSearchMobile && '!p-1'}`}>
         <div>
           {/* {!isHomePage && (
           <div className={boxSize}>
@@ -40,17 +40,20 @@ function ProductItem({ src, previewSrc, name, price }) {
             })}
           </div>
         )} */}
+
           <div className='cursor-pointer text-xs text-primaryColor sm:text-base'>{name}</div>
-        </div>
-        <div className='w-full'>
           <div className='my-1 text-[10px] font-normal text-secondaryColor sm:my-2 sm:text-sm'>${price}</div>
-          <div className='flex w-full items-center justify-between gap-2'>
-            <Button text={'MUA NGAY'} />
-            <div className='flex h-[24px] w-[34px] cursor-pointer items-center justify-center rounded border-[1px] border-primaryColor text-primaryColor hover:bg-primaryColor hover:text-white sm:h-[40px] sm:w-[50px]'>
-              <BsCartPlus className='text-xs sm:text-lg' />
+        </div>
+        {!isSearchMobile && (
+          <div className='w-full'>
+            <div className='flex w-full items-center justify-between gap-2'>
+              <Button text={'MUA NGAY'} />
+              <div className='flex h-[24px] w-[34px] cursor-pointer items-center justify-center rounded border-[1px] border-primaryColor text-primaryColor hover:bg-primaryColor hover:text-white sm:h-[40px] sm:w-[50px]'>
+                <BsCartPlus className='text-xs sm:text-lg' />
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

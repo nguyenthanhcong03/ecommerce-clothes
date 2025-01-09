@@ -9,7 +9,7 @@ import ProductItem from '../../ProductItem/ProductItem';
 
 function SideBarSearch() {
   return (
-    <div className='flex h-full w-[300px] flex-col items-center justify-between gap-6 px-8 py-5 md:w-[400px]'>
+    <div className='flex h-full w-[300px] flex-col items-center gap-6 px-8 py-5 md:w-[400px]'>
       <div className='flex flex-col items-center text-lg text-secondaryColor'>
         <FiSearch fontSize={24} cursor={'pointer'} />
         <MenuItem text={'TÌM KIẾM'} href={'/'} />
@@ -30,6 +30,7 @@ function SideBarSearch() {
           }
           name={'ahha'}
           price={'jậ'}
+          isSearchMobile={true}
         />
         <ProductItem
           src={'https://xstore.b-cdn.net/elementor2/marseille04/wp-content/uploads/sites/2/2022/12/Image-15.2-min.jpg'}
@@ -38,6 +39,7 @@ function SideBarSearch() {
           }
           name={'ahha'}
           price={'jậ'}
+          isSearchMobile={true}
         />
       </div>
     </div>
