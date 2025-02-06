@@ -3,5 +3,6 @@
 @layer base {
   body {
     @apply font-robotoMono;
+    @apply text-text1;
   }
 }

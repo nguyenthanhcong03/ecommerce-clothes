@@ -1,0 +1,75 @@
+.swiper-container {
+  width: 90%;
+  /* max-width: 800px; */
+  margin: auto;
+  padding: 10px;
+}
+
+.mySwiper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.custom-slide {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  height: 50px;
+  border-radius: 8px;
+}
+
+/* Style cho nút điều hướng */
+.swiper-button-prev,
+.swiper-button-next {
+  margin-top: -25px;
+  background-color: transparent;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.swiper-button-prev:hover,
+.swiper-button-next:hover {
+  background-color: transparent;
+}
+
+.swiper-button-prev {
+  transform: translateX(-60px);
+}
+
+.swiper-button-next {
+  transform: translateX(60px);
+}
+
+/* Style cho icon nút điều hướng */
+.swiper-button-prev::after,
+.swiper-button-next::after {
+  color: #333;
+  font-size: 20px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.swiper-container:hover .swiper-button-prev {
+  transform: translateX(-20px);
+}
+
+.swiper-container:hover .swiper-button-next {
+  transform: translateX(20px);
+}
+
+/* Style cho pagination (dấu chấm) */
+.swiper-pagination-bullet {
+  background: #ccc;
+  opacity: 1;
+  transition: background 0.3s ease;
+}
+
+.swiper-pagination-bullet-active {
+  background: #4caf50;
+}

@@ -6,14 +6,15 @@ export default {
       colors: {
         primaryColor: '#333',
         secondaryColor: '#555',
-        thirdColor: '#888'
+        thirdColor: '#888',
+        text1: '#222'
       },
       fontFamily: {
         robotoMono: ['"Roboto Mono"', 'Arial', 'sans-serif']
       },
       boxShadow: {
-        shadowHeader: '2px 0px 12px 0px rgba(0, 0, 0, 0.15)',
-      },
+        shadowHeader: '2px 0px 12px 0px rgba(0, 0, 0, 0.15)'
+      }
     }
   },
   plugins: []
