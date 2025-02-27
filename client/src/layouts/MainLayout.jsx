@@ -2,10 +2,14 @@ import React from 'react';
 import Header from '../components/Layout/Header/Header';
 import Footer from '../components/Layout/Footer/Footer';
 import { Outlet } from 'react-router-dom';
+import SearchModal from '../components/Layout/SearchModal/SearchModal';
+import SideBar from '../components/Layout/SideBar/SideBar';
 
 function MainLayout({ children }) {
   return (
     <div className='w-full'>
+      <SearchModal />
+      <SideBar />
       <Header />
       {/* Main Content  */}
       <main className='mx-auto flex max-w-[1536px] flex-col'>

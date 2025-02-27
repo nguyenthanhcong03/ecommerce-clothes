@@ -1,15 +1,19 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { TfiClose } from 'react-icons/tfi';
-import { SideBarContext } from '../../../contexts/SideBarProvider';
-import SideBarMenu from './ContentSideBar/SideBarMenu';
-import SideBarWishlist from './ContentSideBar/SideBarWishlist';
+import { useDispatch, useSelector } from 'react-redux';
+import { toggleSidebar } from '../../../redux/features/sidebarDrawer/sidebarSlice';
 import SideBarCart from './ContentSideBar/SideBarCart';
+import SideBarMenu from './ContentSideBar/SideBarMenu';
 import SideBarSearch from './ContentSideBar/SideBarSearch';
+import SideBarWishlist from './ContentSideBar/SideBarWishlist';
 
 function SideBar() {
-  const { isOpen, setIsOpen, type } = useContext(SideBarContext);
-  const handleToggleSideBar = () => {
-    setIsOpen(!isOpen);
+  const isOpen = useSelector((state) => state.sidebar.isOpen);
+  const type = useSelector((state) => state.sidebar.type);
+  const dispatch = useDispatch();
+
+  const handleToggleSidebar = () => {
+    dispatch(toggleSidebar());
   };
 
   const handleRenderContentSideBar = () => {
@@ -33,7 +37,7 @@ function SideBar() {
       {/* {isOpen && ( */}
       <div
         className={`fixed inset-0 z-40 bg-black ${isOpen ? '!visible !bg-opacity-50' : 'invisible bg-opacity-0'} transition-all duration-300 ease-in`}
-        onClick={handleToggleSideBar}
+        onClick={handleToggleSidebar}
       ></div>
       {/* )} */}
       {/* SideBar */}
@@ -43,7 +47,7 @@ function SideBar() {
         {isOpen && (
           <div
             className='absolute left-[-50px] top-[25px] flex h-[35px] w-[35px] cursor-pointer items-center justify-center rounded-full bg-white transition-all duration-300 ease-in hover:bg-[#ccc]'
-            onClick={handleToggleSideBar}
+            onClick={handleToggleSidebar}
           >
             <TfiClose />
           </div>

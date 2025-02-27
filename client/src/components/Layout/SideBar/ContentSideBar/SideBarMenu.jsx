@@ -1,11 +1,16 @@
-import React from 'react';
+import Logo from '@assets/images/logocopy.png';
+import CollapseMenuSidebar from '@components/CollapseMenuSidebar/CollapseMenuSidebar';
+import MenuItem from '@components/MenuItem/MenuItem';
+// import { useContext } from 'react';
 import { CiHeart } from 'react-icons/ci';
 import { PiShoppingCartLight, PiUserCircleLight } from 'react-icons/pi';
-import Logo from '../../../../assets/images/logocopy.png';
-import CollapseMenuSidebar from '../../../Common/CollapseMenuSidebar/CollapseMenuSidebar';
-import MenuItem from '../../../Common/MenuItem/MenuItem';
 
 function SideBarMenu() {
+  // const { isOpen, setIsOpen, type } = useContext(SideBarContext);
+  const handleToggleSideBar = () => {
+    // setIsOpen(!isOpen);
+  };
+
   return (
     <div className='flex h-full w-[300px] flex-col gap-6 px-8 py-5'>
       <div className='mx-auto'>
@@ -21,7 +26,7 @@ function SideBarMenu() {
       </div> */}
       <div className='flex flex-col gap-4'>
         <div className='w-fit text-sm text-secondaryColor'>
-          <MenuItem text={'TRANG CHỦ'} href={'/'} />
+          <MenuItem text={'TRANG CHỦ'} href={'/'} onClick={handleToggleSideBar} />
         </div>
         {/* <div className='w-fit text-sm text-secondaryColor'>
           <MenuItem text={'SẢN PHẨM'} href={'/'} />
@@ -34,13 +39,13 @@ function SideBarMenu() {
           </div>
         </CollapseMenuSidebar>
         <div className='w-fit text-sm text-secondaryColor'>
-          <MenuItem text={'KHUYẾN MÃI'} href={'/'} />
+          <MenuItem text={'VỀ CHÚNG TÔI'} href={'/about'} onClick={handleToggleSideBar} />
         </div>
         <div className='w-fit text-sm text-secondaryColor'>
-          <MenuItem text={'TIN TỨC'} href={'/'} />
+          <MenuItem text={'TIN TỨC'} href={'/news'} onClick={handleToggleSideBar} />
         </div>
         <div className='w-fit text-sm text-secondaryColor'>
-          <MenuItem text={'LIÊN HỆ'} href={'/'} />
+          <MenuItem text={'LIÊN HỆ'} href={'/contact'} onClick={handleToggleSideBar} />
         </div>
       </div>
       <div className='flex cursor-pointer flex-col gap-4 text-sm text-secondaryColor'>

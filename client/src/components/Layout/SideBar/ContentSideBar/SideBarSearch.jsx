@@ -1,7 +1,7 @@
 import React from 'react';
 import { FiSearch } from 'react-icons/fi';
-import MenuItem from '../../../Common/MenuItem/MenuItem';
-import ProductItem from '../../../Product/ProductItem/ProductItem';
+import MenuItem from '@components/MenuItem/MenuItem';
+import ProductItem from '@components/ProductItem/ProductItem';
 
 function SideBarSearch() {
   return (

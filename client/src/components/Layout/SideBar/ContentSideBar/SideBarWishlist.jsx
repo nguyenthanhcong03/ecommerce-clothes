@@ -1,8 +1,9 @@
 import React from 'react';
 import { CiHeart } from 'react-icons/ci';
-import MenuItem from '../../../Common/MenuItem/MenuItem';
-import CartItem from '../../../Cart/CartItem/CartItem';
-import Button from '../../../Common/Button/Button';
+import MenuItem from '@components/MenuItem/MenuItem';
+import CartItem from '@components/CartItem/CartItem';
+import Button from '@components/Button/Button';
+import { Link } from 'react-router-dom';
 
 function SideBarWishlist() {
   return (
@@ -10,7 +11,7 @@ function SideBarWishlist() {
       <div className='flex w-full flex-col gap-4'>
         <div className='flex flex-col items-center text-lg text-secondaryColor'>
           <CiHeart fontSize={28} cursor={'pointer'} />
-          <MenuItem text={'YÊU THÍCH'} href={'/'} />
+          <MenuItem text={'YÊU THÍCH'} href={'/wishlist'} />
         </div>
         <div>
           <CartItem
@@ -22,8 +23,10 @@ function SideBarWishlist() {
       </div>
 
       <div className='flex w-full flex-col gap-2'>
-        <Button text={'XEM TẤT CẢ'} isPrimary />
-        <Button text={'THÊM TẤT CẢ VÀO GIỎ HÀNG'} isPrimary={false} />
+        <Link to={'/wishlist'}>
+          <Button fullWidth>XEM TẤT CẢ</Button>
+        </Link>
+        <Button variant='secondary'>THÊM TẤT CẢ VÀO GIỎ HÀNG</Button>
       </div>
     </div>
   );

@@ -1,13 +1,13 @@
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import './App.css';
-import SideBar from './components/Layout/SideBar/SideBar';
-import { SideBarProvider } from './contexts/SideBarProvider';
-import MainLayout from './layouts/MainLayout';
-import AboutPage from './pages/AboutPage/AboutPage';
-import HomePage from './pages/HomePage/HomePage';
-import OurShopPage from './pages/OurShopPage/OurShopPage';
-import NewsPage from './pages/NewsPage/NewsPage';
-import ContactPage from './pages/ContactPage/ContactPage';
+import MainLayout from '@layouts/MainLayout';
+import AboutPage from '@pages/Customer/AboutPage/AboutPage';
+import CartPage from '@pages/Customer/CartPage/CartPage';
+import ContactPage from '@pages/Customer/ContactPage/ContactPage';
+import HomePage from '@pages/Customer/HomePage/HomePage';
+import NewsPage from '@pages/Customer/NewsPage/NewsPage';
+import OurShopPage from '@pages/Customer/OurShopPage/OurShopPage';
+import WishlistPage from '@pages/Customer/WishlistPage/WishlistPage';
 
 // const Home = lazy(() => import('../pages/Home/Home'));
 // const ProductDetail = lazy(() => import('../pages/Product/ProductDetail'));
@@ -18,20 +18,25 @@ import ContactPage from './pages/ContactPage/ContactPage';
 
 function App() {
   return (
-    <SideBarProvider>
-      <Router>
-        <SideBar />
-        <Routes>
-          <Route path='/' element={<MainLayout />}>
-            <Route index element={<HomePage />} />
-            <Route path='/about' element={<AboutPage />} />
-            <Route path='/shop' element={<OurShopPage />} />
-            <Route path='/news' element={<NewsPage />} />
-            <Route path='/contact' element={<ContactPage />} />
-          </Route>
-        </Routes>
-      </Router>
-    </SideBarProvider>
+    <Router>
+      <Routes>
+        <Route path='/' element={<MainLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path='/about' element={<AboutPage />} />
+          <Route path='/shop' element={<OurShopPage />} />
+          <Route path='/news' element={<NewsPage />} />
+          <Route path='/contact' element={<ContactPage />} />
+          <Route path='/cart' element={<CartPage />} />
+          <Route path='/wishlist' element={<WishlistPage />} />
+        </Route>
+        {/* Routes cho Admin */}
+        {/* <Route path='/admin' element={<AdminLayout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path='products' element={<ProductList />} />
+            <Route path='users' element={<UserList />} />
+          </Route> */}
+      </Routes>
+    </Router>
   );
 }
 

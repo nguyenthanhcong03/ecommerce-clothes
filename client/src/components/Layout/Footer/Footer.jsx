@@ -1,17 +1,23 @@
 import React from 'react';
-import Collapse from '../../Common/Collapse/Collapse';
-import certificateImage from '../../../assets/images/certificate.png';
+import Collapse from '@components/Collapse/Collapse';
+import certificateImage from '@assets/images/certificate.png';
 import { FaFacebook } from 'react-icons/fa';
 import { FaInstagramSquare } from 'react-icons/fa';
 import { SiZalo } from 'react-icons/si';
 import { SiShopee } from 'react-icons/si';
 
+const items = [
+  { title: 'Mục 1', content: 'Nội dung của mục 1' },
+  { title: 'Mục 2', content: 'Nội dung của mục 2' },
+  { title: 'Mục 3', content: 'Nội dung của mục 3' }
+];
+
 function Footer() {
   return (
-    <div className='w-full bg-[#F1F1F1] p-5 text-primaryColor'>
+    <footer className='w-full bg-[#F1F1F1] p-5 text-primaryColor'>
       <div className='container mx-auto flex max-w-[1280px] flex-col md:grid md:grid-cols-4 md:justify-items-center'>
         <Collapse title={'HỖ TRỢ KHÁCH HÀNG'} isShow={true} isFooter={true}>
-          <div className='flex flex-col gap-2 px-5 pb-3'>
+          <div className='flex flex-col gap-2'>
             <p>Hướng dẫn mua hàng</p>
             <p>Hướng dẫn chọn size</p>
             <p>Phương thức thanh toán</p>
@@ -22,7 +28,7 @@ function Footer() {
           </div>
         </Collapse>
         <Collapse title={'VỀ CHÚNG TÔI'} isShow={true} isFooter={true}>
-          <div className='flex flex-col gap-2 px-5 pb-3'>
+          <div className='flex flex-col gap-2'>
             <p>
               <strong>Công ty TNHH Fasalo Việt Nam</strong>
             </p>
@@ -45,7 +51,7 @@ function Footer() {
           </div>
         </Collapse>
         <Collapse title={'HỆ THỐNG CỬA HÀNG'} isShow={true} isFooter={true}>
-          <div className='flex flex-col gap-2 px-5 pb-3'>
+          <div className='flex flex-col gap-2'>
             <p>
               Hà Nội:
               <br />
@@ -59,7 +65,7 @@ function Footer() {
           </div>
         </Collapse>
         <Collapse title={'KẾT NỐI'} isShow={true} isFooter={true}>
-          <div className='flex flex-col gap-2 px-5 pb-4'>
+          <div className='flex flex-col gap-2'>
             <div className='flex gap-2'>
               <FaFacebook />
               <FaInstagramSquare />
@@ -74,12 +80,12 @@ function Footer() {
             <p>
               GÓP Ý, KHIẾU NẠI (08:30 - 22:00)
               <br />
-              <strong>0370.372.309</strong>
+              <strong>037.037.2309</strong>
             </p>
           </div>
         </Collapse>
       </div>
-    </div>
+    </footer>
   );
 }
 
