@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
-var userSchema = new mongoose.Schema(
+const crypto = require("crypto-js");
+
+const userSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
@@ -10,12 +12,16 @@ var userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    email: {
+    username: {
       type: String,
       required: true,
       unique: true,
     },
-    mobile: {
+    email: {
+      type: String,
+      required: true,
+    },
+    phone: {
       type: String,
       required: true,
       unique: true,
@@ -23,6 +29,7 @@ var userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      minlenght: 6,
     },
     role: {
       type: String,
@@ -60,18 +67,30 @@ var userSchema = new mongoose.Schema(
   }
 );
 
+// Mã hóa mật khẩu trước khi lưu
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    next();
-  }
-  const salt = bcrypt.genSaltSync(10);
+  if (!this.isModified("password")) return next();
+  const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
-userSchema.methods = {
-  isPasswordMatched: async function (enteredPassword) {
-    return await bcrypt.compare(enteredPassword, this.password);
-  },
+// So sánh mật khẩu
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
 };
+
+// userSchema.methods = {
+//   isPasswordMatched: async function (enteredPassword) {
+//     return await bcrypt.compare(enteredPassword, this.password);
+//   },
+//   createPasswordResetToken: function () {
+//     const resetToken = crypto.randomBytes(32).toString("hex");
+//     this.passwordChangedAt = Date.now();
+//     this.passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+//     this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+//     return resetToken;
+//   },
+// };
 
 module.exports = mongoose.model("User", userSchema);

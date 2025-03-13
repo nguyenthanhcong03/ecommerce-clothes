@@ -12,7 +12,7 @@ function MainLayout({ children }) {
       <SideBar />
       <Header />
       {/* Main Content  */}
-      <main className='mx-auto flex max-w-[1536px] flex-col'>
+      <main className='mx-auto flex flex-col'>
         <Outlet />
         {/* <div className=''>{children}</div> */}
       </main>
