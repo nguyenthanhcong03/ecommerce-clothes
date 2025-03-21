@@ -11,6 +11,9 @@ const { protect, admin } = require("../middlewares/auth");
 // router.get("/forgotpassword", verifyToken, userController.forgotPassword);
 // router.get("/", [verifyToken, isAdmin], userController.getUsers);
 router.get("/", protect, admin, userController.getUsers);
+router.delete("/", protect, admin, userController.deleteUser);
+router.put("/current", protect, userController.updateUser);
+router.put("/:uid", protect, admin, userController.updateUserByAdmin);
 
 // router.get("/profile", protect, (req, res) => {
 //   res.json({ message: "Thông tin người dùng", user: req.user });

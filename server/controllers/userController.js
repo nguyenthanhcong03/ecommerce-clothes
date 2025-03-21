@@ -123,4 +123,45 @@ const getUsers = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { logout, register, login, getCurrentUser, refreshAccessToken, forgotPassword, getUsers };
+const deleteUser = asyncHandler(async (req, res) => {
+  const { _id } = req.query;
+  if (!_id) throw new Error("Missing input");
+  const response = await User.findByIdAndDelete(_id);
+  return res.status(200).json({
+    success: response ? true : false,
+    deletedUser: response ? `User with email ${response.email} delete` : "No user delete",
+  });
+});
+
+const updateUser = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  if (!_id || Object.keys(req.body).length === 0) throw new Error("Missing input");
+  const response = await User.findByIdAndUpdate(_id, req.body, { new: true }).select("-password -role");
+  return res.status(200).json({
+    success: response ? true : false,
+    updatedUser: response ? response : "Something went wrong",
+  });
+});
+
+const updateUserByAdmin = asyncHandler(async (req, res) => {
+  const { uid } = req.params;
+  if (Object.keys(req.body).length === 0) throw new Error("Missing input");
+  const response = await User.findByIdAndUpdate(uid, req.body, { new: true }).select("-password -role");
+  return res.status(200).json({
+    success: response ? true : false,
+    updatedUser: response ? response : "Something went wrong",
+  });
+});
+
+module.exports = {
+  logout,
+  register,
+  login,
+  getCurrentUser,
+  refreshAccessToken,
+  forgotPassword,
+  getUsers,
+  deleteUser,
+  updateUser,
+  updateUserByAdmin,
+};
