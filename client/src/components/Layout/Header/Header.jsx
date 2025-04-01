@@ -3,13 +3,13 @@ import { CiHeart } from 'react-icons/ci';
 import { FiSearch } from 'react-icons/fi';
 import { IoMenuOutline } from 'react-icons/io5';
 import { PiShoppingCartLight, PiUserCircleLight } from 'react-icons/pi';
-import { useDispatch } from 'react-redux';
-import Logo from '@assets/images/logocopy.png';
+import { useDispatch, useSelector } from 'react-redux';
+import Logo from '@assets/images/outfitory-logo.png';
 import useScrollHandling from '@hooks/useScrollHandling';
 import { toggleSearch } from '@redux/features/searchDrawer/searchSlice';
 import { setType, toggleSidebar } from '@redux/features/sidebarDrawer/sidebarSlice';
 import MenuItem from '@components/MenuItem/MenuItem';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Header() {
   const dispatch = useDispatch();
@@ -23,6 +23,17 @@ function Header() {
   };
   const { scrollPosition } = useScrollHandling();
   const [fixedPosition, setFixedPosition] = useState(false);
+
+  const user = useSelector((state) => state.account.user);
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    const res = await callLogout();
+    if (res && res.data) {
+      dispatch(doLogoutAction());
+      message.success('Đăng xuất thành công');
+      navigate('/');
+    }
+  };
 
   useEffect(() => {
     setFixedPosition(scrollPosition > 80 ? true : false);
@@ -44,21 +55,21 @@ function Header() {
 
         {/* Navbar */}
         <div className='hidden lg:flex lg:gap-10'>
-          <Link to={'/'}>
-            <MenuItem text={'TRANG CHỦ'} />
-          </Link>
-          {/* <Link to={'/shop'}> */}
-          <MenuItem text={'SẢN PHẨM'} isMenuDropDown={true} />
+          {/* <Link to={'/'}> */}
+          <MenuItem text={'TRANG CHỦ'} href={'/'} />
           {/* </Link> */}
-          <Link to={'/about'}>
-            <MenuItem text={'VỀ CHÚNG TÔI'} />
-          </Link>
-          <Link to={'/news'}>
-            <MenuItem text={'TIN TỨC'} />
-          </Link>
-          <Link to={'/contact'}>
-            <MenuItem text={'LIÊN HỆ'} />
-          </Link>
+          {/* <Link to={'/shop'}> */}
+          <MenuItem text={'SẢN PHẨM'} isMenuDropDown={true} href={'/shop'} />
+          {/* </Link> */}
+          {/* <Link to={'/about'}> */}
+          <MenuItem text={'VỀ CHÚNG TÔI'} href={'/about'} />
+          {/* </Link> */}
+          {/* <Link to={'/news'}> */}
+          <MenuItem text={'TIN TỨC'} href={'/news'} />
+          {/* </Link> */}
+          {/* <Link to={'/contact'}> */}
+          <MenuItem text={'LIÊN HỆ'} href={'/contact'} />
+          {/* </Link> */}
         </div>
 
         {/* Function icon */}

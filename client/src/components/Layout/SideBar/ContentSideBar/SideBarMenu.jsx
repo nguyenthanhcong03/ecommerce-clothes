@@ -1,4 +1,4 @@
-import Logo from '@assets/images/logocopy.png';
+import Logo from '@assets/images/outfitory-logo.png';
 import CollapseMenuSidebar from '@components/CollapseMenuSidebar/CollapseMenuSidebar';
 import MenuItem from '@components/MenuItem/MenuItem';
 // import { useContext } from 'react';

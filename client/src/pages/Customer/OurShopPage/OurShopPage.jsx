@@ -16,8 +16,8 @@ function OurShopPage() {
   const fetchAllProducts = async () => {
     try {
       let res = await getAllProducts();
-      console.log(res.data.products);
-      setProducts(res.data.products);
+      console.log(res);
+      setProducts(res.data.data);
     } catch (error) {
       console.log(error);
     }
@@ -47,7 +47,8 @@ function OurShopPage() {
       <div className='grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4'>
         {products?.slice(0, visibleItems).map((product) => (
           <ProductItem
-            key={product.id}
+            key={product._id}
+            id={product._id}
             src={product.images[0]}
             previewSrc={product.images[1]}
             name={product.title}
@@ -55,7 +56,7 @@ function OurShopPage() {
           />
         ))}
       </div>
-      {visibleItems < products.length && (
+      {visibleItems < products?.length && (
         <div className='my-10 flex justify-center' onClick={handleLoadMore}>
           <Button>Xem thêm</Button>
         </div>

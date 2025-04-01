@@ -2,95 +2,123 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto-js");
 
+// const userSchema = new mongoose.Schema(
+//   {
+//     firstName: {
+//       type: String,
+//       required: true,
+//     },
+//     lastName: {
+//       type: String,
+//       required: true,
+//     },
+//     username: {
+//       type: String,
+//       required: true,
+//       unique: true,
+//     },
+//     email: {
+//       type: String,
+//       required: true,
+//     },
+//     phone: {
+//       type: String,
+//       required: true,
+//       unique: true,
+//     },
+//     password: {
+//       type: String,
+//       required: true,
+//       minlenght: 6,
+//     },
+//     role: {
+//       type: String,
+//       default: "user",
+//     },
+//     cart: {
+//       type: Array,
+//       default: [],
+//     },
+//     address: [
+//       {
+//         type: mongoose.Types.ObjectId,
+//         ref: "Address",
+//       },
+//     ],
+//     wishlist: [
+//       {
+//         type: mongoose.Types.ObjectId,
+//         ref: "Product",
+//       },
+//     ],
+//     isBloocked: {
+//       type: Boolean,
+//       default: false,
+//     },
+//     refreshToken: {
+//       type: String,
+//     },
+//     passwordChangedAt: { type: String },
+//     passwordResetToken: { type: String },
+//     passwordResetExpires: { type: String },
+//   },
+//   {
+//     timestamps: true,
+//   }
+// );
+
+const addressSchema = new mongoose.Schema({
+  type: { type: String, enum: ["home", "work", "billing", "shipping"], required: true },
+  street: { type: String, required: true },
+  city: { type: String, required: true },
+  state: String,
+  country: { type: String, required: true },
+  postalCode: { type: String, required: true },
+  isDefault: { type: Boolean, default: false },
+});
+
+const preferencesSchema = new mongoose.Schema({
+  language: { type: String, default: "en" },
+  currency: { type: String, default: "USD" },
+  notifications: { type: Boolean, default: true },
+});
+
 const userSchema = new mongoose.Schema(
   {
-    firstName: {
-      type: String,
-      required: true,
-    },
-    lastName: {
-      type: String,
-      required: true,
-    },
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    email: {
-      type: String,
-      required: true,
-    },
-    phone: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-      minlenght: 6,
-    },
-    role: {
-      type: String,
-      default: "user",
-    },
-    cart: {
-      type: Array,
-      default: [],
-    },
-    address: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "Address",
-      },
-    ],
-    wishlist: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "Product",
-      },
-    ],
-    isBloocked: {
-      type: Boolean,
-      default: false,
-    },
-    refreshToken: {
-      type: String,
-    },
-    passwordChangedAt: { type: String },
-    passwordResetToken: { type: String },
-    passwordResetExpires: { type: String },
+    email: { type: String, required: true, trum: true, unique: true, lowercase: true },
+    password: { type: String, required: true, trim: true },
+    username: { type: String, required: true, unique: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    phone: { type: String, unique: true },
+    address: [addressSchema],
+    role: { type: String, enum: ["customer", "admin"], default: "customer" },
+    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
+    status: { type: String, enum: ["active", "inactive", "banned"], default: "active" },
+    lastLogin: { type: Date, default: Date.now },
+    preferences: preferencesSchema,
+    verificationToken: { type: String }, // Token xác thực email
+    verificationStatus: { type: String, enum: ["pending", "verified"], default: "pending" },
+    resetPasswordToken: { type: String }, // Token reset password
+    resetPasswordExpires: { type: Date }, // Thời gian hết hạn token reset
+    refreshToken: { type: String },
   },
   {
     timestamps: true,
   }
 );
 
-// Mã hóa mật khẩu trước khi lưu
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
+// // Mã hóa mật khẩu trước khi lưu
+// userSchema.pre("save", async function (next) {
+//   if (!this.isModified("password")) return next();
+//   const salt = await bcrypt.genSalt(10);
+//   this.password = await bcrypt.hash(this.password, salt);
+//   next();
+// });
 
-// So sánh mật khẩu
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
-// userSchema.methods = {
-//   isPasswordMatched: async function (enteredPassword) {
-//     return await bcrypt.compare(enteredPassword, this.password);
-//   },
-//   createPasswordResetToken: function () {
-//     const resetToken = crypto.randomBytes(32).toString("hex");
-//     this.passwordChangedAt = Date.now();
-//     this.passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
-//     this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
-//     return resetToken;
-//   },
+// // So sánh mật khẩu
+// userSchema.methods.matchPassword = async function (enteredPassword) {
+//   return await bcrypt.compare(enteredPassword, this.password);
 // };
 
 module.exports = mongoose.model("User", userSchema);

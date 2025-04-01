@@ -1,3 +1,4 @@
+const { response } = require("express");
 const Product = require("../models/product");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
@@ -26,12 +27,118 @@ const getProduct = asyncHandler(async (req, res) => {
 });
 
 const getAllProducts = asyncHandler(async (req, res) => {
-  const products = await Product.find();
-  return res.status(200).json({
-    success: products ? true : false,
-    message: products ? products : "Cannot get products",
-  });
+  const queries = {
+    ...req.query,
+  };
+  // Tách các trường đặc biệt ra khỏi queries
+  const excludeFields = ["page", "limit", "sort", "fields"];
+  excludeFields.forEach((field) => delete queries[field]);
+  // Format lại các operators cho đúng cú pháp mongoose
+  let queryString = JSON.stringify(queries);
+  queryString = queryString.replace(/\b(gt|gte|lt|lte|in)\b/g, (match) => `$${match}`);
+  const formatedQueryString = JSON.parse(queryString);
+
+  if (queries?.title) formatedQueryString.title = { $regex: queries.title, $options: "i" };
+  let queryCommand = Product.find(formatedQueryString);
+  queryCommand
+    .then(async (response) => {
+      const count = await Product.find(formatedQueryString).countDocuments();
+      return res.status(200).json({
+        success: response ? true : false,
+        data: response ? response : "Cannot get products",
+        total: count,
+      });
+    })
+    .catch((err) => {
+      throw new Error(err);
+    });
 });
+
+const getAllProducts2 = async (req, res) => {
+  try {
+    // 1. Fav lấy các query parameters từ request
+    const {
+      page = 1, // Trang mặc định là 1
+      limit = 10, // Số sản phẩm mỗi trang mặc định là 10
+      sortBy = "createdAt", // Sắp xếp mặc định theo ngày tạo
+      order = "desc", // Thứ tự mặc định giảm dần
+      search, // Từ khóa tìm kiếm
+      category, // Lọc theo danh mục
+      brand, // Lọc theo thương hiệu
+      minPrice, // Giá tối thiểu
+      maxPrice, // Giá tối đa
+      size, // Lọc theo kích cỡ
+      color, // Lọc theo màu sắc
+      isActive = true, // Mặc định chỉ lấy sản phẩm đang hoạt động
+    } = req.query;
+
+    // 2. Xây dựng query
+    let query = { isActive };
+
+    // Search theo tên hoặc mô tả
+    if (search) {
+      query.$or = [{ name: { $regex: search, $options: "i" } }, { description: { $regex: search, $options: "i" } }];
+    }
+
+    // Filter theo category
+    if (category) {
+      query.categoryId = category;
+    }
+
+    // Filter theo brand
+    if (brand) {
+      query.brand = brand;
+    }
+
+    // Filter theo giá (lấy từ variants)
+    if (minPrice || maxPrice) {
+      query["variants.price"] = {};
+      if (minPrice) query["variants.price"].$gte = Number(minPrice);
+      if (maxPrice) query["variants.price"].$lte = Number(maxPrice);
+    }
+
+    // Filter theo size
+    if (size) {
+      query["variants.size"] = size;
+    }
+
+    // Filter theo color
+    if (color) {
+      query["variants.color"] = color;
+    }
+
+    // 3. Tính tổng số documents
+    const total = await Product.countDocuments(query);
+
+    // 4. Thực hiện query với pagination và sort
+    const products = await Product.find(query)
+      .populate("categoryId", "name slug") // Liên kết với collection Categories
+      .sort({ [sortBy]: order === "desc" ? -1 : 1 })
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .select("-__v"); // Loại bỏ field version
+
+    // 5. Tạo response
+    const response = {
+      success: true,
+      data: products,
+      pagination: {
+        current: Number(page),
+        pageSize: Number(limit),
+        total: total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
 
 const updateProduct = asyncHandler(async (req, res) => {
   const { pid } = req.params;
@@ -60,4 +167,5 @@ module.exports = {
   getAllProducts,
   updateProduct,
   deleteProduct,
+  getAllProducts2,
 };

@@ -3,8 +3,26 @@ import Button from '@components/Button/Button';
 import { CiHeart } from 'react-icons/ci';
 import { BsCartPlus } from 'react-icons/bs';
 import { CiZoomIn } from 'react-icons/ci';
+import { getProductById } from '@services/productsService';
+import { use } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function ProductItem({ src, previewSrc, name, price, isSearchMobile = false }) {
+function ProductItem({ id, src, previewSrc, name, price, isSearchMobile = false }) {
+  const navigate = useNavigate();
+
+  const handleNavigateToDetail = () => {
+    console.log('hehe', id);
+    const path = `/product/${id}`;
+    navigate(path);
+  };
+  const getProductById = async (id) => {
+    try {
+      const product = await getProductById(id);
+      return product;
+    } catch (error) {
+      console.log(error);
+    }
+  };
   //   const { isShowGrid } = useContext(OurShopContext);
 
   return (
@@ -30,7 +48,7 @@ function ProductItem({ src, previewSrc, name, price, isSearchMobile = false }) {
       <div
         className={`flex h-full w-full flex-col items-start justify-between gap-[10px] p-3 sm:p-5 ${isSearchMobile && '!p-1'}`}
       >
-        <div>
+        <div onClick={handleNavigateToDetail}>
           <div className='cursor-pointer text-xs text-primaryColor sm:text-base'>{name}</div>
           <div className='my-1 text-[10px] font-normal text-secondaryColor sm:my-2 sm:text-sm'>${price}</div>
         </div>

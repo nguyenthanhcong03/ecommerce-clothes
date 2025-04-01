@@ -1,5 +1,6 @@
 import axios from 'axios';
 import axiosClient from './axiosClient';
+const BASE_API = '/api/product';
 
 export const getProducts = async (query) => {
   const { sortType, page, limit } = query;
@@ -8,8 +9,15 @@ export const getProducts = async (query) => {
   return res.data;
 };
 ('https://dummyjson.com/products');
-export const getAllProducts = () => {
-  //   const url = `${API_PATH}/all`;
-  const url = 'https://dummyjson.com/products';
-  return axios.get(url);
-};
+
+export function getAllProducts() {
+  let url = BASE_API;
+  const res = axiosClient.get(url);
+  return res;
+}
+
+export function getProductById(id) {
+  let url = BASE_API + '/' + id;
+  const res = axiosClient.get(url);
+  return res;
+}

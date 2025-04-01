@@ -1,8 +1,9 @@
 import { configureStore } from '@reduxjs/toolkit';
+import accountReducer from './features/account/accountSlice';
+import cartReducer from './features/cart/cartSlice';
+import searchReducer from './features/searchDrawer/searchSlice';
 import sidebarReducer from './features/sidebarDrawer/sidebarSlice';
-import searchSlice from './features/searchDrawer/searchSlice';
-import cartSlice from './features/cart/cartSlice';
 
 export const store = configureStore({
-  reducer: { sidebar: sidebarReducer, search: searchSlice, cart: cartSlice }
+  reducer: { sidebar: sidebarReducer, search: searchReducer, cart: cartReducer, account: accountReducer }
 });
