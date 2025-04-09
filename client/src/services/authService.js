@@ -15,6 +15,10 @@ export const callLogout = () => {
   return axiosClient.post(BASE_API + '/logout');
 };
 
+export const callFetchAccount = () => {
+  return axiosClient.get(BASE_API + '/current');
+};
+
 export const refreshToken = async () => {
   try {
     const response = await axiosClient.post(

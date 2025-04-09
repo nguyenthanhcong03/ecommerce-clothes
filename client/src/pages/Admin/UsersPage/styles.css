@@ -1,0 +1,8 @@
+.custom-header-font .ant-table-thead > tr > th {
+  font-family: 'Roboto Mono', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #222; /* màu chữ */
+  background-color: #f5f5f5; /* nếu muốn */
+  /* text-transform: uppercase; viết hoa toàn bộ nếu muốn */
+}

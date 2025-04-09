@@ -4,6 +4,7 @@ const crypto = require("crypto");
 const { generateToken, generateRefreshToken } = require("../services/authService");
 const { sendEmail } = require("../services/emailService");
 const jwt = require("jsonwebtoken");
+const asyncHandler = require("express-async-handler");
 
 const register = async (req, res) => {
   const { username, password, role, email, phone, lastName, firstName } = req.body;
@@ -128,20 +129,58 @@ const login = async (req, res) => {
     // }
 
     // Tạo access token
-    const accessPayload = { userId: user._id, role: user.role };
+    const accessPayload = {
+      _id: user._id,
+      email: user.email,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+    };
     const accessToken = jwt.sign(accessPayload, process.env.JWT_SECRET, { expiresIn: "1h" });
 
     // Tạo refresh token
-    const refreshPayload = { userId: user._id };
+    const refreshPayload = { _id: user._id };
     const refreshToken = jwt.sign(refreshPayload, process.env.JWT_SECRET, { expiresIn: "7d" });
 
     // Lưu refresh token vào database
     user.refreshToken = refreshToken;
     await user.save();
+    // // Lưu refreshToken vào db
+    // await User.findByIdAndUpdate(response._id, { newRefreshToken }, { new: true });
+    // // Lưu refreshToken vào cookie
+    // res.cookie("refreshToken", refreshToken, {
+    //   httpOnly: true,
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,
+    // });
 
-    res.status(200).json({ success: true, accessToken, refreshToken });
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      user: {
+        _id: user._id,
+        email: user.email,
+        role: user.role,
+        username: user.username,
+        lastName: user.lastName,
+        firstName: user.firstName,
+      },
+      accessToken,
+      // refreshToken,
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+const getCurrentUser = async (req, res) => {
+  try {
+    const { _id } = req.user;
+    const user = await User.findById(_id).select("-password -refreshToken");
+    return res.status(200).json({ success: true, data: user ? user : "User not found" });
+  } catch (error) {
+    console.log(error);
+    // res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
 
@@ -302,4 +341,5 @@ module.exports = {
   confirmForgotPassword,
   logout,
   refreshToken,
+  getCurrentUser,
 };

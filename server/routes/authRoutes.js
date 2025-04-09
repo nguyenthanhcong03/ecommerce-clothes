@@ -8,6 +8,7 @@ const {
   changePassword,
   confirmForgotPassword,
   refreshToken,
+  getCurrentUser,
 } = require("../controllers/authController");
 const authMiddleware = require("../middlewares/auth");
 
@@ -15,6 +16,7 @@ const router = express.Router();
 
 router.post("/register", register);
 router.post("/login", login);
+router.get("/current", authMiddleware.protect, getCurrentUser);
 router.post("/logout", logout);
 router.post("/forgot-password", forgotPassword);
 router.post("/forgot-password/confirm", confirmForgotPassword);

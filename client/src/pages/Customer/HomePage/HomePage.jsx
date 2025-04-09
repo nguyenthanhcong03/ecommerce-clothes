@@ -1,4 +1,4 @@
-import { getProducts } from '@services/productsService';
+import { getProducts } from '@services/productService';
 import countdownBanner1 from '@assets/images/countdownBanner1.jpeg';
 import SaleHomePage from '@pages/Customer/HomePage/components/SaleHomePage/SaleHomePage';
 import Banner from '@pages/Customer/HomePage/components/Banner/Banner';

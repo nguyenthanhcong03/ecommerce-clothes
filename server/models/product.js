@@ -1,23 +1,17 @@
-const mongoose = require("mongoose"); // Erase if already required
+const mongoose = require("mongoose");
 
-const productSchema = new mongoose.Schema(
+const variantSchema = new mongoose.Schema(
   {
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    slug: {
+    sku: {
       type: String,
       required: true,
       unique: true,
-      lowercase: true,
     },
-    description: {
+    size: {
       type: String,
       required: true,
     },
-    brand: {
+    color: {
       type: String,
       required: true,
     },
@@ -25,45 +19,71 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    category: {
-      type: mongoose.Types.ObjectId,
-      ref: "Category",
-    },
-    quantity: {
+    discountPrice: {
       type: Number,
-      default: 0,
     },
-    sold: {
+    stock: {
       type: Number,
-      default: 0,
+      required: true,
     },
-    images: {
-      type: Array,
-    },
-    color: {
-      type: String,
-      enum: ["Black", "Green", "White"],
-    },
-    size: {
-      type: String,
-      enum: ["S", "M", "L"],
-    },
-    ratings: [
+    images: [
       {
-        star: {
-          type: Number,
-          postedBy: { type: mongoose.Types.ObjectId, ref: "User" },
-          comment: { type: String },
-        },
+        type: String,
       },
     ],
-    totalRatings: {
+  },
+  { _id: true }
+);
+
+const productSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    description: {
+      type: String,
+    },
+    categoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
+    brand: {
+      type: String,
+      required: true,
+    },
+    variants: [variantSchema],
+    images: [
+      {
+        type: String,
+      },
+    ],
+    tags: [
+      {
+        type: String,
+      },
+    ],
+    averageRating: {
       type: Number,
       default: 0,
+    },
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // Tự động tạo createdAt và updatedAt
   }
 );
 
@@ -87,4 +107,6 @@ productSchema.index({ brand: 1 });
 productSchema.index({ isActive: 1, createdAt: -1 });
 // Hỗ trợ sort theo createdAt và filter isActive cùng lúc
 
-module.exports = mongoose.model("Product", productSchema);
+const Product = mongoose.model("Product", productSchema);
+
+module.exports = Product;

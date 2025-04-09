@@ -1,4 +1,5 @@
 const path = require("path");
+const cloudinary = require("../config/cloudinary");
 
 const uploadSingleFile = async (fileObject) => {
   let uploadPath = path.resolve(__dirname, "../public/images/upload");

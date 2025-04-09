@@ -21,14 +21,15 @@ export const accountSlice = createSlice({
     doLoginAction: (state, action) => {
       state.isAuthenticated = true;
       state.isLoading = false;
-      state.user = action.payload.user;
+      state.user = action.payload;
     },
     doGetAccountAction: (state, action) => {
       state.isAuthenticated = true;
       state.isLoading = false;
-      state.user = action.payload.user;
+      state.user = action.payload;
     },
     doLogoutAction: (state) => {
+      localStorage.removeItem('accessToken');
       state.isAuthenticated = false;
       state.user = {
         _id: '',
@@ -45,6 +46,6 @@ export const accountSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { doLoginAction } = accountSlice.actions;
+export const { doLoginAction, doGetAccountAction, doLogoutAction } = accountSlice.actions;
 
 export default accountSlice.reducer;

@@ -9,10 +9,10 @@ const protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.id).select("-password");
-    // req.user = decoded; // Lưu thông tin user vào request
+    // req.user = await User.findById(decoded._id).select("-password");
+    req.user = decoded; // Lưu thông tin user vào request
     next();
-  } catch (err) {
+  } catch (error) {
     if (error.name === "TokenExpiredError") {
       return res.status(401).json({ success: false, message: "Access token expired", expired: true });
     }

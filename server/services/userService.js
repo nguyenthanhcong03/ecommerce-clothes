@@ -1,30 +1,38 @@
-const User = require("../models/user");
-const bcrypt = require("bcryptjs");
+const path = require("path");
+const cloudinary = require("../config/cloudinary");
 
-class UserService {
-  async registerUser(username, password, role) {
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      throw new Error("User already exists");
-    }
+const uploadSingleFile = async (fileData) => {
+  try {
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: "ecommerce/avatar",
+          transformation: [{ width: 1000, height: 1000, crop: "limit" }, { quality: "auto" }, { fetch_format: "auto" }],
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, password: hashedPassword, role });
-    await user.save();
-    return user;
+      uploadStream.end(fileData.data);
+    });
+
+    return {
+      url: result.secure_url,
+      public_id: result.public_id,
+      format: result.format,
+      width: result.width,
+      height: result.height,
+    };
+  } catch (error) {
+    throw new Error(`Cloudinary upload failed: ${error.message}`);
   }
+};
 
-  async findUserByUsername(username) {
-    return await User.findOne({ username });
-  }
+const uploadMultipleFiles = async (files) => {
+  const uploadPromises = files.map((file) => uploadSingleFile(file));
+  return Promise.all(uploadPromises);
+};
 
-  async findUserByRefreshToken(refreshToken) {
-    return await User.findOne({ refreshToken });
-  }
-
-  async updateRefreshToken(userId, refreshToken) {
-    await User.findByIdAndUpdate(userId, { refreshToken });
-  }
-}
-
-module.exports = new UserService();
+module.exports = { uploadSingleFile, uploadMultipleFiles };

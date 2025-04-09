@@ -26,6 +26,64 @@ const getProduct = asyncHandler(async (req, res) => {
   });
 });
 
+const createProduct2 = async (req, res) => {
+  try {
+    const { name, description, categoryId, brand, variants, images, tags, isActive } = req.body;
+
+    // Tạo slug từ tên sản phẩm
+    const slug = slugify(name, {
+      lower: true,
+      strict: true,
+      locale: "vi", // Hỗ trợ tiếng Việt
+    });
+
+    // Kiểm tra categoryId có tồn tại
+    const categoryExists = await mongoose.model("Category").findById(categoryId);
+    if (!categoryExists) {
+      return res.status(400).json({
+        success: false,
+        message: "Danh mục không tồn tại",
+      });
+    }
+
+    // Tạo sản phẩm mới
+    const newProduct = new Product({
+      name,
+      slug,
+      description,
+      categoryId,
+      brand,
+      variants,
+      images,
+      tags: tags || [],
+      isActive: isActive !== undefined ? isActive : true,
+    });
+
+    // Lưu vào database
+    const savedProduct = await newProduct.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Tạo sản phẩm thành công",
+      data: savedProduct,
+    });
+  } catch (error) {
+    // Xử lý lỗi duplicate key (slug hoặc sku)
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "Sản phẩm với slug hoặc SKU đã tồn tại",
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+};
+
 const getAllProducts = asyncHandler(async (req, res) => {
   const queries = {
     ...req.query,
@@ -109,14 +167,17 @@ const getAllProducts2 = async (req, res) => {
 
     // 3. Tính tổng số documents
     const total = await Product.countDocuments(query);
+    console.log("check total", total);
 
     // 4. Thực hiện query với pagination và sort
     const products = await Product.find(query)
-      .populate("categoryId", "name slug") // Liên kết với collection Categories
+      // .populate("categoryId", "name slug") // Liên kết với collection Categories
       .sort({ [sortBy]: order === "desc" ? -1 : 1 })
       .skip((page - 1) * limit)
       .limit(Number(limit))
       .select("-__v"); // Loại bỏ field version
+
+    console.log("check products", products);
 
     // 5. Tạo response
     const response = {
@@ -161,6 +222,8 @@ const deleteProduct = asyncHandler(async (req, res) => {
   });
 });
 
+const uploadImageProduct = async () => {};
+
 module.exports = {
   createProduct,
   getProduct,
@@ -168,4 +231,6 @@ module.exports = {
   updateProduct,
   deleteProduct,
   getAllProducts2,
+  createProduct2,
+  uploadImageProduct,
 };

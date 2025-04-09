@@ -1,4 +1,3 @@
-import axios from 'axios';
 import axiosClient from './axiosClient';
 const BASE_API = '/api/product';
 
@@ -10,11 +9,31 @@ export const getProducts = async (query) => {
 };
 ('https://dummyjson.com/products');
 
-export function getAllProducts() {
+export const getAllProducts = async ({
+  page = 1,
+  limit = 10,
+  search = '',
+  brand = '',
+  color = '',
+  size = '',
+  minPrice = '',
+  maxPrice = ''
+}) => {
+  const queryParams = new URLSearchParams({
+    page,
+    limit,
+    search,
+    brand,
+    color,
+    size,
+    minPrice,
+    maxPrice
+  }).toString();
   let url = BASE_API;
-  const res = axiosClient.get(url);
+  const res = await axiosClient.get(`${url}?${queryParams}`);
+  console.log('check res', res);
   return res;
-}
+};
 
 export function getProductById(id) {
   let url = BASE_API + '/' + id;

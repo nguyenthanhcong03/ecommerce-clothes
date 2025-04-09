@@ -1,63 +1,12 @@
 const User = require("../models/user");
+const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 const asyncHandler = require("express-async-handler");
+const cloudinary = require("../config/cloudinary");
 const { generateAccessToken, generateRefreshToken } = require("../middlewares/jwt");
 const jwt = require("jsonwebtoken");
-const { createUserService } = require("../services/userService");
-
-const register = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, phone, password } = req.body;
-  if (!firstName || !lastName || !email || !phone || !password) {
-    return res.status(400).json({ success: false, message: "Missing fields" });
-  }
-  const user = await User.findOne({ email });
-  if (user) {
-    throw new Error("User already exists");
-  } else {
-    const newUser = await User.create(req.body);
-    return res
-      .status(200)
-      .json({ success: newUser ? true : false, message: newUser ? "User created" : "User not created" });
-  }
-});
-
-// const createUser = async (req, res) => {
-//   const { firstName, lastName, email, phone, password } = req.body;
-//   if (!firstName || !lastName || !email || !phone || !password) {
-//     return res.status(400).json({ success: false, message: "Missing fields" });
-//   }
-//   const data = await createUserService(firstName, lastName, email, phone, password);
-//   return res.status(200).json(data);
-// };
-
-const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ success: false, message: "Missing fields" });
-  }
-  const response = await User.findOne({ email });
-  if (response && (await response.isPasswordMatched(password))) {
-    // Tách password và role ra khỏi response
-    const { password, role, refreshToken, ...userData } = response.toObject();
-    // Tạo accessToken
-    const accessToken = generateAccessToken(response._id, role);
-    // Tạo refreshToken
-    const newRefreshToken = generateRefreshToken(response._id);
-    // Lưu refreshToken vào db
-    await User.findByIdAndUpdate(response._id, { newRefreshToken }, { new: true });
-    // Lưu refreshToken vào cookie
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-    return res.status(200).json({
-      success: true,
-      accessToken,
-      userData,
-    });
-  } else {
-    throw new Error("Invalid credential");
-  }
-});
+const { createUserService, uploadSingleFile, uploadMultipleFiles } = require("../services/userService");
+const { uploadSingleFile2 } = require("../services/fileService");
 
 const getCurrentUser = asyncHandler(async (req, res) => {
   const { _id } = req.user;
@@ -115,13 +64,99 @@ const forgotPassword = asyncHandler(async (req, res) => {
   return res.status(200).json({ success: true, rs });
 });
 
-const getUsers = asyncHandler(async (req, res) => {
-  const response = await User.find();
-  return res.status(200).json({
-    success: response ? true : false,
-    users: response,
-  });
-});
+const getAllUsers = async (req, res) => {
+  try {
+    // 1. Fav lấy các query parameters từ request
+    const {
+      page = 1, // Trang mặc định là 1
+      limit = 10, // Số sản phẩm mỗi trang mặc định là 10
+      sortBy = "createdAt", // Sắp xếp mặc định theo ngày tạo
+      order = "desc", // Thứ tự mặc định giảm dần
+      search, // Từ khóa tìm kiếm
+      role,
+    } = req.query;
+
+    // 2. Xây dựng query
+    let query = {};
+
+    // Search theo tên hoặc mô tả
+    if (search) {
+      query.$or = [{ name: { $regex: search, $options: "i" } }, { description: { $regex: search, $options: "i" } }];
+    }
+
+    // Filter theo category
+    if (role) {
+      query.role = role;
+    }
+
+    // 3. Tính tổng số documents
+    const total = await User.countDocuments(query);
+    console.log("check total", total);
+
+    // 4. Thực hiện query với pagination và sort
+    const users = await User.find(query)
+      // .populate("categoryId", "name slug") // Liên kết với collection Categories
+      .sort({ [sortBy]: order === "desc" ? -1 : 1 })
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .select("-__v"); // Loại bỏ field version
+
+    console.log("check users", users);
+
+    // 5. Tạo response
+    const response = {
+      success: true,
+      data: users,
+      pagination: {
+        current: Number(page),
+        pageSize: Number(limit),
+        total: total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+const createUser = async (req, res) => {
+  const { firstName, lastName, username, address, role, email, phone, password } = req.body;
+  if (!firstName || !lastName || !email || !password || !role) {
+    return res.status(400).json({ success: false, message: "Missing fields" });
+  }
+  try {
+    // Kiểm tra email đã tồn tại
+    const existedUser = await User.findOne({ username });
+    if (existedUser) {
+      return res.status(400).json({ message: "Người dùng đã tồn tại" });
+    }
+
+    // Mã hóa mật khẩu
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+      firstName,
+      lastName,
+      address,
+      phone,
+      role,
+    });
+
+    res.status(200).json({ success: true, message: "Create user successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
 
 const deleteUser = asyncHandler(async (req, res) => {
   const { _id } = req.query;
@@ -139,7 +174,7 @@ const updateUser = asyncHandler(async (req, res) => {
   const response = await User.findByIdAndUpdate(_id, req.body, { new: true }).select("-password -role");
   return res.status(200).json({
     success: response ? true : false,
-    updatedUser: response ? response : "Something went wrong",
+    data: response ? response : "Something went wrong",
   });
 });
 
@@ -149,19 +184,163 @@ const updateUserByAdmin = asyncHandler(async (req, res) => {
   const response = await User.findByIdAndUpdate(uid, req.body, { new: true }).select("-password -role");
   return res.status(200).json({
     success: response ? true : false,
-    updatedUser: response ? response : "Something went wrong",
+    data: response ? response : "Something went wrong",
   });
 });
 
+// const uploadImageUser = async (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ message: "Vui lòng chọn file ảnh" });
+//     }
+
+//     const avatarUrl = req.file.path; // URL từ Cloudinary
+//     res.status(200).json({
+//       message: "Upload avatar thành công",
+//       avatarUrl: avatarUrl,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: "Lỗi server", error: error.message });
+//   }
+// };
+const uploadImage = async (req, res) => {
+  try {
+    console.log("hehe");
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Vui lòng upload một file ảnh",
+      });
+    }
+
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: "uploads",
+          transformation: [{ width: 1000, height: 1000, crop: "limit" }, { quality: "auto" }, { fetch_format: "auto" }],
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+
+      uploadStream.end(req.file.buffer);
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Upload ảnh thành công",
+      data: {
+        url: result.secure_url,
+        public_id: result.public_id,
+        format: result.format,
+        width: result.width,
+        height: result.height,
+      },
+    });
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi khi upload ảnh",
+      error: error.message,
+    });
+  }
+};
+
+const uploadAvatar = async (req, res) => {
+  try {
+    // Kiểm tra xem có file được upload không
+    if (!req.files || !req.files.image) {
+      return res.status(400).json({
+        success: false,
+        message: "Vui lòng upload một file ảnh",
+      });
+    }
+
+    const file = req.files.image;
+
+    // Kiểm tra định dạng file
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+    if (!allowedTypes.includes(file.mimetype)) {
+      return res.status(400).json({
+        success: false,
+        message: "Chỉ chấp nhận file JPEG, JPG hoặc PNG",
+      });
+    }
+
+    // Gọi service để upload lên Cloudinary
+    const uploadResult = await uploadSingleFile(file);
+
+    // Trả về kết quả
+    res.status(200).json({
+      success: true,
+      message: "Upload ảnh thành công",
+      data: uploadResult,
+    });
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi khi upload ảnh",
+      error: error.message,
+    });
+  }
+};
+
+const uploadMultipleImages = async (req, res) => {
+  try {
+    console.log(req.files);
+    if (!req.files || !req.files.image) {
+      return res.status(400).json({
+        success: false,
+        message: "Vui lòng upload ít nhất một file ảnh",
+      });
+    }
+
+    // Chuyển thành mảng nếu chỉ upload 1 file
+    const files = Array.isArray(req.files.image) ? req.files.image : [req.files.image];
+
+    // Kiểm tra định dạng tất cả file
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+    const invalidFiles = files.filter((file) => !allowedTypes.includes(file.mimetype));
+    if (invalidFiles.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Chỉ chấp nhận file JPEG, JPG hoặc PNG",
+      });
+    }
+
+    // Upload nhiều file lên Cloudinary
+    const uploadResults = await uploadMultipleFiles(files);
+
+    res.status(200).json({
+      success: true,
+      message: "Upload nhiều ảnh thành công",
+      data: uploadResults,
+    });
+  } catch (error) {
+    console.error("Multiple upload error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi khi upload nhiều ảnh",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   logout,
-  register,
-  login,
   getCurrentUser,
   refreshAccessToken,
   forgotPassword,
-  getUsers,
+  getAllUsers,
   deleteUser,
   updateUser,
   updateUserByAdmin,
+  createUser,
+  uploadImage,
+  uploadAvatar,
+  uploadMultipleImages,
 };

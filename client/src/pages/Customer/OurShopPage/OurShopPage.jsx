@@ -4,7 +4,7 @@ import CountDownBanner from '@components/CountDownBanner/CountDownBanner';
 import Dropdown from '@components/Dropdown/Dropdown';
 import Button from '@components/Button/Button';
 import ProductItem from '@components/ProductItem/ProductItem';
-import { getAllProducts } from '@services/productsService';
+import { getAllProducts } from '@services/productService';
 import { useEffect, useState } from 'react';
 
 function OurShopPage() {

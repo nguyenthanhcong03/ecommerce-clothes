@@ -3,7 +3,7 @@ import Button from '@components/Button/Button';
 import { CiHeart } from 'react-icons/ci';
 import { BsCartPlus } from 'react-icons/bs';
 import { CiZoomIn } from 'react-icons/ci';
-import { getProductById } from '@services/productsService';
+import { getProductById } from '@services/productService';
 import { use } from 'react';
 import { useNavigate } from 'react-router-dom';
 
