@@ -1,18 +1,16 @@
-import { UserCheck, UserPlus, UsersIcon, UserX } from 'lucide-react';
-import { motion } from 'framer-motion';
-
-import Header from '@components/AdminComponents/common/Header';
-import StatCard from '@components/AdminComponents/common/StatCard';
-import UsersTable from '@components/AdminComponents/users/UsersTable';
-import UserGrowthChart from '@components/AdminComponents/users/UserGrowthChart';
-import UserActivityHeatmap from '@components/AdminComponents/users/UserActivityHeatmap';
-import UserDemographicsChart from '@components/AdminComponents/users/UserDemographicsChart';
-import UserTable from './UserTable';
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchUsers, setIsOpenForm, setSelectedUser } from '../../../redux/features/user/userSlice';
-import AddUserForm from './AddUserForm';
+import Header from '@/components/AdminComponents/common/Header';
+import StatCard from '@/components/AdminComponents/common/StatCard';
+import UserActivityHeatmap from '@/components/AdminComponents/users/UserActivityHeatmap';
+import UserDemographicsChart from '@/components/AdminComponents/users/UserDemographicsChart';
+import UserGrowthChart from '@/components/AdminComponents/users/UserGrowthChart';
+import { fetchUsers, setIsOpenForm, setSelectedUser } from '@/redux/features/user/userSlice';
 import { Button, Input } from 'antd';
+import { motion } from 'framer-motion';
+import { UserCheck, UserPlus, UsersIcon, UserX } from 'lucide-react';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import AddUserForm from './AddUserForm';
+import UserTable from './UserTable';
 
 const userStats = {
   totalUsers: 152845,

@@ -1,30 +1,25 @@
-import countdownBanner2 from '@assets/images/countdownBanner2.jpeg';
-import Breadcrumb from '@components/Breadcrumb/Breadcrumb';
-import CountDownBanner from '@components/CountDownBanner/CountDownBanner';
-import Dropdown from '@components/Dropdown/Dropdown';
-import Button from '@components/Button/Button';
-import ProductItem from '@components/ProductItem/ProductItem';
-import { getAllProducts } from '@services/productService';
+import countdownBanner2 from '@/assets/images/countdownBanner2.jpeg';
+import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
+import Button from '@/components/common/Button/Button';
+import CountDownBanner from '@/components/common/CountDownBanner/CountDownBanner';
+import Select from '@/components/common/Select/Select';
+import ProductCard from '@/components/product/ProductCard/ProductCard';
+import { getAllProducts } from '@/services/productService';
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProducts } from '../../../redux/features/product/productSlice';
 
 function OurShopPage() {
-  const [products, setProducts] = useState([]);
+  const dispatch = useDispatch();
+  const { products } = useSelector((state) => state.product);
   const [visibleItems, setVisibleItems] = useState(8);
   const handleLoadMore = () => {
-    setVisibleItems((prev) => prev + 8); // Hiển thị thêm 5 item
+    setVisibleItems((prev) => prev + 8); // Hiển thị thêm 8 item
   };
-  const fetchAllProducts = async () => {
-    try {
-      let res = await getAllProducts();
-      console.log(res);
-      setProducts(res.data.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+
   useEffect(() => {
-    fetchAllProducts();
-  }, []);
+    dispatch(fetchProducts({ page: 1, limit: 2 }));
+  }, [dispatch]);
   const breadcrumbItems = [{ label: 'Trang chủ', link: '/' }, { label: 'Sản phẩm' }];
   const options = [
     { label: 'Mặc định', value: 'default' },
@@ -42,18 +37,11 @@ function OurShopPage() {
         <CountDownBanner backgroundImage={countdownBanner2} />
       </div>
       <div className='my-5'>
-        <Dropdown options={options} className={'w-[280px]'} />
+        <Select options={options} className={'w-[280px]'} />
       </div>
       <div className='grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4'>
         {products?.slice(0, visibleItems).map((product) => (
-          <ProductItem
-            key={product._id}
-            id={product._id}
-            src={product.images[0]}
-            previewSrc={product.images[1]}
-            name={product.title}
-            price={product.price}
-          />
+          <ProductCard key={product._id} item={product} />
         ))}
       </div>
       {visibleItems < products?.length && (

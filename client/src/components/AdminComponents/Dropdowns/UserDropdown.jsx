@@ -42,7 +42,7 @@ const UserDropdown = () => {
           'z-50 float-left min-w-48 list-none rounded bg-white py-2 text-left text-base shadow-lg'
         }
       >
-        {/* Dropdown content */}
+        {/* Select content */}
         <a
           href='#pablo'
           className='text-blueGray-700 block w-full whitespace-nowrap bg-transparent px-4 py-2 text-sm font-normal'

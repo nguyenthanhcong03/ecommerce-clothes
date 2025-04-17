@@ -1,7 +1,7 @@
-import CardLineChart from '@components/AdminComponents/Cards/CardLineChart.jsx';
-import CardBarChart from '@components/AdminComponents/Cards/CardBarChart.jsx';
-import CardPageVisits from '@components/AdminComponents/Cards/CardPageVisits.jsx';
-import CardSocialTraffic from '@components/AdminComponents/Cards/CardSocialTraffic.jsx';
+import CardLineChart from '@/components/AdminComponents/Cards/CardLineChart.jsx';
+import CardBarChart from '@/components/AdminComponents/Cards/CardBarChart.jsx';
+import CardPageVisits from '@/components/AdminComponents/Cards/CardPageVisits.jsx';
+import CardSocialTraffic from '@/components/AdminComponents/Cards/CardSocialTraffic.jsx';
 const Dashboard = () => {
   return (
     <>

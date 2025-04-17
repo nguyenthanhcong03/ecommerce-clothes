@@ -1,18 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import AdminSidebar from '@components/AdminSidebar/AdminSidebar';
-import AdminHeader from '@components/AdminHeader/AdminHeader';
-import ScrollToTop from '@components/ScrollToTop/ScrollToTop';
+import { Outlet, useNavigate } from 'react-router-dom';
 
 // import { Switch, Route, Redirect } from 'react-router-dom';
 
 // components
 
-import AdminNavbar from '@components/AdminComponents/Navbars/AdminNavbar.jsx';
-import Sidebar from '@components/AdminComponents/common/Sidebar.jsx';
-import HeaderStats from '@components/AdminComponents/Headers/HeaderStats.jsx';
-import FooterAdmin from '@components/AdminComponents/Footers/FooterAdmin.jsx';
+import Sidebar from '@/components/AdminComponents/common/Sidebar.jsx';
 
 // views
 

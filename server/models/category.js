@@ -24,9 +24,11 @@ const categorySchema = new Schema(
       type: String,
       trim: true, // Loại bỏ khoảng trắng thừa
     },
-    image: {
-      type: String, // URL của ảnh đại diện
-    },
+    images: [
+      {
+        type: String,
+      },
+    ],
     isActive: {
       type: Boolean,
       default: true, // Mặc định là true (hoạt động)

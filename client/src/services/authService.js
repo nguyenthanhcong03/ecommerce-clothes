@@ -19,25 +19,21 @@ export const callFetchAccount = () => {
   return axiosClient.get(BASE_API + '/current');
 };
 
-export const refreshToken = async () => {
-  try {
-    const response = await axiosClient.post(
-      BASE_API + '/refresh-token',
-      {},
-      {
-        withCredentials: true // Gửi cookie HttpOnly nếu có
-      }
-    );
+export const refreshAccessToken = async () => {
+  const response = await axiosClient.post(
+    BASE_API + '/refresh-token',
+    {},
+    {
+      withCredentials: true // Gửi cookie HttpOnly nếu có
+    }
+  );
 
-    const newAccessToken = response.data.accessToken;
+  // const newAccessToken = response.data.accessToken;
 
-    // Cập nhật vào localStorage hoặc context API nếu cần
-    localStorage.setItem('accessToken', newAccessToken);
+  // // Cập nhật vào localStorage hoặc context API nếu cần
+  // localStorage.setItem('accessToken', newAccessToken);
+  console.log('response', response);
 
-    return newAccessToken;
-  } catch (error) {
-    console.error('Refresh token failed', error);
-    throw error; // Ném lỗi để xử lý logout nếu cần
-    //logout
-  }
+  // return newAccessToken;
+  return response;
 };

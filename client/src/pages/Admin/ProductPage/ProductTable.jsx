@@ -1,32 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Popconfirm, Image, Tag } from 'antd';
-import axios from 'axios';
-import ProductForm from './ProductForm';
+import Input from '@/components/common/Input/Input';
+import {
+  fetchProducts,
+  handleDeleteProductById,
+  setIsOpenForm,
+  setSelectedProduct
+} from '@/redux/features/product/productSlice';
+import { Button, Image, Popconfirm, Space, Table, Tag } from 'antd';
+import { Pencil } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProducts, setIsOpenForm, setSelectedProduct } from '@redux/features/product/productSlice';
+import ProductForm from './ProductForm';
+import './styles.css';
 
 const ProductTable = () => {
   const dispatch = useDispatch();
   const { products, status, error, page, pages, total, isOpenForm, selectedProduct } = useSelector(
     (state) => state.product
   );
-  // const [products, setProducts] = useState([]);
-  // const [isOpenForm, setIsOpenForm] = useState(false);
-  // const [selectedProduct, setSelectedProduct] = useState(null);
-
-  // Lấy danh sách product từ backend
+  const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
     dispatch(fetchProducts({ page: 1, limit: 10 }));
-  }, []);
+  }, [dispatch]);
 
   // Xóa product
   const handleDelete = async (id) => {
-    try {
-      const response = await axios.delete(`http://localhost:3000/api/products/${id}`);
-      fetchProducts(); // Cập nhật lại danh sách
-    } catch (error) {
-      console.error('Error deleting product:', error);
+    console.log('id', id);
+    dispatch(handleDeleteProductById({ productId: id }));
+    if (status === 'succeeded') {
+      alert('Xóa product thanh cong');
     }
   };
 
@@ -41,6 +44,24 @@ const ProductTable = () => {
     dispatch(setSelectedProduct(null));
     dispatch(setIsOpenForm(true));
   };
+
+  // const categoryFilters = Array.from(new Set(products.map((item) => item.categoryId?.name))).map((name) => ({
+  //   text: name,
+  //   value: name
+  // }));
+
+  // Tạo filters theo slug
+  const categoryFilters = Array.from(
+    new Map(
+      products.map((item) => [
+        item.categoryId?.slug,
+        {
+          text: item.categoryId?.name,
+          value: item.categoryId?.slug
+        }
+      ])
+    ).values()
+  );
 
   const columns = [
     {
@@ -60,8 +81,12 @@ const ProductTable = () => {
       dataIndex: 'name'
     },
     {
-      title: 'categoryId',
-      dataIndex: 'categoryId'
+      title: 'Danh mục',
+      dataIndex: 'categoryId',
+      key: 'category',
+      filters: categoryFilters,
+      onFilter: (value, record) => record.categoryId?.slug === value,
+      render: (category) => category?.name || 'Không xác định'
     },
     {
       title: 'Mô tả',
@@ -95,31 +120,53 @@ const ProductTable = () => {
       key: 'variants',
       render: (_, record) => {
         const hasInStock = record.variants.some((v) => v.stock > 0);
-
-        if (hasInStock) {
-          return <Tag color='green'>Còn hàng</Tag>;
-        } else {
-          return <Tag color='red'>Hết hàng</Tag>;
-        }
+        return hasInStock ? <Tag color='green'>Còn hàng</Tag> : <Tag color='red'>Hết hàng</Tag>;
+      },
+      filters: [
+        { text: 'Còn hàng', value: 'available' },
+        { text: 'Hết hàng', value: 'out-of-stock' }
+      ],
+      onFilter: (value, record) => {
+        const hasInStock = record.variants.some((v) => v.stock > 0);
+        console.log('hasInStock', hasInStock);
+        if (value === 'available') return hasInStock;
+        if (value === 'out-of-stock') return !hasInStock;
+        return false;
       }
     },
     {
       title: 'Hành động',
       key: 'action',
+      fixed: 'right',
       render: (_, record) => (
         <Space size='middle'>
-          <Button type='link' onClick={() => handleEdit(record)}>
+          {/* <Button type='link' onClick={() => handleEdit(record)}>
             Sửa
-          </Button>
+          </Button> */}
+          <div className='cursor-pointer rounded-[5px] bg-[#0961FF] p-1'>
+            <Pencil onClick={() => handleEdit(record)} color='#fff' />
+          </div>
           <Popconfirm
             title='Bạn có chắc muốn xóa sản phẩm này?'
             onConfirm={() => handleDelete(record._id)}
             okText='Có'
             cancelText='Không'
+            placement='topRight'
+            okButtonProps={{
+              style: { backgroundColor: 'black', borderColor: 'black', color: 'white' }
+            }}
+            cancelButtonProps={{
+              style: { color: 'gray', borderColor: 'gray' }
+            }}
+            // icon={
+            //   <div className='rounded-full bg-yellow-400 p-1'>
+            //     <FiAlertTriangle color='#fff' size={10} />
+            //   </div>
+            // }
           >
-            <Button type='link' danger>
-              Xóa
-            </Button>
+            <div className='cursor-pointer rounded-[5px] bg-[#DE2E3D] p-1'>
+              <Trash2 color='#fff' />
+            </div>
           </Popconfirm>
         </Space>
       )
@@ -225,16 +272,28 @@ const ProductTable = () => {
       <Button type='primary' onClick={handleAdd} style={{ marginBottom: 16 }}>
         Thêm sản phẩm mới
       </Button>
+
       <Table
         rowKey='_id'
-        className='custom-header-font rounded-lg border bg-white'
-        rowSelection={rowSelection}
+        className='rounded-lg border bg-white'
+        // rowSelection={rowSelection}
+        scroll={{ x: 'max-content' }}
         columns={columns}
         dataSource={products}
-        pagination={{ pageSize: 2 }}
-        rowClassName={(record, index) => (index % 2 === 0 ? 'bg-[#fafafa]' : 'bg-white')}
-        bordered
+        pagination={{ pageSize: 5, position: ['bottomCenter'] }}
+        // rowClassName={(record, index) => (index % 2 !== 0 ? 'bg-[#fafafa]' : 'bg-white')}
+        // bordered
+        locale={{ emptyText: status === 'loading' ? 'Đang tải dữ liệu...' : 'Không có dữ liệu' }}
+        title={() => (
+          <div className='flex items-center justify-between rounded-t-lg'>
+            <h3 className='text-xl font-bold'>Danh sách sản phẩm</h3>
+            <div className='w-full max-w-[300px]'>
+              <Input placeholder='Tìm kiếm sản phẩm' />
+            </div>
+          </div>
+        )}
       />
+
       <ProductForm />
     </div>
   );

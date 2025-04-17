@@ -1,10 +1,10 @@
 import { BarChart2, ShoppingBag, Users, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
-import Header from '@components/AdminComponents/common/Header';
-import StatCard from '@components/AdminComponents/common/StatCard';
-import SalesOverviewChart from '@components/AdminComponents/overview/SalesOverviewChart';
-import CategoryDistributionChart from '@components/AdminComponents/overview/CategoryDistributionChart';
-import SalesChannelChart from '@components/AdminComponents/overview/SalesChannelChart';
+import Header from '@/components/AdminComponents/common/Header';
+import StatCard from '@/components/AdminComponents/common/StatCard';
+import SalesOverviewChart from '@/components/AdminComponents/overview/SalesOverviewChart';
+import CategoryDistributionChart from '@/components/AdminComponents/overview/CategoryDistributionChart';
+import SalesChannelChart from '@/components/AdminComponents/overview/SalesChannelChart';
 
 const OverviewPage = () => {
   return (

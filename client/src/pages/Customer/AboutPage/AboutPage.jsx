@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { cardData1, cardData2 } from '@pages/Customer/AboutPage/components/AboutStory/constant';
-import AboutStory from '@pages/Customer/AboutPage/components/AboutStory/AboutStory';
-import BrandSwiper from '@pages/Customer/AboutPage/components/BrandSwiper/BrandSwiper';
-import Breadcrumb from '@components/Breadcrumb/Breadcrumb';
-import Headline from '@components/Headline/Headline';
-import Collapse from '@components/Collapse/Collapse';
+import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
+import Collapse from '@/components/common/Collapse/Collapse';
+import AboutStory from '@/components/ui/about/AboutStory/AboutStory';
+import { cardData1, cardData2 } from '@/components/ui/about/AboutStory/constant';
+import BrandSwiper from '@/components/ui/about/BrandSwiper/BrandSwiper';
+import Headline from '@/components/ui/home/Headline/Headline';
 
 function AboutUsPage() {
   const breadcrumbItems = [

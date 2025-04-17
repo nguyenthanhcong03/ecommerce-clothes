@@ -9,10 +9,15 @@ const BASE_API = '/api/category';
 // };
 // ('https://dummyjson.com/products');
 
-export const getAllCategories = async () => {
+export const getAllCategories = async ({ page = 1, limit = 10, search = '' }) => {
+  const queryParams = new URLSearchParams({
+    page,
+    limit,
+    search
+  }).toString();
   let url = BASE_API;
-  const res = await axiosClient.get(`${url}`);
-  console.log('check res', res);
+  const res = await axiosClient.get(`${url}?${queryParams}`);
+  console.log('check res getall', res);
   return res;
 };
 

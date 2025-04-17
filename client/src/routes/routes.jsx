@@ -25,28 +25,28 @@
 // const Register = Loadable(lazy(() => import('../views/auth/register/Register')));
 // const SamplePage = Loadable(lazy(() => import('../views/sample-page/SamplePage')));
 // const Error = Loadable(lazy(() => import('../views/auth/error/Error')));
-import HomePage from '@pages/Customer/HomePage/HomePage.jsx';
-import AboutPage from '@pages/Customer/AboutPage/AboutPage.jsx';
-import LoginPage from '@pages/Auth/LoginPage.jsx';
-import RegisterPage from '@pages/Auth/RegisterPage.jsx';
-import MainLayout from '@layouts/MainLayout.jsx';
-import AdminLayout from '@layouts/AdminLayout.jsx';
-import OurShopPage from '@pages/Customer/OurShopPage/OurShopPage.jsx';
-import NewsPage from '@pages/Customer/NewsPage/NewsPage.jsx';
-import ContactPage from '@pages/Customer/ContactPage/ContactPage.jsx';
-import CartPage from '@pages/Customer/CartPage/CartPage.jsx';
-import WishlistPage from '@pages/Customer/WishlistPage/WishlistPage.jsx';
-import DetailProduct from '@pages/Customer/DetailProduct/DetailProduct.jsx';
-import OverviewPage from '@pages/Admin/OverviewPage/OverviewPage.jsx';
-import UsersPage from '@pages/Admin/UsersPage/UsersPage.jsx';
-import ProtectedRoute from '@components/ProtectedRoute/ProtectedRoute.jsx';
-import SettingsPage from '@pages/Admin/SettingsPage/SettingsPage.jsx';
-import SalesPage from '@pages/Admin/SalesPage/SalesPage.jsx';
-import OrdersPage from '@pages/Admin/OrdersPage/OrdersPage.jsx';
-import AnalyticsPage from '@pages/Admin/AnalyticsPage/AnalyticsPage.jsx';
+import ProtectedRoute from '@/components/auth/ProtectedRoute/ProtectedRoute.jsx';
+import AdminLayout from '@/layouts/AdminLayout.jsx';
+import MainLayout from '@/layouts/MainLayout.jsx';
+import AnalyticsPage from '@/pages/Admin/AnalyticsPage/AnalyticsPage.jsx';
+import CategoryPage from '@/pages/Admin/CategoryPage/CategoryPage';
+import OrdersPage from '@/pages/Admin/OrdersPage/OrdersPage.jsx';
+import OverviewPage from '@/pages/Admin/OverviewPage/OverviewPage.jsx';
+import ProductPage from '@/pages/Admin/ProductPage/ProductPage';
+import SalesPage from '@/pages/Admin/SalesPage/SalesPage.jsx';
+import SettingsPage from '@/pages/Admin/SettingsPage/SettingsPage.jsx';
+import UsersPage from '@/pages/Admin/UsersPage/UsersPage.jsx';
+import LoginPage from '@/pages/Auth/LoginPage.jsx';
+import RegisterPage from '@/pages/Auth/RegisterPage.jsx';
+import AboutPage from '@/pages/Customer/AboutPage/AboutPage.jsx';
+import CartPage from '@/pages/Customer/CartPage/CartPage.jsx';
+import ContactPage from '@/pages/Customer/ContactPage/ContactPage.jsx';
+import DetailProduct from '@/pages/Customer/DetailProduct/DetailProduct.jsx';
+import HomePage from '@/pages/Customer/HomePage/HomePage.jsx';
+import NewsPage from '@/pages/Customer/NewsPage/NewsPage.jsx';
+import OurShopPage from '@/pages/Customer/OurShopPage/OurShopPage.jsx';
+import WishlistPage from '@/pages/Customer/WishlistPage/WishlistPage.jsx';
 import { createBrowserRouter } from 'react-router-dom';
-import CategoryPage from '@pages/Admin/CategoryPage/CategoryPage';
-import ProductPage from '@pages/Admin/ProductPage/ProductPage';
 
 const Router = [
   {
@@ -95,16 +95,16 @@ const Router = [
   },
   {
     path: 'admin',
-    element: <AdminLayout />,
+    element: (
+      <ProtectedRoute>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
     errorElement: <div>404</div>,
     children: [
       {
         index: true,
-        element: (
-          <ProtectedRoute>
-            <OverviewPage />
-          </ProtectedRoute>
-        )
+        element: <OverviewPage />
       },
       {
         path: 'products',

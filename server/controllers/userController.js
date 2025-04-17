@@ -3,10 +3,10 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const asyncHandler = require("express-async-handler");
 const cloudinary = require("../config/cloudinary");
-const { generateAccessToken, generateRefreshToken } = require("../middlewares/jwt");
 const jwt = require("jsonwebtoken");
 const { createUserService, uploadSingleFile, uploadMultipleFiles } = require("../services/userService");
 const { uploadSingleFile2 } = require("../services/fileService");
+const { generateAccessToken } = require("../utils/jwt");
 
 const getCurrentUser = asyncHandler(async (req, res) => {
   const { _id } = req.user;

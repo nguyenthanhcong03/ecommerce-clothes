@@ -1,10 +1,9 @@
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
-const { generateToken, generateRefreshToken } = require("../services/authService");
 const { sendEmail } = require("../services/emailService");
 const jwt = require("jsonwebtoken");
-const asyncHandler = require("express-async-handler");
+const { generateAccessToken, generateRefreshToken } = require("../utils/jwt");
 
 const register = async (req, res) => {
   const { username, password, role, email, phone, lastName, firstName } = req.body;
@@ -93,21 +92,6 @@ const verifyEmail = async (req, res) => {
   }
 };
 
-// const login = async (req, res) => {
-//   const { username, password } = req.body;
-
-//   const user = await User.findOne({ username });
-//   if (!user || !(await user.matchPassword(password)))
-//     return res.status(401).json({ message: "Sai tên đăng nhập hoặc mật khẩu" });
-//   console.log("hIH");
-//   res.json({
-//     _id: user._id,
-//     username: user.username,
-//     token: generateToken(user),
-//     refreshToken: generateRefreshToken(user),
-//   });
-// };
-
 const login = async (req, res) => {
   const { username, password } = req.body;
 
@@ -129,30 +113,28 @@ const login = async (req, res) => {
     // }
 
     // Tạo access token
-    const accessPayload = {
-      _id: user._id,
-      email: user.email,
-      username: user.username,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      role: user.role,
-    };
-    const accessToken = jwt.sign(accessPayload, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const accessToken = generateAccessToken(user);
 
     // Tạo refresh token
-    const refreshPayload = { _id: user._id };
-    const refreshToken = jwt.sign(refreshPayload, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const refreshToken = generateRefreshToken(user);
 
     // Lưu refresh token vào database
-    user.refreshToken = refreshToken;
-    await user.save();
+    // user.refreshToken = refreshToken;
+    // await user.save();
     // // Lưu refreshToken vào db
     // await User.findByIdAndUpdate(response._id, { newRefreshToken }, { new: true });
-    // // Lưu refreshToken vào cookie
-    // res.cookie("refreshToken", refreshToken, {
-    //   httpOnly: true,
-    //   maxAge: 7 * 24 * 60 * 60 * 1000,
-    // });
+
+    // Lưu accessToken vào cookie
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      maxAge: process.env.ACCESS_TOKEN_COOKIE_EXPIRES,
+    });
+
+    // Lưu refreshToken vào cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: process.env.REFRESH_TOKEN_COOKIE_EXPIRES,
+    });
 
     res.status(200).json({
       success: true,
@@ -166,7 +148,7 @@ const login = async (req, res) => {
         firstName: user.firstName,
       },
       accessToken,
-      // refreshToken,
+      refreshToken,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
@@ -180,7 +162,7 @@ const getCurrentUser = async (req, res) => {
     return res.status(200).json({ success: true, data: user ? user : "User not found" });
   } catch (error) {
     console.log(error);
-    // res.status(500).json({ success: false, message: "Server error", error: error.message });
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
 
@@ -293,20 +275,37 @@ const changePassword = async (req, res) => {
 
 // Đăng xuất (Logout) - Xóa refresh token
 const logout = async (req, res) => {
+  console.log("first");
   try {
-    const user = await User.findById(req.user._id);
-    if (user) {
-      user.refreshToken = undefined;
-      await user.save();
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(204).json({ message: "No content, already logged out." });
     }
+
+    // // Nếu bạn lưu refreshToken theo user trong DB:
+    // const user = await User.findById(req.user._id);
+    // if (user) {
+    //   user.refreshToken = undefined;
+    //   await user.save();
+    // }
+
+    // Xoá cookie
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+    });
     res.status(200).json({ success: true, message: "Logged out successfully" });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error", error: error.message });
+    res.status(500).json({ success: false, message: "Internal server error", error: error.message });
   }
 };
 
 const refreshToken = async (req, res) => {
-  const { refreshToken } = req.body;
+  const { refreshToken } = req.cookies;
   if (!refreshToken) {
     return res.status(401).json({ success: false, message: "No refresh token provided" });
   }
@@ -314,19 +313,25 @@ const refreshToken = async (req, res) => {
   try {
     // Xác minh refresh token
     const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id);
-    if (!user || user.refreshToken !== refreshToken) {
-      return res.status(401).json({ success: false, message: "Invalid refresh token" });
-    }
+
+    const user = await User.findById(decoded._id);
+    // if (!user || user.refreshToken !== refreshToken) {
+    //   return res.status(401).json({ success: false, message: "Invalid refresh token" });
+    // }
     // // Tạo access token mới
     // const accessPayload = { userId: user._id, role: user.role };
     // const newAccessToken = jwt.sign(accessPayload, process.env.JWT_SECRET, { expiresIn: '1h' });
     // Tạo access token mới
-    const newAccessToken = generateToken(user);
+    const newAccessToken = generateAccessToken(user);
+    // Lưu accessToken vào cookie
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      maxAge: process.env.ACCESS_TOKEN_COOKIE_EXPIRES,
+    });
     res.status(200).json({ success: true, accessToken: newAccessToken });
   } catch (error) {
     if (error.name === "TokenExpiredError") {
-      return res.status(401).json({ success: false, message: "Refresh token expired" });
+      return res.status(400).json({ success: false, message: "Refresh token expired" });
     }
     res.status(401).json({ success: false, message: "Invalid refresh token" });
   }

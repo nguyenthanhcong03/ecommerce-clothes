@@ -1,11 +1,10 @@
+import Header from '@/components/AdminComponents/common/Header';
+import StatCard from '@/components/AdminComponents/common/StatCard';
+import DailySalesTrend from '@/components/AdminComponents/sales/DailySalesTrend';
+import SalesByCategoryChart from '@/components/AdminComponents/sales/SalesByCategoryChart';
+import SalesOverviewChart from '@/components/AdminComponents/sales/SalesOverviewChart';
 import { motion } from 'framer-motion';
-
-import Header from '@components/AdminComponents/common/Header';
-import StatCard from '@components/AdminComponents/common/StatCard';
 import { CreditCard, DollarSign, ShoppingCart, TrendingUp } from 'lucide-react';
-import SalesOverviewChart from '@components/AdminComponents/sales/SalesOverviewChart';
-import SalesByCategoryChart from '@components/AdminComponents/sales/SalesByCategoryChart';
-import DailySalesTrend from '@components/AdminComponents/sales/DailySalesTrend';
 
 const salesStats = {
   totalRevenue: '$1,234,567',

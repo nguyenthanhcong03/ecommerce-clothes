@@ -1,17 +1,27 @@
-import { BarChart2, DollarSign, Menu, Settings, ShoppingBag, ShoppingCart, TrendingUp, Users } from 'lucide-react';
+import {
+  BarChart2,
+  ChartBarStacked,
+  DollarSign,
+  Menu,
+  Settings,
+  ShoppingBag,
+  ShoppingCart,
+  TrendingUp,
+  Users
+} from 'lucide-react';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, NavLink } from 'react-router-dom';
 
 const SIDEBAR_ITEMS = [
-  { name: 'Overview', icon: BarChart2, color: '#6366f1', href: '/admin' },
-  { name: 'Products', icon: ShoppingBag, color: '#8B5CF6', href: '/admin/products' },
-  { name: 'Categories', icon: ShoppingBag, color: '#8B5CF6', href: '/admin/categories' },
-  { name: 'Users', icon: Users, color: '#EC4899', href: '/admin/users' },
-  { name: 'Sales', icon: DollarSign, color: '#10B981', href: '/admin/sales' },
-  { name: 'Orders', icon: ShoppingCart, color: '#F59E0B', href: '/admin/orders' },
-  { name: 'Analytics', icon: TrendingUp, color: '#3B82F6', href: '/admin/analytics' },
-  { name: 'Settings', icon: Settings, color: '#6EE7B7', href: '/admin/settings' }
+  { name: 'Overview', icon: BarChart2, color: '#333', href: '/admin' },
+  { name: 'Products', icon: ShoppingBag, color: '#333', href: '/admin/products' },
+  { name: 'Categories', icon: ChartBarStacked, color: '#333', href: '/admin/categories' },
+  { name: 'Users', icon: Users, color: '#333', href: '/admin/users' },
+  { name: 'Sales', icon: DollarSign, color: '#333', href: '/admin/sales' },
+  { name: 'Orders', icon: ShoppingCart, color: '#333', href: '/admin/orders' },
+  { name: 'Analytics', icon: TrendingUp, color: '#333', href: '/admin/analytics' },
+  { name: 'Settings', icon: Settings, color: '#333', href: '/admin/settings' }
 ];
 
 const Sidebar = () => {

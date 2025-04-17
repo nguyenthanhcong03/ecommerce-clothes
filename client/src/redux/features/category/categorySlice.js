@@ -5,7 +5,6 @@ import { createCategory, getAllCategories, updateCategoryByIdAdmin } from '../..
 export const fetchCategories = createAsyncThunk('categories/fetchCategories', async (params) => {
   try {
     const data = await getAllCategories(params);
-    console.log('check res2', data);
     return data;
   } catch (error) {
     console.error('Error:', error);
@@ -13,12 +12,13 @@ export const fetchCategories = createAsyncThunk('categories/fetchCategories', as
 });
 
 export const handleCreateCategory = createAsyncThunk(
-  'categories/updateCategoryById',
+  'categories/handleCreateCategory',
   async ({ payload }, { rejectWithValue }) => {
     try {
       const res = await createCategory(payload);
       return res; // Trả về dữ liệu category đã cập nhật
     } catch (error) {
+      console.log('error', error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
@@ -58,35 +58,33 @@ const categorySlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // FETCH
       .addCase(fetchCategories.pending, (state) => {
         state.status = 'loading';
+        state.error = null;
       })
       .addCase(fetchCategories.fulfilled, (state, action) => {
+        console.log(action.payload);
         state.status = 'succeeded';
-        state.categories = action.payload.categories;
-        // state.total = action.payload.pagination.total;
-        // state.page = action.payload.page;
-        // state.pages = action.payload.pages;
+        state.categories = action.payload.data;
+        state.total = action.payload.pagination.total;
+        state.page = action.payload.page;
+        state.pages = action.payload.pages;
       })
       .addCase(fetchCategories.rejected, (state, action) => {
         state.status = 'failed';
-        state.error = action.error.message;
+        state.error = action.payload || action.error.message;
       })
-      .addCase(updateCategoryById.pending, (state) => {
+
+      // CREATE
+      .addCase(handleCreateCategory.pending, (state) => {
         state.status = 'loading';
       })
-      .addCase(updateCategoryById.fulfilled, (state, action) => {
+      .addCase(handleCreateCategory.fulfilled, (state, action) => {
         state.status = 'succeeded';
-
-        // Cập nhật lại danh sách categories trong Redux
-        // const updatedCategory = action.payload.data;
-        // state.categories = state.categories.map((category) => (category._id === updatedCategory._id ? updatedCategory : category));
-
-        // Đóng form chỉnh sửa
-        state.isOpenForm = false;
-        state.selectedCategory = null;
+        state.categories.unshift(action.payload.data); // Có thể cần gọi fetch lại tùy backend
       })
-      .addCase(updateCategoryById.rejected, (state, action) => {
+      .addCase(handleCreateCategory.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload || action.error.message;
       });

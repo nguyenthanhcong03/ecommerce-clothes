@@ -1,5 +1,5 @@
+import { X } from 'lucide-react';
 import React from 'react';
-import { TfiClose } from 'react-icons/tfi';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleSidebar } from '../../../redux/features/sidebarDrawer/sidebarSlice';
 import SideBarCart from './ContentSideBar/SideBarCart';
@@ -49,7 +49,7 @@ function SideBar() {
             className='absolute left-[-50px] top-[25px] flex h-[35px] w-[35px] cursor-pointer items-center justify-center rounded-full bg-white transition-all duration-300 ease-in hover:bg-[#ccc]'
             onClick={handleToggleSidebar}
           >
-            <TfiClose />
+            <X />
           </div>
         )}
 

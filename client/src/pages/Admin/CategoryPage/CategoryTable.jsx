@@ -1,24 +1,70 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Popconfirm, Image } from 'antd';
+import Button from '@/components/common/Button/Button';
+import Input from '@/components/common/Input/Input';
+import { fetchCategories, setIsOpenForm, setSelectedCategory } from '@/redux/features/category/categorySlice';
+import { buildTree } from '@/utils/convertFlatArrToTreeArr';
+import { Image, Popconfirm, Space, Table, Tag } from 'antd';
+import { createStyles } from 'antd-style';
 import axios from 'axios';
-import CategoryForm from './CategoryForm';
+import React, { useEffect } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCategories, setIsOpenForm, setSelectedCategory } from '../../../redux/features/category/categorySlice';
+import CategoryForm from './CategoryForm';
+
+const useStyle = createStyles(({ css, token }) => {
+  const { antCls } = token;
+  return {
+    customTable: css`
+      ${antCls}-table-wrapper {
+        border: 1px solid #000;
+        border-radius: 8px;
+        overflow: hidden;
+        ${antCls}-table {
+          ${antCls}-table-container {
+            ${antCls}-table-body {
+              scrollbar-width: thin;
+              scrollbar-color: #ccc transparent;
+              &::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+              }
+              &::-webkit-scrollbar-thumb {
+                background-color: #ccc;
+                border-radius: 4px;
+              }
+              &::-webkit-scrollbar-track {
+                background-color: transparent;
+              }
+            }
+          }
+        }
+      }
+      ${antCls}-table-thead > tr > th {
+        background-color: #f5f5f5;
+        font-weight: bold;
+        text-align: center;
+      }
+      ${antCls}-table-tbody > tr > td {
+        text-align: center;
+      }
+      ${antCls}-pagination {
+        margin-top: 16px;
+      }
+    `
+  };
+});
 
 const CategoryTable = () => {
+  const { styles } = useStyle();
   const dispatch = useDispatch();
   const { categories, status, error, page, pages, total, isOpenForm, selectedCategory } = useSelector(
     (state) => state.category
   );
-  // const [categories, setCategories] = useState([]);
-  // const [isOpenForm, setIsOpenForm] = useState(false);
-  // const [selectedCategory, setSelectedCategory] = useState(null);
 
   // Lấy danh sách category từ backend
 
   useEffect(() => {
-    dispatch(fetchCategories());
-  }, []);
+    dispatch(fetchCategories({ page: 1, limit: 10 }));
+  }, [dispatch]);
 
   // Xóa category
   const handleDelete = async (id) => {
@@ -44,10 +90,17 @@ const CategoryTable = () => {
 
   const columns = [
     {
-      title: 'Ảnh danh mục',
-      dataIndex: 'image',
-      key: 'image',
-      render: (image) => <Image src={image} width={50} height={50} />
+      title: 'Ảnh',
+      dataIndex: 'images',
+      key: 'images',
+      align: 'center',
+      render: (images) => (
+        <Image.PreviewGroup>
+          {images.slice(0, 2).map((img, index) => (
+            <Image key={index} width={40} height={40} src={img} style={{ objectFit: 'cover', marginRight: 4 }} />
+          ))}
+        </Image.PreviewGroup>
+      )
     },
     {
       title: 'Tên danh mục',
@@ -56,37 +109,67 @@ const CategoryTable = () => {
     },
     {
       title: 'Mô tả',
+      align: 'center',
+      className: 'description-header',
+      render: (_, record) => {
+        const description = record.description || 'Chưa có mô tả';
+        return <div className='text-left'>{description}</div>;
+      },
       dataIndex: 'description',
       key: 'description'
     },
     {
       title: 'Trạng thái',
       dataIndex: 'isActive',
+      align: 'center',
       key: 'isActive',
-      render: (isActive) => (isActive ? 'Hoạt động' : 'Không hoạt động')
+      render: (isActive) =>
+        isActive ? <Tag color={'green'}>Hoạt động</Tag> : <Tag color={'green'}>Không hoạt động</Tag>
     },
     {
       title: 'Ưu tiên',
+      align: 'center',
       dataIndex: 'priority',
       key: 'priority'
     },
     {
       title: 'Hành động',
+      align: 'center',
       key: 'action',
+      fixed: 'right',
+      width: 110,
       render: (_, record) => (
-        <Space size='middle'>
-          <Button type='link' onClick={() => handleEdit(record)}>
-            Sửa
-          </Button>
+        <Space
+          size='middle'
+          style={{
+            justifyContent: 'center', // Căn giữa nội dung trong Space
+            display: 'flex' // Đảm bảo Space hoạt động như flex container
+          }}
+        >
+          <div className='cursor-pointer rounded-[5px] bg-[#0961FF] p-1'>
+            <Pencil onClick={() => handleEdit(record)} color='#fff' />
+          </div>
           <Popconfirm
-            title='Bạn có chắc muốn xóa danh mục này?'
+            title='Bạn có chắc muốn xóa sản phẩm này?'
             onConfirm={() => handleDelete(record._id)}
             okText='Có'
             cancelText='Không'
+            placement='topRight'
+            okButtonProps={{
+              style: { backgroundColor: 'black', borderColor: 'black', color: 'white' }
+            }}
+            cancelButtonProps={{
+              style: { color: 'gray', borderColor: 'gray' }
+            }}
+            // icon={
+            //   <div className='rounded-full bg-yellow-400 p-1'>
+            //     <FiAlertTriangle color='#fff' size={10} />
+            //   </div>
+            // }
           >
-            <Button type='link' danger>
-              Xóa
-            </Button>
+            <div className='cursor-pointer rounded-[5px] bg-[#DE2E3D] p-1'>
+              <Trash2 color='#fff' />
+            </div>
           </Popconfirm>
         </Space>
       )
@@ -95,10 +178,28 @@ const CategoryTable = () => {
 
   return (
     <div>
-      <Button type='primary' onClick={handleAdd} style={{ marginBottom: 16 }}>
-        Thêm danh mục mới
-      </Button>
-      <Table columns={columns} dataSource={categories} rowKey='_id' pagination={{ pageSize: 2 }} />
+      <Button onClick={handleAdd}>Thêm danh mục mới</Button>
+      <Table
+        bordered
+        // className={styles.customTable}
+        scroll={{ x: 'max-content' }}
+        rowKey='_id'
+        // rowSelection={rowSelection}
+        columns={columns}
+        dataSource={buildTree(categories)}
+        pagination={{ pageSize: 5, position: ['bottomCenter'] }}
+        // rowClassName={(record, index) => (index % 2 !== 0 ? 'bg-[#fafafa]' : 'bg-white')}
+        // bordered
+        locale={{ emptyText: status === 'loading' ? 'Đang tải dữ liệu...' : 'Không có dữ liệu' }}
+        title={() => (
+          <div className='flex flex-col items-center justify-between rounded-t-lg lg:flex-row'>
+            <h3 className='text-xl font-bold'>Danh sách danh mục</h3>
+            <div className='flex items-center gap-2'>
+              <Input placeholder='Tìm kiếm sản phẩm' />
+            </div>
+          </div>
+        )}
+      />
       <CategoryForm />
     </div>
   );

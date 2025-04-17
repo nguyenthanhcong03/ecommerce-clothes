@@ -1,51 +1,56 @@
+import Logo from '@/assets/images/outfitory-logo.png';
+import avatarDefault from '@/assets/images/user.png';
+import Language from '@/components/common/Language/Language';
+import MenuItem from '@/components/common/MenuItem/MenuItem';
+import UserDropdown from '@/components/layout/Header/UserDropdown/UserDropdown';
+import useScrollHandling from '@/hooks/useScrollHandling';
+import { doLogoutAction } from '@/redux/features/account/accountSlice';
+import { toggleSearch } from '@/redux/features/searchDrawer/searchSlice';
+import { setType, toggleSidebar } from '@/redux/features/sidebarDrawer/sidebarSlice';
+import { callLogout } from '@/services/authService';
+import { Tooltip } from 'antd';
+import { CircleUserRound, Facebook, Heart, Instagram, Menu, Search, ShoppingCart } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { CiHeart } from 'react-icons/ci';
-import { FiSearch } from 'react-icons/fi';
-import { IoMenuOutline } from 'react-icons/io5';
-import { PiShoppingCartLight, PiUserCircleLight } from 'react-icons/pi';
-import { useDispatch, useSelector } from 'react-redux';
-import Logo from '@assets/images/outfitory-logo.png';
-import useScrollHandling from '@hooks/useScrollHandling';
-import { toggleSearch } from '@redux/features/searchDrawer/searchSlice';
-import { setType, toggleSidebar } from '@redux/features/sidebarDrawer/sidebarSlice';
-import MenuItem from '@components/MenuItem/MenuItem';
-import { Link, useNavigate } from 'react-router-dom';
-import { FaFacebook } from 'react-icons/fa';
-import { FaInstagramSquare } from 'react-icons/fa';
-import { SiZalo } from 'react-icons/si';
-import { SiShopee } from 'react-icons/si';
-import vnFlag from '@assets/images/icons8-vietnam-48.png';
-import usaFlag from '@assets/images/icons8-usa-48.png';
-import Language from '../../Language/Language';
 import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 function Header() {
   const { t } = useTranslation();
-
   const dispatch = useDispatch();
-  const isAuthenticated = useSelector((state) => state.account.isAuthenticated);
-  const user = useSelector((state) => state.account.user);
+  const { isAuthenticated, user } = useSelector((state) => state.account);
+  const { totalQuantity } = useSelector((state) => state.cart);
+  const { scrollPosition } = useScrollHandling();
+  const [fixedPosition, setFixedPosition] = useState(false);
+  const [isShowUserDropdown, setIsShowUserDropdown] = useState(false);
+  const location = useLocation();
+
   const handleToggleSideBar = (type) => {
-    dispatch(setType(type));
-    dispatch(toggleSidebar());
+    if (
+      (location.pathname !== '/cart' && type === 'cart') ||
+      (location.pathname !== '/wishlist' && type === 'wishlist') ||
+      (location.pathname !== '/search' && type === 'search') ||
+      type === 'menu'
+    ) {
+      dispatch(setType(type));
+      dispatch(toggleSidebar());
+    }
   };
 
   const handleToggleSearchModal = () => {
     dispatch(toggleSearch());
   };
-  const { scrollPosition } = useScrollHandling();
-  const [fixedPosition, setFixedPosition] = useState(false);
 
-  // const user = useSelector((state) => state.account.user);
-  // const navigate = useNavigate();
-  // const handleLogout = async () => {
-  //   const res = await callLogout();
-  //   if (res && res.data) {
-  //     dispatch(doLogoutAction());
-  //     message.success('Đăng xuất thành công');
-  //     navigate('/');
-  //   }
-  // };
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    const res = await callLogout();
+    if (res) {
+      dispatch(doLogoutAction());
+      console.log('đăng xuất');
+      // message.success('Đăng xuất thành công');
+      navigate('/');
+    }
+  };
 
   useEffect(() => {
     setFixedPosition(scrollPosition > 80 ? true : false);
@@ -77,19 +82,19 @@ function Header() {
             {/* <div>Free Shipping for all Order of $99</div> */}
           </div>
           <div className='flex items-center gap-4'>
-            <div className='flex items-center gap-4'>
+            <div className='flex items-center gap-3'>
               <a href='https://www.facebook.com/nguyenthanhcong03' target='_blank'>
-                <FaFacebook cursor={'pointer'} />
+                <Facebook width={18} height={18} />
               </a>
               <a href='https://www.facebook.com/nguyenthanhcong03' target='_blank'>
-                <FaInstagramSquare />
+                <Instagram width={18} height={18} />
               </a>
-              <a href='https://www.facebook.com/nguyenthanhcong03' target='_blank'>
+              {/* <a href='https://www.facebook.com/nguyenthanhcong03' target='_blank'>
                 <SiZalo />
               </a>
               <a href='https://www.facebook.com/nguyenthanhcong03' target='_blank'>
                 <SiShopee />
-              </a>
+              </a> */}
             </div>
             <span>|</span>
             <div className='flex items-center gap-2'>
@@ -97,14 +102,24 @@ function Header() {
             </div>
             <span>|</span>
             <div>
-              {isAuthenticated ? (
-                <div>
-                  <div>{user.firstName}</div>
-                  <img src={user.avatar} alt='' />
+              {isAuthenticated && user ? (
+                <div className='relative flex items-center'>
+                  <div
+                    className='flex cursor-pointer items-center gap-2'
+                    onClick={() => setIsShowUserDropdown(!isShowUserDropdown)}
+                  >
+                    <img
+                      src={user?.avatar ? user.avatar : avatarDefault}
+                      alt=''
+                      className='h-[25px] w-[25px] rounded-full'
+                    />
+                    <div>{user.firstName}</div>
+                  </div>
+                  {isShowUserDropdown && <UserDropdown handleLogout={handleLogout} />}
                 </div>
               ) : (
                 <div className='flex items-center gap-2'>
-                  <PiUserCircleLight fontSize={26} cursor={'pointer'} />
+                  <CircleUserRound />
                   <Link to={'/login'}>
                     <button>Đăng nhập</button>
                   </Link>
@@ -152,7 +167,7 @@ function Header() {
             {/* Search */}
             <div className='flex items-center'>
               {/* Search mobile */}
-              <FiSearch
+              <Search
                 className='lg:hidden'
                 fontSize={20}
                 cursor={'pointer'}
@@ -160,7 +175,7 @@ function Header() {
               />
               {/* Search Desktop */}
               <div className='flex items-center gap-2' onClick={() => handleToggleSearchModal()}>
-                <FiSearch className='hidden lg:block' fontSize={20} cursor={'pointer'} />
+                <Search className='hidden lg:block' fontSize={20} cursor={'pointer'} />
                 {/* <input
                   className='hidden rounded-2xl border-[1px] border-[#e1e1e1] bg-inherit px-[10px] py-[4px] text-sm outline-none xl:block'
                   type='text'
@@ -173,19 +188,42 @@ function Header() {
             <div className='flex items-center gap-2'>
               {/* Wishlist icon */}
               <div className='hidden lg:block' onClick={() => handleToggleSideBar('wishlist')}>
-                <CiHeart fontSize={28} cursor={'pointer'} />
+                <Heart fontSize={28} cursor={'pointer'} />
               </div>
               {/* Cart icon */}
-              <div onClick={() => handleToggleSideBar('cart')}>
-                <PiShoppingCartLight fontSize={24} cursor={'pointer'} />
-              </div>
+              <Tooltip
+                title={
+                  totalQuantity >= 1 ? (
+                    <span className='font-robotoMono'>Có {totalQuantity} sản phẩm trong giỏ hàng</span>
+                  ) : (
+                    <span className='font-robotoMono'>Không có sản phẩm nào trong giỏ hàng</span>
+                  )
+                }
+                placement='bottom'
+              >
+                <div
+                  className='relative cursor-pointer'
+                  onClick={() => {
+                    handleToggleSideBar('cart');
+                    console.log('click');
+                  }}
+                >
+                  <ShoppingCart />
+                  {totalQuantity >= 1 && (
+                    <div className='absolute bottom-3 left-3 h-5 w-5 rounded-full bg-primaryColor text-center text-xs leading-5 text-white'>
+                      {totalQuantity}
+                    </div>
+                  )}
+                </div>
+              </Tooltip>
+
               {/* Account icon */}
               {/* <div className='hidden lg:block'>
                 <PiUserCircleLight fontSize={26} cursor={'pointer'} />
               </div> */}
               {/* Menu icon mobile */}
               <div className='lg:hidden' onClick={() => handleToggleSideBar('menu')}>
-                <IoMenuOutline fontSize={26} cursor={'pointer'} />
+                <Menu fontSize={26} cursor={'pointer'} />
               </div>
             </div>
           </div>

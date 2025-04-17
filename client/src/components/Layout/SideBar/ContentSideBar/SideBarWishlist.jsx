@@ -1,8 +1,8 @@
+import CartItem from '@/components/cart/CartItem/CartItem';
+import Button from '@/components/common/Button/Button';
+import MenuItem from '@/components/common/MenuItem/MenuItem';
+import { Heart } from 'lucide-react';
 import React from 'react';
-import { CiHeart } from 'react-icons/ci';
-import MenuItem from '@components/MenuItem/MenuItem';
-import CartItem from '@components/CartItem/CartItem';
-import Button from '@components/Button/Button';
 import { Link } from 'react-router-dom';
 
 function SideBarWishlist() {
@@ -10,7 +10,7 @@ function SideBarWishlist() {
     <div className='flex h-full w-[300px] flex-col items-center justify-between gap-4 px-8 py-5 md:w-[400px]'>
       <div className='flex w-full flex-col gap-4'>
         <div className='flex flex-col items-center text-lg text-secondaryColor'>
-          <CiHeart fontSize={28} cursor={'pointer'} />
+          <Heart fontSize={28} cursor={'pointer'} />
           <MenuItem text={'YÊU THÍCH'} href={'/wishlist'} />
         </div>
         <div>

@@ -1,11 +1,11 @@
-import { login } from '@services/authService';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { doLoginAction } from '../../redux/features/account/accountSlice';
-import Input from '@components/Input/Input2';
-import { useForm } from 'react-hook-form';
+import Input from '@/components/common/Input/Input2';
+import { doLoginAction } from '@/redux/features/account/accountSlice';
+import { login } from '@/services/authService';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
 
 // Định nghĩa schema validation với yup
@@ -35,7 +35,7 @@ function LoginPage() {
     const res = await login(username, password);
     setIsSubmit(false);
     if (res?.data) {
-      localStorage.setItem('access_token', res.data.access_token);
+      // localStorage.setItem('access_token', res.data.access_token);
       dispatch(doLoginAction(res.data.user));
       // message.success('Đăng nhập tài khoản thành công.');
       navigate('/');
@@ -66,12 +66,11 @@ function LoginPage() {
 
     setIsSubmit(true);
     const res = await login(username, password);
-    console.log('da qua res');
     setIsSubmit(false);
     if (res?.user) {
       console.log(res?.user);
-      localStorage.setItem('accessToken', res.accessToken);
-      dispatch(doLoginAction(res.user));
+      // localStorage.setItem('accessToken', res.accessToken);
+      dispatch(doLoginAction(res));
       // message.success('Đăng nhập tài khoản thành công.');
       navigate('/');
     } else {

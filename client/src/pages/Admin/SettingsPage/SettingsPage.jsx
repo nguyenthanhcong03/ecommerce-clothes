@@ -1,9 +1,9 @@
-import Header from '@components/AdminComponents/common/Header';
-import ConnectedAccounts from '@components/AdminComponents/settings/ConnectedAccounts';
-import DangerZone from '@components/AdminComponents/settings/DangerZone';
-import Notifications from '@components/AdminComponents/settings/Notifications';
-import Profile from '@components/AdminComponents/settings/Profile';
-import Security from '@components/AdminComponents/settings/Security';
+import Header from '@/components/AdminComponents/common/Header';
+import ConnectedAccounts from '@/components/AdminComponents/settings/ConnectedAccounts';
+import DangerZone from '@/components/AdminComponents/settings/DangerZone';
+import Notifications from '@/components/AdminComponents/settings/Notifications';
+import Profile from '@/components/AdminComponents/settings/Profile';
+import Security from '@/components/AdminComponents/settings/Security';
 
 const SettingsPage = () => {
   return (

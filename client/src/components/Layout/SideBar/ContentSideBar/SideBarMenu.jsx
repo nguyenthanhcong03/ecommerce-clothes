@@ -1,9 +1,7 @@
-import Logo from '@assets/images/outfitory-logo.png';
-import CollapseMenuSidebar from '@components/CollapseMenuSidebar/CollapseMenuSidebar';
-import MenuItem from '@components/MenuItem/MenuItem';
-// import { useContext } from 'react';
-import { CiHeart } from 'react-icons/ci';
-import { PiShoppingCartLight, PiUserCircleLight } from 'react-icons/pi';
+import Logo from '@/assets/images/outfitory-logo.png';
+import CollapseMenuSidebar from '@/components/common/CollapseMenuSidebar/CollapseMenuSidebar';
+import MenuItem from '@/components/common/MenuItem/MenuItem';
+import { CircleUserRound, Heart, ShoppingCart } from 'lucide-react';
 
 function SideBarMenu() {
   // const { isOpen, setIsOpen, type } = useContext(SideBarContext);
@@ -50,15 +48,15 @@ function SideBarMenu() {
       </div>
       <div className='flex cursor-pointer flex-col gap-4 text-sm text-secondaryColor'>
         <div className='flex items-center gap-2'>
-          <PiUserCircleLight fontSize={26} />
+          <CircleUserRound fontSize={26} />
           <p>Tài khoản</p>
         </div>
         <div className='flex items-center gap-2'>
-          <PiShoppingCartLight fontSize={26} />
+          <ShoppingCart fontSize={26} />
           <p>Giỏ hàng</p>
         </div>
         <div className='flex items-center gap-2'>
-          <CiHeart fontSize={26} />
+          <Heart fontSize={26} />
           <p>Yêu thích</p>
         </div>
       </div>

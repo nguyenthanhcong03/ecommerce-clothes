@@ -1,10 +1,7 @@
+import certificateImage from '@/assets/images/certificate.png';
+import Collapse from '@/components/common/Collapse/Collapse';
+import { Facebook, Instagram } from 'lucide-react';
 import React from 'react';
-import Collapse from '@components/Collapse/Collapse';
-import certificateImage from '@assets/images/certificate.png';
-import { FaFacebook } from 'react-icons/fa';
-import { FaInstagramSquare } from 'react-icons/fa';
-import { SiZalo } from 'react-icons/si';
-import { SiShopee } from 'react-icons/si';
 
 const items = [
   { title: 'Mục 1', content: 'Nội dung của mục 1' },
@@ -67,10 +64,14 @@ function Footer() {
         <Collapse title={'KẾT NỐI'} isShow={true} isFooter={true}>
           <div className='flex flex-col gap-2'>
             <div className='flex gap-2'>
-              <FaFacebook />
-              <FaInstagramSquare />
-              <SiZalo />
-              <SiShopee />
+              <a href=''>
+                <Facebook />
+              </a>
+              <a href=''>
+                <Instagram />
+              </a>
+              {/* <SiZalo />
+              <SiShopee /> */}
             </div>
             <p>
               ĐẶT HÀNG (08:30 - 22:00)

@@ -1,12 +1,11 @@
-import Header from '@components/AdminComponents/common/Header';
-
-import OverviewCards from '@components/AdminComponents/analytics/OverviewCards';
-import RevenueChart from '@components/AdminComponents/analytics/RevenueChart';
-import ChannelPerformance from '@components/AdminComponents/analytics/ChannelPerformance';
-import ProductPerformance from '@components/AdminComponents/analytics/ProductPerformance';
-import UserRetention from '@components/AdminComponents/analytics/UserRetention';
-import CustomerSegmentation from '@components/AdminComponents/analytics/CustomerSegmentation';
-import AIPoweredInsights from '@components/AdminComponents/analytics/AIPoweredInsights';
+import AIPoweredInsights from '@/components/AdminComponents/analytics/AIPoweredInsights';
+import ChannelPerformance from '@/components/AdminComponents/analytics/ChannelPerformance';
+import CustomerSegmentation from '@/components/AdminComponents/analytics/CustomerSegmentation';
+import OverviewCards from '@/components/AdminComponents/analytics/OverviewCards';
+import ProductPerformance from '@/components/AdminComponents/analytics/ProductPerformance';
+import RevenueChart from '@/components/AdminComponents/analytics/RevenueChart';
+import UserRetention from '@/components/AdminComponents/analytics/UserRetention';
+import Header from '@/components/AdminComponents/common/Header';
 
 const AnalyticsPage = () => {
   return (

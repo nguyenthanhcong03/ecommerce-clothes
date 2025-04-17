@@ -1,27 +1,21 @@
-import { getProducts } from '@services/productService';
-import countdownBanner1 from '@assets/images/countdownBanner1.jpeg';
-import SaleHomePage from '@pages/Customer/HomePage/components/SaleHomePage/SaleHomePage';
-import Banner from '@pages/Customer/HomePage/components/Banner/Banner';
-import Button from '@components/Button/Button';
-import CountDownBanner from '@components/CountDownBanner/CountDownBanner';
-import Headline from '@components/Headline/Headline';
-import Info from '@pages/Customer/HomePage/components/Info/Info';
-import PopularProduct from '@pages/Customer/HomePage/components/PopularProduct/PopularProduct';
-import { useEffect, useState } from 'react';
+import countdownBanner1 from '@/assets/images/countdownBanner1.jpeg';
+import Button from '@/components/common/Button/Button';
+import CountDownBanner from '@/components/common/CountDownBanner/CountDownBanner';
+import PopularProduct from '@/components/product/PopularProduct/PopularProduct';
+import Banner from '@/components/ui/home/Banner/Banner';
+import Headline from '@/components/ui/home/Headline/Headline';
+import Info from '@/components/ui/home/Info/Info';
+import SaleHomePage from '@/components/ui/home/SaleHomePage/SaleHomePage';
+import { fetchProducts } from '@/redux/features/product/productSlice';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 function HomePage() {
-  const [listProducts, setListProducts] = useState([]);
+  const dispatch = useDispatch();
+  const { products } = useSelector((state) => state.product);
   useEffect(() => {
-    const query = {
-      sortType: '0',
-      page: 1,
-      limit: '10'
-    };
-
-    getProducts(query).then((res) => {
-      setListProducts(res.contents);
-    });
-  }, []);
+    dispatch(fetchProducts({ page: 1, limit: 10 }));
+  }, [dispatch]);
   return (
     <div>
       <Banner />
@@ -36,7 +30,7 @@ function HomePage() {
           <div className='col-span-2 h-full w-full'>
             <CountDownBanner backgroundImage={countdownBanner1} />
           </div>
-          <PopularProduct data={listProducts.slice(0, 10)} />
+          <PopularProduct data={products.slice(0, 10)} />
           <div className='col-span-full my-10'>
             <Button>Xem thêm</Button>
           </div>
