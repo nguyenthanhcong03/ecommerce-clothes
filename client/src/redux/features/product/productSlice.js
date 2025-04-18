@@ -1,10 +1,11 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, current } from '@reduxjs/toolkit';
 import {
   createProduct,
   deleteProductById,
   getAllProducts,
+  getProductById,
   updateProductByIdAdmin
-} from '../../../services/productService.js';
+} from '@/services/productService.js';
 
 // Định nghĩa async thunk để gọi API
 export const fetchProducts = createAsyncThunk('products/fetchProducts', async (params) => {
@@ -57,6 +58,15 @@ export const handleDeleteProductById = createAsyncThunk(
   }
 );
 
+export const fetchProductById = createAsyncThunk('products/fetchProductById', async (id, { rejectWithValue }) => {
+  try {
+    const response = await getProductById(id);
+    return response.data;
+  } catch (error) {
+    return rejectWithValue(error.response?.data || error.message);
+  }
+});
+
 const productSlice = createSlice({
   name: 'products',
   initialState: {
@@ -66,6 +76,7 @@ const productSlice = createSlice({
     pages: 1,
     status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     error: null,
+    currentProduct: null,
     isOpenForm: false,
     selectedProduct: null
   },
@@ -137,6 +148,19 @@ const productSlice = createSlice({
       .addCase(handleDeleteProductById.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload || action.error.message;
+      })
+
+      // GET PRODUCT BY ID
+      .addCase(fetchProductById.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchProductById.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.currentProduct = action.payload;
+      })
+      .addCase(fetchProductById.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
       });
   }
 });

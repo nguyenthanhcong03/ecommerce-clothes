@@ -35,11 +35,6 @@ const Button = ({
         break;
     }
 
-    // Màu sắc và kiểu (variant và color)
-    if (disabled) {
-      return `${baseClasses} bg-gray-300 text-gray-500 cursor-not-allowed`;
-    }
-
     switch (variant) {
       case 'primary':
         baseClasses += ' bg-primaryColor text-white hover:bg-primaryColor/90';
@@ -60,14 +55,14 @@ const Button = ({
         baseClasses += ' bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500';
     }
 
-    // Full width
-    if (fullWidth) {
-      baseClasses += ' w-full';
-    }
-
     // Custom classes
     if (className) {
       baseClasses += ` ${className}`;
+    }
+
+    // Màu sắc và kiểu (variant và color)
+    if (disabled) {
+      return `${baseClasses} cursor-not-allowed opacity-70`;
     }
 
     return baseClasses;

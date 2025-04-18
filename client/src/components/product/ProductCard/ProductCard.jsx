@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 function ProductCard({ item, isSearchMobile = false }) {
-  console.log('item', item);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [selectedSize, setSelectedSize] = useState('');
@@ -128,7 +127,7 @@ function ProductCard({ item, isSearchMobile = false }) {
 
   // Hàm navigate đến trang chi tiết sản phẩm
   const handleNavigateToDetail = () => {
-    navigate(`/product/${item.slug}`);
+    navigate(`/product/${item._id}`);
   };
 
   return (
