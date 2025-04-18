@@ -1,15 +1,14 @@
-import { useDispatch, useSelector } from 'react-redux';
-import './App.css';
 import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { RouterProvider } from 'react-router-dom';
-import Loading from './components/common/Loading/Loading.jsx';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './App.css';
 import './index.css';
 import { doGetAccountAction } from './redux/features/account/accountSlice.js';
+import { getCart } from './redux/features/cart/cartSlice.js';
 import router from './routes/routes.jsx';
 import { callFetchAccount } from './services/authService.js';
-import { getCart } from './redux/features/cart/cartSlice.js';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const dispatch = useDispatch();

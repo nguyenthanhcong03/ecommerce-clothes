@@ -208,7 +208,7 @@ const DetailProduct = () => {
       <div className='mb-6'>
         <Breadcrumb items={breadcrumbItems} />
       </div>
-      <div className='mx-auto bg-[#F5F5F5]'>
+      <div className='mx-auto'>
         <div className='flex flex-wrap'>
           {/* Left Column - Product Images */}
           <div className='w-2/5 p-4'>
@@ -249,7 +249,9 @@ const DetailProduct = () => {
               </div>
               <span className='text-gray-300'>|</span>
               <div className='flex items-center'>
-                <Heart strokeWidth={1} className='mr-1' width={24} />
+                <button>
+                  <Heart strokeWidth={1} className='mr-1' width={24} />
+                </button>
                 <span>Yêu thích</span>
               </div>
             </div>
@@ -258,7 +260,7 @@ const DetailProduct = () => {
           {/* Right Column - Product Info */}
           <div className='w-3/5 p-4'>
             <div>
-              <h1 className='text-2xl font-normal text-[#888888]'>{product.name}</h1>
+              <h1 className='text-2xl font-normal'>{product.name}</h1>
               <div className='mt-2 flex items-center space-x-2'>
                 <div className='flex items-center'>
                   <Star className='h-5 w-5 fill-yellow-400 text-yellow-400' />
@@ -339,7 +341,7 @@ const DetailProduct = () => {
                 </div>
 
                 <div>
-                  <h3 className='text-sm text-[#757575]'>Màu sắc</h3>
+                  <h3 className='text-sm text-[#757575]'>Màu sắc: {selectedColor}</h3>
                   <div className='mt-2 flex flex-wrap gap-2'>
                     {variantOptions.colors.map((color) => {
                       const isAvailable = !selectedSize || getAvailableColors(selectedSize).includes(color);
@@ -351,7 +353,7 @@ const DetailProduct = () => {
                             handleColorSelect(color);
                           }}
                           disabled={!isAvailable}
-                          className={`h-[30px] min-w-[2rem] border px-2 text-[10px] text-primaryColor sm:text-xs ${
+                          className={`h-[25px] w-[25px] rounded-full border p-[2px] text-[10px] sm:text-xs ${
                             selectedColor === color
                               ? 'border-black'
                               : isAvailable
@@ -359,7 +361,19 @@ const DetailProduct = () => {
                                 : 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400 opacity-50'
                           }`}
                         >
-                          {color}
+                          {color === 'Đỏ' && <div className='h-full w-full rounded-full border bg-red-500'></div>}
+                          {color === 'Xanh' && <div className='h-full w-full rounded-full border bg-blue-500'></div>}
+                          {color === 'Vàng' && <div className='h-full w-full rounded-full border bg-yellow-500'></div>}
+                          {color === 'Trắng' && <div className='h-full w-full rounded-full border bg-white'></div>}
+                          {color === 'Đen' && <div className='h-full w-full rounded-full border bg-black'></div>}
+                          {color === 'Xám' && <div className='h-full w-full rounded-full border bg-gray-500'></div>}
+                          {color === 'Xanh lá' && (
+                            <div className='h-full w-full rounded-full border bg-green-500'></div>
+                          )}
+                          {color === 'Hồng' && <div className='h-full w-full rounded-full border bg-pink-500'></div>}
+                          {color === 'Tím' && <div className='h-full w-full rounded-full border bg-purple-500'></div>}
+                          {color === 'Cam' && <div className='h-full w-full rounded-full border bg-orange-500'></div>}
+                          {color === 'Nâu' && <div className='h-full w-full rounded-full border bg-amber-950'></div>}
                         </button>
                       );
                     })}
@@ -415,16 +429,16 @@ const DetailProduct = () => {
         </div>
       </div>
       <div className='mt-4 space-y-4 p-4'>
-        <Collapse title='Chi tiết sản phẩm' className='bg-[#F7F7F7]' isShow={true}>
-          <div className='space-y-6 rounded bg-white p-4'>
+        <Collapse title='CHI TIẾT SẢN PHẨM' className='bg-[#F7F7F7]' isShow={true}>
+          <div className='space-y-6 rounded bg-white p-4 text-sm'>
             {/* Thông tin danh mục và thương hiệu */}
             <div className='grid grid-cols-4 items-center gap-4'>
               <h4 className='text-[#888888]'>Danh mục</h4>
-              <p className='text-sm text-gray-600'>{product.categoryId?.name}</p>
+              <p className=''>{product.categoryId?.name}</p>
             </div>
             <div className='grid grid-cols-4 items-center gap-4'>
               <h4 className='text-[#888888]'>Thương hiệu</h4>
-              <p className='text-sm text-gray-600'>{product.brand}</p>
+              <p className=''>{product.brand}</p>
             </div>
 
             {/* Thông tin các biến thể */}
@@ -456,18 +470,25 @@ const DetailProduct = () => {
 
             <div className='grid grid-cols-4 items-center gap-4'>
               <h4 className='text-[#888888]'>Số lượng sản phẩm</h4>
-              <p className='text-sm text-gray-600'>
-                Tổng số: {product.variants.reduce((sum, variant) => sum + variant.stock, 0)} sản phẩm
-              </p>
+              <p className=''>Tổng số: {product.variants.reduce((sum, variant) => sum + variant.stock, 0)} sản phẩm</p>
             </div>
           </div>
         </Collapse>
 
-        <Collapse title='Mô tả sản phẩm' className='bg-[#F7F7F7]' isShow={true}>
+        <Collapse title='MÔ TẢ SẢN PHẨM' className='bg-[#F7F7F7]' isShow={true}>
           <div className='rounded bg-white p-4'>
-            <div className='prose prose-sm max-w-none whitespace-pre-line text-gray-600'>{product.description}</div>
+            <div className='prose prose-sm max-w-none whitespace-pre-line text-sm'>{product.description}</div>
           </div>
         </Collapse>
+        <Collapse title='ĐÁNH GIÁ SẢN PHẨM' className='bg-[#F7F7F7]' isShow={true}>
+          <div className='rounded bg-white p-4'>
+            <div className='prose prose-sm max-w-none whitespace-pre-line text-sm'>{product.description}</div>
+          </div>
+        </Collapse>
+      </div>
+      <div>
+        <h2 className='my-4 text-center text-2xl'>CÓ THỂ BẠN SẼ THÍCH</h2>
+        <div>product</div>
       </div>
     </div>
   );

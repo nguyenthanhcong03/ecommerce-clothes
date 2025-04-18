@@ -4,12 +4,34 @@ import { SearchOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-
 import { useDispatch, useSelector } from 'react-redux';
 import { setIsOpenForm, setSelectedUser } from '../../../redux/features/user/userSlice';
 import './styles.css';
+import { Pencil, Trash2 } from 'lucide-react';
 
 const UserTable = ({ users }) => {
   const dispatch = useDispatch();
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
+
+  //  // Xóa product
+  //   const handleDelete = async (id) => {
+  //     console.log('id', id);
+  //     dispatch(handleDeleteProductById({ productId: id }));
+  //     if (status === 'succeeded') {
+  //       alert('Xóa product thanh cong');
+  //     }
+  //   };
+
+  //   // Mở form chỉnh sửa
+  //   const handleEdit = (product) => {
+  //     dispatch(setSelectedProduct(product));
+  //     dispatch(setIsOpenForm(true));
+  //   };
+
+  //   // Mở form thêm mới
+  //   const handleAdd = () => {
+  //     dispatch(setSelectedProduct(null));
+  //     dispatch(setIsOpenForm(true));
+  //   };
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -126,21 +148,36 @@ const UserTable = ({ users }) => {
       //   </Space>
       // )
       render: (_, record) => (
-        <>
-          <Button type='link' danger onClick={() => console.log('Xoá:', record.name)}>
-            Delete
-          </Button>
-          <Button
-            type='link'
-            danger
-            onClick={() => {
-              dispatch(setIsOpenForm(true));
-              dispatch(setSelectedUser(record));
+        <Space size='middle'>
+          {/* <Button type='link' onClick={() => handleEdit(record)}>
+            Sửa
+          </Button> */}
+          <div className='cursor-pointer rounded-[5px] bg-[#0961FF] p-1'>
+            <Pencil strokeWidth={1.5} width={16} height={16} onClick={() => handleEdit(record)} color='#fff' />
+          </div>
+          <Popconfirm
+            title='Bạn có chắc muốn xóa người dùng này?'
+            onConfirm={() => handleDelete(record._id)}
+            okText='Có'
+            cancelText='Không'
+            placement='topRight'
+            okButtonProps={{
+              style: { backgroundColor: 'black', borderColor: 'black', color: 'white' }
             }}
+            cancelButtonProps={{
+              style: { color: 'gray', borderColor: 'gray' }
+            }}
+            // icon={
+            //   <div className='rounded-full bg-yellow-400 p-1'>
+            //     <FiAlertTriangle color='#fff' size={10} />
+            //   </div>
+            // }
           >
-            Edit
-          </Button>
-        </>
+            <div className='cursor-pointer rounded-[5px] bg-[#DE2E3D] p-1'>
+              <Trash2 strokeWidth={1.5} width={16} height={16} color='#fff' />
+            </div>
+          </Popconfirm>
+        </Space>
       )
     }
   ];

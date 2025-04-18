@@ -50,7 +50,7 @@ const ProductForm = () => {
       description: '',
       categoryId: '',
       brand: '',
-      variants: [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0, images: [] }],
+      variants: [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0 }],
       images: [],
       tags: [],
       isActive: true
@@ -77,8 +77,8 @@ const ProductForm = () => {
         brand: selectedProduct.brand || '',
         variants:
           selectedProduct.variants.length > 0
-            ? selectedProduct.variants.map((v) => ({ ...v, images: v.images.map((url) => ({ url })) }))
-            : [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0, images: [] }],
+            ? selectedProduct.variants.map((v) => ({ ...v }))
+            : [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0 }],
         images: selectedProduct.images.map((url) => ({ url })) || [],
         tags: selectedProduct.tags || [],
         isActive: selectedProduct.isActive ?? true
@@ -89,7 +89,7 @@ const ProductForm = () => {
         description: '',
         categoryId: '',
         brand: '',
-        variants: [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0, images: [] }],
+        variants: [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0 }],
         images: [],
         tags: [],
         isActive: true
@@ -120,9 +120,9 @@ const ProductForm = () => {
       formData.append(`variants[${index}][price]`, variant.price);
       if (variant.discountPrice) formData.append(`variants[${index}][discountPrice]`, variant.discountPrice);
       formData.append(`variants[${index}][stock]`, variant.stock);
-      variant.images.forEach((file) => {
-        if (file.originFileObj) formData.append(`variants[${index}][images]`, file.originFileObj);
-      });
+      // variant.images.forEach((file) => {
+      //   if (file.originFileObj) formData.append(`variants[${index}][images]`, file.originFileObj);
+      // });
     });
     // Xác định ảnh đã xoá (chỉ khi edit)
     if (selectedProduct?.images?.length > 0) {
@@ -222,22 +222,6 @@ const ProductForm = () => {
           />
         </Form.Item>
 
-        {/* <Form.Item label='Ảnh sản phẩm' help={errors.images?.message} validateStatus={errors.images ? 'error' : ''}>
-          <Controller
-            name='images'
-            control={control}
-            render={({ field }) => (
-              <Upload
-                multiple
-                beforeUpload={() => false} // Không tự động upload
-                fileList={field.value}
-                onChange={({ fileList }) => field.onChange(fileList)}
-              >
-                <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
-              </Upload>
-            )}
-          />
-        </Form.Item> */}
         <Form.Item label='Ảnh sản phẩm' help={errors.images?.message} validateStatus={errors.images ? 'error' : ''}>
           <Controller
             name='images'
@@ -325,7 +309,7 @@ const ProductForm = () => {
                   render={({ field }) => <Input type='number' {...field} placeholder='Nhập số lượng' />}
                 />
               </Form.Item>
-              <Form.Item label='Ảnh biến thể' help={errors.variants?.[index]?.images?.message}>
+              {/* <Form.Item label='Ảnh biến thể' help={errors.variants?.[index]?.images?.message}>
                 <Controller
                   name={`variants[${index}].images`}
                   control={control}
@@ -340,7 +324,7 @@ const ProductForm = () => {
                     </Upload>
                   )}
                 />
-              </Form.Item>
+              </Form.Item> */}
               {variantFields.length > 1 && (
                 <Button type='link' danger onClick={() => removeVariant(index)}>
                   Xóa biến thể

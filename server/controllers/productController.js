@@ -179,8 +179,6 @@ const createProduct = async (req, res) => {
 
 // Update product
 const updateProduct = async (req, res) => {
-  console.log("first");
-
   try {
     const { pid } = req.params;
     const parsedBody = qs.parse(req.body);

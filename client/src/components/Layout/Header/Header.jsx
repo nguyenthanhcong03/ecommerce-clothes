@@ -1,6 +1,6 @@
 import Logo from '@/assets/images/outfitory-logo.png';
 import avatarDefault from '@/assets/images/user.png';
-import Language from '@/components/common/Language/Language';
+import LanguageSwitcher from '@/components/common/LanguageSwitcher/LanguageSwitcher';
 import MenuItem from '@/components/common/MenuItem/MenuItem';
 import UserDropdown from '@/components/layout/Header/UserDropdown/UserDropdown';
 import useScrollHandling from '@/hooks/useScrollHandling';
@@ -98,7 +98,7 @@ function Header() {
             </div>
             <span>|</span>
             <div className='flex items-center gap-2'>
-              <Language />
+              <LanguageSwitcher />
             </div>
             <span>|</span>
             <div>

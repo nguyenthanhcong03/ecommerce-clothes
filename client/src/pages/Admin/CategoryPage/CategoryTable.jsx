@@ -147,7 +147,7 @@ const CategoryTable = () => {
           }}
         >
           <div className='cursor-pointer rounded-[5px] bg-[#0961FF] p-1'>
-            <Pencil onClick={() => handleEdit(record)} color='#fff' />
+            <Pencil strokeWidth={1.5} width={16} height={16} onClick={() => handleEdit(record)} color='#fff' />
           </div>
           <Popconfirm
             title='Bạn có chắc muốn xóa sản phẩm này?'
@@ -168,7 +168,7 @@ const CategoryTable = () => {
             // }
           >
             <div className='cursor-pointer rounded-[5px] bg-[#DE2E3D] p-1'>
-              <Trash2 color='#fff' />
+              <Trash2 strokeWidth={1.5} width={16} height={16} color='#fff' />
             </div>
           </Popconfirm>
         </Space>

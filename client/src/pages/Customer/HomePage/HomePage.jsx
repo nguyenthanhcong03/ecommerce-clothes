@@ -24,8 +24,6 @@ function HomePage() {
         <div className='my-12'>
           <Headline text1={'đừng bỏ lỡ ưu đãi siêu lớn'} text2={'SẢN PHẨM BÁN CHẠY'} />
         </div>
-        {/* Popular Product */}
-        {/* <div className='w-full'> */}
         <div className='container mx-auto grid max-w-[1280px] grid-cols-2 justify-items-center gap-5 lg:grid-cols-4'>
           <div className='col-span-2 h-full w-full'>
             <CountDownBanner backgroundImage={countdownBanner1} />
@@ -36,7 +34,6 @@ function HomePage() {
           </div>
         </div>
       </div>
-      {/* </div> */}
 
       <SaleHomePage />
     </div>

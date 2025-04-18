@@ -2,9 +2,9 @@ import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { Provider } from 'react-redux';
 import App from './App.jsx';
-import i18n from './i18n.js';
 import './index.css';
 import { store } from '@/redux/store.js';
+import i18n from './i18n.js';
 
 createRoot(document.getElementById('root')).render(
   // <StrictMode>

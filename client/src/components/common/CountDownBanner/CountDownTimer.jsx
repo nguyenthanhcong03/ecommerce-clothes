@@ -36,8 +36,8 @@ const CountdownTimer = ({ targetDate }) => {
   Object.keys(timeLeft).forEach((interval) => {
     if (timeLeft[interval] !== undefined) {
       timerComponents.push(
-        <span key={interval} className='rounded border-[1px] border-[#E1E1E1] bg-white p-[10px] text-center'>
-          {formatNumber(timeLeft[interval])} <span className='text-secondaryColor'>{interval}</span>{' '}
+        <span key={interval} className='rounded border border-[#E1E1E1] bg-white p-2 text-center'>
+          {formatNumber(timeLeft[interval])} <span className='text-sm text-secondaryColor'>{interval}</span>{' '}
         </span>
       );
     }
