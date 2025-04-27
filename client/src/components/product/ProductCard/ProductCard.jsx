@@ -1,11 +1,12 @@
 import Button from '@/components/common/Button/Button';
 import { addToCart } from '@/redux/features/cart/cartSlice';
+import { openProductDetailModal } from '@/redux/features/product/productSlice';
 import { Eye, Heart, ShoppingCart, Star } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-function ProductCard({ item, isSearchMobile = false, isShowVariant = true }) {
+function ProductCard({ item, isShowVariant = true }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [selectedImage, setSelectedImage] = useState('');
@@ -14,7 +15,7 @@ function ProductCard({ item, isSearchMobile = false, isShowVariant = true }) {
   // Tính toán available options
   const variantOptions = useMemo(() => {
     const colorMap = new Map();
-    const imageMap = new Map();
+    const sizeMap = new Map();
 
     item.variants.forEach((variant) => {
       // Map color to images
@@ -24,16 +25,16 @@ function ProductCard({ item, isSearchMobile = false, isShowVariant = true }) {
       colorMap.get(variant.color).add(variant.size);
 
       // Map image to colors
-      if (!imageMap.has(variant.images[0])) {
-        imageMap.set(variant?.images[0], new Set());
+      if (!sizeMap.has(variant.images[0])) {
+        sizeMap.set(variant?.images[0], new Set());
       }
-      imageMap.get(variant?.images[0]).add(variant.size);
+      sizeMap.get(variant?.images[0]).add(variant.size);
     });
 
     return {
-      images: Array.from(imageMap.keys()),
+      images: Array.from(sizeMap.keys()),
       colors: Array.from(colorMap.keys()),
-      imageMap,
+      sizeMap,
       colorMap
     };
   }, [item.variants]);
@@ -77,7 +78,7 @@ function ProductCard({ item, isSearchMobile = false, isShowVariant = true }) {
   // Hàm lấy giá dựa trên size và color được chọn
   const getSelectedPrice = () => {
     if (selectedImage && selectedColor) {
-      const selectedVariant = item.variants.find((v) => v.size === selectedImage && v.color === selectedColor);
+      const selectedVariant = item?.variants.find((v) => v.size === selectedImage && v.color === selectedColor);
       if (selectedVariant) {
         return {
           price: selectedVariant.price,
@@ -86,10 +87,22 @@ function ProductCard({ item, isSearchMobile = false, isShowVariant = true }) {
       }
     }
     // Giá mặc định (giá thấp nhất)
-    const defaultVariant = item.variants.reduce((min, variant) => (!min || variant.price < min.price ? variant : min));
+    // Check if variants array exists and is not empty
+    if (!item?.variants || item.variants.length === 0) {
+      return {
+        price: 0,
+        discountPrice: null
+      };
+    }
+
+    const defaultVariant = item.variants.reduce(
+      (min, variant) => (!min || variant.price < min.price ? variant : min),
+      null
+    );
+
     return {
-      price: defaultVariant.price,
-      discountPrice: defaultVariant.discountPrice
+      price: defaultVariant?.price || 0,
+      discountPrice: defaultVariant?.discountPrice
     };
   };
 
@@ -121,8 +134,8 @@ function ProductCard({ item, isSearchMobile = false, isShowVariant = true }) {
 
   // Hàm xử lý sự kiện khi nhấn nút "Mua ngay"
   const handleBuyNow = () => {
-    console.log('click');
-    setIsOpenShopNow(true);
+    // Open the product detail modal with this product's data
+    dispatch(openProductDetailModal(item._id));
   };
 
   // Hàm navigate đến trang chi tiết sản phẩm
@@ -148,9 +161,7 @@ function ProductCard({ item, isSearchMobile = false, isShowVariant = true }) {
             </button> */}
         </div>
       </div>
-      <div
-        className={`flex h-full w-full flex-col items-start justify-between p-2 sm:px-3 ${isSearchMobile && '!p-1'}`}
-      >
+      <div className={`flex h-full w-full flex-col items-start justify-between p-2 sm:px-3`}>
         {/* Color Selection */}
         <div className='flex w-full justify-center gap-1'>
           {variantOptions.colors.map((color) => {
@@ -203,24 +214,24 @@ function ProductCard({ item, isSearchMobile = false, isShowVariant = true }) {
           <div className='mt-1 flex items-center gap-1'>
             <Star className='h-3 w-3 fill-yellow-400 text-yellow-400 sm:h-4 sm:w-4' />
             <span className='text-[10px] text-gray-600 sm:text-xs'>
-              {item.averageRating.toFixed(1)} ({item.totalReviews})
+              {item?.averageRating?.toFixed(1) || '0.0'} ({item?.totalReviews || 0})
             </span>
           </div>
         </div>
       </div>
       {/* Buttons */}
-      {!isSearchMobile && (
-        <div className='grid w-full grid-cols-2 items-center justify-between'>
-          <Button onClick={handleBuyNow}>
-            <ShoppingCart strokeWidth={1} width={16} height={16} className='mr-1' />
-            Mua ngay
-          </Button>
-          <Button variant='secondary' onClick={handleNavigateToDetail}>
-            <Eye strokeWidth={1} width={16} height={16} className='mr-1' />
-            Xem chi tiết
-          </Button>
-        </div>
-      )}
+      <div className='grid w-full grid-cols-2 items-center justify-between gap-1'>
+        <Button onClick={handleBuyNow} className='transition-all duration-200 active:scale-[0.98]'>
+          <ShoppingCart strokeWidth={1} width={16} height={16} className='mr-1' />
+          <span className='hidden lg:inline'>Mua nhanh</span>
+          <span className='lg:hidden'>Mua</span>
+        </Button>
+        <Button variant='secondary' onClick={handleNavigateToDetail}>
+          <Eye strokeWidth={1} width={15} height={15} className='mr-1' />
+          <span className='hidden lg:inline'>Xem chi tiết</span>
+          <span className='lg:hidden'>Xem</span>
+        </Button>
+      </div>
     </div>
   );
 }

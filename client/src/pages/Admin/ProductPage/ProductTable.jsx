@@ -5,13 +5,14 @@ import {
   setIsOpenForm,
   setSelectedProduct
 } from '@/redux/features/product/productSlice';
-import { Button, Image, Popconfirm, Space, Table, Tag } from 'antd';
+import { Image, Popconfirm, Space, Table, Tag } from 'antd';
 import { Pencil } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import ProductForm from './ProductForm';
 import './styles.css';
+import Button from '../../../components/common/Button/Button';
 
 const ProductTable = () => {
   const dispatch = useDispatch();
@@ -70,9 +71,12 @@ const ProductTable = () => {
       key: 'images',
       render: (images) => (
         <Image.PreviewGroup>
-          {images.slice(0, 2).map((img, index) => (
-            <Image key={index} width={40} height={40} src={img} style={{ objectFit: 'cover', marginRight: 4 }} />
-          ))}
+          {images &&
+            images
+              .slice(0, 2)
+              .map((img, index) => (
+                <Image key={index} width={40} height={40} src={img} style={{ objectFit: 'cover', marginRight: 4 }} />
+              ))}
         </Image.PreviewGroup>
       )
     },
@@ -269,9 +273,7 @@ const ProductTable = () => {
 
   return (
     <div>
-      <Button type='primary' onClick={handleAdd} style={{ marginBottom: 16 }}>
-        Thêm sản phẩm mới
-      </Button>
+      <Button onClick={handleAdd}>Thêm sản phẩm mới</Button>
 
       <Table
         rowKey='_id'
@@ -287,9 +289,7 @@ const ProductTable = () => {
         title={() => (
           <div className='flex items-center justify-between rounded-t-lg'>
             <h3 className='text-xl font-bold'>Danh sách sản phẩm</h3>
-            <div className='w-full max-w-[300px]'>
-              <Input placeholder='Tìm kiếm sản phẩm' />
-            </div>
+            <div className='w-full max-w-[300px]'>{/* <Input placeholder='Tìm kiếm sản phẩm' /> */}</div>
           </div>
         )}
       />

@@ -31,12 +31,35 @@ const CategoryForm = () => {
     (state) => state.category
   );
 
-  const treeData = buildTree(categories); // Chuyển đổi danh sách phẳng thành cây cha con
-  // console.log('treeData', treeData);
+  // Lọc ra các danh mục có thể là cha của danh mục hiện tại (loại bỏ chính nó và các danh mục con của nó)
+  const getFilteredCategories = () => {
+    // Nếu đang thêm mới, sử dụng tất cả danh mục
+    if (!selectedCategory) return categories;
+
+    // Hàm đệ quy để tìm tất cả ID của danh mục con
+    const findAllChildIds = (categoryId) => {
+      const directChildren = categories.filter((cat) => cat.parentId === categoryId).map((cat) => cat._id);
+      const allChildren = [...directChildren];
+
+      directChildren.forEach((childId) => {
+        allChildren.push(...findAllChildIds(childId));
+      });
+
+      return allChildren;
+    };
+
+    // Tìm tất cả ID của danh mục con
+    const childIds = findAllChildIds(selectedCategory._id);
+
+    // Loại bỏ chính nó và tất cả con của nó
+    return categories.filter((cat) => cat._id !== selectedCategory._id && !childIds.includes(cat._id));
+  };
+
+  const treeData = buildTree(getFilteredCategories()); // Chuyển đổi danh sách phẳng thành cây cha con
   const categoriesArray = treeData.map((item) => ({
     title: item.name,
     value: item._id,
-    children: item.children.map((child) => ({
+    children: item?.children?.map((child) => ({
       title: child.name,
       value: child._id
     }))
@@ -154,23 +177,6 @@ const CategoryForm = () => {
           />
         </Form.Item>
 
-        {/* <Form.Item label='Danh mục cha'>
-          <Controller
-            name='parentId'
-            control={control}
-            render={({ field }) => (
-              <Select {...field} placeholder='Chọn danh mục cha' allowClear>
-                {categories
-                  .filter((cat) => cat._id !== selectedCategory?._id) // Loại bỏ chính nó khỏi danh sách
-                  .map((cat) => (
-                    <Option key={cat._id} value={cat._id}>
-                      {cat.name}
-                    </Option>
-                  ))}
-              </Select>
-            )}
-          />
-        </Form.Item> */}
         <Form.Item label='Danh mục cha'>
           <Controller
             name='parentId'
@@ -181,7 +187,7 @@ const CategoryForm = () => {
                 style={{ width: '100%' }}
                 dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                 treeData={categoriesArray}
-                placeholder='Please select'
+                placeholder='Chọn danh mục cha'
                 treeDefaultExpandAll
                 allowClear
                 onChange={(value) => field.onChange(value)} // Cập nhật giá trị khi chọn

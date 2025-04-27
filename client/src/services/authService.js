@@ -1,39 +1,77 @@
-import axios from 'axios';
 import axiosClient from './axiosClient.js';
 
 const BASE_API = '/api/auth';
 
 export const register = async (data) => {
-  return await axiosClient.post(BASE_API + '/register', data);
+  const response = await axiosClient.post(`${BASE_API}/register`, data);
+  return response;
 };
 
 export const login = async (username, password) => {
-  return await axiosClient.post(BASE_API + '/login', { username, password });
+  const response = await axiosClient.post(`${BASE_API}/login`, { username, password });
+
+  if (response?.accessToken) {
+    // Store token in localStorage for non-HttpOnly cookie fallback
+    localStorage.setItem('accessToken', response.accessToken);
+  }
+
+  return response;
 };
 
-export const callLogout = () => {
-  return axiosClient.post(BASE_API + '/logout');
+export const callLogout = async () => {
+  const response = await axiosClient.post(`${BASE_API}/logout`);
+
+  // Clear stored tokens
+  localStorage.removeItem('accessToken');
+
+  return response;
 };
 
-export const callFetchAccount = () => {
-  return axiosClient.get(BASE_API + '/current');
+export const callFetchAccount = async () => {
+  const response = await axiosClient.get(`${BASE_API}/current`);
+  return response;
 };
 
 export const refreshAccessToken = async () => {
   const response = await axiosClient.post(
-    BASE_API + '/refresh-token',
+    `${BASE_API}/refresh-token`,
     {},
     {
-      withCredentials: true // Gửi cookie HttpOnly nếu có
+      withCredentials: true // Send HttpOnly cookies
     }
   );
 
-  // const newAccessToken = response.data.accessToken;
+  if (response?.accessToken) {
+    localStorage.setItem('accessToken', response.accessToken);
+  }
 
-  // // Cập nhật vào localStorage hoặc context API nếu cần
-  // localStorage.setItem('accessToken', newAccessToken);
-  console.log('response', response);
+  return response;
+};
 
-  // return newAccessToken;
+export const forgotPassword = async (email) => {
+  const response = await axiosClient.post(`${BASE_API}/forgot-password`, { email });
+  return response;
+};
+
+export const resetPassword = async (token, newPassword) => {
+  const response = await axiosClient.post(`${BASE_API}/reset-password`, {
+    token,
+    newPassword
+  });
+  return response;
+};
+
+export const changePassword = async (oldPassword, newPassword) => {
+  const response = await axiosClient.post(`${BASE_API}/change-password`, {
+    oldPassword,
+    newPassword
+  });
+  return response;
+};
+
+export const verifyEmail = async (token) => {
+  const response = await axiosClient.get(`${BASE_API}/verify-email`, {
+    params: { token }
+  });
   return response;
 };

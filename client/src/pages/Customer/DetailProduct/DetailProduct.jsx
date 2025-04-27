@@ -12,6 +12,10 @@ import instagram from '@/assets/icons/instagram.png';
 import messenger from '@/assets/icons/messenger.png';
 import Collapse from '../../../components/common/Collapse/Collapse';
 
+const getImageUrl = (image) => {
+  return typeof image === 'string' ? image : image?.url || '';
+};
+
 const DetailProduct = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -126,9 +130,6 @@ const DetailProduct = () => {
     };
   };
 
-  // const { price, discountPrice } = getSelectedPrice();
-  console.log('price');
-
   // Hàm xử lý sự kiện khi nhấn nút "Thêm vào giỏ hàng"
   const handleAddToCart = () => {
     if (!selectedSize || !selectedColor) {
@@ -137,17 +138,19 @@ const DetailProduct = () => {
     }
     const selectedVariant = product.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
 
+    const imageUrl = product.images && product.images.length > 0 ? getImageUrl(product.images[0]) : '';
+
     const cartItem = {
       productId: product._id,
       variantId: selectedVariant._id,
-      quantity: 1,
+      quantity: quantity,
       snapshot: {
         name: product.name,
         price: selectedVariant.price,
         discountPrice: selectedVariant.discountPrice,
         color: selectedVariant.color,
         size: selectedVariant.size,
-        image: product.images[0]
+        image: imageUrl
       }
     };
     // dispatch(addToCart(cartItem));
@@ -168,18 +171,6 @@ const DetailProduct = () => {
   const handleQuantityChange = (item, newQuantity) => {
     if (newQuantity < 1) return;
     setQuantity(newQuantity);
-
-    // try {
-    //   await dispatch(
-    //     updateCartItem({
-    //       productId: item.productId,
-    //       variantId: item.variantId,
-    //       quantity: newQuantity
-    //     })
-    //   ).unwrap();
-    // } catch (error) {
-    //   toast.error('Cập nhật số lượng thất bại');
-    // }
   };
 
   const breadcrumbItems = [
@@ -191,101 +182,133 @@ const DetailProduct = () => {
   ];
 
   if (status === 'loading') {
-    return <div>Loading...</div>;
+    return (
+      <div className='flex h-screen items-center justify-center'>
+        <div className='h-12 w-12 animate-spin rounded-full border-4 border-primaryColor border-t-transparent'></div>
+      </div>
+    );
   }
 
   if (status === 'failed') {
-    return <div>Error loading product</div>;
+    return (
+      <div className='flex h-screen items-center justify-center'>
+        <div className='text-center'>
+          <h2 className='text-xl font-medium text-red-500'>Không thể tải sản phẩm</h2>
+          <p className='mt-2 text-gray-600'>Vui lòng thử lại sau</p>
+          <Button variant='primary' className='mt-4' onClick={() => navigate('/shop')}>
+            Quay lại trang sản phẩm
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   if (!product) {
-    return <div>Product not found</div>;
+    return (
+      <div className='flex h-screen items-center justify-center'>
+        <div className='text-center'>
+          <h2 className='text-xl font-medium'>Không tìm thấy sản phẩm</h2>
+          <Button variant='primary' className='mt-4' onClick={() => navigate('/shop')}>
+            Quay lại trang sản phẩm
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className='mx-auto mt-[80px] w-full max-w-[1280px] p-4'>
+    <div className='mx-auto mt-[60px] w-full max-w-[1280px] px-4 py-4 sm:mt-[80px] md:p-4'>
       {/* Breadcrumb */}
-      <div className='mb-6'>
+      <div className='mb-4 overflow-x-auto sm:mb-6'>
         <Breadcrumb items={breadcrumbItems} />
       </div>
       <div className='mx-auto'>
-        <div className='flex flex-wrap'>
+        <div className='flex flex-col flex-wrap md:flex-row'>
           {/* Left Column - Product Images */}
-          <div className='w-2/5 p-4'>
-            <div className='flex flex-col gap-3'>
+          <div className='w-full p-2 md:w-2/5 md:p-4'>
+            <div className='flex flex-col gap-2 sm:gap-3'>
               <div className='aspect-w-1 aspect-h-1 w-full'>
                 <img
-                  src={product.images[currentImageIndex]}
+                  src={
+                    product.images && product.images.length > 0 ? getImageUrl(product.images[currentImageIndex]) : ''
+                  }
                   alt={product.name}
-                  className='h-[450px] w-[450px] object-cover'
+                  className='h-[300px] w-full object-cover sm:h-[400px] md:h-[450px]'
                 />
               </div>
-              <div className='grid grid-cols-4 gap-2'>
-                {product.images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`h-fit w-fit border-2 ${currentImageIndex === index ? 'border-black' : 'border-transparent'}`}
-                  >
-                    <img src={image} alt={`${product.name} ${index + 1}`} className='h-[82px] w-[82px] object-cover' />
-                  </button>
-                ))}
+              <div className='grid grid-cols-4 gap-1 overflow-x-auto sm:grid-cols-5 sm:gap-2'>
+                {product.images.map((image, index) => {
+                  const imageUrl = getImageUrl(image);
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`h-fit w-fit border-2 ${currentImageIndex === index ? 'border-black' : 'border-transparent'}`}
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={`${product.name} ${index + 1}`}
+                        className='h-[60px] w-[60px] object-cover sm:h-[82px] sm:w-[82px]'
+                      />
+                    </button>
+                  );
+                })}
               </div>
             </div>
-            <div className='flex items-center justify-center gap-7 pt-4 text-base'>
+            <div className='flex items-center justify-center gap-4 pt-3 text-sm sm:gap-7 sm:pt-4 sm:text-base'>
               <div className='flex items-center'>
-                <span className='mr-1'>Chia sẻ:</span>
+                <span className='xs:inline mr-1 hidden'>Chia sẻ:</span>
                 <div className='flex items-center gap-1'>
                   <button>
-                    <img src={facebook} alt='Chia sẻ với Facebook' />
+                    <img src={facebook} alt='Chia sẻ với Facebook' className='h-6 w-6' />
                   </button>
                   <button>
-                    <img src={instagram} alt='Chia sẻ với Instagram' />
+                    <img src={instagram} alt='Chia sẻ với Instagram' className='h-6 w-6' />
                   </button>
                   <button>
-                    <img src={messenger} alt='Chia sẻ với Messenger' />
+                    <img src={messenger} alt='Chia sẻ với Messenger' className='h-6 w-6' />
                   </button>
                 </div>
               </div>
-              <span className='text-gray-300'>|</span>
+              <span className='xs:inline hidden text-gray-300'>|</span>
               <div className='flex items-center'>
                 <button>
-                  <Heart strokeWidth={1} className='mr-1' width={24} />
+                  <Heart strokeWidth={1} className='mr-1' width={20} height={20} />
                 </button>
-                <span>Yêu thích</span>
+                <span className='xs:inline hidden'>Yêu thích</span>
               </div>
             </div>
           </div>
 
           {/* Right Column - Product Info */}
-          <div className='w-3/5 p-4'>
+          <div className='w-full p-2 md:w-3/5 md:p-4'>
             <div>
-              <h1 className='text-2xl font-normal'>{product.name}</h1>
+              <h1 className='text-xl font-normal sm:text-2xl'>{product.name}</h1>
               <div className='mt-2 flex items-center space-x-2'>
                 <div className='flex items-center'>
-                  <Star className='h-5 w-5 fill-yellow-400 text-yellow-400' />
-                  <span className='ml-1 text-sm text-gray-600'>
+                  <Star className='h-4 w-4 fill-yellow-400 text-yellow-400 sm:h-5 sm:w-5' />
+                  <span className='ml-1 text-xs text-gray-600 sm:text-sm'>
                     {product.averageRating} ({product.totalReviews} đánh giá)
                   </span>
                 </div>
                 <span className='text-gray-300'>|</span>
-                <span className='text-sm text-gray-600'>{product.sku} Lượt bán</span>
+                <span className='text-xs text-gray-600 sm:text-sm'>{product.sku} Lượt bán</span>
               </div>
             </div>
 
-            <div className='my-3 flex items-center gap-4 bg-[#F9F9F9] p-4'>
+            <div className='my-2 flex items-center gap-2 bg-[#F9F9F9] p-2 sm:my-3 sm:gap-4 sm:p-4'>
               {(() => {
                 const { price, discountPrice } = getSelectedPrice();
                 return (
                   <>
-                    <span className='text-3xl font-medium'>
+                    <span className='text-xl font-medium sm:text-3xl'>
                       {price.toLocaleString('vi-VN', {
                         style: 'currency',
                         currency: 'VND'
                       })}
                     </span>
                     {discountPrice && (
-                      <span className='ml-2 text-lg text-gray-400 line-through'>
+                      <span className='ml-1 text-sm text-gray-400 line-through sm:ml-2 sm:text-lg'>
                         {discountPrice.toLocaleString('vi-VN', {
                           style: 'currency',
                           currency: 'VND'
@@ -297,24 +320,24 @@ const DetailProduct = () => {
               })()}
             </div>
 
-            <div className='flex p-4'>
-              <h3 className='text-sm text-[#757575]'>Vận chuyển</h3>
-              <div>Nhận từ 19 Th04 - 21 Th04 Miễn phí vận chuyển</div>
+            <div className='flex flex-col gap-2 p-2 sm:flex-row sm:p-4'>
+              <h3 className='min-w-[80px] text-xs text-[#757575] sm:text-sm'>Vận chuyển</h3>
+              <div className='text-xs sm:text-sm'>Nhận từ 19 Th04 - 21 Th04 Miễn phí vận chuyển</div>
             </div>
 
-            <div className='flex p-4'>
-              <h3 className='text-sm text-[#757575]'>An tâm mua sắm cùng Outfitory</h3>
-              <div>Nhận từ 19 Th04 - 21 Th04 Miễn phí vận chuyển</div>
+            <div className='flex flex-col gap-2 p-2 sm:flex-row sm:p-4'>
+              <h3 className='min-w-[80px] text-xs text-[#757575] sm:text-sm'>An tâm mua sắm</h3>
+              <div className='text-xs sm:text-sm'>7 ngày miễn phí trả hàng</div>
             </div>
 
             {/* Size và color */}
             <div
-              className={`flex flex-col gap-2 px-4 py-2 ${showValidation && (!selectedSize || !selectedColor) ? 'bg-red-50' : ''}`}
+              className={`flex flex-col gap-2 px-2 py-1 sm:px-4 sm:py-2 ${showValidation && (!selectedSize || !selectedColor) ? 'bg-red-50' : ''}`}
             >
-              <div className='flex flex-col gap-3'>
+              <div className='flex flex-col gap-2 sm:gap-3'>
                 <div>
-                  <h3 className='text-sm text-[#757575]'>Size</h3>
-                  <div className='mt-2 flex flex-wrap gap-2'>
+                  <h3 className='text-xs text-[#757575] sm:text-sm'>Size</h3>
+                  <div className='mt-1 flex flex-wrap gap-1 sm:mt-2 sm:gap-2'>
                     {variantOptions.sizes.map((size) => {
                       const isAvailable = !selectedColor || getAvailableSizes(selectedColor).includes(size);
                       return (
@@ -325,7 +348,7 @@ const DetailProduct = () => {
                             handleSizeSelect(size);
                           }}
                           disabled={!isAvailable}
-                          className={`h-[30px] min-w-[30px] border text-xs text-primaryColor ${
+                          className={`h-[28px] min-w-[28px] border text-xs text-primaryColor sm:h-[30px] sm:min-w-[30px] ${
                             selectedSize === size
                               ? 'border-black'
                               : isAvailable
@@ -341,8 +364,8 @@ const DetailProduct = () => {
                 </div>
 
                 <div>
-                  <h3 className='text-sm text-[#757575]'>Màu sắc: {selectedColor}</h3>
-                  <div className='mt-2 flex flex-wrap gap-2'>
+                  <h3 className='text-xs text-[#757575] sm:text-sm'>Màu sắc: {selectedColor}</h3>
+                  <div className='mt-1 flex flex-wrap gap-1 sm:mt-2 sm:gap-2'>
                     {variantOptions.colors.map((color) => {
                       const isAvailable = !selectedSize || getAvailableColors(selectedSize).includes(color);
                       return (
@@ -353,7 +376,7 @@ const DetailProduct = () => {
                             handleColorSelect(color);
                           }}
                           disabled={!isAvailable}
-                          className={`h-[25px] w-[25px] rounded-full border p-[2px] text-[10px] sm:text-xs ${
+                          className={`h-[22px] w-[22px] rounded-full border p-[2px] text-[10px] sm:h-[25px] sm:w-[25px] ${
                             selectedColor === color
                               ? 'border-black'
                               : isAvailable
@@ -381,8 +404,8 @@ const DetailProduct = () => {
                 </div>
 
                 <div>
-                  <h3 className='text-sm text-[#757575]'>Số lượng</h3>
-                  <div className='mt-2 flex items-center space-x-2'>
+                  <h3 className='text-xs text-[#757575] sm:text-sm'>Số lượng</h3>
+                  <div className='mt-1 flex items-center space-x-2 sm:mt-2'>
                     {(() => {
                       const { stock } = getSelectedPrice();
                       return (
@@ -395,6 +418,9 @@ const DetailProduct = () => {
                             min={1}
                             max={stock}
                           />
+                          {selectedSize && selectedColor && stock && (
+                            <span className='text-xs text-gray-500 sm:text-sm'>Còn {stock} sản phẩm</span>
+                          )}
                         </>
                       );
                     })()}
@@ -412,82 +438,86 @@ const DetailProduct = () => {
               )}
             </div>
 
-            <div className='m-4 flex gap-4'>
-              <Button variant='secondary' onClick={handleAddToCart}>
-                <ShoppingCart strokeWidth={1} className='mr-2' />
-                Thêm vào giỏ hàng
+            <div className='m-2 flex flex-col gap-3 sm:m-4 sm:gap-4 lg:flex-row'>
+              <Button variant='secondary' onClick={handleAddToCart} className='xs:flex-1 w-full'>
+                <ShoppingCart strokeWidth={1} className='mr-1 h-4 w-4 sm:mr-2 sm:h-5 sm:w-5' />
+                <span className='text-sm'>Thêm vào giỏ hàng</span>
               </Button>
-              <Button variant='primary' onClick={handleBuyNow}>
-                Mua ngay với giá{' '}
-                {getSelectedPrice().price.toLocaleString('vi-VN', {
-                  style: 'currency',
-                  currency: 'VND'
-                })}
+              <Button variant='primary' onClick={handleBuyNow} className='xs:flex-1 w-full'>
+                <span className='text-sm'>
+                  Mua ngay với giá{' '}
+                  {getSelectedPrice().price.toLocaleString('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                  })}
+                </span>
               </Button>
             </div>
           </div>
         </div>
       </div>
-      <div className='mt-4 space-y-4 p-4'>
+      <div className='mt-4 space-y-3 p-2 sm:space-y-4 sm:p-4'>
         <Collapse title='CHI TIẾT SẢN PHẨM' className='bg-[#F7F7F7]' isShow={true}>
-          <div className='space-y-6 rounded bg-white p-4 text-sm'>
+          <div className='space-y-4 rounded bg-white p-3 text-xs sm:space-y-6 sm:p-4 sm:text-sm'>
             {/* Thông tin danh mục và thương hiệu */}
-            <div className='grid grid-cols-4 items-center gap-4'>
+            <div className='grid grid-cols-3 items-center gap-2 sm:grid-cols-4 sm:gap-4'>
               <h4 className='text-[#888888]'>Danh mục</h4>
-              <p className=''>{product.categoryId?.name}</p>
+              <p className='col-span-2 sm:col-span-3'>{product.categoryId?.name}</p>
             </div>
-            <div className='grid grid-cols-4 items-center gap-4'>
+            <div className='grid grid-cols-3 items-center gap-2 sm:grid-cols-4 sm:gap-4'>
               <h4 className='text-[#888888]'>Thương hiệu</h4>
-              <p className=''>{product.brand}</p>
+              <p className='col-span-2 sm:col-span-3'>{product.brand}</p>
             </div>
 
             {/* Thông tin các biến thể */}
-            {/* product.variants.map((v) => v.size): lấy ra mảng chứa tất cả các size, ví dụ: ["M", "L", "M", "S"].
-            new Set(...): loại bỏ các phần tử trùng lặp → ["M", "L", "S"].
-            Array.from(...): chuyển Set trở lại thành mảng để .map() được.
-            .map(...): lặp qua từng size duy nhất và hiển thị nó trong một thẻ <span>. */}
-            <div className='grid grid-cols-4 items-center gap-4'>
+            <div className='grid grid-cols-3 items-center gap-2 sm:grid-cols-4 sm:gap-4'>
               <h4 className='text-[#888888]'>Kích thước có sẵn</h4>
-              <div className='flex flex-wrap gap-2'>
+              <div className='col-span-2 flex flex-wrap gap-1 sm:col-span-3 sm:gap-2'>
                 {Array.from(new Set(product.variants.map((v) => v.size))).map((size) => (
-                  <span key={size} className='rounded bg-gray-100 px-3 py-1 text-sm'>
+                  <span key={size} className='rounded bg-gray-100 px-2 py-0.5 text-xs sm:px-3 sm:py-1'>
                     {size}
                   </span>
                 ))}
               </div>
             </div>
 
-            <div className='grid grid-cols-4 items-center gap-4'>
+            <div className='grid grid-cols-3 items-center gap-2 sm:grid-cols-4 sm:gap-4'>
               <h4 className='text-[#888888]'>Màu sắc có sẵn</h4>
-              <div className='flex flex-wrap gap-2'>
+              <div className='col-span-2 flex flex-wrap gap-1 sm:col-span-3 sm:gap-2'>
                 {Array.from(new Set(product.variants.map((v) => v.color))).map((color) => (
-                  <span key={color} className='rounded bg-gray-100 px-3 py-1 text-sm'>
+                  <span key={color} className='rounded bg-gray-100 px-2 py-0.5 text-xs sm:px-3 sm:py-1'>
                     {color}
                   </span>
                 ))}
               </div>
             </div>
 
-            <div className='grid grid-cols-4 items-center gap-4'>
+            <div className='grid grid-cols-3 items-center gap-2 sm:grid-cols-4 sm:gap-4'>
               <h4 className='text-[#888888]'>Số lượng sản phẩm</h4>
-              <p className=''>Tổng số: {product.variants.reduce((sum, variant) => sum + variant.stock, 0)} sản phẩm</p>
+              <p className='col-span-2 sm:col-span-3'>
+                Tổng số: {product.variants.reduce((sum, variant) => sum + variant.stock, 0)} sản phẩm
+              </p>
             </div>
           </div>
         </Collapse>
 
         <Collapse title='MÔ TẢ SẢN PHẨM' className='bg-[#F7F7F7]' isShow={true}>
-          <div className='rounded bg-white p-4'>
-            <div className='prose prose-sm max-w-none whitespace-pre-line text-sm'>{product.description}</div>
+          <div className='rounded bg-white p-3 sm:p-4'>
+            <div className='prose prose-sm max-w-none whitespace-pre-line text-xs sm:text-sm'>
+              {product.description}
+            </div>
           </div>
         </Collapse>
         <Collapse title='ĐÁNH GIÁ SẢN PHẨM' className='bg-[#F7F7F7]' isShow={true}>
-          <div className='rounded bg-white p-4'>
-            <div className='prose prose-sm max-w-none whitespace-pre-line text-sm'>{product.description}</div>
+          <div className='rounded bg-white p-3 sm:p-4'>
+            <div className='prose prose-sm max-w-none whitespace-pre-line text-xs sm:text-sm'>
+              {product.description}
+            </div>
           </div>
         </Collapse>
       </div>
       <div>
-        <h2 className='my-4 text-center text-2xl'>CÓ THỂ BẠN SẼ THÍCH</h2>
+        <h2 className='my-3 text-center text-xl sm:my-4 sm:text-2xl'>CÓ THỂ BẠN SẼ THÍCH</h2>
         <div>product</div>
       </div>
     </div>

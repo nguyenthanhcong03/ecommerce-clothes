@@ -50,7 +50,7 @@ const ProductForm = () => {
       description: '',
       categoryId: '',
       brand: '',
-      variants: [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0 }],
+      variants: [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0, images: [] }],
       images: [],
       tags: [],
       isActive: true
@@ -78,7 +78,7 @@ const ProductForm = () => {
         variants:
           selectedProduct.variants.length > 0
             ? selectedProduct.variants.map((v) => ({ ...v }))
-            : [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0 }],
+            : [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0, images: [] }],
         images: selectedProduct.images.map((url) => ({ url })) || [],
         tags: selectedProduct.tags || [],
         isActive: selectedProduct.isActive ?? true
@@ -89,7 +89,7 @@ const ProductForm = () => {
         description: '',
         categoryId: '',
         brand: '',
-        variants: [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0 }],
+        variants: [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0, images: [] }],
         images: [],
         tags: [],
         isActive: true
@@ -120,9 +120,9 @@ const ProductForm = () => {
       formData.append(`variants[${index}][price]`, variant.price);
       if (variant.discountPrice) formData.append(`variants[${index}][discountPrice]`, variant.discountPrice);
       formData.append(`variants[${index}][stock]`, variant.stock);
-      // variant.images.forEach((file) => {
-      //   if (file.originFileObj) formData.append(`variants[${index}][images]`, file.originFileObj);
-      // });
+      variant.images.forEach((file) => {
+        if (file.originFileObj) formData.append(`images`, file.originFileObj);
+      });
     });
     // Xác định ảnh đã xoá (chỉ khi edit)
     if (selectedProduct?.images?.length > 0) {
@@ -149,11 +149,11 @@ const ProductForm = () => {
         //   console.log(pair[0] + ':', pair[1]);
         // }
         // Thêm mới category
-        const response = await dispatch(handleCreateProduct({ payload: formData }));
+        const response = await dispatch(handleCreateProduct(formData));
         message.success('Thêm sản phẩm thành công!');
       }
       // dispatch(fetchProducts({ page: 1, limit: 10 }));
-      dispatch(setIsOpenForm(false));
+      // dispatch(setIsOpenForm(false));
     } catch (error) {
       console.error('Error:', error);
       message.error('Có lỗi xảy ra, vui lòng thử lại!');
@@ -172,6 +172,7 @@ const ProductForm = () => {
       destroyOnClose
       onOk={handleSubmit(onSubmit)}
       confirmLoading={status === 'loading'}
+      className='font-robotoMono'
       // footer={[
       //   <Button key='cancel' icon={<CloseOutlined />}>
       //     Huỷ
@@ -186,7 +187,14 @@ const ProductForm = () => {
           <Controller
             name='name'
             control={control}
-            render={({ field }) => <Input {...field} placeholder='Nhập tên sản phẩm' />}
+            render={({ field }) => (
+              <Input
+                {...field}
+                bordered={false}
+                onChange={(value) => field.onChange(value)}
+                placeholder='Nhập tên sản phẩm'
+              />
+            )}
           />
         </Form.Item>
 
@@ -195,7 +203,7 @@ const ProductForm = () => {
             name='categoryId'
             control={control}
             render={({ field }) => (
-              <Select {...field} placeholder='Chọn danh mục'>
+              <Select {...field} bordered={false} value={field.value || undefined} placeholder='Chọn danh mục'>
                 {categories.map((cat) => (
                   <Option key={cat._id} value={cat._id}>
                     {cat.name}
@@ -210,7 +218,7 @@ const ProductForm = () => {
           <Controller
             name='brand'
             control={control}
-            render={({ field }) => <Input {...field} placeholder='Nhập thương hiệu' />}
+            render={({ field }) => <Input {...field} bordered={false} placeholder='Nhập thương hiệu' />}
           />
         </Form.Item>
 
@@ -218,7 +226,7 @@ const ProductForm = () => {
           <Controller
             name='description'
             control={control}
-            render={({ field }) => <Input.TextArea {...field} placeholder='Nhập mô tả' rows={3} />}
+            render={({ field }) => <Input.TextArea {...field} bordered={false} placeholder='Nhập mô tả' rows={3} />}
           />
         </Form.Item>
 
@@ -271,21 +279,21 @@ const ProductForm = () => {
                 <Controller
                   name={`variants[${index}].sku`}
                   control={control}
-                  render={({ field }) => <Input {...field} placeholder='Nhập SKU' />}
+                  render={({ field }) => <Input {...field} bordered={false} placeholder='Nhập SKU' />}
                 />
               </Form.Item>
               <Form.Item label='Kích thước' help={errors.variants?.[index]?.size?.message}>
                 <Controller
                   name={`variants[${index}].size`}
                   control={control}
-                  render={({ field }) => <Input {...field} placeholder='Nhập kích thước' />}
+                  render={({ field }) => <Input {...field} bordered={false} placeholder='Nhập kích thước' />}
                 />
               </Form.Item>
               <Form.Item label='Màu sắc' help={errors.variants?.[index]?.color?.message}>
                 <Controller
                   name={`variants[${index}].color`}
                   control={control}
-                  render={({ field }) => <Input {...field} placeholder='Nhập màu sắc' />}
+                  render={({ field }) => <Input {...field} bordered={false} placeholder='Nhập màu sắc' />}
                 />
               </Form.Item>
               <Form.Item label='Giá' help={errors.variants?.[index]?.price?.message}>
@@ -309,7 +317,7 @@ const ProductForm = () => {
                   render={({ field }) => <Input type='number' {...field} placeholder='Nhập số lượng' />}
                 />
               </Form.Item>
-              {/* <Form.Item label='Ảnh biến thể' help={errors.variants?.[index]?.images?.message}>
+              <Form.Item label='Ảnh biến thể' help={errors.variants?.[index]?.images?.message}>
                 <Controller
                   name={`variants[${index}].images`}
                   control={control}
@@ -324,7 +332,7 @@ const ProductForm = () => {
                     </Upload>
                   )}
                 />
-              </Form.Item> */}
+              </Form.Item>
               {variantFields.length > 1 && (
                 <Button type='link' danger onClick={() => removeVariant(index)}>
                   Xóa biến thể

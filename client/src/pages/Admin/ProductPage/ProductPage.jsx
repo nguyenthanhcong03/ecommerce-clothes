@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { UserCheck, UserPlus, UsersIcon, UserX } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import ProductTable from './ProductTable';
+import Input from '../../../components/common/Input/Input';
 
 const ProductPage = () => {
   const dispatch = useDispatch();
@@ -33,6 +34,7 @@ const ProductPage = () => {
 
       <main className='mx-auto max-w-7xl px-4 py-6 lg:px-8'>
         {/* STATS */}
+
         <motion.div
           className='mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4'
           initial={{ opacity: 0, y: 20 }}

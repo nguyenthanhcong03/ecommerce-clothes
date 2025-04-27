@@ -18,5 +18,18 @@ export const buildTree = (flatArray) => {
     }
   });
 
+  // Sau khi xây xong cây, duyệt qua và nếu node nào có children rỗng thì set = undefined
+  const cleanChildren = (nodes) => {
+    nodes.forEach((node) => {
+      if (node.children.length === 0) {
+        node.children = undefined;
+      } else {
+        cleanChildren(node.children); // Đệ quy cho các node con
+      }
+    });
+  };
+
+  cleanChildren(tree); // Gọi hàm làm sạch children
+
   return tree;
 };

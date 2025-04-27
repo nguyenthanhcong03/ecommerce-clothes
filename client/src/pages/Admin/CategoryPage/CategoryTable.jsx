@@ -1,66 +1,19 @@
 import Button from '@/components/common/Button/Button';
-import Input from '@/components/common/Input/Input';
 import { fetchCategories, setIsOpenForm, setSelectedCategory } from '@/redux/features/category/categorySlice';
 import { buildTree } from '@/utils/convertFlatArrToTreeArr';
 import { Image, Popconfirm, Space, Table, Tag } from 'antd';
-import { createStyles } from 'antd-style';
 import axios from 'axios';
+import { Icon, Minus, MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 import React, { useEffect } from 'react';
-import { Pencil, Trash2 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import CategoryForm from './CategoryForm';
 
-const useStyle = createStyles(({ css, token }) => {
-  const { antCls } = token;
-  return {
-    customTable: css`
-      ${antCls}-table-wrapper {
-        border: 1px solid #000;
-        border-radius: 8px;
-        overflow: hidden;
-        ${antCls}-table {
-          ${antCls}-table-container {
-            ${antCls}-table-body {
-              scrollbar-width: thin;
-              scrollbar-color: #ccc transparent;
-              &::-webkit-scrollbar {
-                width: 8px;
-                height: 8px;
-              }
-              &::-webkit-scrollbar-thumb {
-                background-color: #ccc;
-                border-radius: 4px;
-              }
-              &::-webkit-scrollbar-track {
-                background-color: transparent;
-              }
-            }
-          }
-        }
-      }
-      ${antCls}-table-thead > tr > th {
-        background-color: #f5f5f5;
-        font-weight: bold;
-        text-align: center;
-      }
-      ${antCls}-table-tbody > tr > td {
-        text-align: center;
-      }
-      ${antCls}-pagination {
-        margin-top: 16px;
-      }
-    `
-  };
-});
-
 const CategoryTable = () => {
-  const { styles } = useStyle();
   const dispatch = useDispatch();
   const { categories, status, error, page, pages, total, isOpenForm, selectedCategory } = useSelector(
     (state) => state.category
   );
-
-  // Lấy danh sách category từ backend
+  console.log('tree', buildTree(categories));
 
   useEffect(() => {
     dispatch(fetchCategories({ page: 1, limit: 10 }));
@@ -94,22 +47,28 @@ const CategoryTable = () => {
       dataIndex: 'images',
       key: 'images',
       align: 'center',
+      width: 200,
       render: (images) => (
         <Image.PreviewGroup>
-          {images.slice(0, 2).map((img, index) => (
-            <Image key={index} width={40} height={40} src={img} style={{ objectFit: 'cover', marginRight: 4 }} />
-          ))}
+          {images &&
+            images
+              .slice(0, 2)
+              .map((img, index) => (
+                <Image key={index} width={40} height={40} src={img} style={{ objectFit: 'cover', marginRight: 4 }} />
+              ))}
         </Image.PreviewGroup>
       )
     },
     {
       title: 'Tên danh mục',
       dataIndex: 'name',
-      key: 'name'
+      key: 'name',
+      align: 'left',
+      width: 250
     },
     {
       title: 'Mô tả',
-      align: 'center',
+      align: 'left',
       className: 'description-header',
       render: (_, record) => {
         const description = record.description || 'Chưa có mô tả';
@@ -125,12 +84,6 @@ const CategoryTable = () => {
       key: 'isActive',
       render: (isActive) =>
         isActive ? <Tag color={'green'}>Hoạt động</Tag> : <Tag color={'green'}>Không hoạt động</Tag>
-    },
-    {
-      title: 'Ưu tiên',
-      align: 'center',
-      dataIndex: 'priority',
-      key: 'priority'
     },
     {
       title: 'Hành động',
@@ -150,13 +103,13 @@ const CategoryTable = () => {
             <Pencil strokeWidth={1.5} width={16} height={16} onClick={() => handleEdit(record)} color='#fff' />
           </div>
           <Popconfirm
-            title='Bạn có chắc muốn xóa sản phẩm này?'
+            title='Bạn có chắc muốn xóa danh mục này?'
             onConfirm={() => handleDelete(record._id)}
             okText='Có'
             cancelText='Không'
             placement='topRight'
             okButtonProps={{
-              style: { backgroundColor: 'black', borderColor: 'black', color: 'white' }
+              style: { backgroundColor: '#333', borderColor: '#333', color: 'white' }
             }}
             cancelButtonProps={{
               style: { color: 'gray', borderColor: 'gray' }
@@ -181,7 +134,6 @@ const CategoryTable = () => {
       <Button onClick={handleAdd}>Thêm danh mục mới</Button>
       <Table
         bordered
-        // className={styles.customTable}
         scroll={{ x: 'max-content' }}
         rowKey='_id'
         // rowSelection={rowSelection}
@@ -189,14 +141,11 @@ const CategoryTable = () => {
         dataSource={buildTree(categories)}
         pagination={{ pageSize: 5, position: ['bottomCenter'] }}
         // rowClassName={(record, index) => (index % 2 !== 0 ? 'bg-[#fafafa]' : 'bg-white')}
-        // bordered
         locale={{ emptyText: status === 'loading' ? 'Đang tải dữ liệu...' : 'Không có dữ liệu' }}
         title={() => (
           <div className='flex flex-col items-center justify-between rounded-t-lg lg:flex-row'>
             <h3 className='text-xl font-bold'>Danh sách danh mục</h3>
-            <div className='flex items-center gap-2'>
-              <Input placeholder='Tìm kiếm sản phẩm' />
-            </div>
+            <div className='flex items-center gap-2'>{/* <Input placeholder='Tìm kiếm sản phẩm' /> */}</div>
           </div>
         )}
       />

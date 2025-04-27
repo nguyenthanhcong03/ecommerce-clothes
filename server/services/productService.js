@@ -20,7 +20,6 @@ const uploadSingleFile = async (fileData) => {
 
     return {
       url: result.secure_url,
-      public_id: result.public_id,
       format: result.format,
       width: result.width,
       height: result.height,

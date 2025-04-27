@@ -1,11 +1,13 @@
-const router = require("express").Router();
+const express = require("express");
 const categoryController = require("../controllers/categoryController");
-const { checkRole, verifyToken } = require("../middlewares/auth");
+
+const router = express.Router();
+
+// Public route for getting category tree
+router.get("/tree", categoryController.getTreeCategories);
 
 router.get("/", categoryController.getAllCategories);
 router.post("/", categoryController.createCategory);
 router.put("/:id", categoryController.updateCategoryById);
-
-// router.post("/many", categoryController.postCreateArrayCustomer);
 
 module.exports = router;

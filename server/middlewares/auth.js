@@ -1,49 +1,119 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 
+/**
+ * Verify user authentication token
+ * Supports both cookie-based and header-based token authentication
+ */
 const verifyToken = async (req, res, next) => {
-  // // Nếu gửi kèm header theo lưu trong local storage
-  // let token = req.headers.authorization?.split(" ")[1];
+  let token;
 
-  // Lấy token trong cookie
-  const accessToken = req.cookies.accessToken;
-  if (!accessToken) {
-    return res.status(401).json({ message: "Không có access token, từ chối truy cập" });
+  // Check for token in cookies first
+  if (req.cookies && req.cookies.accessToken) {
+    token = req.cookies.accessToken;
+  }
+  // Then check Authorization header as fallback
+  else if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: "Không có access token, vui lòng đăng nhập",
+    });
   }
 
   try {
-    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
-    req.user = decoded; // Lưu thông tin user vào request
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Get user from database (without password)
+    const currentUser = await User.findById(decoded._id).select("-password");
+
+    if (!currentUser) {
+      return res.status(401).json({
+        success: false,
+        message: "Người dùng không tồn tại",
+      });
+    }
+
+    // Check if user is active
+    if (currentUser.status !== "active") {
+      return res.status(403).json({
+        success: false,
+        message: "Tài khoản đã bị khóa hoặc vô hiệu hóa",
+      });
+    }
+
+    // Add user to request
+    req.user = currentUser;
     next();
   } catch (error) {
     if (error.name === "TokenExpiredError") {
-      return res.status(401).json({ success: false, message: "Access token expired", expired: true });
+      return res.status(401).json({
+        success: false,
+        message: "Access token đã hết hạn",
+        expired: true,
+      });
     }
-    res.status(401).json({ message: "Token không hợp lệ" });
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        success: false,
+        message: "Token không hợp lệ",
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: "Lỗi xác thực",
+      error: error.message,
+    });
   }
 };
 
-const admin = (req, res, next) => {
-  if (req.user && req.user.role === "admin") {
-    next();
-  } else {
-    res.status(403).json({ success: false, message: "Bạn không có quyền truy cập" });
-  }
-};
+// /**
+//  * Check if user is an admin
+//  */
+// const admin = (req, res, next) => {
+//   if (!req.user) {
+//     return res.status(401).json({
+//       success: false,
+//       message: "Vui lòng đăng nhập",
+//     });
+//   }
 
+//   if (req.user.role === "admin") {
+//     next();
+//   } else {
+//     res.status(403).json({
+//       success: false,
+//       message: "Bạn không có quyền truy cập",
+//     });
+//   }
+// };
+
+/**
+ * Check if user has one of the allowed roles
+ * @param {...string} allowedRoles - Roles that are allowed to access
+ */
 const checkRole = (...allowedRoles) => {
-  console.log("hih1");
-
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized - No user found" });
+      return res.status(401).json({
+        success: false,
+        message: "Vui lòng đăng nhập",
+      });
     }
-    const hasRole = allowedRoles.includes(req.user.role);
-    if (req.user.role !== role) {
-      return res.status(403).json({ succes: false, message: "Access denied" });
+
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: "Bạn không có quyền truy cập chức năng này",
+      });
     }
+
     next();
   };
 };
 
-module.exports = { verifyToken, admin, checkRole };
+module.exports = { verifyToken, checkRole };

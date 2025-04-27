@@ -5,7 +5,7 @@ const asyncHandler = require("express-async-handler");
 const cloudinary = require("../config/cloudinary");
 const jwt = require("jsonwebtoken");
 const { createUserService, uploadSingleFile, uploadMultipleFiles } = require("../services/userService");
-const { uploadSingleFile2 } = require("../services/fileService");
+const { uploadSingleFile2 } = require("../services/hihiService");
 const { generateAccessToken } = require("../utils/jwt");
 
 const getCurrentUser = asyncHandler(async (req, res) => {

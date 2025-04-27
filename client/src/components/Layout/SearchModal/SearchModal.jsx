@@ -29,8 +29,8 @@ function SearchModal() {
           <h1 className='p-7 text-2xl text-primaryColor'>Bạn muốn tìm món đồ nào?</h1>
           <div className='flex items-center justify-center'>
             <Select className='h-[40px] w-[300px]'></Select>
-            <Input placeholder='Tìm kếm sản phẩm..' />
-            <Button className='w-[170px]'>Tìm kiếm</Button>
+            {/* <Input placeholder='Tìm kếm sản phẩm..' /> */}
+            <Button>Tìm kiếm</Button>
           </div>
         </div>
       </div>

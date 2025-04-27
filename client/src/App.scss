@@ -1,0 +1,54 @@
+@tailwind base;
+
+@layer base {
+  body {
+    @apply font-robotoMono;
+    @apply text-text1;
+  }
+}
+.ant-select {
+  border-radius: 0px;
+
+  .ant-select-selector {
+    border-radius: 0px;
+    border: 1px solid #d9d9d9;
+    &:focus {
+      border-radius: 0px;
+      border-color: #333;
+    }
+  }
+}
+
+.ant-select-dropdown {
+  border-radius: 0px;
+  border: 1px solid #d9d9d9;
+}
+
+.ant-select-item-option {
+  border-radius: 0px !important;
+  margin: 2px 0;
+}
+.ant-select-item-option-selected {
+  background-color: #d9d9d9 !important;
+}
+
+.ant-input {
+  border-radius: 0;
+  border: #d9d9d9 1px solid;
+  font-family: 'Roboto Mono' !important;
+}
+
+.ant-modal-content {
+  border-radius: 4px !important;
+}
+
+.ant-modal {
+}
+
+.ant-form-item-label {
+  font-family: 'Roboto Mono' !important;
+}
+
+.ant-table-cell-with-append {
+  display: flex !important;
+}

@@ -1,56 +1,29 @@
 const slugify = require("slugify");
 const Category = require("../models/category");
 const qs = require("qs");
-const { uploadMultipleFiles } = require("../services/fileService");
-
-const { response } = require("express");
-const Product = require("../models/product");
-const asyncHandler = require("express-async-handler");
+const { uploadMultipleFiles, formatImagesForDB } = require("../services/hihiService");
 const { default: mongoose } = require("mongoose");
+const categoryService = require("../services/categoryService");
 
 const getAllCategories = async (req, res) => {
   try {
-    // 1. Fav lấy các query parameters từ request
-    const {
-      page = 1, // Trang mặc định là 1
-      limit = 10, // Số sản phẩm mỗi trang mặc định là 10
-      sortBy = "createdAt", // Sắp xếp mặc định theo ngày tạo
-      order = "desc", // Thứ tự mặc định giảm dần
-      search, // Từ khóa tìm kiếm
-      isActive = true, // Mặc định chỉ lấy sản phẩm đang hoạt động
-    } = req.query;
+    const { page, limit, sortBy, order, search, isActive, parentId } = req.query;
 
-    // 2. Xây dựng query
-    let query = { isActive };
+    const result = await categoryService.getCategories({
+      page,
+      limit,
+      sortBy,
+      order,
+      search,
+      isActive,
+      parentId,
+    });
 
-    // Search theo tên hoặc mô tả
-    if (search) {
-      query.$or = [{ name: { $regex: search, $options: "i" } }, { description: { $regex: search, $options: "i" } }];
-    }
-
-    // 3. Tính tổng số documents
-    const total = await Category.countDocuments(query);
-
-    // 4. Thực hiện query với pagination và sort
-    const categories = await Category.find(query)
-      .sort({ [sortBy]: order === "desc" ? -1 : 1 })
-      .skip((page - 1) * limit)
-      .limit(Number(limit))
-      .select("-__v"); // Loại bỏ field version
-
-    // 5. Tạo response
     const response = {
       success: true,
-      data: categories,
-      pagination: {
-        current: Number(page),
-        pageSize: Number(limit),
-        total: total,
-        totalPages: Math.ceil(total / limit),
-      },
+      data: result.categories,
+      pagination: result.pagination,
     };
-    // console.log(categories);
-    // console.log("Page:", page, "Limit:", limit);
 
     res.status(200).json(response);
   } catch (error) {
@@ -65,10 +38,6 @@ const getAllCategories = async (req, res) => {
 const createCategory = async (req, res) => {
   try {
     const parsedBody = qs.parse(req.body);
-    // console.log("req.body", req.body); // trước khi parse
-    // console.log("parsedBody", parsedBody); // sau khi parse
-
-    const { name, parentId, description, isActive, priority } = parsedBody;
 
     if (!req.files || !req.files.images) {
       return res.status(400).json({
@@ -77,12 +46,10 @@ const createCategory = async (req, res) => {
       });
     }
 
-    // Chuyển thành mảng nếu chỉ upload 1 file
     const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
 
-    // Kiểm tra định dạng tất cả file
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-    const invalidFiles = files.filter((file) => !allowedTypes.includes(file.mimetype));
+    // Validate image files
+    const invalidFiles = categoryService.validateImageFiles(files);
     if (invalidFiles.length > 0) {
       return res.status(400).json({
         success: false,
@@ -90,52 +57,26 @@ const createCategory = async (req, res) => {
       });
     }
 
-    // Tạo slug từ tên sản phẩm
-    const slug = slugify(name, {
-      lower: true,
-      strict: true,
-      locale: "vi", // Hỗ trợ tiếng Việt
-    });
+    // Create category using service
+    const savedCategory = await categoryService.createCategory(parsedBody, files);
 
-    // Upload nhiều file lên Cloudinary
-    const uploadResults = await uploadMultipleFiles(files, "ecommerce/category");
-    const imageUrls = uploadResults.map((file) => file.url);
-    // console.log("uploadResults", uploadResults);
-
-    // // Kiểm tra xem slug đã tồn tại chưa
-    // const existingCategory = await Category.findOne({ slug });
-    // if (existingCategory) {
-    //   return res.status(400).json({ message: "Slug đã tồn tại" });
-    // }
-
-    // Tạo instance mới của Category
-    const newCategory = new Category({
-      name,
-      slug,
-      parentId: parentId && mongoose.Types.ObjectId.isValid(parentId) ? parentId : null,
-      description,
-      images: imageUrls, // Lưu trữ URL ảnh trong mảng
-      isActive: isActive !== undefined ? isActive : true, // Mặc định là true
-      priority: priority || 0, // Mặc định là 0
-    });
-
-    console.log("newCategory", newCategory);
-    // Lưu vào database
-    const savedCategory = await newCategory.save();
-    // const savedCategory = await Category.create(newCategory);
-    console.log("savedCategory", savedCategory);
-
-    // Trả về response thành công
     res.status(201).json({
       success: true,
       message: "Tạo danh mục thành công",
       data: savedCategory,
     });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "Danh mục với slug này đã tồn tại",
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: "Lỗi server",
-      error: error,
+      error: error.message,
     });
   }
 };
@@ -143,17 +84,177 @@ const createCategory = async (req, res) => {
 const updateCategoryById = async (req, res) => {
   try {
     const { id } = req.params;
-    if (req.body && req.body.name) {
-      req.body.slug = slugify(req.body.name.trim());
+    const parsedBody = qs.parse(req.body);
+    const { deletedImages } = parsedBody;
+
+    // Process image deletions
+    if (deletedImages) {
+      const imagesToDelete = Array.isArray(deletedImages) ? deletedImages : [deletedImages];
+
+      if (imagesToDelete.length > 0) {
+        try {
+          await categoryService.deleteCategoryImages(id, imagesToDelete);
+        } catch (err) {
+          if (err.message === "Category not found") {
+            return res.status(404).json({
+              success: false,
+              message: "Không tìm thấy danh mục",
+            });
+          }
+          throw err;
+        }
+      }
     }
-    const category = await Category.findByIdAndUpdate(id, req.body, { new: true });
-    return res.status(200).json({
-      success: category ? true : false,
-      message: category ? category : "Cannot update category",
-    });
+
+    // Process image uploads
+    if (req?.files && req?.files?.images) {
+      const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
+
+      const invalidFiles = categoryService.validateImageFiles(files);
+      if (invalidFiles.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Chỉ chấp nhận file JPEG, JPG hoặc PNG",
+        });
+      }
+
+      await categoryService.addCategoryImages(id, files);
+    }
+
+    // Update category data
+    try {
+      const updatedCategory = await categoryService.updateCategory(id, parsedBody);
+
+      return res.status(200).json({
+        success: true,
+        message: "Cập nhật danh mục thành công",
+        data: updatedCategory,
+      });
+    } catch (err) {
+      if (err.message === "Category not found") {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy danh mục",
+        });
+      }
+      throw err;
+    }
   } catch (error) {
-    res.status(500).json({ message: "Lỗi server", error });
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server",
+      error: error.message,
+    });
   }
 };
 
-module.exports = { getAllCategories, createCategory, updateCategoryById };
+const getCategoryById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    try {
+      const category = await categoryService.getCategoryById(id);
+
+      if (!category) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy danh mục",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: category,
+      });
+    } catch (err) {
+      if (err.message === "Invalid category ID") {
+        return res.status(400).json({
+          success: false,
+          message: "ID danh mục không hợp lệ",
+        });
+      }
+      throw err;
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+};
+
+const deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const hasChildren = await categoryService.hasChildCategories(id);
+    if (hasChildren) {
+      return res.status(400).json({
+        success: false,
+        message: "Không thể xóa danh mục đang có danh mục con",
+      });
+    }
+
+    const hasProducts = await categoryService.hasProducts(id);
+    if (hasProducts) {
+      return res.status(400).json({
+        success: false,
+        message: "Không thể xóa danh mục đang có sản phẩm",
+      });
+    }
+
+    try {
+      const deletedCategory = await categoryService.deleteCategory(id);
+
+      return res.status(200).json({
+        success: true,
+        message: "Xóa danh mục thành công",
+        data: deletedCategory,
+      });
+    } catch (err) {
+      if (err.message === "Category not found") {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy danh mục",
+        });
+      }
+      throw err;
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+};
+
+const getTreeCategories = async (req, res) => {
+  try {
+    const { onlyActive } = req.query;
+    const activeFilter = onlyActive === "false" ? false : true; // Mặc định là chỉ lấy categories đang active
+
+    const categoriesTree = await categoryService.getCategoryTree(activeFilter);
+
+    return res.status(200).json({
+      success: true,
+      data: categoriesTree,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = {
+  getAllCategories,
+  createCategory,
+  updateCategoryById,
+  getCategoryById,
+  deleteCategory,
+  getTreeCategories,
+};

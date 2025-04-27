@@ -1,37 +1,49 @@
-import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Navigate } from 'react-router-dom';
-import NotPermitted from './NotPermitted';
-import Loading from '@/components/common/Loading/Loading';
+import PropTypes from 'prop-types';
+import { memo } from 'react';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
-const RoleBaseRoute = (props) => {
-  const isAdminRoute = window.location.pathname.startsWith('/admin');
-  const user = useSelector((state) => state.account.user);
-  const userRole = user.role;
+const ProtectedRoute = memo(
+  ({ children, requireAuth = true, roles = [], redirectPath = '/login', fallbackComponent = null }) => {
+    const location = useLocation();
+    const { user, isAuthenticated, isLoading } = useSelector((state) => state.account);
 
-  if (isAdminRoute && userRole === 'admin') {
-    return <>{props.children}</>;
-  } else {
-    return <NotPermitted />;
+    // Show loading state when authentication is being checked
+    // if (isLoading) {
+    //   return fallbackComponent || <LoadingSpinner />;
+    // }
+
+    // Redirect unauthorized users to login with return path
+    if (requireAuth && !isAuthenticated) {
+      return <Navigate to={redirectPath} state={{ from: location.pathname }} replace />;
+    }
+
+    // Check role-based access
+    if (roles.length > 0 && user && !roles.includes(user.role)) {
+      return <Navigate to='/unauthorized' state={{ from: location.pathname }} replace />;
+    }
+
+    // Redirect authenticated users trying to access login/register pages
+    if (!requireAuth && isAuthenticated) {
+      // Get the return path or default to dashboard
+      // Ensure returnPath is always a string
+      const returnPath = typeof location.state?.from === 'string' ? location.state.from : '/';
+      return <Navigate to={returnPath} replace />;
+    }
+
+    return children;
   }
+);
+
+ProtectedRoute.propTypes = {
+  children: PropTypes.node.isRequired,
+  requireAuth: PropTypes.bool,
+  roles: PropTypes.arrayOf(PropTypes.string),
+  redirectPath: PropTypes.string,
+  fallbackComponent: PropTypes.node
 };
 
-const ProtectedRoute = (props) => {
-  const { isAuthenticated, isLoading } = useSelector((state) => state.account);
-
-  return (
-    <>
-      {isAuthenticated === true ? (
-        <>
-          <RoleBaseRoute>{props.children}</RoleBaseRoute>
-        </>
-      ) : isLoading ? (
-        <Loading />
-      ) : (
-        <Navigate to='/login' />
-      )}
-    </>
-  );
-};
+ProtectedRoute.displayName = 'ProtectedRoute';
 
 export default ProtectedRoute;

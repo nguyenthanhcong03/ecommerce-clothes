@@ -1,17 +1,25 @@
-import { createRoot } from 'react-dom/client';
-import { I18nextProvider } from 'react-i18next';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
-import App from './App.jsx';
+import 'react-toastify/dist/ReactToastify.css';
+import App from './App';
+import './i18n';
 import './index.css';
-import { store } from '@/redux/store.js';
-import i18n from './i18n.js';
+import { store } from './redux/store';
+import { ConfigProvider } from 'antd';
 
-createRoot(document.getElementById('root')).render(
-  // <StrictMode>
-  <Provider store={store}>
-    <I18nextProvider i18n={i18n}>
-      <App />
-    </I18nextProvider>
-  </Provider>
-  // </StrictMode>
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <Provider store={store}>
+      <ConfigProvider
+        theme={{
+          token: {
+            colorPrimary: '#333' // 🎯 Đổi màu chủ đạo thành đen
+          }
+        }}
+      >
+        <App />
+      </ConfigProvider>
+    </Provider>
+  </React.StrictMode>
 );
