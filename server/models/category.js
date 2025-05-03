@@ -1,21 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-// Define the same imageSchema as used in the product model
-const imageSchema = new mongoose.Schema(
-  {
-    url: {
-      type: String,
-      required: true,
-    },
-    public_id: {
-      type: String,
-      required: true,
-    },
-  },
-  { _id: false }
-); // _id: false prevents MongoDB from creating IDs for each image
-
 // Định nghĩa schema cho Category
 const categorySchema = new Schema(
   {

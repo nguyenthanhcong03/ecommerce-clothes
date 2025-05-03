@@ -1,81 +1,201 @@
 const { response } = require("express");
 const Product = require("../models/product");
+const productService = require("../services/productService");
 const slugify = require("slugify");
 const { default: mongoose } = require("mongoose");
-const qs = require("qs");
-const { deleteFileCloudinary, uploadMultipleFiles, formatImagesForDB } = require("../services/hihiService");
 
 // Get all products
 const getAllProducts = async (req, res) => {
   try {
+    // Destructure query parameters with defaults
     const {
       page = 1,
       limit = 10,
-      sortBy = "createdAt",
+      sort = "createdAt",
       order = "desc",
-      search,
-      category,
-      brand,
-      minPrice,
-      maxPrice,
-      size,
-      color,
-      isActive = true,
+      search = "",
+      category = "",
+      brand = "",
+      minPrice = "",
+      maxPrice = "",
+      featured = "",
+      isActive = "true",
+      tags = "",
+      size = "",
+      color = "",
+      rating = "", // Thêm trường rating
+      inStock = "", // Thêm trường inStock
     } = req.query;
 
-    let query = { isActive };
+    // Convert page and limit to integers
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
 
-    if (search) {
-      query.$or = [{ name: { $regex: search, $options: "i" } }, { description: { $regex: search, $options: "i" } }];
+    // Calculate skip for pagination
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // Build filter object
+    const filter = {};
+
+    // Active products filter (default to showing only active products)
+    if (isActive !== "") {
+      filter.isActive = isActive === "true";
     }
 
+    // Category filter
     if (category) {
-      query.categoryId = category;
+      filter.categoryId = category;
     }
 
+    // Brand filter
     if (brand) {
-      query.brand = brand;
+      // If multiple brands are provided as comma-separated values
+      if (brand.includes(",")) {
+        filter.brand = { $in: brand.split(",") };
+      } else {
+        filter.brand = brand;
+      }
     }
 
-    if (minPrice || maxPrice) {
-      query["variants.price"] = {};
-      if (minPrice) query["variants.price"].$gte = Number(minPrice);
-      if (maxPrice) query["variants.price"].$lte = Number(maxPrice);
+    // Featured products filter
+    if (featured !== "") {
+      filter.featured = featured === "true";
     }
 
+    // Price range filter
+    const priceFilter = {};
+    if (minPrice !== "") {
+      priceFilter.$gte = parseFloat(minPrice);
+    }
+    if (maxPrice !== "") {
+      priceFilter.$lte = parseFloat(maxPrice);
+    }
+
+    if (Object.keys(priceFilter).length > 0) {
+      filter["variants.price"] = priceFilter;
+    }
+
+    // Tags filter
+    if (tags) {
+      filter.tags = { $in: tags.split(",") };
+    }
+
+    // Size filter - chấp nhận nhiều size ngăn cách bởi dấu phẩy
     if (size) {
-      query["variants.size"] = size;
+      if (size.includes(",")) {
+        filter["variants.size"] = { $in: size.split(",") };
+      } else {
+        filter["variants.size"] = size;
+      }
     }
 
+    // Color filter - chấp nhận nhiều color ngăn cách bởi dấu phẩy
     if (color) {
-      query["variants.color"] = color;
+      if (color.includes(",")) {
+        filter["variants.color"] = { $in: color.split(",") };
+      } else {
+        filter["variants.color"] = color;
+      }
     }
 
-    const total = await Product.countDocuments(query);
+    // Rating filter - lọc sản phẩm có rating >= giá trị đã cho
+    if (rating !== "") {
+      filter.averageRating = { $gte: parseFloat(rating) };
+    }
 
-    const products = await Product.find(query)
-      .populate("categoryId", "name slug")
-      .sort({ [sortBy]: order === "desc" ? -1 : 1 })
-      .skip((page - 1) * limit)
-      .limit(Number(limit))
-      .select("-__v");
+    // InStock filter - chỉ hiển thị sản phẩm còn hàng
+    if (inStock !== "") {
+      if (inStock === "true") {
+        filter["variants.countInStock"] = { $gt: 0 };
+      } else if (inStock === "false") {
+        filter["variants.countInStock"] = { $lte: 0 };
+      }
+    }
 
-    const response = {
+    // Text search if provided
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+        { tags: { $in: [new RegExp(search, "i")] } },
+      ];
+
+      // Alternative: Use the text index if search term contains multiple words
+      // if (search.includes(' ')) {
+      //   filter.$text = { $search: search };
+      // } else {
+      //   filter.$or = [
+      //     { name: { $regex: search, $options: 'i' } },
+      //     { description: { $regex: search, $options: 'i' } }
+      //   ];
+      // }
+    }
+
+    // Determine sort options
+    const sortOptions = {};
+
+    // Handle special sorts
+    if (sort === "price") {
+      // Sort by the lowest price in the variants
+      sortOptions["variants.price"] = order === "asc" ? 1 : -1;
+    } else if (sort === "popularity") {
+      // Sort by sales count
+      sortOptions.salesCount = order === "asc" ? 1 : -1;
+    } else if (sort === "rating") {
+      // Sort by average rating
+      sortOptions.averageRating = order === "asc" ? 1 : -1;
+    } else {
+      // Default sorting by any field
+      sortOptions[sort] = order === "asc" ? 1 : -1;
+    }
+
+    // Execute query with pagination
+    const products = await Product.find(filter)
+      .populate("categoryId", "name slug") // Populate category data
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limitNumber)
+      .lean(); // Convert to plain JS objects for better performance
+
+    // Get total count for pagination
+    const totalProducts = await Product.countDocuments(filter);
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalProducts / limitNumber);
+
+    return res.status(200).json({
       success: true,
-      data: products,
-      pagination: {
-        current: Number(page),
-        pageSize: Number(limit),
-        total: total,
-        totalPages: Math.ceil(total / limit),
+      data: {
+        products,
+        pagination: {
+          page: pageNumber,
+          limit: limitNumber,
+          totalProducts,
+          totalPages,
+          hasNextPage: pageNumber < totalPages,
+          hasPrevPage: pageNumber > 1,
+        },
+        filters: {
+          search: search || null,
+          category: category || null,
+          brand: brand || null,
+          minPrice: minPrice || null,
+          maxPrice: maxPrice || null,
+          featured: featured || null,
+          isActive: isActive || null,
+          size: size || null,
+          color: color || null,
+          rating: rating || null,
+          inStock: inStock || null,
+          tags: tags || null,
+        },
       },
-    };
-
-    res.status(200).json(response);
+    });
   } catch (error) {
-    res.status(500).json({
+    console.error("Error fetching products:", error);
+    return res.status(500).json({
       success: false,
-      message: "Server error",
+      message: "Error fetching products",
       error: error.message,
     });
   }
@@ -84,37 +204,17 @@ const getAllProducts = async (req, res) => {
 // Create product
 const createProduct = async (req, res) => {
   try {
-    const parsedBody = qs.parse(req.body);
-    const { name, description, categoryId, brand, variants, tags, isActive } = parsedBody;
+    const productData = req.body;
 
-    if (!req.files || !req.files.images) {
+    if (!productData.images || !Array.isArray(productData.images) || productData.images.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "Vui lòng upload ít nhất một file ảnh",
+        message: "Vui lòng cung cấp ít nhất một URL ảnh",
       });
     }
 
-    const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
-    console.log("files", files);
-
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-    const invalidFiles = files.filter((file) => !allowedTypes.includes(file.mimetype));
-    if (invalidFiles.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Chỉ chấp nhận file JPEG, JPG hoặc PNG",
-      });
-    }
-
-    const slug = slugify(name, {
-      lower: true,
-      strict: true,
-      locale: "vi",
-    });
-
-    console.log("first");
-
-    const categoryExists = await mongoose.model("Category").findById(categoryId);
+    // Kiểm tra danh mục tồn tại
+    const categoryExists = await mongoose.model("Category").findById(productData.categoryId);
     if (!categoryExists) {
       return res.status(400).json({
         success: false,
@@ -122,50 +222,12 @@ const createProduct = async (req, res) => {
       });
     }
 
-    const uploadResults = await uploadMultipleFiles(files, "ecommerce/product");
-    const formattedImages = formatImagesForDB(uploadResults);
-
-    // let parsedVariants = [];
-    // if (variants && typeof variants === "string") {
-    //   try {
-    //     parsedVariants = JSON.parse(variants);
-
-    //     parsedVariants.forEach((variant) => {
-    //       if (variant.images && Array.isArray(variant.images)) {
-    //         variant.images = variant.images.map((img) => {
-    //           if (typeof img === "string") {
-    //             return { url: img, public_id: "" };
-    //           }
-    //           return img;
-    //         });
-    //       } else {
-    //         variant.images = [];
-    //       }
-    //     });
-    //   } catch (error) {
-    //     console.error("Invalid variants JSON:", error);
-    //     parsedVariants = [];
-    //   }
-    // }
-
-    const newProduct = new Product({
-      name,
-      slug,
-      description,
-      categoryId,
-      brand,
-      variants: variants || [],
-      images: formattedImages,
-      tags: tags || [],
-      isActive: isActive !== undefined ? isActive : true,
-    });
-
-    const savedProduct = await newProduct.save();
+    const newProduct = await productService.createProduct(productData);
 
     res.status(201).json({
       success: true,
       message: "Tạo sản phẩm thành công",
-      data: savedProduct,
+      data: newProduct,
     });
   } catch (error) {
     if (error.code === 11000) {
@@ -187,20 +249,10 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const { pid } = req.params;
-    const parsedBody = qs.parse(req.body);
+    const updateData = req.body;
 
-    const { name, description, categoryId, brand, variants, tags, isActive, deletedImages } = parsedBody;
-
-    const slug = name
-      ? slugify(name, {
-          lower: true,
-          strict: true,
-          locale: "vi",
-        })
-      : undefined;
-
-    if (categoryId) {
-      const categoryExists = await mongoose.model("Category").findById(categoryId);
+    if (updateData.categoryId) {
+      const categoryExists = await mongoose.model("Category").findById(updateData.categoryId);
       if (!categoryExists) {
         return res.status(400).json({
           success: false,
@@ -209,92 +261,25 @@ const updateProduct = async (req, res) => {
       }
     }
 
-    const updateFields = {};
-    if (name) updateFields.name = name;
-    if (slug) updateFields.slug = slug;
-    if (description) updateFields.description = description;
-    if (categoryId) updateFields.categoryId = categoryId;
-    if (brand) updateFields.brand = brand;
-    if (tags) updateFields.tags = tags;
-    if (isActive !== undefined) updateFields.isActive = isActive;
+    // Update product data
+    try {
+      const updatedProduct = await productService.updateProduct(pid, updateData);
 
-    // if (variants) {
-    //   try {
-    //     const parsedVariants = typeof variants === "string" ? JSON.parse(variants) : variants;
-
-    //     parsedVariants.forEach((variant) => {
-    //       if (variant.images && Array.isArray(variant.images)) {
-    //         variant.images = variant.images.map((img) => {
-    //           if (typeof img === "string") {
-    //             return { url: img, public_id: "" };
-    //           }
-    //           return img;
-    //         });
-    //       }
-    //     });
-
-    //     updateFields.variants = parsedVariants;
-    //   } catch (error) {
-    //     console.error("Invalid variants JSON:", error);
-    //   }
-    // }
-
-    if (deletedImages) {
-      const imagesToDelete = Array.isArray(deletedImages) ? deletedImages : [deletedImages];
-
-      if (imagesToDelete.length > 0) {
-        const product = await Product.findById(pid);
-        if (!product) {
-          return res.status(404).json({
-            success: false,
-            message: "Không tìm thấy sản phẩm",
-          });
-        }
-
-        const imagesToDeleteObjects = product.images.filter((img) => imagesToDelete.includes(img.url));
-
-        await deleteFileCloudinary(imagesToDeleteObjects);
-
-        await Product.findByIdAndUpdate(pid, {
-          $pull: {
-            images: { $in: imagesToDelete },
-          },
-        });
-      }
-    }
-
-    if (req?.files && req?.files?.images) {
-      const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
-
-      const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-      const invalidFiles = files.filter((file) => !allowedTypes.includes(file.mimetype));
-      if (invalidFiles.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Chỉ chấp nhận file JPEG, JPG hoặc PNG",
-        });
-      }
-
-      const uploadResults = await uploadMultipleFiles(files, "ecommerce/product");
-      const formattedImages = formatImagesForDB(uploadResults);
-
-      await Product.findByIdAndUpdate(pid, {
-        $push: { images: { $each: formattedImages } },
+      return res.status(200).json({
+        success: true,
+        message: "Cập nhật sản phẩm thành công",
+        data: updatedProduct,
       });
+    } catch (err) {
+      if (err.message === "Product not found") {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy sản phẩm",
+        });
+      }
+      throw err;
     }
-
-    const updatedProduct = await Product.findByIdAndUpdate(pid, updateFields, { new: true }).populate(
-      "categoryId",
-      "name slug"
-    );
-
-    res.status(200).json({
-      success: true,
-      message: "Sửa sản phẩm thành công",
-      data: updatedProduct,
-    });
   } catch (error) {
-    console.error("Update product error:", error);
     res.status(500).json({
       success: false,
       message: "Lỗi server",
@@ -307,34 +292,24 @@ const updateProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
   try {
     const productId = req.params.pid;
-    const product = await Product.findById(productId);
 
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Không tìm thấy sản phẩm.",
+    try {
+      const deletedProduct = await productService.deleteProduct(productId);
+
+      return res.status(200).json({
+        success: true,
+        message: "Xóa sản phẩm thành công",
+        data: deletedProduct,
       });
-    }
-
-    if (product.images && product.images.length > 0) {
-      await deleteFileCloudinary(product.images);
-    }
-
-    if (product.variants && product.variants.length > 0) {
-      for (const variant of product.variants) {
-        if (variant.images && variant.images.length > 0) {
-          await deleteFileCloudinary(variant.images);
-        }
+    } catch (err) {
+      if (err.message === "Product not found") {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy sản phẩm",
+        });
       }
+      throw err;
     }
-
-    const deletedProduct = await Product.findByIdAndDelete(productId);
-
-    return res.status(200).json({
-      success: true,
-      message: "Xóa sản phẩm thành công",
-      data: deletedProduct,
-    });
   } catch (error) {
     console.error("Delete product error:", error);
     res.status(500).json({
@@ -357,26 +332,29 @@ const getProductById = async (req, res) => {
       });
     }
 
-    const product = await Product.findById(pid).populate("categoryId", "name slug").select("-__v");
+    try {
+      const product = await productService.getProductById(pid);
 
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Không tìm thấy sản phẩm",
+      if (!product.isActive && (!req.user || req.user.role !== "admin")) {
+        return res.status(403).json({
+          success: false,
+          message: "Sản phẩm không khả dụng",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        data: product,
       });
+    } catch (err) {
+      if (err.message === "Product not found") {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy sản phẩm",
+        });
+      }
+      throw err;
     }
-
-    if (!product.isActive && (!req.user || req.user.role !== "admin")) {
-      return res.status(403).json({
-        success: false,
-        message: "Sản phẩm không khả dụng",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: product,
-    });
   } catch (error) {
     console.error("Get product error:", error);
     res.status(500).json({
@@ -398,24 +376,19 @@ const getProductsByCategory = async (req, res) => {
       isActive: true,
     };
 
-    const total = await Product.countDocuments(query);
+    const options = {
+      page,
+      limit,
+      sortBy,
+      order,
+    };
 
-    const products = await Product.find(query)
-      .populate("categoryId", "name slug")
-      .sort({ [sortBy]: order === "desc" ? -1 : 1 })
-      .skip((page - 1) * limit)
-      .limit(Number(limit))
-      .select("-__v");
+    const result = await productService.getProducts(query, options);
 
     res.status(200).json({
       success: true,
-      data: products,
-      pagination: {
-        current: Number(page),
-        pageSize: Number(limit),
-        total: total,
-        totalPages: Math.ceil(total / limit),
-      },
+      data: result.products,
+      pagination: result.pagination,
     });
   } catch (error) {
     res.status(500).json({
@@ -438,31 +411,17 @@ const searchProducts = async (req, res) => {
       });
     }
 
-    const query = {
-      $or: [
-        { name: { $regex: q, $options: "i" } },
-        { description: { $regex: q, $options: "i" } },
-        { tags: { $regex: q, $options: "i" } },
-      ],
-      isActive: true,
+    const options = {
+      page,
+      limit,
     };
 
-    const total = await Product.countDocuments(query);
-
-    const products = await Product.find(query)
-      .populate("categoryId", "name slug")
-      .skip((page - 1) * limit)
-      .limit(Number(limit));
+    const result = await productService.searchProducts(q, options);
 
     res.status(200).json({
       success: true,
-      data: products,
-      pagination: {
-        current: Number(page),
-        pageSize: Number(limit),
-        total: total,
-        totalPages: Math.ceil(total / limit),
-      },
+      data: result.products,
+      pagination: result.pagination,
     });
   } catch (error) {
     res.status(500).json({
@@ -478,13 +437,7 @@ const getFeaturedProducts = async (req, res) => {
   try {
     const { limit = 8 } = req.query;
 
-    const featuredProducts = await Product.find({
-      isActive: true,
-      isFeatured: true,
-    })
-      .limit(Number(limit))
-      .populate("categoryId", "name slug")
-      .select("-__v");
+    const featuredProducts = await productService.getFeaturedProducts(limit);
 
     res.status(200).json({
       success: true,
@@ -512,20 +465,23 @@ const updateProductStatus = async (req, res) => {
       });
     }
 
-    const product = await Product.findByIdAndUpdate(pid, { isActive }, { new: true });
+    try {
+      const product = await productService.updateProductStatus(pid, isActive);
 
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Không tìm thấy sản phẩm",
+      res.status(200).json({
+        success: true,
+        message: `Sản phẩm đã được ${isActive ? "kích hoạt" : "vô hiệu hóa"}`,
+        data: product,
       });
+    } catch (err) {
+      if (err.message === "Product not found") {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy sản phẩm",
+        });
+      }
+      throw err;
     }
-
-    res.status(200).json({
-      success: true,
-      message: `Sản phẩm đã được ${isActive ? "kích hoạt" : "vô hiệu hóa"}`,
-      data: product,
-    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -549,51 +505,28 @@ const addProductReview = async (req, res) => {
       });
     }
 
-    const product = await Product.findById(pid);
+    const reviewData = {
+      rating,
+      comment: comment || "",
+      name: `${req.user.firstName} ${req.user.lastName}`,
+    };
 
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Không tìm thấy sản phẩm",
+    try {
+      await productService.addReview(pid, userId, reviewData);
+
+      res.status(201).json({
+        success: true,
+        message: "Đánh giá sản phẩm thành công",
       });
-    }
-
-    // Check if user already reviewed this product
-    const existingReview = product.reviews?.find((r) => r.user.toString() === userId.toString());
-
-    if (existingReview) {
-      // Update existing review
-      product.reviews.forEach((review) => {
-        if (review.user.toString() === userId.toString()) {
-          review.rating = rating;
-          review.comment = comment || review.comment;
-        }
-      });
-    } else {
-      // Add new review
-      const review = {
-        user: userId,
-        rating,
-        comment: comment || "",
-        name: `${req.user.firstName} ${req.user.lastName}`,
-      };
-
-      if (!product.reviews) {
-        product.reviews = [];
+    } catch (err) {
+      if (err.message === "Product not found") {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy sản phẩm",
+        });
       }
-
-      product.reviews.push(review);
+      throw err;
     }
-
-    // Calculate average rating
-    product.rating = product.reviews.reduce((acc, item) => item.rating + acc, 0) / product.reviews.length;
-
-    await product.save();
-
-    res.status(201).json({
-      success: true,
-      message: "Đánh giá sản phẩm thành công",
-    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -609,7 +542,7 @@ const getProductReviews = async (req, res) => {
     const { pid } = req.params;
     const { page = 1, limit = 10 } = req.query;
 
-    const product = await Product.findById(pid).select("reviews rating");
+    const product = await Product.findById(pid).select("reviews averageRating totalReviews");
 
     if (!product) {
       return res.status(404).json({
@@ -628,7 +561,8 @@ const getProductReviews = async (req, res) => {
       success: true,
       data: {
         reviews: paginatedReviews,
-        rating: product.rating || 0,
+        averageRating: product.averageRating || 0,
+        totalReviews: product.totalReviews || 0,
       },
       pagination: {
         current: Number(page),
@@ -636,6 +570,141 @@ const getProductReviews = async (req, res) => {
         total: reviews.length,
         totalPages: Math.ceil(reviews.length / limit),
       },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+};
+
+// Get related products
+const getRelatedProducts = async (req, res) => {
+  try {
+    const { pid } = req.params;
+    const { limit = 4 } = req.query;
+
+    const product = await Product.findById(pid);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy sản phẩm",
+      });
+    }
+
+    // Tìm các sản phẩm có cùng danh mục, nhưng không phải sản phẩm hiện tại
+    const relatedProducts = await Product.find({
+      categoryId: product.categoryId,
+      _id: { $ne: pid },
+      isActive: true,
+    })
+      .limit(Number(limit))
+      .populate("categoryId", "name slug")
+      .select("-__v");
+
+    res.status(200).json({
+      success: true,
+      data: relatedProducts,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+};
+
+// Get product variants
+const getProductVariants = async (req, res) => {
+  try {
+    const { pid } = req.params;
+
+    const product = await Product.findById(pid).select("variants");
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy sản phẩm",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: product.variants || [],
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+};
+
+// Get product variant by ID
+const getProductVariantById = async (req, res) => {
+  try {
+    const { pid, variantId } = req.params;
+
+    const product = await Product.findById(pid);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy sản phẩm",
+      });
+    }
+
+    const variant = product.variants.id(variantId);
+
+    if (!variant) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy biến thể sản phẩm",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: variant,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+};
+
+// Get products by brand
+const getProductsByBrand = async (req, res) => {
+  try {
+    const { brand } = req.params;
+    const { page = 1, limit = 10, sortBy = "createdAt", order = "desc" } = req.query;
+
+    const query = {
+      brand: { $regex: brand, $options: "i" },
+      isActive: true,
+    };
+
+    const options = {
+      page,
+      limit,
+      sortBy,
+      order,
+    };
+
+    const result = await productService.getProducts(query, options);
+
+    res.status(200).json({
+      success: true,
+      data: result.products,
+      pagination: result.pagination,
     });
   } catch (error) {
     res.status(500).json({
@@ -658,4 +727,8 @@ module.exports = {
   updateProductStatus,
   addProductReview,
   getProductReviews,
+  getRelatedProducts,
+  getProductVariants,
+  getProductVariantById,
+  getProductsByBrand,
 };

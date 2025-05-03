@@ -7,7 +7,8 @@ import {
   ShoppingBag,
   ShoppingCart,
   TrendingUp,
-  Users
+  Users,
+  Tag
 } from 'lucide-react';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -17,6 +18,7 @@ const SIDEBAR_ITEMS = [
   { name: 'Overview', icon: BarChart2, color: '#333', href: '/admin' },
   { name: 'Products', icon: ShoppingBag, color: '#333', href: '/admin/products' },
   { name: 'Categories', icon: ChartBarStacked, color: '#333', href: '/admin/categories' },
+  { name: 'Coupons', icon: Tag, color: '#333', href: '/admin/coupons' },
   { name: 'Users', icon: Users, color: '#333', href: '/admin/users' },
   { name: 'Sales', icon: DollarSign, color: '#333', href: '/admin/sales' },
   { name: 'Orders', icon: ShoppingCart, color: '#333', href: '/admin/orders' },
@@ -56,7 +58,6 @@ const Sidebar = () => {
                   : 'mb-2 flex items-center rounded-lg p-4 text-sm font-medium transition-colors hover:bg-[#F4F4F4]'
               }
             >
-              {/* <motion.div className='mb-2 flex items-center rounded-lg p-4 text-sm font-medium transition-colors hover:bg-[#F4F4F4]'> */}
               <item.icon size={20} style={{ color: item.color, minWidth: '20px' }} />
               <AnimatePresence>
                 {isSidebarOpen && (
@@ -71,7 +72,6 @@ const Sidebar = () => {
                   </motion.span>
                 )}
               </AnimatePresence>
-              {/* </motion.div> */}
             </NavLink>
           ))}
         </nav>

@@ -12,6 +12,7 @@ import ProductPage from '@/pages/Admin/ProductPage/ProductPage';
 import SalesPage from '@/pages/Admin/SalesPage/SalesPage.jsx';
 import SettingsPage from '@/pages/Admin/SettingsPage/SettingsPage.jsx';
 import UsersPage from '@/pages/Admin/UsersPage/UsersPage.jsx';
+import CouponPage from '@/pages/Admin/CouponPage/CouponPage.jsx';
 
 // Auth pages
 import LoginPage from '@/pages/Auth/LoginPage.jsx';
@@ -63,7 +64,8 @@ export const ROUTES = {
     SALES: '/admin/sales',
     ORDERS: '/admin/orders',
     ANALYTICS: '/admin/analytics',
-    SETTINGS: '/admin/settings'
+    SETTINGS: '/admin/settings',
+    COUPONS: '/admin/coupons'
   }
 };
 
@@ -143,6 +145,7 @@ const Router = [
       { path: 'orders', element: <OrdersPage /> },
       { path: 'analytics', element: <AnalyticsPage /> },
       { path: 'settings', element: <SettingsPage /> },
+      { path: 'coupons', element: <CouponPage /> },
       { path: 'example', element: <InputFormExample /> }
     ]
   },

@@ -9,18 +9,25 @@ import { useNavigate } from 'react-router-dom';
 function ProductCard({ item, isShowVariant = true }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [selectedImage, setSelectedImage] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
+  const [displayImage, setDisplayImage] = useState(item?.images[0]);
+  const [hoverImage, setHoverImage] = useState(item?.images[1] || item?.images[0]);
 
   // Tính toán available options
   const variantOptions = useMemo(() => {
     const colorMap = new Map();
     const sizeMap = new Map();
+    const colorImageMap = new Map(); // Map để lưu trữ màu sắc và hình ảnh tương ứng
 
     item.variants.forEach((variant) => {
       // Map color to images
       if (!colorMap.has(variant.color)) {
         colorMap.set(variant.color, new Set());
+        // Lưu trữ hình ảnh đầu tiên của mỗi màu
+        if (variant.images && variant.images.length > 0) {
+          colorImageMap.set(variant.color, variant.images);
+        }
       }
       colorMap.get(variant.color).add(variant.size);
 
@@ -35,7 +42,8 @@ function ProductCard({ item, isShowVariant = true }) {
       images: Array.from(sizeMap.keys()),
       colors: Array.from(colorMap.keys()),
       sizeMap,
-      colorMap
+      colorMap,
+      colorImageMap // Thêm colorImageMap vào kết quả
     };
   }, [item.variants]);
 
@@ -49,12 +57,12 @@ function ProductCard({ item, isShowVariant = true }) {
 
   const handleSizeSelect = (size) => {
     // Nếu click vào size đang được chọn thì bỏ chọn
-    if (selectedImage === size) {
-      setSelectedImage('');
+    if (selectedSize === size) {
+      setSelectedSize('');
       return;
     }
 
-    setSelectedImage(size);
+    setSelectedSize(size);
     // Kiểm tra nếu color hiện tại không có trong size mới thì reset color
     if (!variantOptions.sizeMap.get(size)?.has(selectedColor)) {
       setSelectedColor('');
@@ -65,20 +73,31 @@ function ProductCard({ item, isShowVariant = true }) {
     // Nếu click vào color đang được chọn thì bỏ chọn
     if (selectedColor === color) {
       setSelectedColor('');
+      // Reset lại hình ảnh mặc định khi bỏ chọn màu
+      setDisplayImage(item?.images[0]);
+      setHoverImage(item?.images[1] || item?.images[0]);
       return;
     }
 
     setSelectedColor(color);
+
+    // Cập nhật hình ảnh dựa trên màu sắc được chọn
+    const colorImages = variantOptions.colorImageMap.get(color);
+    if (colorImages && colorImages.length > 0) {
+      setDisplayImage(colorImages[0]);
+      setHoverImage(colorImages[1] || colorImages[0]);
+    }
+
     // Kiểm tra nếu image hiện tại không có trong color mới thì reset image
-    if (!variantOptions.colorMap.get(color)?.has(selectedImage)) {
-      setSelectedImage('');
+    if (!variantOptions.colorMap.get(color)?.has(selectedSize)) {
+      setSelectedSize('');
     }
   };
 
   // Hàm lấy giá dựa trên size và color được chọn
   const getSelectedPrice = () => {
-    if (selectedImage && selectedColor) {
-      const selectedVariant = item?.variants.find((v) => v.size === selectedImage && v.color === selectedColor);
+    if (selectedSize && selectedColor) {
+      const selectedVariant = item?.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
       if (selectedVariant) {
         return {
           price: selectedVariant.price,
@@ -108,7 +127,7 @@ function ProductCard({ item, isShowVariant = true }) {
 
   // Hàm xử lý sự kiện khi nhấn nút "Thêm vào giỏ hàng"
   const handleAddToCart = () => {
-    const selectedVariant = item.variants.find((v) => v.size === selectedImage && v.color === selectedColor);
+    const selectedVariant = item.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
 
     if (!selectedVariant) {
       alert('Vui lòng chọn size và màu sắc');
@@ -146,19 +165,16 @@ function ProductCard({ item, isShowVariant = true }) {
   return (
     <div className='flex h-full w-full flex-col items-start justify-start overflow-hidden border'>
       <div className='group relative max-h-[340px] w-full cursor-pointer'>
-        <img className='max-h-[340px] w-full object-cover' src={item?.images[0]} alt={item?.name} />
+        <img className='max-h-[340px] w-full object-cover' src={displayImage} alt={item?.name} />
         <img
           className='absolute bottom-0 left-0 right-0 top-0 max-h-[340px] w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:transition-opacity group-hover:duration-300'
-          src={item?.images[1]}
+          src={hoverImage}
         />
 
         <div className='absolute right-3 top-3 flex flex-col gap-2 bg-transparent transition-all duration-300 group-hover:right-3 group-hover:opacity-100 group-hover:transition-all group-hover:duration-300 lg:right-0 lg:opacity-0'>
           <button className='flex h-[40px] w-[40px] items-center justify-center rounded-full border-2 bg-white hover:bg-primaryColor hover:text-white'>
             <Heart strokeWidth={1.5} width={20} />
           </button>
-          {/* <button className='flex h-[40px] w-[40px] items-center justify-center rounded-full border-2 bg-white hover:bg-primaryColor hover:text-white'>
-              <Eye strokeWidth={1.5} width={20} />
-            </button> */}
         </div>
       </div>
       <div className={`flex h-full w-full flex-col items-start justify-between p-2 sm:px-3`}>

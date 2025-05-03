@@ -2,16 +2,10 @@ const cloudinary = require("../config/cloudinary");
 const fs = require("fs");
 const path = require("path");
 
-/**
- * Upload một file đơn lẻ lên Cloudinary
- * @param {Object} file - Đối tượng file từ multer
- * @param {String} folder - Thư mục trong Cloudinary để lưu trữ (không bắt buộc)
- * @returns {Promise} - Trả về kết quả upload từ Cloudinary
- */
 const uploadSingleFile = async (file, folder = "uploads") => {
   try {
-    // Nếu file đến từ memory storage
-    if (file.buffer) {
+    // Xử lý file từ express-fileupload
+    if (file.data) {
       return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
@@ -29,35 +23,22 @@ const uploadSingleFile = async (file, folder = "uploads") => {
           }
         );
 
-        uploadStream.end(file.buffer);
+        uploadStream.end(file.data);
       });
     }
 
-    // Nếu file có đường dẫn (từ disk storage)
-    if (file.path) {
-      const result = await cloudinary.uploader.upload(file.path, {
+    // Nếu file có đường dẫn tạm thời (trong trường hợp tempFilePath được sử dụng)
+    if (file.tempFilePath) {
+      const result = await cloudinary.uploader.upload(file.tempFilePath, {
         folder,
         resource_type: "auto",
         transformation: [{ width: 1000, height: 1000, crop: "limit" }, { quality: "auto" }, { fetch_format: "auto" }],
       });
 
       // Xóa file tạm nếu cần
-      if (file.path.includes("uploads")) {
-        fs.unlinkSync(file.path);
-      }
+      fs.unlinkSync(file.tempFilePath);
 
       return result;
-    }
-
-    // Cho file từ multer-storage-cloudinary
-    if (file.filename && file.public_id) {
-      return {
-        public_id: file.public_id,
-        secure_url: file.path || file.secure_url,
-        format: file.format,
-        width: file.width,
-        height: file.height,
-      };
     }
 
     throw new Error("Định dạng file không hợp lệ");
@@ -67,15 +48,26 @@ const uploadSingleFile = async (file, folder = "uploads") => {
   }
 };
 
-/**
- * Upload nhiều files lên Cloudinary
- * @param {Array} files - Mảng các đối tượng file từ multer
- * @param {String} folder - Thư mục trong Cloudinary để lưu trữ (không bắt buộc)
- * @returns {Promise} - Trả về mảng kết quả upload từ Cloudinary
- */
 const uploadMultipleFiles = async (files, folder = "uploads") => {
   try {
-    const uploadPromises = files.map((file) => uploadSingleFile(file, folder));
+    // Xử lý trường hợp files là một đối tượng với nhiều file
+    // express-fileupload trả về dạng { fieldName1: file1, fieldName2: file2 } hoặc { fieldName: [file1, file2] }
+    let filesToUpload = [];
+
+    if (!Array.isArray(files)) {
+      // Nếu files là một đối tượng từ req.files (express-fileupload)
+      if (files.files) {
+        // Trường hợp req.files.files
+        filesToUpload = Array.isArray(files.files) ? files.files : [files.files];
+      } else {
+        // Trường hợp req.files là một đối tượng với nhiều file
+        filesToUpload = Object.values(files).flat();
+      }
+    } else {
+      filesToUpload = files;
+    }
+
+    const uploadPromises = filesToUpload.map((file) => uploadSingleFile(file, folder));
     return Promise.all(uploadPromises);
   } catch (error) {
     console.error("Lỗi upload nhiều files:", error);
@@ -95,15 +87,28 @@ const deleteFile = async (file) => {
     if (typeof file === "string") {
       // Nếu đó là URL, trích xuất public_id
       if (file.includes("cloudinary.com")) {
-        const urlParts = file.split("/");
-        const filenameWithExtension = urlParts[urlParts.length - 1];
-        publicId = filenameWithExtension.split(".")[0];
+        // Tách URL để lấy phần path sau upload/
+        const regex = /\/upload\/(.+)\.\w+$/;
+        const match = file.match(regex);
 
-        // Nếu có cấu trúc thư mục trong URL
-        const folderPath = urlParts.slice(urlParts.indexOf("upload") + 1, urlParts.length - 1).join("/");
+        if (match && match[1]) {
+          publicId = match[1];
+        } else {
+          // Phương pháp dự phòng nếu regex không khớp
+          const urlParts = file.split("/");
+          // Lấy vị trí của "upload" trong URL
+          const uploadIndex = urlParts.findIndex((part) => part === "upload");
 
-        if (folderPath) {
-          publicId = `${folderPath}/${publicId}`;
+          if (uploadIndex !== -1 && uploadIndex < urlParts.length - 1) {
+            // Lấy phần sau "upload" đến trước phần mở rộng
+            const filenameParts = urlParts[urlParts.length - 1].split(".");
+            const filenameWithoutExt = filenameParts[0];
+
+            const folderPath = urlParts.slice(uploadIndex + 1, urlParts.length - 1).join("/");
+            publicId = folderPath ? `${folderPath}/${filenameWithoutExt}` : filenameWithoutExt;
+          } else {
+            throw new Error("URL không hợp lệ, không thể trích xuất public_id");
+          }
         }
       } else {
         // Đã là public_id

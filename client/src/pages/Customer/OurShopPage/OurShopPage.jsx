@@ -4,7 +4,6 @@ import Button from '@/components/common/Button/Button';
 import CountDownBanner from '@/components/common/CountDownBanner/CountDownBanner';
 import Select from '@/components/common/Select/Select';
 import ProductCard from '@/components/product/ProductCard/ProductCard';
-import { getAllProducts } from '@/services/productService';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts } from '../../../redux/features/product/productSlice';

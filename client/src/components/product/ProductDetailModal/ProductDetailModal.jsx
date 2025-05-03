@@ -14,6 +14,8 @@ const ProductDetailModal = () => {
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showValidation, setShowValidation] = useState(false);
+  const [allImages, setAllImages] = useState([]);
+  const [colorImageIndexMap, setColorImageIndexMap] = useState({});
 
   useEffect(() => {
     if (isDetailModalOpen && modalProductId) {
@@ -32,16 +34,50 @@ const ProductDetailModal = () => {
     }
   }, [isDetailModalOpen]);
 
+  useEffect(() => {
+    // Khởi tạo mảng hình ảnh khi sản phẩm được tải
+    if (product) {
+      // Tạo mảng chứa tất cả hình ảnh từ product và variants
+      const productImages = product.images || [];
+      const variantImages = [];
+      const indexMap = {};
+
+      // Thêm tất cả hình ảnh từ variants vào mảng
+      if (product.variants) {
+        product.variants.forEach((variant) => {
+          if (variant.images && variant.images.length > 0) {
+            // Lưu vị trí bắt đầu của hình ảnh variant trong mảng allImages
+            indexMap[variant.color] = productImages.length + variantImages.length;
+            variant.images.forEach((img) => {
+              // Chỉ thêm hình ảnh nếu nó không trùng lặp
+              if (!productImages.includes(img) && !variantImages.includes(img)) {
+                variantImages.push(img);
+              }
+            });
+          }
+        });
+      }
+
+      // Kết hợp hình ảnh sản phẩm và variant
+      const combined = [...productImages, ...variantImages];
+      setAllImages(combined);
+      setColorImageIndexMap(indexMap);
+      setCurrentImageIndex(0);
+    }
+  }, [product]);
+
   const handleCloseModal = () => {
     dispatch(closeProductDetailModal());
   };
 
   // Calculate available options
   const variantOptions = React.useMemo(() => {
-    if (!product?.variants) return { sizes: [], colors: [], sizeMap: new Map(), colorMap: new Map() };
+    if (!product?.variants)
+      return { sizes: [], colors: [], sizeMap: new Map(), colorMap: new Map(), colorImageMap: new Map() };
 
     const sizeMap = new Map();
     const colorMap = new Map();
+    const colorImageMap = new Map();
 
     product.variants.forEach((variant) => {
       // Map size to colors
@@ -55,13 +91,19 @@ const ProductDetailModal = () => {
         colorMap.set(variant.color, new Set());
       }
       colorMap.get(variant.color).add(variant.size);
+
+      // Map color to images
+      if (variant.images && variant.images.length > 0) {
+        colorImageMap.set(variant.color, variant.images);
+      }
     });
 
     return {
       sizes: Array.from(sizeMap.keys()),
       colors: Array.from(colorMap.keys()),
       sizeMap,
-      colorMap
+      colorMap,
+      colorImageMap
     };
   }, [product?.variants]);
 
@@ -86,7 +128,7 @@ const ProductDetailModal = () => {
     setQuantity(1);
 
     // Check if the current color is available for the new size, if not reset color
-    if (!variantOptions.sizeMap.get(size)?.has(selectedColor)) {
+    if (selectedColor && !variantOptions.sizeMap.get(size)?.has(selectedColor)) {
       setSelectedColor('');
       setQuantity(1);
     }
@@ -98,14 +140,20 @@ const ProductDetailModal = () => {
       setSelectedColor('');
       setQuantity(1);
       setShowValidation(false);
+      setCurrentImageIndex(0); // Reset về ảnh chính đầu tiên khi bỏ chọn màu
       return;
     }
 
     setSelectedColor(color);
     setQuantity(1);
 
+    // Hiển thị hình ảnh của màu được chọn bằng cách cập nhật currentImageIndex
+    if (colorImageIndexMap[color] !== undefined) {
+      setCurrentImageIndex(colorImageIndexMap[color]);
+    }
+
     // Check if the current size is available for the new color, if not reset size
-    if (!variantOptions.colorMap.get(color)?.has(selectedSize)) {
+    if (selectedSize && !variantOptions.colorMap.get(color)?.has(selectedSize)) {
       setSelectedSize('');
       setQuantity(1);
     }
@@ -153,7 +201,8 @@ const ProductDetailModal = () => {
         discountPrice: selectedVariant.discountPrice,
         color: selectedVariant.color,
         size: selectedVariant.size,
-        image: product.images[0]
+        image:
+          selectedVariant.images && selectedVariant.images.length > 0 ? selectedVariant.images[0] : product.images[0]
       }
     };
 
@@ -200,21 +249,32 @@ const ProductDetailModal = () => {
             <div className='flex flex-col gap-3'>
               <div className='aspect-w-1 aspect-h-1 w-full'>
                 <img
-                  src={product.images[currentImageIndex]}
+                  src={allImages[currentImageIndex] || product.images[0]}
                   alt={product.name}
                   className='h-64 w-full object-cover md:h-80'
                 />
               </div>
-              <div className='grid grid-cols-4 gap-2'>
-                {product.images.map((image, index) => (
+              <div className='grid grid-cols-5 gap-2 overflow-x-auto'>
+                {allImages.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
                     className={`h-fit w-fit border-2 ${currentImageIndex === index ? 'border-black' : 'border-transparent'}`}
                   >
-                    <img src={image} alt={`${product.name} ${index + 1}`} className='h-16 w-16 object-cover' />
+                    <img src={image} alt={`${product.name} ${index + 1}`} className='h-14 w-14 object-cover' />
                   </button>
                 ))}
+              </div>
+
+              {/* Hiển thị thông tin về ảnh hiện tại */}
+              <div className='text-xs text-gray-500'>
+                {selectedColor &&
+                Object.keys(colorImageIndexMap).includes(selectedColor) &&
+                currentImageIndex >= colorImageIndexMap[selectedColor] ? (
+                  <p>Hình ảnh màu: {selectedColor}</p>
+                ) : (
+                  <p>Hình ảnh sản phẩm</p>
+                )}
               </div>
             </div>
 
@@ -366,8 +426,6 @@ const ProductDetailModal = () => {
                   variant='primary'
                   onClick={() => {
                     handleAddToCart();
-                    // Navigate to cart
-                    window.location.href = '/cart';
                   }}
                   className='flex-1'
                 >

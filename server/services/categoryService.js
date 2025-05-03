@@ -1,6 +1,6 @@
 const Category = require("../models/category");
 const mongoose = require("mongoose");
-const { deleteFileCloudinary, uploadMultipleFiles, formatImagesForDB } = require("./hihiService");
+const { deleteFile, deleteMultipleFiles } = require("./fileService");
 const slugify = require("slugify");
 
 const getCategories = async (options = {}) => {
@@ -141,9 +141,12 @@ const deleteCategory = async (categoryId) => {
       throw new Error("Category not found");
     }
 
-    // Delete category images if any
+    // Delete category images from Cloudinary if they have public_id
     if (category.images && category.images.length > 0) {
-      await deleteFileCloudinary(category.images);
+      const imagesToDelete = category.images.filter((img) => img.public_id);
+      if (imagesToDelete.length > 0) {
+        await deleteMultipleFiles(imagesToDelete);
+      }
     }
 
     // Remove the category
@@ -154,74 +157,10 @@ const deleteCategory = async (categoryId) => {
   }
 };
 
-const validateImageFiles = (files) => {
-  const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-  return files.filter((file) => !allowedTypes.includes(file.mimetype));
-};
-
-const deleteCategoryImages = async (categoryId, imagesToDelete) => {
+const createCategory = async (categoryData) => {
+  console.log("DEBUG: Đã vào service createCategory", categoryData);
   try {
-    // Get the category
-    const category = await Category.findById(categoryId);
-    if (!category) {
-      throw new Error("Category not found");
-    }
-
-    // Find the image objects that match the URLs or public_ids
-    const imagesToDeleteObjects = category.images.filter((img) => imagesToDelete.includes(img.url));
-
-    if (imagesToDeleteObjects.length === 0) {
-      return false; // No images found to delete
-    }
-
-    // Delete from Cloudinary
-    await deleteFileCloudinary(imagesToDeleteObjects);
-
-    // Remove from the database
-    await Category.findByIdAndUpdate(categoryId, {
-      $pull: {
-        images: {
-          $or: [{ url: { $in: imagesToDelete } }],
-        },
-      },
-    });
-
-    return true;
-  } catch (error) {
-    throw new Error(`Failed to delete category images: ${error.message}`);
-  }
-};
-
-const addCategoryImages = async (categoryId, files) => {
-  try {
-    if (!files || files.length === 0) {
-      return [];
-    }
-
-    // Check if category exists
-    const categoryExists = await Category.exists({ _id: categoryId });
-    if (!categoryExists) {
-      throw new Error("Category not found");
-    }
-
-    // Upload files to Cloudinary
-    const uploadResults = await uploadMultipleFiles(files, "ecommerce/category");
-    const formattedImages = formatImagesForDB(uploadResults);
-
-    // Add to the category document
-    await Category.findByIdAndUpdate(categoryId, {
-      $push: { images: { $each: formattedImages } },
-    });
-
-    return formattedImages;
-  } catch (error) {
-    throw new Error(`Failed to add category images: ${error.message}`);
-  }
-};
-
-const createCategory = async (categoryData, files) => {
-  try {
-    const { name, parentId, description, isActive, priority } = categoryData;
+    const { name, parentId, description, isActive, priority, images } = categoryData;
 
     // Generate slug
     const slug = slugify(name, {
@@ -244,23 +183,21 @@ const createCategory = async (categoryData, files) => {
       }
     }
 
-    // Upload and process images
-    const uploadResults = await uploadMultipleFiles(files, "ecommerce/category");
-    const formattedImages = formatImagesForDB(uploadResults);
-
     // Create new category
     const newCategory = new Category({
       name,
       slug,
       parentId: parentId && mongoose.Types.ObjectId.isValid(parentId) ? parentId : null,
       description,
-      images: formattedImages,
+      images: images,
       isActive: isActive !== undefined ? isActive : true,
       priority: priority || 0,
     });
+    console.log("chuẩn bị lưu category", newCategory);
 
     // Save to database
     const savedCategory = await newCategory.save();
+    console.log("Đã lưu category thành công", savedCategory);
     return savedCategory;
   } catch (error) {
     // Handle duplicate key error specially
@@ -288,12 +225,12 @@ const getCategoryById = async (categoryId) => {
 
 const updateCategory = async (categoryId, updateData) => {
   try {
-    const { name, parentId, description, isActive, priority } = updateData;
+    const { name, parentId, description, isActive, priority, images } = updateData;
 
     // Check if category exists
     const category = await Category.findById(categoryId);
     if (!category) {
-      throw new Error("Category not found");
+      throw new Error("Danh mục không tồn tại");
     }
 
     // Prepare data for update
@@ -317,6 +254,12 @@ const updateCategory = async (categoryId, updateData) => {
     if (description !== undefined) dataToUpdate.description = description;
     if (isActive !== undefined) dataToUpdate.isActive = isActive;
     if (priority !== undefined) dataToUpdate.priority = priority;
+
+    // Handle new images if provided
+    if (images && Array.isArray(images) && images.length > 0) {
+      // Add new images to existing ones
+      dataToUpdate.images = images;
+    }
 
     // Handle parentId update with validation
     if (parentId !== undefined) {
@@ -367,9 +310,6 @@ module.exports = {
   hasProducts,
   getProductCountsByCategories,
   deleteCategory,
-  validateImageFiles,
-  deleteCategoryImages,
-  addCategoryImages,
   createCategory,
   getCategoryById,
   updateCategory,

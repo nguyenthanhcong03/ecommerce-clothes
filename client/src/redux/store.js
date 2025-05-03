@@ -6,6 +6,7 @@ import categoryReducer from './features/category/categorySlice';
 import cartReducer from './features/cart/cartSlice';
 import searchReducer from './features/searchDrawer/searchSlice';
 import sidebarReducer from './features/sidebarDrawer/sidebarSlice';
+import couponReducer from './features/coupon/couponSlice';
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ export const store = configureStore({
     account: accountReducer,
     product: productReducer,
     user: userReducer,
-    category: categoryReducer
+    category: categoryReducer,
+    coupon: couponReducer
   }
 });

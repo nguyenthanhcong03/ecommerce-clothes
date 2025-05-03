@@ -6,7 +6,7 @@ const BASE_API = '/api/category';
  * @param {Object} params Các tham số truy vấn {page, limit, search}
  * @returns {Promise} Kết quả từ API chứa danh sách danh mục và thông tin phân trang
  */
-export const getAllCategories = async ({ page = 1, limit = 10, search = '' }) => {
+export const getAllCategoriesAPI = async ({ page = 1, limit = 10, search = '' }) => {
   const queryParams = new URLSearchParams({
     page,
     limit,
@@ -21,7 +21,7 @@ export const getAllCategories = async ({ page = 1, limit = 10, search = '' }) =>
  * @param {Object} data Dữ liệu danh mục cần tạo (bao gồm name, description, images...)
  * @returns {Promise} Kết quả từ API sau khi tạo danh mục
  */
-export const createCategory = async (data) => {
+export const createCategoryAPI = async (data) => {
   return await axiosClient.post(BASE_API, data);
 };
 
@@ -31,7 +31,7 @@ export const createCategory = async (data) => {
  * @param {Object} data Dữ liệu danh mục cần cập nhật
  * @returns {Promise} Kết quả từ API sau khi cập nhật danh mục
  */
-export const updateCategoryByIdAdmin = async (id, data) => {
+export const updateCategoryByIdAPI = async (id, data) => {
   return await axiosClient.put(`${BASE_API}/${id}`, data);
 };
 
@@ -40,7 +40,7 @@ export const updateCategoryByIdAdmin = async (id, data) => {
  * @param {String} id ID của danh mục cần xóa
  * @returns {Promise} Kết quả từ API sau khi xóa danh mục
  */
-export const deleteCategoryById = async (id) => {
+export const deleteCategoryByIdAPI = async (id) => {
   return await axiosClient.delete(`${BASE_API}/${id}`);
 };
 
@@ -49,7 +49,7 @@ export const deleteCategoryById = async (id) => {
  * @param {String} id ID của danh mục cần lấy
  * @returns {Promise} Kết quả từ API chứa thông tin danh mục
  */
-export const getCategoryById = async (id) => {
+export const getCategoryByIdAPI = async (id) => {
   return await axiosClient.get(`${BASE_API}/${id}`);
 };
 
@@ -58,7 +58,7 @@ export const getCategoryById = async (id) => {
  * @param {Boolean} onlyActive Chỉ lấy các danh mục đang hoạt động
  * @returns {Promise} Kết quả từ API chứa cây danh mục
  */
-export const getCategoryTree = async (onlyActive = true) => {
+export const getCategoryTreeAPI = async (onlyActive = true) => {
   const url = `${BASE_API}/tree?onlyActive=${onlyActive}`;
   return await axiosClient.get(url);
 };

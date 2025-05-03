@@ -119,6 +119,4 @@ productSchema.index({ isActive: 1, createdAt: -1 });
 productSchema.index({ featured: 1 });
 // Hỗ trợ query sản phẩm nổi bật
 
-const Product = mongoose.model("Product", productSchema);
-
-module.exports = Product;
+module.exports = mongoose.model("Product", productSchema);

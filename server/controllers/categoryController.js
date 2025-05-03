@@ -1,7 +1,7 @@
 const slugify = require("slugify");
 const Category = require("../models/category");
 const qs = require("qs");
-const { uploadMultipleFiles, formatImagesForDB } = require("../services/hihiService");
+const { formatImagesForDB } = require("../services/fileService");
 const { default: mongoose } = require("mongoose");
 const categoryService = require("../services/categoryService");
 
@@ -37,28 +37,18 @@ const getAllCategories = async (req, res) => {
 
 const createCategory = async (req, res) => {
   try {
-    const parsedBody = qs.parse(req.body);
+    const categoryData = req.body;
+    console.log("DEBUG: Đã vào controller createCategory", categoryData);
 
-    if (!req.files || !req.files.images) {
+    if (!categoryData.images || !Array.isArray(categoryData.images) || categoryData.images.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "Vui lòng upload ít nhất một file ảnh",
-      });
-    }
-
-    const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
-
-    // Validate image files
-    const invalidFiles = categoryService.validateImageFiles(files);
-    if (invalidFiles.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Chỉ chấp nhận file JPEG, JPG hoặc PNG",
+        message: "Vui lòng cung cấp ít nhất một URL ảnh",
       });
     }
 
     // Create category using service
-    const savedCategory = await categoryService.createCategory(parsedBody, files);
+    const savedCategory = await categoryService.createCategory(categoryData);
 
     res.status(201).json({
       success: true,
@@ -82,48 +72,14 @@ const createCategory = async (req, res) => {
 };
 
 const updateCategoryById = async (req, res) => {
+  console.log("first");
   try {
     const { id } = req.params;
-    const parsedBody = qs.parse(req.body);
-    const { deletedImages } = parsedBody;
-
-    // Process image deletions
-    if (deletedImages) {
-      const imagesToDelete = Array.isArray(deletedImages) ? deletedImages : [deletedImages];
-
-      if (imagesToDelete.length > 0) {
-        try {
-          await categoryService.deleteCategoryImages(id, imagesToDelete);
-        } catch (err) {
-          if (err.message === "Category not found") {
-            return res.status(404).json({
-              success: false,
-              message: "Không tìm thấy danh mục",
-            });
-          }
-          throw err;
-        }
-      }
-    }
-
-    // Process image uploads
-    if (req?.files && req?.files?.images) {
-      const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
-
-      const invalidFiles = categoryService.validateImageFiles(files);
-      if (invalidFiles.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Chỉ chấp nhận file JPEG, JPG hoặc PNG",
-        });
-      }
-
-      await categoryService.addCategoryImages(id, files);
-    }
+    const updateData = req.body;
 
     // Update category data
     try {
-      const updatedCategory = await categoryService.updateCategory(id, parsedBody);
+      const updatedCategory = await categoryService.updateCategory(id, updateData);
 
       return res.status(200).json({
         success: true,
@@ -185,8 +141,10 @@ const getCategoryById = async (req, res) => {
 };
 
 const deleteCategory = async (req, res) => {
+  console.log("đã vào deleteCategory controller");
   try {
     const { id } = req.params;
+    console.log("id", id);
 
     const hasChildren = await categoryService.hasChildCategories(id);
     if (hasChildren) {

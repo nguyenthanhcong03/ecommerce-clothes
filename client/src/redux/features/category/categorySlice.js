@@ -1,27 +1,34 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
-  createCategory,
-  getAllCategories,
-  updateCategoryByIdAdmin,
-  deleteCategoryById
+  createCategoryAPI,
+  deleteCategoryByIdAPI,
+  getAllCategoriesAPI,
+  updateCategoryByIdAPI
 } from '../../../services/categoryService.js';
 
-// Định nghĩa async thunk để gọi API
 export const fetchCategories = createAsyncThunk('categories/fetchCategories', async (params, { rejectWithValue }) => {
   try {
-    const data = await getAllCategories(params);
-    console.log('first data', data);
+    const data = await getAllCategoriesAPI(params);
     return data;
   } catch (error) {
     return rejectWithValue(error.response?.data || error.message);
   }
 });
 
-export const handleCreateCategory = createAsyncThunk(
-  'categories/handleCreateCategory',
-  async ({ payload }, { rejectWithValue }) => {
+export const createCategory = createAsyncThunk('categories/createCategory', async (payload, { rejectWithValue }) => {
+  try {
+    const res = await createCategoryAPI(payload);
+    return res;
+  } catch (error) {
+    return rejectWithValue(error.response?.data || error.message);
+  }
+});
+
+export const updateCategoryById = createAsyncThunk(
+  'categories/updateCategoryById',
+  async ({ categoryId, payload }, { rejectWithValue }) => {
     try {
-      const res = await createCategory(payload);
+      const res = await updateCategoryByIdAPI(categoryId, payload);
       return res;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -29,116 +36,123 @@ export const handleCreateCategory = createAsyncThunk(
   }
 );
 
-export const updateCategoryById = createAsyncThunk(
-  'categories/updateCategoryById',
-  async ({ categoryId, payload }, { rejectWithValue }) => {
-    try {
-      const res = await updateCategoryByIdAdmin(categoryId, payload);
-      return res; // Trả về dữ liệu category đã cập nhật
-    } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
-    }
+export const deleteCategory = createAsyncThunk('categories/deleteCategory', async (categoryId, { rejectWithValue }) => {
+  try {
+    const res = await deleteCategoryByIdAPI(categoryId);
+    return { categoryId, data: res };
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi xóa danh mục';
+    return rejectWithValue({
+      message: errorMessage,
+      code: error.response?.status || 500
+    });
   }
-);
+});
 
-export const handleDeleteCategory = createAsyncThunk(
-  'categories/handleDeleteCategory',
-  async (categoryId, { rejectWithValue }) => {
-    try {
-      const res = await deleteCategoryById(categoryId);
-      return { categoryId, data: res };
-    } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
-    }
-  }
-);
+// Trạng thái ban đầu
+const initialState = {
+  categories: [],
+  total: 0,
+  page: 0,
+  pages: 1,
+  loading: false,
+  error: null
+};
 
 const categorySlice = createSlice({
   name: 'categories',
-  initialState: {
-    categories: [],
-    total: 0,
-    page: 0,
-    pages: 1,
-    status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
-    error: null,
-    isOpenForm: false,
-    selectedCategory: null
-  },
+  initialState,
   reducers: {
-    setIsOpenForm: (state, action) => {
-      state.isOpenForm = action.payload;
-    },
-    setSelectedCategory: (state, action) => {
-      state.selectedCategory = action.payload;
+    // Xóa trạng thái lỗi
+    clearError: (state) => {
+      state.error = null;
     }
   },
   extraReducers: (builder) => {
     builder
-      // FETCH
+      // LẤY DANH SÁCH DANH MỤC
       .addCase(fetchCategories.pending, (state) => {
-        state.status = 'loading';
+        state.loading = true;
         state.error = null;
       })
       .addCase(fetchCategories.fulfilled, (state, action) => {
-        state.status = 'succeeded';
+        state.loading = false;
         state.categories = action.payload.data;
-        state.total = action.payload.pagination.total;
-        state.page = action.payload.page;
-        state.pages = action.payload.pages;
+        state.total = action.payload.pagination?.total || 0;
+        state.page = action.payload.page || 0;
+        state.pages = action.payload.pages || 1;
       })
       .addCase(fetchCategories.rejected, (state, action) => {
-        state.status = 'failed';
+        state.loading = false;
         state.error = action.payload || action.error.message;
       })
 
-      // CREATE
-      .addCase(handleCreateCategory.pending, (state) => {
-        state.status = 'loading';
+      // TẠO DANH MỤC MỚI
+      .addCase(createCategory.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-      .addCase(handleCreateCategory.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.categories.unshift(action.payload.data); // Có thể cần gọi fetch lại tùy backend
+      .addCase(createCategory.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.payload?.data) {
+          // Thêm vào đầu nếu là danh mục cha hoặc không có danh mục cha
+          if (!action.payload.data.parentId) {
+            state.categories.unshift(action.payload.data);
+          } else {
+            // Ngược lại thêm vào cuối (thường danh mục con sẽ hiển thị sau danh mục cha)
+            state.categories.push(action.payload.data);
+          }
+          state.total += 1;
+        }
       })
-      .addCase(handleCreateCategory.rejected, (state, action) => {
-        state.status = 'failed';
+      .addCase(createCategory.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload || action.error.message;
       })
 
-      // UPDATE
+      // CẬP NHẬT DANH MỤC
       .addCase(updateCategoryById.pending, (state) => {
-        state.status = 'loading';
+        state.loading = true;
+        state.error = null;
       })
       .addCase(updateCategoryById.fulfilled, (state, action) => {
-        state.status = 'succeeded';
+        state.loading = false;
         const updatedCategory = action.payload.data;
-        // Cập nhật category trong mảng categories
-        const index = state.categories.findIndex((category) => category._id === updatedCategory._id);
-        if (index !== -1) {
-          state.categories[index] = updatedCategory;
+        if (updatedCategory) {
+          // Cập nhật danh mục trong state
+          const index = state.categories.findIndex((category) => category._id === updatedCategory._id);
+          if (index !== -1) {
+            state.categories[index] = updatedCategory;
+          }
         }
       })
       .addCase(updateCategoryById.rejected, (state, action) => {
-        state.status = 'failed';
+        state.loading = false;
         state.error = action.payload || action.error.message;
       })
 
-      // DELETE
-      .addCase(handleDeleteCategory.pending, (state) => {
-        state.status = 'loading';
+      // XÓA DANH MỤC
+      .addCase(deleteCategory.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-      .addCase(handleDeleteCategory.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        // Xóa category khỏi mảng categories
-        state.categories = state.categories.filter((category) => category._id !== action.payload.categoryId);
+      .addCase(deleteCategory.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.payload?.categoryId) {
+          // Xóa danh mục khỏi state
+          state.categories = state.categories.filter((category) => category._id !== action.payload.categoryId);
+          // Cũng lọc ra bất kỳ danh mục con nào có danh mục này làm cha (trong trường hợp backend không xóa theo cascade)
+          state.categories = state.categories.filter((category) => category.parentId !== action.payload.categoryId);
+          state.total = Math.max(0, state.total - 1); // Giảm tổng số
+        }
       })
-      .addCase(handleDeleteCategory.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.payload || action.error.message;
+      .addCase(deleteCategory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || action.error?.message || 'Có lỗi xảy ra khi xóa danh mục';
       });
   }
 });
 
-export const { setIsOpenForm, setSelectedCategory } = categorySlice.actions;
+export const { setIsOpenForm, setSelectedCategory, clearError } = categorySlice.actions;
 
 export default categorySlice.reducer;
