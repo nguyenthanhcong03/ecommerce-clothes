@@ -4,15 +4,14 @@ import UserActivityHeatmap from '@/components/AdminComponents/users/UserActivity
 import UserDemographicsChart from '@/components/AdminComponents/users/UserDemographicsChart';
 import UserGrowthChart from '@/components/AdminComponents/users/UserGrowthChart';
 import useDebounce from '@/hooks/useDebounce';
+import { deleteProductById, fetchProducts } from '@/store/slices/productSlice';
+import { message } from 'antd';
 import { motion } from 'framer-motion';
 import { Package, PackagePlus, Star, TrendingUp } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import ProductForm from './ProductForm';
 import ProductTable from './ProductTable';
-import { deleteProductById, fetchProducts } from '../../../redux/features/product/productSlice';
-import { message } from 'antd';
-import { useSelector } from 'react-redux';
 
 const ProductPage = () => {
   const dispatch = useDispatch();

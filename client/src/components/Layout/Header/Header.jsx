@@ -4,10 +4,10 @@ import LanguageSwitcher from '@/components/common/LanguageSwitcher/LanguageSwitc
 import MenuItem from '@/components/common/MenuItem/MenuItem';
 import UserDropdown from '@/components/layout/Header/UserDropdown/UserDropdown';
 import useScrollHandling from '@/hooks/useScrollHandling';
-import { doLogoutAction } from '@/redux/features/account/accountSlice';
-import { toggleSearch } from '@/redux/features/searchDrawer/searchSlice';
-import { setType, toggleSidebar } from '@/redux/features/sidebarDrawer/sidebarSlice';
 import { callLogout } from '@/services/authService';
+import { doLogoutAction } from '@/store/slices/accountSlice';
+import { toggleSearch } from '@/store/slices/searchSlice';
+import { setType, toggleSidebar } from '@/store/slices/sidebarSlice';
 import { Tooltip } from 'antd';
 import { CircleUserRound, Facebook, Heart, Instagram, Menu, Search, ShoppingCart } from 'lucide-react';
 import React, { useEffect, useState } from 'react';

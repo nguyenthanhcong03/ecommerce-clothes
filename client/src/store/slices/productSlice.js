@@ -8,7 +8,7 @@ import {
   deleteProductByIdAPI,
   addProductReviewAPI,
   getProductReviewsAPI
-} from '../../../services/productService';
+} from '../../services/productService';
 import { set } from 'react-hook-form';
 
 // Định nghĩa async thunk để gọi API

@@ -1,11 +1,10 @@
-import React, { useEffect } from 'react';
-import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { setIsOpenForm, setSelectedUser, updateUserById } from '@/store/slices/userSlice';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { Form, Input, Button, Select, Switch, Card, Row, Col, Modal } from 'antd';
+import { Button, Card, Col, Form, Input, Modal, Row, Select, Switch } from 'antd';
+import React, { useEffect } from 'react';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import { setIsOpenForm, setSelectedUser, updateUserById } from '../../../redux/features/user/userSlice';
-import axiosClient from '../../../services/axiosClient';
+import * as yup from 'yup';
 
 const { Option } = Select;
 

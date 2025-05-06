@@ -1,8 +1,9 @@
 import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import Button from '@/components/common/Button/Button';
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
-import { addToCart } from '@/redux/features/cart/cartSlice';
-import { fetchProductById } from '@/redux/features/product/productSlice';
+import { addToCart } from '@/store/slices/cartSlice';
+import { fetchProductById } from '@/store/slices/productSlice';
+import { setDirectBuyItem } from '@/store/slices/orderSlice';
 import { Facebook, Heart, ShoppingCart, Star } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -153,8 +154,7 @@ const DetailProduct = () => {
         image: imageUrl
       }
     };
-    // dispatch(addToCart(cartItem));
-    // dispatch(addToCart(product));
+    dispatch(addToCart(cartItem)); // Đã kích hoạt lại hành động thêm vào giỏ hàng
     setShowValidation(false);
   };
 
@@ -164,8 +164,29 @@ const DetailProduct = () => {
       setShowValidation(true);
       return;
     }
-    handleAddToCart();
-    navigate('/cart');
+
+    const selectedVariant = product.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
+    const imageUrl = product.images && product.images.length > 0 ? getImageUrl(product.images[0]) : '';
+
+    const productItem = {
+      productId: product._id,
+      variantId: selectedVariant._id,
+      quantity: quantity,
+      snapshot: {
+        name: product.name,
+        price: selectedVariant.price,
+        discountPrice: selectedVariant.discountPrice,
+        color: selectedVariant.color,
+        size: selectedVariant.size,
+        image: imageUrl
+      }
+    };
+
+    // Sử dụng action setDirectBuyItem thay vì addToCart
+    dispatch(setDirectBuyItem(productItem));
+    navigate('/checkout');
+
+    setShowValidation(false);
   };
 
   const handleQuantityChange = (item, newQuantity) => {

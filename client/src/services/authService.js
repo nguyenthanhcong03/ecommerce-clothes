@@ -1,14 +1,14 @@
-import axiosClient from './axiosClient.js';
+import axios from '@/config/axios';
 
 const BASE_API = '/api/auth';
 
 export const register = async (data) => {
-  const response = await axiosClient.post(`${BASE_API}/register`, data);
+  const response = await axios.post(`${BASE_API}/register`, data);
   return response;
 };
 
-export const login = async (username, password) => {
-  const response = await axiosClient.post(`${BASE_API}/login`, { username, password });
+export const login = async (username, password, rememberMe) => {
+  const response = await axios.post(`${BASE_API}/login`, { username, password, rememberMe });
 
   if (response?.accessToken) {
     // Store token in localStorage for non-HttpOnly cookie fallback
@@ -19,7 +19,7 @@ export const login = async (username, password) => {
 };
 
 export const callLogout = async () => {
-  const response = await axiosClient.post(`${BASE_API}/logout`);
+  const response = await axios.post(`${BASE_API}/logout`);
 
   // Clear stored tokens
   localStorage.removeItem('accessToken');
@@ -28,12 +28,12 @@ export const callLogout = async () => {
 };
 
 export const callFetchAccount = async () => {
-  const response = await axiosClient.get(`${BASE_API}/current`);
+  const response = await axios.get(`${BASE_API}/current`);
   return response;
 };
 
 export const refreshAccessToken = async () => {
-  const response = await axiosClient.post(
+  const response = await axios.post(
     `${BASE_API}/refresh-token`,
     {},
     {
@@ -49,12 +49,12 @@ export const refreshAccessToken = async () => {
 };
 
 export const forgotPassword = async (email) => {
-  const response = await axiosClient.post(`${BASE_API}/forgot-password`, { email });
+  const response = await axios.post(`${BASE_API}/forgot-password`, { email });
   return response;
 };
 
 export const resetPassword = async (token, newPassword) => {
-  const response = await axiosClient.post(`${BASE_API}/reset-password`, {
+  const response = await axios.post(`${BASE_API}/reset-password`, {
     token,
     newPassword
   });
@@ -62,7 +62,7 @@ export const resetPassword = async (token, newPassword) => {
 };
 
 export const changePassword = async (oldPassword, newPassword) => {
-  const response = await axiosClient.post(`${BASE_API}/change-password`, {
+  const response = await axios.post(`${BASE_API}/change-password`, {
     oldPassword,
     newPassword
   });
@@ -70,7 +70,7 @@ export const changePassword = async (oldPassword, newPassword) => {
 };
 
 export const verifyEmail = async (token) => {
-  const response = await axiosClient.get(`${BASE_API}/verify-email`, {
+  const response = await axios.get(`${BASE_API}/verify-email`, {
     params: { token }
   });
   return response;

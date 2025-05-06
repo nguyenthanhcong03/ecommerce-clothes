@@ -1,10 +1,9 @@
-import { fetchCategories } from '@/redux/features/category/categorySlice';
+import { deleteCategory, fetchCategories } from '@/store/slices/categorySlice';
 import { buildTree } from '@/utils/convertFlatArrToTreeArr';
 import { Button, Image, Input, Popconfirm, Space, Table, Tag, Tooltip, message } from 'antd';
 import { Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
 import React, { memo, useCallback, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
-import { deleteCategory } from '../../../redux/features/category/categorySlice';
 
 const CategoryTable = ({
   categories,

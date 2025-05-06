@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient';
+import axios from '@/config/axios';
 const BASE_API = '/api/file';
 
 /**
@@ -9,7 +9,7 @@ const BASE_API = '/api/file';
 export const uploadFile = (file) => {
   const formData = new FormData();
   formData.append('file', file);
-  return axiosClient.post(`${BASE_API}/cloud/upload`, formData, {
+  return axios.post(`${BASE_API}/cloud/upload`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
@@ -28,7 +28,7 @@ export const uploadMultipleFiles = (files) => {
   });
   console.log('formData entries', Array.from(formData.entries()));
   // Để axios tự thiết lập header, không chỉ định thủ công
-  return axiosClient.post(`${BASE_API}/cloud/upload/multiple`, formData);
+  return axios.post(`${BASE_API}/cloud/upload/multiple`, formData);
 };
 
 /**
@@ -37,7 +37,7 @@ export const uploadMultipleFiles = (files) => {
  * @returns {Promise} - Result of the delete operation
  */
 export const deleteFile = (fileIdentifier) => {
-  return axiosClient.delete(`${BASE_API}/cloud/delete`, {
+  return axios.delete(`${BASE_API}/cloud/delete`, {
     data: fileIdentifier.includes('cloudinary.com') ? { url: fileIdentifier } : { publicId: fileIdentifier }
   });
 };
@@ -48,7 +48,7 @@ export const deleteFile = (fileIdentifier) => {
  * @returns {Promise} - Result of the delete operations
  */
 export const deleteMultipleFiles = (fileIdentifiers) => {
-  return axiosClient.delete(`${BASE_API}/cloud/delete/multiple`, {
+  return axios.delete(`${BASE_API}/cloud/delete/multiple`, {
     data: { files: fileIdentifiers }
   });
 };

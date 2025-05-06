@@ -1,14 +1,14 @@
+import { deleteMultipleFiles, uploadMultipleFiles } from '@/services/fileService';
+import { fetchCategories } from '@/store/slices/categorySlice';
+import { createProduct, updateProductById } from '@/store/slices/productSlice';
+import { buildTree } from '@/utils/convertFlatArrToTreeArr';
 import { UploadOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Card, Form, Input, message, Modal, Select, Switch, TreeSelect, Upload } from 'antd';
-import React, { useCallback, useEffect, memo, useState, useMemo } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import * as yup from 'yup';
-import { fetchCategories } from '@/redux/features/category/categorySlice';
-import { createProduct, updateProductById } from '@/redux/features/product/productSlice';
-import { deleteMultipleFiles, uploadMultipleFiles } from '@/services/fileService';
-import { buildTree } from '@/utils/convertFlatArrToTreeArr';
 
 const { Option } = Select;
 

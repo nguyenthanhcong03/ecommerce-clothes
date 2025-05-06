@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { X, Heart, Star, ShoppingCart } from 'lucide-react';
-import { closeProductDetailModal, fetchProductById } from '@/redux/features/product/productSlice';
-import { addToCart } from '@/redux/features/cart/cartSlice';
 import Button from '@/components/common/Button/Button';
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
+import { addToCart } from '@/store/slices/cartSlice';
+import { closeProductDetailModal, fetchProductById } from '@/store/slices/productSlice';
+import { ShoppingCart, Star, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 const ProductDetailModal = () => {
   const dispatch = useDispatch();

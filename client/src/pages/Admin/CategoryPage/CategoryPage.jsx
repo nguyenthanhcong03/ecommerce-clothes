@@ -1,14 +1,13 @@
 import Header from '@/components/AdminComponents/common/Header';
 import StatCard from '@/components/AdminComponents/common/StatCard';
-import { motion } from 'framer-motion';
-import { Calendar, FolderTree, FolderOpen, FolderPlus } from 'lucide-react';
-import CategoryTable from './CategoryTable';
-import { useDispatch, useSelector } from 'react-redux';
-import { useEffect, useMemo, memo, useState } from 'react';
-import { fetchCategories } from '@/redux/features/category/categorySlice';
-import CategoryForm from './CategoryForm';
-import { deleteCategory } from '../../../redux/features/category/categorySlice';
+import { deleteCategory, fetchCategories } from '@/store/slices/categorySlice';
 import { message } from 'antd';
+import { motion } from 'framer-motion';
+import { Calendar, FolderOpen, FolderPlus, FolderTree } from 'lucide-react';
+import { memo, useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import CategoryForm from './CategoryForm';
+import CategoryTable from './CategoryTable';
 
 const CategoryPage = () => {
   console.log('page');

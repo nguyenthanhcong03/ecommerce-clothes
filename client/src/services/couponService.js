@@ -1,8 +1,8 @@
-import axiosClient from './axiosClient';
+import axios from '@/config/axios';
 const BASE_API = '/api/coupons';
 
 export const getCoupons = async (params = {}) => {
-  const response = await axiosClient.get(BASE_API, { params });
+  const response = await axios.get(BASE_API, { params });
   return response;
 };
 
@@ -12,7 +12,7 @@ export const getCoupons = async (params = {}) => {
  * @returns {Promise<Object>} Thông tin chi tiết coupon
  */
 export const getCouponById = async (id) => {
-  const response = await axiosClient.get(`${BASE_API}/${id}`);
+  const response = await axios.get(`${BASE_API}/${id}`);
   return response;
 };
 
@@ -22,7 +22,7 @@ export const getCouponById = async (id) => {
  * @returns {Promise<Object>} Kết quả trả về từ API
  */
 export const createCoupon = async (couponData) => {
-  const response = await axiosClient.post(BASE_API, couponData);
+  const response = await axios.post(BASE_API, couponData);
   return response;
 };
 
@@ -33,7 +33,7 @@ export const createCoupon = async (couponData) => {
  * @returns {Promise<Object>} Kết quả trả về từ API
  */
 export const updateCoupon = async (id, updateData) => {
-  const response = await axiosClient.put(`${BASE_API}/${id}`, updateData);
+  const response = await axios.put(`${BASE_API}/${id}`, updateData);
   return response;
 };
 
@@ -43,7 +43,7 @@ export const updateCoupon = async (id, updateData) => {
  * @returns {Promise<Object>} Kết quả trả về từ API
  */
 export const deleteCoupon = async (id) => {
-  const response = await axiosClient.delete(`${BASE_API}/${id}`);
+  const response = await axios.delete(`${BASE_API}/${id}`);
   return response;
 };
 
@@ -54,7 +54,7 @@ export const deleteCoupon = async (id) => {
  * @returns {Promise<Object>} Kết quả trả về từ API
  */
 export const toggleCouponStatus = async (id, isActive) => {
-  const response = await axiosClient.patch(`${BASE_API}/${id}/toggle-status`, { isActive });
+  const response = await axios.patch(`${BASE_API}/${id}/toggle-status`, { isActive });
   return response;
 };
 
@@ -63,20 +63,27 @@ export const toggleCouponStatus = async (id, isActive) => {
  * @returns {Promise<Object>} Kết quả trả về từ API
  */
 export const getActiveCoupons = async () => {
-  const response = await axiosClient.get(`${BASE_API}/active`);
+  const response = await axios.get(`${BASE_API}/active`);
   return response;
 };
 
 /**
- * Kiểm tra mã coupon có hợp lệ không
+ * Kiểm tra mã coupon có hợp lệ không và lấy thông tin chi tiết
  * @param {String} code Mã coupon cần kiểm tra
  * @param {Number} orderTotal Tổng giá trị đơn hàng (tùy chọn)
- * @returns {Promise<Object>} Kết quả trả về từ API
+ * @returns {Promise<Object>} Thông tin coupon và kết quả tính toán
  */
 export const validateCoupon = async (code, orderTotal = null) => {
-  const params = orderTotal !== null ? { orderTotal } : {};
-  const response = await axiosClient.get(`${BASE_API}/validate/${code}`, { params });
-  return response;
+  try {
+    const params = orderTotal !== null ? { orderTotal } : {};
+    const response = await axios.get(`${BASE_API}/validate/${code}`, { params });
+    console.log('tồn tại mã giảm giá', response.data);
+
+    return response.data;
+  } catch (error) {
+    console.error('Error validating coupon:', error);
+    return false;
+  }
 };
 
 /**
@@ -85,7 +92,7 @@ export const validateCoupon = async (code, orderTotal = null) => {
  * @returns {Promise<Object>} Kết quả trả về từ API
  */
 export const applyCoupon = async (id) => {
-  const response = await axiosClient.post(`${BASE_API}/${id}/apply`);
+  const response = await axios.post(`${BASE_API}/${id}/apply`);
   return response;
 };
 
@@ -106,17 +113,17 @@ export const calculateDiscount = (coupon, orderTotal) => {
   }
 
   // Tính toán giảm giá dựa vào loại coupon
-  if (coupon.type === 'percentage') {
+  if (coupon.discountType === 'percentage') {
     // Giảm theo phần trăm
-    discount = (orderTotal * coupon.value) / 100;
+    discount = (orderTotal * coupon.discountValue) / 100;
 
     // Kiểm tra nếu có giới hạn giảm giá tối đa
-    if (coupon.maxDiscountValue > 0 && discount > coupon.maxDiscountValue) {
-      discount = coupon.maxDiscountValue;
+    if (coupon.maxDiscount > 0 && discount > coupon.maxDiscount) {
+      discount = coupon.maxDiscount;
     }
-  } else if (coupon.type === 'fixed') {
+  } else if (coupon.discountType === 'fixed') {
     // Giảm giá cố định
-    discount = coupon.value;
+    discount = coupon.discountValue;
 
     // Đảm bảo giảm giá không vượt quá tổng đơn hàng
     if (discount > orderTotal) {

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getAllUsers, updateUserByIdAdmin } from '../../../services/userService.js';
+import { getAllUsers, updateUserByIdAdmin } from '../../services/userService.js';
 
 // Định nghĩa async thunk để gọi API
 export const fetchUsers = createAsyncThunk('users/fetchUsers', async (params) => {

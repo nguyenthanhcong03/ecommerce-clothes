@@ -6,14 +6,14 @@ import { cn } from '../../../utils/cn';
 // Button variants using class-variance-authority for better organization
 const buttonVariants = cva(
   // Base styles applied to all button variants
-  'inline-flex items-center justify-center transition-all relative disabled:pointer-events-none disabled:opacity-50 focus:outline-none',
+  'inline-flex items-center justify-center rounded-sm transition-all relative disabled:pointer-events-none disabled:opacity-50 focus:outline-none',
   {
     variants: {
       // Different visual variants
       variant: {
         primary: 'bg-primaryColor hover:bg-opacity-90 text-white',
         secondary: 'bg-white border border-primaryColor hover:bg-opacity-90 text-text1',
-        outline: 'border border-primaryColor bg-transparent text-primaryColor hover:bg-primaryColor hover:text-white',
+        outline: 'border border-primaryColor bg-white text-primaryColor hover:bg-primaryColor hover:text-white',
         ghost: 'bg-transparent hover:bg-gray-100 text-primaryColor',
         link: 'bg-transparent underline-offset-4 hover:underline text-primaryColor p-0 height-auto',
         danger: 'bg-red-600 hover:bg-red-700 text-white',

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import couponService from '../../../services/couponService';
+import couponService from '../../services/couponService';
 
 // Thunk Actions
 export const fetchCoupons = createAsyncThunk('coupons/fetchCoupons', async (params, { rejectWithValue }) => {

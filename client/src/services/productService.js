@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient';
+import axios from '@/config/axios';
 const BASE_API = '/api/product';
 
 // Lấy danh sách sản phẩm với các tùy chọn lọc, sắp xếp, phân trang
@@ -28,47 +28,47 @@ export const getAllProductsAPI = (params) => {
   });
 
   // Sửa lỗi cú pháp khi gọi axios
-  return axiosClient.get(`${BASE_API}`, { params: queryParams });
+  return axios.get(`${BASE_API}`, { params: queryParams });
 };
 
 // Lấy sản phẩm theo ID
 export const getProductByIdAPI = (id) => {
-  return axiosClient.get(`${BASE_API}/${id}`).then((response) => {
+  return axios.get(`${BASE_API}/${id}`).then((response) => {
     return response.data;
   });
 };
 
 // Tạo sản phẩm mới
 export const createProductAPI = (product) => {
-  return axiosClient.post('/products', product).then((response) => {
+  return axios.post('/products', product).then((response) => {
     return response.data;
   });
 };
 
 // Cập nhật sản phẩm
 export const updateProductByIdAPI = (id, product) => {
-  return axiosClient.put(`/products/${id}`, product).then((response) => {
+  return axios.put(`/products/${id}`, product).then((response) => {
     return response.data;
   });
 };
 
 // Xóa sản phẩm
 export const deleteProductByIdAPI = (id) => {
-  return axiosClient.delete(`/products/${id}`).then((response) => {
+  return axios.delete(`/products/${id}`).then((response) => {
     return response.data;
   });
 };
 
 // Lấy sản phẩm nổi bật
 export const getFeaturedProductsAPI = (limit = 8) => {
-  return axiosClient.get('/products/featured', { params: { limit } }).then((response) => {
+  return axios.get('/products/featured', { params: { limit } }).then((response) => {
     return response.data;
   });
 };
 
 // Lấy sản phẩm theo danh mục
 export const getProductsByCategoryAPI = (categoryId, page = 1, limit = 10) => {
-  return axiosClient
+  return axios
     .get(`/products/category/${categoryId}`, {
       params: { page, limit }
     })
@@ -79,14 +79,14 @@ export const getProductsByCategoryAPI = (categoryId, page = 1, limit = 10) => {
 
 // Thêm đánh giá sản phẩm
 export const addProductReviewAPI = (productId, reviewData) => {
-  return axiosClient.post(`/products/${productId}/reviews`, reviewData).then((response) => {
+  return axios.post(`/products/${productId}/reviews`, reviewData).then((response) => {
     return response.data;
   });
 };
 
 // Lấy đánh giá của sản phẩm
 export const getProductReviewsAPI = (productId, page = 1, limit = 10) => {
-  return axiosClient
+  return axios
     .get(`/products/${productId}/reviews`, {
       params: { page, limit }
     })
@@ -97,7 +97,7 @@ export const getProductReviewsAPI = (productId, page = 1, limit = 10) => {
 
 // Cập nhật trạng thái sản phẩm (active/inactive)
 export const updateProductStatusAPI = (productId, isActive) => {
-  return axiosClient.patch(`/products/${productId}/status`, { isActive }).then((response) => {
+  return axios.patch(`/products/${productId}/status`, { isActive }).then((response) => {
     return response.data;
   });
 };

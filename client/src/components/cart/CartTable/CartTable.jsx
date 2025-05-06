@@ -1,7 +1,7 @@
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
-import { removeCartItem, updateCartItem } from '@/redux/features/cart/cartSlice';
+import { removeCartItem, updateCartItem } from '@/store/slices/cartSlice';
 import { formatCurrency } from '@/utils/formatCurrency';
-import { Pointer, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';

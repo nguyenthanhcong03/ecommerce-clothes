@@ -1,18 +1,18 @@
+import {
+  DeleteOutlined,
+  EditOutlined,
+  ExclamationCircleOutlined,
+  MoreOutlined,
+  ReloadOutlined
+} from '@ant-design/icons';
+import { Button, Dropdown, Menu, Modal, Switch, Table, Tag, Tooltip, Typography, message } from 'antd';
+import PropTypes from 'prop-types';
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
-import { Table, Space, Button, Dropdown, Menu, Modal, Typography, Switch, Tooltip, Tag, message } from 'antd';
-import {
-  EditOutlined,
-  DeleteOutlined,
-  MoreOutlined,
-  ReloadOutlined,
-  ExclamationCircleOutlined
-} from '@ant-design/icons';
 
-import { deleteCoupon, toggleCouponStatus } from '../../../redux/features/coupon/couponSlice';
-import { formatCurrency } from '../../../utils/formatCurrency';
-import { formatDate } from '../../../utils/formatDate';
+import { deleteCoupon, toggleCouponStatus } from '@/store/slices/couponSlice';
+import { formatCurrency } from '@/utils/formatCurrency';
+import { formatDate } from '@/utils/formatDate';
 
 const { Text } = Typography;
 const { confirm } = Modal;

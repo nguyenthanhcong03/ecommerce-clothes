@@ -1,8 +1,8 @@
-import React from 'react';
 import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
-import ContactMap from '@/components/ui/contact/ContactMap/ContactMap';
-import ContactInfo from '@/components/ui/contact/ContactInfo/ContactInfo';
-import ContactForm from '@/components/ui/contact/ContactForm/ContactForm';
+import ContactForm from '@/pages/customer/ContactPage/components/ContactForm/ContactForm';
+import ContactInfo from '@/pages/customer/ContactPage/components/ContactInfo/ContactInfo';
+import ContactMap from '@/pages/customer/ContactPage/components/ContactMap/ContactMap';
+import React from 'react';
 
 function ContactPage() {
   const breadcrumbItems = [

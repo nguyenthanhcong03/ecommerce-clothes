@@ -1,0 +1,24 @@
+import { configureStore } from '@reduxjs/toolkit';
+import accountReducer from './slices/accountSlice';
+import productReducer from './slices/productSlice';
+import userReducer from './slices/userSlice';
+import categoryReducer from './slices/categorySlice';
+import cartReducer from './slices/cartSlice';
+import searchReducer from './slices/searchSlice';
+import sidebarReducer from './slices/sidebarSlice';
+import couponReducer from './slices/couponSlice';
+import orderReducer from './slices/orderSlice';
+
+export const store = configureStore({
+  reducer: {
+    sidebar: sidebarReducer,
+    search: searchReducer,
+    cart: cartReducer,
+    account: accountReducer,
+    product: productReducer,
+    user: userReducer,
+    category: categoryReducer,
+    coupon: couponReducer,
+    order: orderReducer
+  }
+});

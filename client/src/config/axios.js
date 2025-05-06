@@ -78,7 +78,7 @@ const API_URL = import.meta.env.VITE_API_END_POINT;
 // utils/axiosInstance.js
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { refreshAccessToken } from './authService';
+import { refreshAccessToken } from '../services/authService';
 
 const api = axios.create({
   baseURL: API_URL,

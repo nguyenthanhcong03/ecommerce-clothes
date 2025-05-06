@@ -1,3 +1,6 @@
+import { deleteMultipleFiles, uploadMultipleFiles } from '@/services/fileService';
+import { createCategory, updateCategoryById } from '@/store/slices/categorySlice';
+import { buildTree } from '@/utils/convertFlatArrToTreeArr';
 import { UploadOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Form, Input, message, Modal, Switch, TreeSelect, Upload } from 'antd';
@@ -5,9 +8,6 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
 import * as yup from 'yup';
-import { createCategory, updateCategoryById } from '../../../redux/features/category/categorySlice';
-import { deleteMultipleFiles, uploadMultipleFiles } from '../../../services/fileService';
-import { buildTree } from '../../../utils/convertFlatArrToTreeArr';
 
 // Định nghĩa schema xác thực cho form danh mục sử dụng Yup
 const categorySchema = yup.object({

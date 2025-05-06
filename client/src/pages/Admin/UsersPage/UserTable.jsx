@@ -1,10 +1,9 @@
-import React, { useRef, useState } from 'react';
-import { Table, Tag, Space, Image, Switch, Input, Button, Popconfirm, Tooltip, Typography } from 'antd';
-import { SearchOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { setIsOpenForm, setSelectedUser } from '../../../redux/features/user/userSlice';
-import './styles.css';
+import { SearchOutlined } from '@ant-design/icons';
+import { Button, Input, Popconfirm, Space, Table, Tag } from 'antd';
 import { Pencil, Trash2 } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import './styles.css';
 
 const UserTable = ({ users }) => {
   const dispatch = useDispatch();

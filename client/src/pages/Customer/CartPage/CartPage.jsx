@@ -1,11 +1,11 @@
 import CartTable from '@/components/cart/CartTable/CartTable';
 import Button from '@/components/common/Button/Button';
 import Loading from '@/components/common/Loading/Loading';
+import { getCart } from '@/store/slices/cartSlice';
 import { ShoppingCart } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { getCart } from '../../../redux/features/cart/cartSlice';
 
 const CartSteps = () => (
   <div className='flex min-h-[50px] items-center justify-center gap-4 bg-[#FAFAFA] md:min-h-[70px] lg:min-h-[120px]'>

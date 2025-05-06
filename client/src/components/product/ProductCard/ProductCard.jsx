@@ -1,6 +1,6 @@
 import Button from '@/components/common/Button/Button';
-import { addToCart } from '@/redux/features/cart/cartSlice';
-import { openProductDetailModal } from '@/redux/features/product/productSlice';
+import { addToCart } from '@/store/slices/cartSlice';
+import { openProductDetailModal } from '@/store/slices/productSlice';
 import { Eye, Heart, ShoppingCart, Star } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';

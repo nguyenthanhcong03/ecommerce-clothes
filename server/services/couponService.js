@@ -1,4 +1,4 @@
-const Coupon = require("../models/Coupon");
+const Coupon = require("../models/coupon");
 const { Error } = require("mongoose");
 
 const createCoupon = async (couponData) => {

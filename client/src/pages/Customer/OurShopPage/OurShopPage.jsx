@@ -4,9 +4,9 @@ import Button from '@/components/common/Button/Button';
 import CountDownBanner from '@/components/common/CountDownBanner/CountDownBanner';
 import Select from '@/components/common/Select/Select';
 import ProductCard from '@/components/product/ProductCard/ProductCard';
+import { fetchProducts } from '@/store/slices/productSlice';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProducts } from '../../../redux/features/product/productSlice';
 
 function OurShopPage() {
   const dispatch = useDispatch();
@@ -36,7 +36,16 @@ function OurShopPage() {
         <CountDownBanner backgroundImage={countdownBanner2} />
       </div>
       <div className='my-5'>
-        <Select options={options} className={'w-[280px]'} />
+        <Select
+          options={options}
+          placeholder='Sắp xếp theo'
+          className='w-[280px]'
+          defaultValue='default'
+          onChange={(e) => {
+            // Handle sorting logic here
+            console.log('Sort by:', e.target.value);
+          }}
+        />
       </div>
       <div className='grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4'>
         {products?.slice(0, visibleItems).map((product) => (

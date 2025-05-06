@@ -1,13 +1,12 @@
-import React from 'react';
-
 import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import Collapse from '@/components/common/Collapse/Collapse';
-import AboutStory from '@/components/ui/about/AboutStory/AboutStory';
-import { cardData1, cardData2 } from '@/components/ui/about/AboutStory/constant';
-import BrandSwiper from '@/components/ui/about/BrandSwiper/BrandSwiper';
-import Headline from '@/components/ui/home/Headline/Headline';
+import Headline from '@/components/common/Headline/Headline';
+import AboutStory from '@/pages/customer/AboutPage/components/AboutStory/AboutStory';
+import { cardData1, cardData2 } from '@/pages/customer/AboutPage/components/AboutStory/constant';
+import BrandSwiper from '@/pages/customer/AboutPage/components/BrandSwiper/BrandSwiper';
+import React from 'react';
 
-function AboutUsPage() {
+function AboutPage() {
   const breadcrumbItems = [
     { label: 'Trang chủ', link: '/' },
     { label: 'Về chúng tôi' } // Không có link, là trang hiện tại
@@ -94,4 +93,4 @@ function AboutUsPage() {
   );
 }
 
-export default AboutUsPage;
+export default AboutPage;

@@ -1,24 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Card, Button, Typography, Spin, Row, Col, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
 import Header from '@/components/AdminComponents/common/Header';
 import StatCard from '@/components/AdminComponents/common/StatCard';
+import { PlusOutlined } from '@ant-design/icons';
+import { Button, Card, Col, message, Row, Typography } from 'antd';
 import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import CouponTable from './CouponTable';
-import CouponForm from './CouponForm';
 import CouponFilter from './CouponFilter';
+import CouponForm from './CouponForm';
+import CouponTable from './CouponTable';
 
 import {
-  fetchCoupons,
-  setPage,
-  setLimit,
-  clearSuccess,
   clearError,
+  clearSuccess,
+  fetchCoupons,
+  resetFilters,
   setFilter,
-  resetFilters
-} from '../../../redux/features/coupon/couponSlice';
+  setLimit,
+  setPage
+} from '@/store/slices/couponSlice';
 import { Package, PackagePlus, Star, TrendingUp } from 'lucide-react';
 
 const { Title } = Typography;

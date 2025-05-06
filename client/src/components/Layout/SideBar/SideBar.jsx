@@ -1,7 +1,7 @@
+import { toggleSidebar } from '@/store/slices/sidebarSlice';
 import { X } from 'lucide-react';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleSidebar } from '../../../redux/features/sidebarDrawer/sidebarSlice';
 import SideBarCart from './ContentSideBar/SideBarCart';
 import SideBarMenu from './ContentSideBar/SideBarMenu';
 import SideBarSearch from './ContentSideBar/SideBarSearch';

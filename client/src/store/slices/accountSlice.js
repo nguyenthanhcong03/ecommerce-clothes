@@ -2,31 +2,33 @@ import { login, callLogout, callFetchAccount, refreshAccessToken, changePassword
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 // Thunk actions
-export const loginUser = createAsyncThunk('auth/loginUser', async ({ username, password }, { rejectWithValue }) => {
-  try {
-    const data = await login(username, password);
-    return data;
-  } catch (err) {
-    return rejectWithValue(err.response?.data?.message || 'Login failed');
+export const loginUser = createAsyncThunk(
+  'auth/loginUser',
+  async ({ username, password, rememberMe = false }, { rejectWithValue }) => {
+    try {
+      const data = await login(username, password, rememberMe);
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || 'Đăng nhập thất bại');
+    }
   }
-});
+);
 
 export const logoutUser = createAsyncThunk('auth/logoutUser', async (_, { rejectWithValue }) => {
   try {
     await callLogout();
     return true;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.message || 'Logout failed');
+    return rejectWithValue(err.response?.data?.message || 'Đăng xuất thất bại');
   }
 });
 
 export const fetchCurrentUser = createAsyncThunk('auth/fetchCurrentUser', async (_, { rejectWithValue }) => {
   try {
     const data = await callFetchAccount();
-    console.log('danh sách người dùng', data);
     return data;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.message || 'Failed to fetch user data');
+    return rejectWithValue(err.response?.data?.message || 'Không thể tải thông tin người dùng');
   }
 });
 
@@ -35,7 +37,7 @@ export const refreshToken = createAsyncThunk('auth/refreshToken', async (_, { re
     const data = await refreshAccessToken();
     return data;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.message || 'Token refresh failed');
+    return rejectWithValue(err.response?.data?.message || 'Làm mới token thất bại');
   }
 });
 
@@ -46,14 +48,14 @@ export const updateUserPassword = createAsyncThunk(
       const data = await changePassword(oldPassword, newPassword);
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Password change failed');
+      return rejectWithValue(err.response?.data?.message || 'Thay đổi mật khẩu thất bại');
     }
   }
 );
 
 const initialState = {
-  isAuthenticated: false,
-  isLoading: false,
+  isAuthenticated: false, // Sẽ được cập nhật sau khi kiểm tra session
+  isLoading: false, // Bắt đầu với trạng thái loading để kiểm tra session
   error: null,
   successMessage: null,
   user: {
@@ -77,7 +79,6 @@ export const accountSlice = createSlice({
   name: 'account',
   initialState,
   reducers: {
-    // For manually setting user from localStorage or other sources
     setUser(state, action) {
       state.user = action.payload;
       state.isAuthenticated = !!action.payload;
@@ -98,16 +99,6 @@ export const accountSlice = createSlice({
       }
     },
 
-    // For manual login handling (SessionStorage/LocalStorage)
-    doLoginAction: (state, action) => {
-      state.isAuthenticated = true;
-      state.isLoading = false;
-      state.error = null;
-      state.user = action.payload.user;
-      state.user.accessToken = action.payload.accessToken;
-    },
-
-    // For manual account retrieval
     doGetAccountAction: (state, action) => {
       state.isAuthenticated = true;
       state.isLoading = false;
@@ -115,7 +106,6 @@ export const accountSlice = createSlice({
       state.user = action.payload;
     },
 
-    // For manual logout handling
     doLogoutAction: (state) => {
       localStorage.removeItem('accessToken');
       state.isAuthenticated = false;
@@ -148,7 +138,7 @@ export const accountSlice = createSlice({
         state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.error = action.payload || 'Login failed';
+        state.error = action.payload || 'Đăng nhập thất bại';
         state.isAuthenticated = false;
         state.isLoading = false;
       })
@@ -184,8 +174,7 @@ export const accountSlice = createSlice({
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.error = action.payload;
         state.isLoading = false;
-        // Don't change authentication state here to prevent flicker
-        // (let the interceptor handle this properly)
+        state.isAuthenticated = false;
       })
 
       // Refresh token cases
@@ -209,7 +198,7 @@ export const accountSlice = createSlice({
       })
       .addCase(updateUserPassword.fulfilled, (state) => {
         state.isLoading = false;
-        state.successMessage = 'Password updated successfully';
+        state.successMessage = 'Thay đổi mật khẩu thành công';
       })
       .addCase(updateUserPassword.rejected, (state, action) => {
         state.isLoading = false;

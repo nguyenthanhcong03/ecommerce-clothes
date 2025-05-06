@@ -3,7 +3,7 @@ import StatCard from '@/components/AdminComponents/common/StatCard';
 import UserActivityHeatmap from '@/components/AdminComponents/users/UserActivityHeatmap';
 import UserDemographicsChart from '@/components/AdminComponents/users/UserDemographicsChart';
 import UserGrowthChart from '@/components/AdminComponents/users/UserGrowthChart';
-import { fetchUsers, setIsOpenForm, setSelectedUser } from '@/redux/features/user/userSlice';
+import { fetchUsers, setIsOpenForm, setSelectedUser } from '@/store/slices/userSlice';
 import { Button, Input } from 'antd';
 import { motion } from 'framer-motion';
 import { UserCheck, UserPlus, UsersIcon, UserX } from 'lucide-react';

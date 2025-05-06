@@ -4,7 +4,7 @@ import {
   deleteCategoryByIdAPI,
   getAllCategoriesAPI,
   updateCategoryByIdAPI
-} from '../../../services/categoryService.js';
+} from '../../services/categoryService.js';
 
 export const fetchCategories = createAsyncThunk('categories/fetchCategories', async (params, { rejectWithValue }) => {
   try {

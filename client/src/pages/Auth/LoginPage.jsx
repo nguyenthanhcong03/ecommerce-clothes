@@ -1,14 +1,14 @@
-import { doLoginAction } from '@/redux/features/account/accountSlice';
-import { login } from '@/services/authService';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import * as yup from 'yup';
-import Input from '@/components/common/Input';
 import Button from '@/components/common/Button/Button';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import Input from '@/components/common/Input';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { useDispatch, useSelector } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
+import * as yup from 'yup';
+import { loginUser, clearError } from '@/store/slices/accountSlice';
+import { toast } from 'react-toastify';
 
 // Định nghĩa schema validation với yup
 const loginSchema = yup.object().shape({
@@ -17,13 +17,17 @@ const loginSchema = yup.object().shape({
     .required('Tên đăng nhập là bắt buộc')
     .min(3, 'Tên đăng nhập phải có ít nhất 3 ký tự')
     .max(50, 'Tên đăng nhập không được vượt quá 50 ký tự'),
-  password: yup.string().required('Mật khẩu là bắt buộc')
+  password: yup.string().required('Mật khẩu là bắt buộc').min(6, 'Mật khẩu phải có ít nhất 6 ký tự')
 });
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [isSubmit, setIsSubmit] = useState(false);
+  const location = useLocation();
   const dispatch = useDispatch();
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // Lấy state từ Redux store
+  const { isLoading, error, isAuthenticated } = useSelector((state) => state.account);
 
   const {
     control,
@@ -37,22 +41,34 @@ function LoginPage() {
     }
   });
 
+  // Hiệu ứng điều hướng sau khi đăng nhập thành công
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Chuyển hướng đến trang trước đó hoặc trang chủ
+      const returnPath = location.state?.from || '/';
+      navigate(returnPath, { replace: true });
+      toast.success('Đăng nhập thành công!');
+    }
+  }, [isAuthenticated, navigate, location]);
+
+  // Hiệu ứng hiển thị lỗi nếu có
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      // Xóa lỗi sau khi đã hiển thị
+      dispatch(clearError());
+    }
+  }, [error, dispatch]);
+
   // Xử lý khi submit form
   const onSubmit = async (data) => {
     const { username, password } = data;
 
-    setIsSubmit(true);
     try {
-      const res = await login(username, password);
-      setIsSubmit(false);
-
-      if (res?.accessToken && res?.user) {
-        dispatch(doLoginAction(res));
-        navigate('/');
-      }
+      // Dispatch action đăng nhập với cấu trúc object đúng và thông tin remember me
+      dispatch(loginUser({ username, password, rememberMe }));
     } catch (error) {
-      console.error('Đăng nhập thất bại:', error);
-      setIsSubmit(false);
+      console.error('Lỗi đăng nhập:', error);
     }
   };
 
@@ -67,30 +83,46 @@ function LoginPage() {
           <h2 className='mb-6 text-center text-2xl font-bold text-gray-800'>Đăng nhập tài khoản</h2>
 
           <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
-            <Input
-              name='username'
+            <Controller
               control={control}
-              label='Tên đăng nhập'
-              placeholder='Nhập tên đăng nhập'
-              prefix={<UserOutlined className='text-gray-400' />}
-              required
-              rules={{ required: 'Tên đăng nhập là bắt buộc' }}
+              name='username'
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  label='Tên đăng nhập'
+                  placeholder='Nhập tên đăng nhập'
+                  prefix={<UserOutlined className='text-gray-400' />}
+                  required
+                  error={errors.username?.message}
+                />
+              )}
             />
 
-            <Input
-              name='password'
+            <Controller
               control={control}
-              label='Mật khẩu'
-              type='password'
-              placeholder='Nhập mật khẩu'
-              prefix={<LockOutlined className='text-gray-400' />}
-              required
-              rules={{ required: 'Mật khẩu là bắt buộc' }}
+              name='password'
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  type='password'
+                  label='Mật khẩu'
+                  placeholder='Nhập mật khẩu'
+                  prefix={<LockOutlined className='text-gray-400' />}
+                  required
+                  error={errors.password?.message}
+                />
+              )}
             />
 
             <div className='flex justify-between text-sm'>
               <div className='flex items-center'>
-                <input type='checkbox' id='remember' className='mr-2 h-4 w-4' />
+                <input
+                  type='checkbox'
+                  id='remember'
+                  className='mr-2 h-4 w-4'
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
                 <label htmlFor='remember'>Nhớ mật khẩu</label>
               </div>
               <a href='/forgot-password' className='text-primaryColor hover:underline'>
@@ -98,7 +130,7 @@ function LoginPage() {
               </a>
             </div>
 
-            <Button type='submit' variant='primary' width='full' isLoading={isSubmitting || isSubmit}>
+            <Button type='submit' variant='primary' width='full' isLoading={isLoading || isSubmitting}>
               Đăng nhập
             </Button>
 

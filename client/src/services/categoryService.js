@@ -1,4 +1,4 @@
-import axiosClient from './axiosClient';
+import axios from '@/config/axios';
 const BASE_API = '/api/category';
 
 /**
@@ -13,7 +13,7 @@ export const getAllCategoriesAPI = async ({ page = 1, limit = 10, search = '' })
     search
   }).toString();
   const url = `${BASE_API}?${queryParams}`;
-  return await axiosClient.get(url);
+  return await axios.get(url);
 };
 
 /**
@@ -22,7 +22,7 @@ export const getAllCategoriesAPI = async ({ page = 1, limit = 10, search = '' })
  * @returns {Promise} Kết quả từ API sau khi tạo danh mục
  */
 export const createCategoryAPI = async (data) => {
-  return await axiosClient.post(BASE_API, data);
+  return await axios.post(BASE_API, data);
 };
 
 /**
@@ -32,7 +32,7 @@ export const createCategoryAPI = async (data) => {
  * @returns {Promise} Kết quả từ API sau khi cập nhật danh mục
  */
 export const updateCategoryByIdAPI = async (id, data) => {
-  return await axiosClient.put(`${BASE_API}/${id}`, data);
+  return await axios.put(`${BASE_API}/${id}`, data);
 };
 
 /**
@@ -41,7 +41,7 @@ export const updateCategoryByIdAPI = async (id, data) => {
  * @returns {Promise} Kết quả từ API sau khi xóa danh mục
  */
 export const deleteCategoryByIdAPI = async (id) => {
-  return await axiosClient.delete(`${BASE_API}/${id}`);
+  return await axios.delete(`${BASE_API}/${id}`);
 };
 
 /**
@@ -50,7 +50,7 @@ export const deleteCategoryByIdAPI = async (id) => {
  * @returns {Promise} Kết quả từ API chứa thông tin danh mục
  */
 export const getCategoryByIdAPI = async (id) => {
-  return await axiosClient.get(`${BASE_API}/${id}`);
+  return await axios.get(`${BASE_API}/${id}`);
 };
 
 /**
@@ -60,5 +60,5 @@ export const getCategoryByIdAPI = async (id) => {
  */
 export const getCategoryTreeAPI = async (onlyActive = true) => {
   const url = `${BASE_API}/tree?onlyActive=${onlyActive}`;
-  return await axiosClient.get(url);
+  return await axios.get(url);
 };

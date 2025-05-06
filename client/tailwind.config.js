@@ -11,7 +11,7 @@ export default {
         text1: '#222'
       },
       fontFamily: {
-        robotoMono: ['Roboto Mono"', 'Arial', 'sans-serif']
+        robotoMono: ['Roboto Mono', 'Arial', 'sans-serif']
       },
       boxShadow: {
         shadowHeader: '2px 0px 12px 0px rgba(0, 0, 0, 0.15)'

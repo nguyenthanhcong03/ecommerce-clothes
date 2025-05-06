@@ -1,48 +1,62 @@
-import React, { Children, useState } from 'react';
-import { ChevronDown } from 'lucide-react'; // Import icon từ thư viện lucide-react
+import React, { forwardRef } from 'react';
+import { cn } from '@/utils/cn';
 
-function Select({ className, options }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedValue, setSelectedValue] = useState('Tất cả');
-  const handleToggleDropdown = () => setIsOpen(!isOpen);
-
-  // Hàm lấy giá trị được chọn
-  const handleSetValue = (e) => {
-    handleToggleDropdown();
-    setSelectedValue(e.target.innerText);
-  };
-
-  return (
-    <div className={`relative inline-block text-left text-primaryColor ${className}`}>
-      {/* Nút mở dropdown */}
-      <button
-        onClick={handleToggleDropdown}
-        className='flex h-full max-h-[40px] w-full items-center justify-between gap-2 border-[1px] border-[#e1e1e1] px-4 py-2 text-left focus:outline-none'
-      >
-        <p className='text-sm'>{selectedValue}</p>
-        <ChevronDown className={`transform text-sm transition-transform ${isOpen ? 'rotate-180' : 'rotate-0'}`} />
-      </button>
-
-      {/* Select Menu */}
-      <div
-        className={`${
-          isOpen ? 'block' : 'hidden'
-        } absolute right-0 z-10 mt-2 w-full border border-gray-300 bg-white shadow-lg transition-all duration-300 ease-in-out`}
-      >
-        <ul className='py-2'>
-          {options?.map((option) => (
-            <li
-              key={option.value}
-              className='cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'
-              onClick={(e) => handleSetValue(e)}
-            >
-              {option.label}
-            </li>
+const Select = forwardRef(
+  (
+    {
+      name,
+      value,
+      onChange,
+      onBlur,
+      label,
+      options,
+      placeholder = 'Chọn một mục',
+      error,
+      className = '',
+      required = false,
+      disabled = false
+    },
+    ref
+  ) => {
+    return (
+      <div className='w-full'>
+        {label && (
+          <label htmlFor={name} className='mb-1 block text-sm font-medium text-gray-700'>
+            {label} {required && <span className='text-red-500'>*</span>}
+          </label>
+        )}
+        <select
+          ref={ref}
+          id={name}
+          name={name}
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          disabled={disabled}
+          className={cn(
+            'block w-full rounded-sm border border-primaryColor px-3 py-2 text-sm',
+            error ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-primaryColor',
+            'focus:outline-none',
+            disabled ? 'bg-gray-100 text-gray-500' : '',
+            className
+          )}
+        >
+          <option value='' disabled>
+            {placeholder}
+          </option>
+          {options?.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
           ))}
-        </ul>
+        </select>
+        {error && <p className='mt-1 text-sm text-red-600'>{typeof error === 'string' ? error : error.message}</p>}
       </div>
-    </div>
-  );
-}
+    );
+  }
+);
+
+// Thêm displayName để dễ debug
+Select.displayName = 'Select';
 
 export default Select;

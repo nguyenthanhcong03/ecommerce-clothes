@@ -55,14 +55,13 @@ const orderSchema = new mongoose.Schema(
       street: { type: String, required: true },
       city: { type: String, required: true },
       state: { type: String, required: true },
-      postalCode: { type: String, required: true },
       country: { type: String, required: true },
     },
     payment: {
       method: {
         type: String,
         required: true,
-        enum: ["COD", "Credit Card", "PayPal", "Bank Transfer"],
+        enum: ["COD", "Credit Card", "Momo", "VNPay"],
       },
       isPaid: {
         type: Boolean,
@@ -88,7 +87,7 @@ const orderSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
-    shippingCost: {
+    shippingFee: {
       type: Number,
       default: 0,
       min: 0,

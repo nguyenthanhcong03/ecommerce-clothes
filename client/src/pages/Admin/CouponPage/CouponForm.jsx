@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
-import { Modal, Form, Input, Select, DatePicker, InputNumber, Switch, Typography, Row, Col, message } from 'antd';
-import { useForm, Controller } from 'react-hook-form';
+import { createCoupon, updateCoupon } from '@/store/slices/couponSlice';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { Col, DatePicker, Form, Input, InputNumber, message, Modal, Row, Select, Switch, Typography } from 'antd';
 import moment from 'moment';
-import { createCoupon, updateCoupon } from '../../../redux/features/coupon/couponSlice';
+import PropTypes from 'prop-types';
+import React, { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { useDispatch, useSelector } from 'react-redux';
+import * as yup from 'yup';
 
 const { Option } = Select;
 const { TextArea } = Input;

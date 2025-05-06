@@ -1,8 +1,8 @@
 import CartItem from '@/components/cart/CartItem/CartItem';
 import Button from '@/components/common/Button/Button';
 import MenuItem from '@/components/common/MenuItem/MenuItem';
-import { getCart } from '@/redux/features/cart/cartSlice';
-import { toggleSidebar } from '@/redux/features/sidebarDrawer/sidebarSlice';
+import { getCart } from '@/store/slices/cartSlice';
+import { toggleSidebar } from '@/store/slices/sidebarSlice';
 import { ShoppingCart } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';

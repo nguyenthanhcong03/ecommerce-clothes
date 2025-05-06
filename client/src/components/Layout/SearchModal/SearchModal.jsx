@@ -1,7 +1,5 @@
 import Button from '@/components/common/Button/Button';
-import Select from '@/components/common/Select/Select';
-import Input from '@/components/common/Input/Input';
-import { toggleSearch } from '@/redux/features/searchDrawer/searchSlice';
+import { toggleSearch } from '@/store/slices/searchSlice';
 import { X } from 'lucide-react';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -28,7 +26,7 @@ function SearchModal() {
         <div className='flex flex-col items-center justify-center'>
           <h1 className='p-7 text-2xl text-primaryColor'>Bạn muốn tìm món đồ nào?</h1>
           <div className='flex items-center justify-center'>
-            <Select className='h-[40px] w-[300px]'></Select>
+            {/* <Select className='h-[40px] w-[300px]'></Select> */}
             {/* <Input placeholder='Tìm kếm sản phẩm..' /> */}
             <Button>Tìm kiếm</Button>
           </div>

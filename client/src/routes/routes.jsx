@@ -27,47 +27,16 @@ import HomePage from '@/pages/Customer/HomePage/HomePage.jsx';
 import NewsPage from '@/pages/Customer/NewsPage/NewsPage.jsx';
 import OurShopPage from '@/pages/Customer/OurShopPage/OurShopPage.jsx';
 import WishlistPage from '@/pages/Customer/WishlistPage/WishlistPage.jsx';
+import PaymentSuccessPage from '@/pages/Customer/PaymentSuccessPage/PaymentSuccessPage.jsx';
+import PaymentFailedPage from '@/pages/Customer/PaymentFailedPage/PaymentFailedPage.jsx';
 
 import { createBrowserRouter } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import InputFormExample from '../components/examples/InputFormExample';
+import CheckoutPage from '../pages/Customer/CheckoutPage/CheckoutPage';
 
 // Lazy-loaded components for better performance
 const UnauthorizedPage = lazy(() => import('@/components/auth/Unauthorized/Unauthorized.jsx'));
-
-// Route constants for easy reference across the application
-export const ROUTES = {
-  // Public routes
-  HOME: '/',
-  ABOUT: '/about',
-  SHOP: '/shop',
-  NEWS: '/news',
-  CONTACT: '/contact',
-  PRODUCT_DETAIL: '/product/:id',
-
-  // Auth routes
-  LOGIN: '/login',
-  REGISTER: '/register',
-  UNAUTHORIZED: '/unauthorized',
-
-  // Customer routes requiring authentication
-  CART: '/cart',
-  WISHLIST: '/wishlist',
-
-  // Admin routes
-  ADMIN: {
-    ROOT: '/admin',
-    OVERVIEW: '/admin',
-    PRODUCTS: '/admin/products',
-    CATEGORIES: '/admin/categories',
-    USERS: '/admin/users',
-    SALES: '/admin/sales',
-    ORDERS: '/admin/orders',
-    ANALYTICS: '/admin/analytics',
-    SETTINGS: '/admin/settings',
-    COUPONS: '/admin/coupons'
-  }
-};
 
 const Router = [
   {
@@ -82,6 +51,8 @@ const Router = [
       { path: 'news', element: <NewsPage /> },
       { path: 'contact', element: <ContactPage /> },
       { path: 'product/:id', element: <DetailProduct /> },
+      { path: 'payment-success', element: <PaymentSuccessPage /> },
+      { path: 'payment-failed', element: <PaymentFailedPage /> },
 
       // Auth routes
       {
@@ -123,6 +94,14 @@ const Router = [
         element: (
           <ProtectedRoute>
             <WishlistPage />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'checkout',
+        element: (
+          <ProtectedRoute>
+            <CheckoutPage />
           </ProtectedRoute>
         )
       }
