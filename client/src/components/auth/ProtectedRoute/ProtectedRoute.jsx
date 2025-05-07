@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { memo } from 'react';
@@ -9,41 +9,45 @@ const ProtectedRoute = memo(
     const location = useLocation();
     const { user, isAuthenticated, isLoading } = useSelector((state) => state.account);
 
-    // Show loading state when authentication is being checked
-    // if (isLoading) {
-    //   return fallbackComponent || <LoadingSpinner />;
-    // }
+    // // Hiển thị trạng thái loading khi đang kiểm tra xác thực
+    if (isLoading) {
+      return fallbackComponent || <LoadingSpinner fullPage />;
+    }
 
-    // Redirect unauthorized users to login with return path
+    // Chuyển hướng người dùng không được xác thực đến trang đăng nhập với đường dẫn trở về
     if (requireAuth && !isAuthenticated) {
       return <Navigate to={redirectPath} state={{ from: location.pathname }} replace />;
     }
 
-    // Check role-based access
+    // Kiểm tra quyền truy cập dựa trên vai trò người dùng
     if (roles.length > 0 && user && !roles.includes(user.role)) {
+      // Chuyển hướng đến trang unauthorized nếu người dùng không có quyền truy cập
       return <Navigate to='/unauthorized' state={{ from: location.pathname }} replace />;
     }
 
-    // Redirect authenticated users trying to access login/register pages
+    // Chuyển hướng người dùng đã đăng nhập khi họ cố gắng truy cập trang đăng nhập/đăng ký
     if (!requireAuth && isAuthenticated) {
-      // Get the return path or default to dashboard
-      // Ensure returnPath is always a string
+      // Lấy đường dẫn trở về hoặc mặc định đến trang chủ
+      // Đảm bảo returnPath luôn là một chuỗi
       const returnPath = typeof location.state?.from === 'string' ? location.state.from : '/';
       return <Navigate to={returnPath} replace />;
     }
 
+    // Hiển thị nội dung của route nếu người dùng có quyền truy cập
     return children;
   }
 );
 
+// Định nghĩa kiểu dữ liệu cho các props
 ProtectedRoute.propTypes = {
-  children: PropTypes.node.isRequired,
-  requireAuth: PropTypes.bool,
-  roles: PropTypes.arrayOf(PropTypes.string),
-  redirectPath: PropTypes.string,
-  fallbackComponent: PropTypes.node
+  children: PropTypes.node.isRequired, // Nội dung con sẽ được hiển thị nếu điều kiện đáp ứng
+  requireAuth: PropTypes.bool, // Có yêu cầu xác thực hay không
+  roles: PropTypes.arrayOf(PropTypes.string), // Danh sách các vai trò được phép truy cập
+  redirectPath: PropTypes.string, // Đường dẫn chuyển hướng khi không có quyền
+  fallbackComponent: PropTypes.node // Component hiển thị khi đang kiểm tra xác thực
 };
 
+// Đặt tên hiển thị cho component (hữu ích cho React DevTools)
 ProtectedRoute.displayName = 'ProtectedRoute';
 
 export default ProtectedRoute;

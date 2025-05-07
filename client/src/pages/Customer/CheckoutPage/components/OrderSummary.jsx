@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Button from '../../../../components/common/Button/Button';
 import Input from '../../../../components/common/Input/Input';
 import { formatCurrency } from '../../../../utils/formatCurrency';
 import { Spin, Alert, Tooltip } from 'antd';
 import { CloseOutlined, QuestionCircleOutlined, TagOutlined } from '@ant-design/icons';
+import { Trash2 } from 'lucide-react';
+import { setOrderItems } from '../../../../store/slices/orderSlice';
 
 const OrderSummary = ({
   isLoading,
@@ -17,6 +19,7 @@ const OrderSummary = ({
   couponError,
   setCouponError
 }) => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const orderItems = useSelector((state) => state.order.orderItems);
   const shippingCost = useSelector((state) => state.order.shippingCost);
@@ -48,12 +51,40 @@ const OrderSummary = ({
     };
   }, [couponError, setCouponError]);
 
+  // Khôi phục orderItems từ localStorage khi trang được tải lại
+  useEffect(() => {
+    if (!orderItems || orderItems.length === 0) {
+      const savedItems = localStorage.getItem('orderItems');
+      if (savedItems) {
+        try {
+          const parsedItems = JSON.parse(savedItems);
+          if (Array.isArray(parsedItems) && parsedItems.length > 0) {
+            dispatch(setOrderItems(parsedItems));
+          } else {
+            navigate('/cart');
+          }
+        } catch (error) {
+          console.error('Lỗi khi phân tích orderItems từ localStorage:', error);
+          navigate('/cart');
+        }
+      } else {
+        navigate('/cart');
+      }
+    }
+  }, [dispatch, orderItems]);
+
+  const handleRemoveOrderItem = (itemId) => {
+    const updatedOrderItems = orderItems.filter((item) => item._id !== itemId);
+    localStorage.setItem('orderItems', JSON.stringify(updatedOrderItems));
+    dispatch(setOrderItems(updatedOrderItems));
+  };
+
   return (
     <div className='space-y-6 lg:sticky lg:top-5 lg:col-span-2 lg:self-start'>
       {/* Product List */}
       <div className='rounded-sm border bg-white p-6'>
         <div className='flex items-center justify-between'>
-          <h2 className='text-xl font-bold'>Giỏ hàng của bạn</h2>
+          <h2 className='text-xl font-bold'>Sản phẩm đặt hàng</h2>
           <span className='rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800'>
             {orderItems.length} sản phẩm
           </span>
@@ -70,6 +101,7 @@ const OrderSummary = ({
                   <th className='px-3 py-3 text-left text-xs font-medium uppercase text-gray-500'>Sản phẩm</th>
                   <th className='px-3 py-3 text-center text-xs font-medium uppercase text-gray-500'>SL</th>
                   <th className='px-3 py-3 text-right text-xs font-medium uppercase text-gray-500'>Thành tiền</th>
+                  <th className='px-3 py-3 text-center text-xs font-medium uppercase text-gray-500'></th>
                 </tr>
               </thead>
               <tbody className='divide-y divide-gray-200 bg-white'>
@@ -99,6 +131,14 @@ const OrderSummary = ({
                       <td className='px-3 py-3 text-center text-sm font-medium'>{item.quantity}</td>
                       <td className='px-3 py-3 text-right text-sm font-medium'>
                         {formatCurrency(price * item.quantity)}
+                      </td>
+                      <td>
+                        <Trash2
+                          strokeWidth={1.5}
+                          cursor={'pointer'}
+                          width={16}
+                          onClick={() => handleRemoveOrderItem(item._id)}
+                        />
                       </td>
                     </tr>
                   );

@@ -19,9 +19,9 @@ import {
   selectDirectBuyItem,
   selectOrderItems,
   selectOrderSuccess,
-  setOrderItems,
   setPaymentMethod,
-  updateOrderNote
+  updateOrderNote,
+  setOrderItems
 } from '../../../store/slices/orderSlice';
 import OrderSuccess from './components/OrderSuccess';
 import OrderSummary from './components/OrderSummary';
@@ -33,8 +33,6 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // State cho order
-  const [orderCompleted, setOrderCompleted] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [storeAddress, setStoreAddress] = useState('227 Nguyễn Văn Cừ, Quận 5, Hồ Chí Minh, Việt Nam');
   const [couponLoading, setCouponLoading] = useState(false);
@@ -46,9 +44,7 @@ const CheckoutPage = () => {
 
   // Selectors từ Redux
   const orderSuccess = useSelector(selectOrderSuccess);
-  const directBuyItem = useSelector(selectDirectBuyItem);
   const orderItems = useSelector(selectOrderItems);
-  const cartItems = useSelector((state) => state.cart.items);
   const shippingInfo = useSelector((state) => state.order.shippingInfo);
   const paymentMethod = useSelector((state) => state.order.paymentMethod);
   const isLoading = useSelector((state) => state.order.loading);
@@ -79,9 +75,6 @@ const CheckoutPage = () => {
     mode: 'onChange'
   });
 
-  // Xác định nguồn sản phẩm (mua ngay hoặc giỏ hàng)
-  const isBuyNow = Boolean(directBuyItem);
-
   // Cập nhật options state khi ShippingForm cập nhật danh sách tỉnh/huyện
   const handleProvincesLoaded = (provinces) => {
     setProvinceOptions(provinces);
@@ -91,24 +84,11 @@ const CheckoutPage = () => {
     setDistrictOptions(districts);
   };
 
-  // Cập nhật sản phẩm từ giỏ hàng hoặc từ mua ngay vào đơn hàng
-  useEffect(() => {
-    // Nếu đang ở chế độ mua ngay (directBuyItem có giá trị)
-    // thì không cần kiểm tra giỏ hàng
-    if (directBuyItem) {
-      return;
-    }
-
-    // Đặt sản phẩm từ giỏ hàng vào order
-    dispatch(setOrderItems(cartItems));
-  }, [dispatch, cartItems, navigate, directBuyItem]);
-
   // Reset order state khi unmount component
   useEffect(() => {
     return () => {
       if (orderSuccess) {
         dispatch(resetOrder());
-        dispatch(clearDirectBuyItem());
       }
     };
   }, [dispatch, orderSuccess]);
@@ -185,8 +165,8 @@ const CheckoutPage = () => {
       phoneNumber: data.phoneNumber,
       email: data.email,
       street: data.street,
-      city: provinceName,
-      state: districtName,
+      city: data.city,
+      state: data.state,
       country: data.country
     };
 
@@ -222,7 +202,6 @@ const CheckoutPage = () => {
     dispatch(createNewOrder(orderData))
       .unwrap()
       .then((response) => {
-        console.log('response', response);
         const orderId = response._id;
 
         if (data.paymentMethod === 'VNPay' || data.paymentMethod === 'Momo') {
@@ -241,12 +220,17 @@ const CheckoutPage = () => {
 
           processPayment(paymentMethod, paymentData)
             .then((response) => {
-              // // Chuyển hướng người dùng đến trang thanh toán
-              // if (response && response.success && response.paymentUrl) {
-              //   window.location.href = response.paymentUrl;
-              // } else {
-              //   toast.error('Không thể tạo liên kết thanh toán. Vui lòng thử lại sau.');
-              // }
+              // Chuyển hướng người dùng đến trang thanh toán
+              if (response && response.success && response.paymentUrl) {
+                // Xóa giỏ hàng sau khi đơn hàng đã được tạo thành công
+                dispatch(setOrderItems([]));
+                dispatch(clearCart());
+                localStorage.removeItem('orderItems');
+                localStorage.removeItem('cartItems');
+                window.location.href = response.paymentUrl;
+              } else {
+                toast.error('Không thể tạo liên kết thanh toán. Vui lòng thử lại sau.');
+              }
             })
             .catch((error) => {
               console.error('Lỗi tạo URL thanh toán:', error);
@@ -254,15 +238,11 @@ const CheckoutPage = () => {
             });
         } else {
           // Xử lý các phương thức thanh toán khác (COD)
-          setOrderCompleted(true);
+          dispatch(setOrderItems([])); // Xóa sản phẩm trong redux sau khi đặt hàng thành công
+          dispatch(clearCart()); // Xóa sản phẩm trong giỏ hàng
+          localStorage.removeItem('orderItems'); // Xóa sản phẩm trong localStorage
+          localStorage.removeItem('cartItems'); // Xóa luôn giỏ hàng trong localStorage
           toast.success('Đặt hàng thành công!');
-
-          // Clear cart if ordered from cart
-          if (!isBuyNow) {
-            dispatch(clearCart());
-          } else {
-            dispatch(clearDirectBuyItem());
-          }
         }
       })
       .catch((error) => {
@@ -272,7 +252,7 @@ const CheckoutPage = () => {
   };
 
   // Nếu đơn hàng đã hoàn tất, hiển thị trang thành công
-  if (orderCompleted || orderSuccess) {
+  if (orderSuccess) {
     return <OrderSuccess />;
   }
 

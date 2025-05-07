@@ -236,6 +236,81 @@ const removeCartItem = async (req, res) => {
   }
 };
 
+// Xóa nhiều sản phẩm khỏi giỏ hàng cùng lúc
+const removeMultipleCartItems = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { itemIds } = req.body;
+
+    // Validate
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    if (!itemIds || !Array.isArray(itemIds) || itemIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid item IDs array is required",
+      });
+    }
+
+    // 1. Tìm giỏ hàng
+    const cart = await Cart.findOne({ userId });
+    if (!cart) {
+      return res.status(404).json({ success: false, message: "Cart not found" });
+    }
+
+    // 2. Lọc ra các items cần giữ lại (không có trong danh sách xóa)
+    const initialItemsCount = cart.items.length;
+    cart.items = cart.items.filter((item) => !itemIds.includes(item._id.toString()));
+
+    // Kiểm tra số lượng items đã xóa
+    const removedItemsCount = initialItemsCount - cart.items.length;
+
+    if (removedItemsCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No matching items found in cart",
+      });
+    }
+
+    // 3. Lưu giỏ hàng đã cập nhật
+    await cart.save();
+
+    // 4. Tính tổng giá trị giỏ hàng
+    const summary = cart.items.reduce(
+      (acc, item) => {
+        if (item.isAvailable) {
+          const price = item.snapshot.discountPrice ?? item.snapshot.price;
+          acc.totalPrice += price * item.quantity;
+        }
+        return acc;
+      },
+      { totalPrice: 0 }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: `Successfully removed ${removedItemsCount} items from cart`,
+      data: {
+        items: cart.items,
+        totalPrice: summary.totalPrice,
+        updatedAt: cart.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error("Remove multiple cart items error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
 const clearCart = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -262,77 +337,11 @@ const clearCart = async (req, res) => {
   }
 };
 
-// Đơn giản, bạn có thể tạo thêm model Order sau này
-const checkout = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
-    // const { shippingAddress, paymentMethod, totalAmount, discountCode } = req.body;
-
-    // 1. Kiểm tra giỏ hàng của người dùng
-    const cart = await Cart.findOne({ userId });
-    if (!cart || cart.items.length === 0) {
-      return res.status(400).json({ message: "Cart is empty" });
-    }
-
-    // 2. Kiểm tra mã giảm giá (nếu có) và tính toán lại tổng tiền
-    let finalAmount = totalAmount;
-    if (discountCode) {
-      // Giả sử bạn có logic để kiểm tra mã giảm giá
-      const discount = await getDiscountFromCode(discountCode); // Tạo hàm này để lấy giảm giá
-      if (discount) {
-        finalAmount = finalAmount - discount.amount;
-      } else {
-        return res.status(400).json({ message: "Invalid discount code" });
-      }
-    }
-
-    // 3. Tạo đơn hàng
-    const newOrder = new Order({
-      userId,
-      shippingAddress,
-      paymentMethod,
-      totalAmount: finalAmount,
-      items: cart.items,
-      status: "Pending", // Đơn hàng đang chờ xử lý
-    });
-
-    await newOrder.save();
-
-    // 4. Xóa tất cả sản phẩm trong giỏ hàng sau khi đặt hàng
-    cart.items = [];
-    await cart.save();
-    return res.status(200).json({
-      message: "Checkout successful",
-      order: newOrder,
-      cart: { message: "Cart cleared" },
-    });
-    // res.status(200).json({
-    //   message: "Order placed successfully",
-    //   totalAmount: total,
-    //   orderDate: new Date(),
-    // });
-  } catch (error) {
-    console.error("Checkout error:", err);
-    return res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-// Giả sử bạn có một hàm để lấy giảm giá từ mã code
-async function getDiscountFromCode(code) {
-  // Tìm mã giảm giá trong cơ sở dữ liệu
-  // Trả về số tiền giảm giá nếu mã hợp lệ, null nếu không hợp lệ
-  if (code === "DISCOUNT10") {
-    return { amount: 10 }; // Giảm giá 10
-  }
-  return null;
-}
-
 module.exports = {
   addToCart,
   getCart,
   updateCartItem,
   removeCartItem,
+  removeMultipleCartItems,
   clearCart,
-  checkout,
 };

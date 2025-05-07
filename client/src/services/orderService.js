@@ -125,7 +125,6 @@ export const reviewOrderAPI = (orderId, reviewData) => {
 };
 
 export default {
-  calculateShippingCostAPI,
   createOrderAPI,
   getUserOrdersAPI,
   getOrderByIdAPI,

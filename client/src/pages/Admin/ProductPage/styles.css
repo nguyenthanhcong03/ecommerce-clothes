@@ -5,10 +5,6 @@
   @apply px-4 py-2 text-center font-bold text-white;
 }
 
-.ant-table-cell {
-  @apply font-robotoMono;
-}
-
 .ant-pagination-item {
   border: 1px solid #000 !important;
   background-color: #fff;
@@ -28,7 +24,6 @@
   color: #fff !important;
 }
 
-/* Next/Prev buttons */
 /* .ant-pagination-prev,
 .ant-pagination-next {
   border: 1px solid #000 !important;
@@ -48,12 +43,11 @@
   border-bottom: 1px solid #e1e1e1 !important;
 }
 
-/* .ant-table-tbody > tr:last-child > td {
+.ant-table-tbody > tr:last-child > td {
   border-bottom: 1px solid #e1e1e1 !important;
-} */
+}
 
 .ant-table-tbody > tr > td:first-child {
-  /* display: flex !important; */
   align-items: center !important;
   gap: 10px !important;
   height: 100% !important;

@@ -1,8 +1,8 @@
 import Header from '@/components/AdminComponents/common/Header';
 import StatCard from '@/components/AdminComponents/common/StatCard';
-import UserActivityHeatmap from '@/components/AdminComponents/users/UserActivityHeatmap';
-import UserDemographicsChart from '@/components/AdminComponents/users/UserDemographicsChart';
-import UserGrowthChart from '@/components/AdminComponents/users/UserGrowthChart';
+// import UserActivityHeatmap from '@/components/AdminComponents/users/UserActivityHeatmap';
+// import UserDemographicsChart from '@/components/AdminComponents/users/UserDemographicsChart';
+// import UserGrowthChart from '@/components/AdminComponents/users/UserGrowthChart';
 import useDebounce from '@/hooks/useDebounce';
 import { deleteProductById, fetchProducts } from '@/store/slices/productSlice';
 import { message } from 'antd';
@@ -357,9 +357,9 @@ const ProductPage = () => {
 
         {/* USER CHARTS */}
         <div className='mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2'>
-          <UserGrowthChart />
+          {/* <UserGrowthChart />
           <UserActivityHeatmap />
-          <UserDemographicsChart />
+          <UserDemographicsChart /> */}
         </div>
       </main>
       {isOpenForm && <ProductForm loading={loading} selectedProduct={selectedProduct} onClose={handleCloseForm} />}

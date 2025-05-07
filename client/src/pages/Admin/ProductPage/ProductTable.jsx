@@ -599,7 +599,7 @@ const ProductTable = ({
       />
 
       {/* Phân trang custom */}
-      <div className='mt-4 flex flex-wrap items-center justify-between gap-2'>
+      <div className='mt-4 flex flex-wrap items-center justify-between gap-2 px-4'>
         <div>
           <span className='text-sm text-gray-600'>
             Hiển thị {products?.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} -{' '}

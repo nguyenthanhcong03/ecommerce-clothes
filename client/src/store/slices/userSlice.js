@@ -1,86 +1,278 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getAllUsers, updateUserByIdAdmin } from '../../services/userService.js';
+import userService from '@/services/userService';
 
-// Định nghĩa async thunk để gọi API
-export const fetchUsers = createAsyncThunk('users/fetchUsers', async (params) => {
+// Async thunks
+export const fetchAllUsers = createAsyncThunk('users/fetchAll', async (params, { rejectWithValue }) => {
   try {
-    const data = await getAllUsers(params);
-    console.log('check res2', data);
-    return data;
+    const response = await userService.getAllUsers(params);
+    console.log('response', response);
+    return response;
   } catch (error) {
-    console.error('Error:', error);
+    return rejectWithValue(error.response?.data || { message: error.message });
   }
 });
 
-export const updateUserById = createAsyncThunk(
-  'users/updateUserById',
-  async ({ userId, payload }, { rejectWithValue }) => {
+export const fetchUserById = createAsyncThunk('users/fetchById', async (userId, { rejectWithValue }) => {
+  try {
+    const response = await userService.getUserById(userId);
+    return response;
+  } catch (error) {
+    return rejectWithValue(error.response?.data || { message: error.message });
+  }
+});
+
+export const createUserByAdmin = createAsyncThunk('users/createByAdmin', async (userData, { rejectWithValue }) => {
+  try {
+    const response = await userService.createUserByAdmin(userData);
+    return response;
+  } catch (error) {
+    return rejectWithValue(error.response?.data || { message: error.message });
+  }
+});
+
+export const updateUserAdmin = createAsyncThunk(
+  'users/updateAdmin',
+  async ({ userId, userData }, { rejectWithValue }) => {
     try {
-      const res = await updateUserByIdAdmin(userId, payload);
-      return res; // Trả về dữ liệu user đã cập nhật
+      const response = await userService.updateUserByAdmin(userId, userData);
+      return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || { message: error.message });
     }
   }
 );
 
+export const changeUserStatus = createAsyncThunk(
+  'users/changeStatus',
+  async ({ userId, status }, { rejectWithValue }) => {
+    try {
+      const response = await userService.changeUserStatus(userId, status);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: error.message });
+    }
+  }
+);
+
+export const deleteUser = createAsyncThunk('users/delete', async (userId, { rejectWithValue }) => {
+  try {
+    const response = await userService.deleteUser(userId);
+    return { ...response, userId };
+  } catch (error) {
+    return rejectWithValue(error.response?.data || { message: error.message });
+  }
+});
+
+export const banUser = createAsyncThunk('users/ban', async ({ userId, banInfo }, { rejectWithValue }) => {
+  try {
+    const response = await userService.banUser(userId, banInfo);
+    return { ...response, userId };
+  } catch (error) {
+    return rejectWithValue(error.response?.data || { message: error.message });
+  }
+});
+
+export const unbanUser = createAsyncThunk('users/unban', async (userId, { rejectWithValue }) => {
+  try {
+    const response = await userService.unbanUser(userId);
+    return { ...response, userId };
+  } catch (error) {
+    return rejectWithValue(error.response?.data || { message: error.message });
+  }
+});
+
+const initialState = {
+  users: [],
+  pagination: {
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  },
+  currentUser: null,
+  loading: false,
+  error: null,
+  actionLoading: false,
+  actionError: null,
+  filters: {
+    search: '',
+    role: null,
+    status: null
+  }
+};
+
 const userSlice = createSlice({
   name: 'users',
-  initialState: {
-    users: [],
-    total: 0,
-    page: 0,
-    pages: 1,
-    status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
-    error: null,
-    isOpenForm: false,
-    selectedUser: null
-  },
+  initialState,
   reducers: {
-    setIsOpenForm: (state, action) => {
-      state.isOpenForm = action.payload;
+    resetActionState: (state) => {
+      state.actionLoading = false;
+      state.actionError = null;
     },
-    setSelectedUser: (state, action) => {
-      state.selectedUser = action.payload;
+    setFilters: (state, action) => {
+      state.filters = { ...state.filters, ...action.payload };
     }
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUsers.pending, (state) => {
-        state.status = 'loading';
+      // Fetch all users
+      .addCase(fetchAllUsers.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-      .addCase(fetchUsers.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.users = action.payload.data;
-        state.total = action.payload.pagination.total;
-        state.page = action.payload.page;
-        state.pages = action.payload.pages;
+      .addCase(fetchAllUsers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.users = action.payload.users;
+        state.pagination = action.payload.pagination;
       })
-      .addCase(fetchUsers.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.error.message;
+      .addCase(fetchAllUsers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || { message: 'Failed to fetch users' };
       })
-      .addCase(updateUserById.pending, (state) => {
-        state.status = 'loading';
-      })
-      .addCase(updateUserById.fulfilled, (state, action) => {
-        state.status = 'succeeded';
 
-        // Cập nhật lại danh sách users trong Redux
-        // const updatedUser = action.payload.data;
-        // state.users = state.users.map((user) => (user._id === updatedUser._id ? updatedUser : user));
-
-        // Đóng form chỉnh sửa
-        state.isOpenForm = false;
-        state.selectedUser = null;
+      // Fetch user by ID
+      .addCase(fetchUserById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-      .addCase(updateUserById.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.payload || action.error.message;
+      .addCase(fetchUserById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentUser = action.payload.data;
+      })
+      .addCase(fetchUserById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || { message: 'Failed to fetch user' };
+      })
+
+      // Thêm vào extraReducers
+      .addCase(createUserByAdmin.pending, (state) => {
+        state.actionLoading = true;
+        state.actionError = null;
+      })
+      .addCase(createUserByAdmin.fulfilled, (state, action) => {
+        state.actionLoading = false;
+        state.users.unshift(action.payload.data);
+        state.pagination.total += 1;
+      })
+      .addCase(createUserByAdmin.rejected, (state, action) => {
+        state.actionLoading = false;
+        state.actionError = action.payload || { message: 'Failed to create user' };
+      })
+
+      // Update user by admin
+      .addCase(updateUserAdmin.pending, (state) => {
+        state.actionLoading = true;
+        state.actionError = null;
+      })
+      .addCase(updateUserAdmin.fulfilled, (state, action) => {
+        state.actionLoading = false;
+        state.currentUser = action.payload.data;
+
+        // Also update in the users list if present
+        const index = state.users.findIndex((user) => user._id === action.payload.data._id);
+        if (index !== -1) {
+          state.users[index] = action.payload.data;
+        }
+      })
+      .addCase(updateUserAdmin.rejected, (state, action) => {
+        state.actionLoading = false;
+        state.actionError = action.payload || { message: 'Failed to update user' };
+      })
+
+      // Change user status
+      .addCase(changeUserStatus.pending, (state) => {
+        state.actionLoading = true;
+        state.actionError = null;
+      })
+      .addCase(changeUserStatus.fulfilled, (state, action) => {
+        state.actionLoading = false;
+
+        // Update in the users list if present
+        const index = state.users.findIndex((user) => user._id === action.payload.data._id);
+        if (index !== -1) {
+          state.users[index] = action.payload.data;
+        }
+
+        // Update current user if it's the same
+        if (state.currentUser && state.currentUser._id === action.payload.data._id) {
+          state.currentUser = action.payload.data;
+        }
+      })
+      .addCase(changeUserStatus.rejected, (state, action) => {
+        state.actionLoading = false;
+        state.actionError = action.payload || { message: 'Failed to change user status' };
+      })
+
+      // Delete user
+      .addCase(deleteUser.pending, (state) => {
+        state.actionLoading = true;
+        state.actionError = null;
+      })
+      .addCase(deleteUser.fulfilled, (state, action) => {
+        state.actionLoading = false;
+
+        // Remove from the users list
+        state.users = state.users.filter((user) => user._id !== action.payload.userId);
+
+        // Clear current user if it's the same
+        if (state.currentUser && state.currentUser._id === action.payload.userId) {
+          state.currentUser = null;
+        }
+      })
+      .addCase(deleteUser.rejected, (state, action) => {
+        state.actionLoading = false;
+        state.actionError = action.payload || { message: 'Failed to delete user' };
+      })
+
+      // Ban user
+      .addCase(banUser.pending, (state) => {
+        state.actionLoading = true;
+        state.actionError = null;
+      })
+      .addCase(banUser.fulfilled, (state, action) => {
+        state.actionLoading = false;
+
+        // Update in the users list if present
+        const index = state.users.findIndex((user) => user._id === action.payload.data._id);
+        if (index !== -1) {
+          state.users[index] = action.payload.data;
+        }
+
+        // Update current user if it's the same
+        if (state.currentUser && state.currentUser._id === action.payload.data._id) {
+          state.currentUser = action.payload.data;
+        }
+      })
+      .addCase(banUser.rejected, (state, action) => {
+        state.actionLoading = false;
+        state.actionError = action.payload || { message: 'Failed to ban user' };
+      })
+
+      // Unban user
+      .addCase(unbanUser.pending, (state) => {
+        state.actionLoading = true;
+        state.actionError = null;
+      })
+      .addCase(unbanUser.fulfilled, (state, action) => {
+        state.actionLoading = false;
+
+        // Update in the users list if present
+        const index = state.users.findIndex((user) => user._id === action.payload.data._id);
+        if (index !== -1) {
+          state.users[index] = action.payload.data;
+        }
+
+        // Update current user if it's the same
+        if (state.currentUser && state.currentUser._id === action.payload.data._id) {
+          state.currentUser = action.payload.data;
+        }
+      })
+      .addCase(unbanUser.rejected, (state, action) => {
+        state.actionLoading = false;
+        state.actionError = action.payload || { message: 'Failed to unban user' };
       });
   }
 });
 
-export const { setIsOpenForm, setSelectedUser } = userSlice.actions;
-
+export const { resetActionState, setFilters } = userSlice.actions;
 export default userSlice.reducer;

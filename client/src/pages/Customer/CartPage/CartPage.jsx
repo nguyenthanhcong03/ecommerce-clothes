@@ -1,30 +1,55 @@
-import CartTable from '@/components/cart/CartTable/CartTable';
-import Button from '@/components/common/Button/Button';
-import Loading from '@/components/common/Loading/Loading';
 import { getCart } from '@/store/slices/cartSlice';
-import { ShoppingCart } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { Skeleton } from 'antd';
+import CartSteps from './components/CartSteps';
+import CartTable from './components/CartTable/CartTable';
+import EmptyCart from './components/EmptyCart';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
-const CartSteps = () => (
-  <div className='flex min-h-[50px] items-center justify-center gap-4 bg-[#FAFAFA] md:min-h-[70px] lg:min-h-[120px]'>
-    {/* Steps content */}
-  </div>
-);
+// Cart skeleton loading component
+const CartSkeleton = () => (
+  <div className='mx-auto mt-10 max-w-[1280px] lg:p-8'>
+    <div className='flex flex-col gap-8'>
+      <div className='border px-4'>
+        <div className='grid-cols-12 items-center gap-2 border-b py-4 md:grid'>
+          <Skeleton.Input active style={{ width: '100%', height: 24 }} />
+        </div>
 
-const EmptyCart = ({ onBackToShop }) => (
-  <div className='py-28'>
-    <div className='flex flex-col items-center justify-center gap-2 py-10'>
-      <ShoppingCart fontSize={50} />
-      <div className='text-2xl'>GIỎ HÀNG CỦA BẠN TRỐNG!</div>
-      <div className='max-w-md text-center text-sm'>
-        Chúng tôi mời bạn khám phá bộ sưu tập đa dạng tại cửa hàng của chúng tôi. Chắc chắn bạn sẽ tìm được món đồ phù
-        hợp với phong cách của mình!
+        {/* Cart items skeletons */}
+        {[1, 2, 3].map((item) => (
+          <div key={item} className='border-b py-4'>
+            <div className='flex items-center gap-4'>
+              <Skeleton.Button active style={{ width: 20, height: 20 }} />
+              <Skeleton.Image active style={{ width: 80, height: 80 }} />
+              <div className='flex flex-1 flex-col gap-2'>
+                <Skeleton.Input active style={{ width: '100%' }} />
+                <Skeleton.Input active style={{ width: '60%' }} />
+              </div>
+              <Skeleton.Input active style={{ width: 80 }} />
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
-    <div className='flex w-full items-center justify-center'>
-      <Button onClick={onBackToShop}>TRỞ VỀ CỬA HÀNG</Button>
+
+      {/* Cart summary skeleton */}
+      <div className='col-span-4 h-fit border bg-white p-6'>
+        <div className='flex items-center gap-3'>
+          <Skeleton.Button active style={{ width: 170, height: 20 }} />
+          <Skeleton.Button active style={{ height: 20 }} />
+        </div>
+
+        <div className='my-4 flex justify-between text-lg font-semibold'>
+          <Skeleton.Input active style={{ width: 250 }} />
+          <Skeleton.Input active style={{ width: 100 }} />
+        </div>
+
+        <div className='space-y-3'>
+          <Skeleton.Button active block style={{ height: 40 }} />
+          <Skeleton.Button active block style={{ height: 40 }} />
+        </div>
+      </div>
     </div>
   </div>
 );
@@ -36,18 +61,14 @@ function CartPage() {
 
   useEffect(() => {
     dispatch(getCart());
-    console.log('rểnder');
   }, [dispatch]);
-
-  if (loading) {
-    return <Loading />;
-  }
 
   return (
     <div className='mt-[80px]'>
       <CartSteps />
-      {items && items.length > 0 ? (
-        // Add key prop to force re-render
+      {loading ? (
+        <CartSkeleton />
+      ) : items && items.length > 0 ? (
         <CartTable key={items.length} />
       ) : (
         <EmptyCart onBackToShop={() => navigate('/shop')} />

@@ -11,7 +11,7 @@ const { notFound, errorHandler } = require("../middlewares/errHandler");
 
 const initRoutes = (app) => {
   app.use("/api/auth", authRoutes);
-  // app.use("/api/user", userRoutes);
+  app.use("/api/user", userRoutes);
   app.use("/api/product", productRoutes);
   app.use("/api/category", categoryRoutes);
   app.use("/api/cart", cartRoutes);

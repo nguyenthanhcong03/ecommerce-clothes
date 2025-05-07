@@ -10,7 +10,6 @@ const { vnpayConfig } = require("../config/payment");
  * @returns {String} - URL thanh toán để chuyển hướng người dùng
  */
 const createVnpayPaymentUrl = async (orderInfo) => {
-  console.log("orderInfo", orderInfo);
   try {
     // Lấy ngày hiện tại theo múi giờ Việt Nam
     let createDate = moment(date).format("YYYYMMDDHHmmss");
@@ -34,7 +33,6 @@ const createVnpayPaymentUrl = async (orderInfo) => {
 
     // Sắp xếp tham số theo thứ tự a-z trước khi tạo chữ ký
     const sortedParams = sortObject(vnpParams);
-    console.log("Sorted Params:", sortedParams);
 
     // Tạo chữ ký
     const signData = querystring.stringify(sortedParams, { encode: false });
@@ -60,7 +58,6 @@ const createVnpayPaymentUrl = async (orderInfo) => {
  * @returns {Object} - Kết quả xác minh
  */
 const verifyVnpayReturn = (vnpParams) => {
-  console.log("voood", vnpParams);
   try {
     // Lấy chữ ký bảo mật từ request
     const secureHash = vnpParams.vnp_SecureHash;

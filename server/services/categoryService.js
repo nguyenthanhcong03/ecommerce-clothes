@@ -158,7 +158,6 @@ const deleteCategory = async (categoryId) => {
 };
 
 const createCategory = async (categoryData) => {
-  console.log("DEBUG: Đã vào service createCategory", categoryData);
   try {
     const { name, parentId, description, isActive, priority, images } = categoryData;
 
@@ -193,11 +192,10 @@ const createCategory = async (categoryData) => {
       isActive: isActive !== undefined ? isActive : true,
       priority: priority || 0,
     });
-    console.log("chuẩn bị lưu category", newCategory);
 
     // Save to database
     const savedCategory = await newCategory.save();
-    console.log("Đã lưu category thành công", savedCategory);
+
     return savedCategory;
   } catch (error) {
     // Handle duplicate key error specially

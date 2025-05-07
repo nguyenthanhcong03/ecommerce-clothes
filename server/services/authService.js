@@ -5,9 +5,6 @@ const jwt = require("jsonwebtoken");
 const { sendEmail } = require("./emailService");
 const { generateAccessToken, generateRefreshToken } = require("../utils/jwt");
 
-/**
- * Đăng ký người dùng mới
- */
 const registerUser = async (userData) => {
   const { username, password, email, firstName, lastName } = userData;
 

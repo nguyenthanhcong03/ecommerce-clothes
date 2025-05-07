@@ -38,7 +38,6 @@ const getAllCategories = async (req, res) => {
 const createCategory = async (req, res) => {
   try {
     const categoryData = req.body;
-    console.log("DEBUG: Đã vào controller createCategory", categoryData);
 
     if (!categoryData.images || !Array.isArray(categoryData.images) || categoryData.images.length === 0) {
       return res.status(400).json({
@@ -72,7 +71,6 @@ const createCategory = async (req, res) => {
 };
 
 const updateCategoryById = async (req, res) => {
-  console.log("first");
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -141,10 +139,8 @@ const getCategoryById = async (req, res) => {
 };
 
 const deleteCategory = async (req, res) => {
-  console.log("đã vào deleteCategory controller");
   try {
     const { id } = req.params;
-    console.log("id", id);
 
     const hasChildren = await categoryService.hasChildCategories(id);
     if (hasChildren) {

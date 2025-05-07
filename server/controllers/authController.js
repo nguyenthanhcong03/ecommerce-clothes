@@ -9,17 +9,6 @@ const register = async (req, res) => {
   }
 };
 
-const verifyEmail = async (req, res) => {
-  const { token } = req.query;
-
-  try {
-    await authService.verifyUserEmail(token);
-    res.status(200).json({ success: true, message: "Xác thực email thành công" });
-  } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
-  }
-};
-
 const login = async (req, res) => {
   try {
     const { user, accessToken, refreshToken } = await authService.loginUser(req.body);
@@ -47,6 +36,17 @@ const login = async (req, res) => {
     if (error.message === "Vui lòng xác thực email trước khi đăng nhập") {
       return res.status(403).json({ success: false, message: error.message });
     }
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+const verifyEmail = async (req, res) => {
+  const { token } = req.query;
+
+  try {
+    await authService.verifyUserEmail(token);
+    res.status(200).json({ success: true, message: "Xác thực email thành công" });
+  } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
 };

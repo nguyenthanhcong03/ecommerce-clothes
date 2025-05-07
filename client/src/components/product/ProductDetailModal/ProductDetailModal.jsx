@@ -5,9 +5,12 @@ import { closeProductDetailModal, fetchProductById } from '@/store/slices/produc
 import { ShoppingCart, Star, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { setOrderItems } from '../../../store/slices/orderSlice';
+import { useNavigate } from 'react-router-dom';
 
 const ProductDetailModal = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { isDetailModalOpen, modalProductId, currentProduct: product, status } = useSelector((state) => state.product);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -209,6 +212,40 @@ const ProductDetailModal = () => {
     dispatch(addToCart(cartItem));
     setShowValidation(false);
     handleCloseModal();
+  };
+
+  const handleProceedToCheckout = () => {
+    if (!selectedSize || !selectedColor) {
+      setShowValidation(true);
+      return;
+    }
+    const selectedVariant = product.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
+
+    const orderItems = [
+      {
+        productId: product._id,
+        variantId: selectedVariant._id,
+        quantity: quantity,
+        snapshot: {
+          name: product.name,
+          price: selectedVariant.price,
+          discountPrice: selectedVariant.discountPrice,
+          color: selectedVariant.color,
+          size: selectedVariant.size,
+          image:
+            selectedVariant.images && selectedVariant.images.length > 0 ? selectedVariant.images[0] : product.images[0]
+        }
+      }
+    ];
+    // Lưu các sản phẩm đã chọn vào localStorage
+    localStorage.setItem('orderItems', JSON.stringify(orderItems));
+
+    // Đặt các sản phẩm đã chọn vào trạng thái đơn hàng
+    dispatch(setOrderItems(orderItems));
+    handleCloseModal();
+
+    // Chuyển hướng đến trang thanh toán
+    navigate('/checkout');
   };
 
   const handleQuantityChange = (newQuantity) => {
@@ -425,7 +462,7 @@ const ProductDetailModal = () => {
                 <Button
                   variant='primary'
                   onClick={() => {
-                    handleAddToCart();
+                    handleProceedToCheckout();
                   }}
                   className='flex-1'
                 >

@@ -130,13 +130,13 @@ function LoginPage() {
               </a>
             </div>
 
-            <Button type='submit' variant='primary' width='full' isLoading={isLoading || isSubmitting}>
+            <Button type='submit' variant='primary' width='full' isLoading={isSubmitting}>
               Đăng nhập
             </Button>
 
             <div className='text-center text-sm'>
               Chưa có tài khoản?{' '}
-              <a href='/register' className='text-primaryColor hover:underline'>
+              <a href='/auth/register' className='text-primaryColor hover:underline'>
                 Đăng ký ngay
               </a>
             </div>

@@ -25,6 +25,14 @@ function App() {
     }
   }, [isAuthenticated, dispatch]);
 
+  if (isLoading) {
+    return (
+      <div className='flex h-screen w-full items-center justify-center bg-white'>
+        <div className='h-12 w-12 animate-spin rounded-full border-t-4 border-solid border-primaryColor'></div>
+      </div>
+    );
+  }
+
   return (
     <>
       <RouterProvider router={router} />

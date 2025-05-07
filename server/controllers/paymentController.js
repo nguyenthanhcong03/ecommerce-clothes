@@ -16,9 +16,6 @@ const Order = require("../models/order");
 const createVnpayPayment = async (req, res) => {
   try {
     const { amount, orderInfo, orderId } = req.body;
-    console.log("amount", amount);
-    console.log("orderInfo", orderInfo);
-    console.log("orderId", orderId);
 
     // Kiểm tra tính hợp lệ của đầu vào
     if (!amount || amount <= 0) {
@@ -97,7 +94,6 @@ const createVnpayPayment2 = async (req, res) => {
   }
 
   vnp_Params = sortObject(vnp_Params);
-  console.log("sortedParams", vnp_Params);
 
   let querystring = require("qs");
   let signData = querystring.stringify(vnp_Params, { encode: false });

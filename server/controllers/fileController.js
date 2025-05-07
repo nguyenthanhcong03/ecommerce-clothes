@@ -67,11 +67,9 @@ const uploadMultipleFilesHandler = async (req, res) => {
 
     // Lấy tham số thư mục hoặc sử dụng giá trị mặc định
     const folder = req.query.folder || "uploads";
-    console.log("DEBUG: Folder =", folder);
 
     // Upload lên Cloudinary
     const results = await uploadMultipleFiles(req.files, folder);
-    console.log("DEBUG: Upload thành công, số files =", results.length);
 
     // Định dạng cho cơ sở dữ liệu nếu cần
     const formattedResults = formatImagesForDB(results);

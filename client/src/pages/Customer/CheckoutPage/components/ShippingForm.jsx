@@ -18,11 +18,25 @@ const ShippingForm = ({ control, errors, watch, setValue, onProvincesLoaded, onD
   // Watch city to update districts
   const watchedCity = watch('city');
   const watchedState = watch('state');
-  console.log('watchedCity', watchedCity);
-  console.log('watchedState', watchedState);
+
+  // // Initialize selectedProvince from watchedCity on component mount
+  // useEffect(() => {
+  //   if (watchedCity && !selectedProvince) {
+  //     setSelectedProvince(watchedCity);
+  //   }
+  //   if (watchedState && !selectedDistrict) {
+  //     setSelectedDistrict(watchedState);
+  //   }
+  // }, [watchedCity, watchedState]);
 
   // Load danh sách tỉnh
   useEffect(() => {
+    if (watchedCity && !selectedProvince) {
+      setSelectedProvince(watchedCity);
+    }
+    if (watchedState && !selectedDistrict) {
+      setSelectedDistrict(watchedState);
+    }
     const fetchProvinces = async () => {
       try {
         const response = await getProvincesAPI();
@@ -43,7 +57,19 @@ const ShippingForm = ({ control, errors, watch, setValue, onProvincesLoaded, onD
         const response = await getDistrictsAPI(selectedProvince);
         setDistricts(response);
         onDistrictsLoaded(response);
-        setValue('state', '');
+
+        // Don't reset state if there's a previously saved value
+        // that matches the new district options
+        const currentState = watchedState;
+        if (!currentState) {
+          setValue('state', '');
+        } else {
+          // Validate that the current state is in the new districts
+          const stateExists = response.some((district) => district.value == currentState);
+          if (!stateExists) {
+            setValue('state', '');
+          }
+        }
       } catch (error) {
         console.error('Error loading district:', error);
       }
@@ -51,7 +77,7 @@ const ShippingForm = ({ control, errors, watch, setValue, onProvincesLoaded, onD
     if (selectedProvince) {
       fetchDistricts();
     }
-  }, [selectedProvince, setValue]);
+  }, [selectedProvince, setValue, watchedState]);
 
   // Khi chọn huyện → tính phí vận chuyển
   useEffect(() => {
@@ -135,6 +161,7 @@ const ShippingForm = ({ control, errors, watch, setValue, onProvincesLoaded, onD
                 placeholder='-- Chọn Tỉnh/Thành phố --'
                 options={provinces}
                 error={errors.city?.message}
+                required
                 onChange={(e) => {
                   field.onChange(e);
                   setSelectedProvince(e.target.value);
@@ -154,6 +181,7 @@ const ShippingForm = ({ control, errors, watch, setValue, onProvincesLoaded, onD
                 placeholder='-- Chọn Quận/Huyện --'
                 options={districts}
                 error={errors.state?.message}
+                required
                 disabled={!watchedCity}
                 onChange={(e) => {
                   field.onChange(e);

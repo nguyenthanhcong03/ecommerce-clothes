@@ -1,346 +1,299 @@
-// const User = require("../models/user");
-// const bcrypt = require("bcryptjs");
-// const crypto = require("crypto");
-// const asyncHandler = require("express-async-handler");
-// const cloudinary = require("../config/cloudinary");
-// const jwt = require("jsonwebtoken");
-// const { createUserService, uploadSingleFile, uploadMultipleFiles } = require("../services/userService");
-// const { uploadSingleFile2 } = require("../services/hihiService");
-// const { generateAccessToken } = require("../utils/jwt");
+const userService = require("../services/userService");
 
-// const getCurrentUser = asyncHandler(async (req, res) => {
-//   const { _id } = req.user;
-//   const user = await User.findById(_id).select("-password -refreshToken -role");
-//   return res.status(200).json({ success: true, rs: user ? user : "User not found" });
-// });
+class UserController {
+  // Lấy danh sách người dùng với phân trang và lọc
+  async getAllUsers(req, res) {
+    try {
+      const filters = {
+        role: req.query.role,
+        status: req.query.status,
+        search: req.query.search,
+      };
 
-// const refreshAccessToken = asyncHandler(async (req, res) => {
-//   // Lấy token từ cookies
-//   const cookie = req.cookies;
-//   // Check xem có token hay không
-//   if (!cookie && !cookie.refreshToken) {
-//     throw new Error("No Refresh token in cookies");
-//   }
-//   // Check token có hợp lệ hay không
-//   const rs = await jwt.verify(cookie.refreshToken, process.env.JWT_SECRET);
-//   const response = await User.findOne({ _id: rs._id, refreshToken: cookie.refreshToken });
-//   return res.status(200).json({
-//     success: response ? true : false,
-//     newAccessToken: response ? generateAccessToken(response._id, response.role) : "Refresh token not sss",
-//   });
-// });
+      const options = {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 10,
+        sortBy: req.query.sortBy || "createdAt",
+        sortOrder: req.query.sortOrder === "asc" ? 1 : -1,
+      };
 
-// const logout = asyncHandler(async (req, res) => {
-//   const cookie = req.cookies;
-//   if (!cookie && !cookie.refreshToken) {
-//     throw new Error("No Refresh token in cookies");
-//   }
-//   // Xóa refreshToken trong db
-//   await User.findOneAndUpdate({ refreshToken: cookie.refreshToken }, { refreshToken: "" }, { new: true });
-//   // Xóa refreshToken trong cookie
-//   res.clearCookie("refreshToken", {
-//     httpOnly: true,
-//     maxAge: 7 * 24 * 60 * 60 * 1000,
-//   });
-//   return res.status(200).json({
-//     success: true,
-//     message: "Logout successfully",
-//   });
-// });
+      const result = await userService.getAllUsers(filters, options);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 
-// const forgotPassword = asyncHandler(async (req, res) => {
-//   const { email } = req.query;
-//   if (!email) throw new Error("Missing fields");
-//   const user = await User.findOne({ email });
-//   if (!user) throw new Error("User not found");
-//   const token = await user.createPasswordResetToken();
-//   await user.save();
-//   const html = `Nhấn vào liên kết dưới đây để thay đổi mật khẩu. Liên kết sẽ hết hạn sau 10 phút <a href=${process.env.SERVER_URL}/api/user/reset-password?token=${token}>Click here</a>`;
-//   const data = {
-//     to: email,
-//     html,
-//   };
-//   const rs = await sendMail(data);
-//   return res.status(200).json({ success: true, rs });
-// });
+  // Lấy thông tin của một người dùng
+  async getUserById(req, res) {
+    try {
+      const user = await userService.getUserById(req.params.id);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+      res.status(200).json({ success: true, data: user });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 
-// const getAllUsers = async (req, res) => {
-//   try {
-//     // 1. Fav lấy các query parameters từ request
-//     const {
-//       page = 1, // Trang mặc định là 1
-//       limit = 10, // Số sản phẩm mỗi trang mặc định là 10
-//       sortBy = "createdAt", // Sắp xếp mặc định theo ngày tạo
-//       order = "desc", // Thứ tự mặc định giảm dần
-//       search, // Từ khóa tìm kiếm
-//       role,
-//     } = req.query;
+  // Lấy thông tin người dùng hiện tại
+  async getCurrentUser(req, res) {
+    try {
+      const user = await userService.getUserById(req.user.id);
+      res.status(200).json({ success: true, data: user });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 
-//     // 2. Xây dựng query
-//     let query = {};
+  // Tạo người dùng mới bởi Admin
+  async createUserByAdmin(req, res) {
+    try {
+      // Chỉ admin mới có quyền tạo người dùng
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ success: false, message: "Permission denied" });
+      }
 
-//     // Search theo tên hoặc mô tả
-//     if (search) {
-//       query.$or = [{ name: { $regex: search, $options: "i" } }, { description: { $regex: search, $options: "i" } }];
-//     }
+      const result = await userService.createUserByAdmin(req.body);
 
-//     // Filter theo category
-//     if (role) {
-//       query.role = role;
-//     }
+      // Trả về kết quả với mật khẩu gốc nếu đã được tạo ngẫu nhiên
+      res.status(201).json({
+        success: true,
+        data: result.user,
+        originalPassword: result.originalPassword,
+        message: "User created successfully",
+      });
+    } catch (error) {
+      if (error.message === "Email already exists" || error.message === "Username already exists") {
+        return res.status(400).json({ success: false, message: error.message });
+      }
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 
-//     // 3. Tính tổng số documents
-//     const total = await User.countDocuments(query);
-//     console.log("check total", total);
+  // Cập nhật thông tin người dùng
+  async updateUser(req, res) {
+    try {
+      const userId = req.params.id;
+      // Kiểm tra quyền: admin có thể cập nhật bất kỳ user nào, user thường chỉ có thể cập nhật chính mình
+      if (req.user.role !== "admin" && req.user.id !== userId) {
+        return res.status(403).json({ success: false, message: "Permission denied" });
+      }
 
-//     // 4. Thực hiện query với pagination và sort
-//     const users = await User.find(query)
-//       // .populate("categoryId", "name slug") // Liên kết với collection Categories
-//       .sort({ [sortBy]: order === "desc" ? -1 : 1 })
-//       .skip((page - 1) * limit)
-//       .limit(Number(limit))
-//       .select("-__v"); // Loại bỏ field version
+      const updatedUser = await userService.updateUser(userId, req.body);
+      if (!updatedUser) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
 
-//     console.log("check users", users);
+      res.status(200).json({ success: true, data: updatedUser });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 
-//     // 5. Tạo response
-//     const response = {
-//       success: true,
-//       data: users,
-//       pagination: {
-//         current: Number(page),
-//         pageSize: Number(limit),
-//         total: total,
-//         totalPages: Math.ceil(total / limit),
-//       },
-//     };
+  // Cập nhật thông tin người dùng bởi Admin
+  async updateUserByAdmin(req, res) {
+    try {
+      // Chỉ admin mới có quyền sử dụng API này
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ success: false, message: "Permission denied" });
+      }
 
-//     res.status(200).json(response);
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Server error",
-//       error: error.message,
-//     });
-//   }
-// };
+      const userId = req.params.id;
+      const updatedUser = await userService.updateUserByAdmin(userId, req.body);
 
-// const createUser = async (req, res) => {
-//   const { firstName, lastName, username, address, role, email, phone, password } = req.body;
-//   if (!firstName || !lastName || !email || !password || !role) {
-//     return res.status(400).json({ success: false, message: "Missing fields" });
-//   }
-//   try {
-//     // Kiểm tra email đã tồn tại
-//     const existedUser = await User.findOne({ username });
-//     if (existedUser) {
-//       return res.status(400).json({ message: "Người dùng đã tồn tại" });
-//     }
+      res.status(200).json({ success: true, data: updatedUser, message: "User updated successfully" });
+    } catch (error) {
+      if (error.message === "User not found") {
+        return res.status(404).json({ success: false, message: error.message });
+      }
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 
-//     // Mã hóa mật khẩu
-//     const salt = await bcrypt.genSalt(10);
-//     const hashedPassword = await bcrypt.hash(password, salt);
+  // Xóa người dùng (chỉ admin mới có quyền)
+  async deleteUser(req, res) {
+    try {
+      // Kiểm tra quyền: chỉ admin mới có thể xóa user
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ success: false, message: "Permission denied" });
+      }
 
-//     const user = await User.create({
-//       username,
-//       email,
-//       password: hashedPassword,
-//       firstName,
-//       lastName,
-//       address,
-//       phone,
-//       role,
-//     });
+      const result = await userService.deleteUser(req.params.id);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 
-//     res.status(200).json({ success: true, message: "Create user successfully" });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: "Server error", error: error.message });
-//   }
-// };
+  // Thay đổi mật khẩu
+  async changePassword(req, res) {
+    try {
+      const { currentPassword, newPassword } = req.body;
 
-// const deleteUser = asyncHandler(async (req, res) => {
-//   const { _id } = req.query;
-//   if (!_id) throw new Error("Missing input");
-//   const response = await User.findByIdAndDelete(_id);
-//   return res.status(200).json({
-//     success: response ? true : false,
-//     deletedUser: response ? `User with email ${response.email} delete` : "No user delete",
-//   });
-// });
+      // Người dùng chỉ có thể thay đổi mật khẩu của chính mình
+      const userId = req.user.id;
 
-// const updateUser = asyncHandler(async (req, res) => {
-//   const { _id } = req.user;
-//   if (!_id || Object.keys(req.body).length === 0) throw new Error("Missing input");
-//   const response = await User.findByIdAndUpdate(_id, req.body, { new: true }).select("-password -role");
-//   return res.status(200).json({
-//     success: response ? true : false,
-//     data: response ? response : "Something went wrong",
-//   });
-// });
+      const result = await userService.changePassword(userId, currentPassword, newPassword);
+      res.status(200).json(result);
+    } catch (error) {
+      if (error.message === "Current password is incorrect") {
+        return res.status(400).json({ success: false, message: error.message });
+      }
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 
-// const updateUserByAdmin = asyncHandler(async (req, res) => {
-//   const { uid } = req.params;
-//   if (Object.keys(req.body).length === 0) throw new Error("Missing input");
-//   const response = await User.findByIdAndUpdate(uid, req.body, { new: true }).select("-password -role");
-//   return res.status(200).json({
-//     success: response ? true : false,
-//     data: response ? response : "Something went wrong",
-//   });
-// });
+  // Thay đổi trạng thái người dùng (active/inactive/banned) - chỉ admin
+  async changeUserStatus(req, res) {
+    try {
+      // Kiểm tra quyền: chỉ admin mới có thể thay đổi trạng thái
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ success: false, message: "Permission denied" });
+      }
 
-// // const uploadImageUser = async (req, res) => {
-// //   try {
-// //     if (!req.file) {
-// //       return res.status(400).json({ message: "Vui lòng chọn file ảnh" });
-// //     }
+      const { status } = req.body;
+      const userId = req.params.id;
 
-// //     const avatarUrl = req.file.path; // URL từ Cloudinary
-// //     res.status(200).json({
-// //       message: "Upload avatar thành công",
-// //       avatarUrl: avatarUrl,
-// //     });
-// //   } catch (error) {
-// //     res.status(500).json({ message: "Lỗi server", error: error.message });
-// //   }
-// // };
-// const uploadImage = async (req, res) => {
-//   try {
-//     console.log("hehe");
-//     if (!req.file) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Vui lòng upload một file ảnh",
-//       });
-//     }
+      const updatedUser = await userService.changeUserStatus(userId, status);
+      if (!updatedUser) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
 
-//     const result = await new Promise((resolve, reject) => {
-//       const uploadStream = cloudinary.uploader.upload_stream(
-//         {
-//           folder: "uploads",
-//           transformation: [{ width: 1000, height: 1000, crop: "limit" }, { quality: "auto" }, { fetch_format: "auto" }],
-//         },
-//         (error, result) => {
-//           if (error) reject(error);
-//           else resolve(result);
-//         }
-//       );
+      res.status(200).json({ success: true, data: updatedUser });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 
-//       uploadStream.end(req.file.buffer);
-//     });
+  // Chặn người dùng
+  async banUser(req, res) {
+    try {
+      // Kiểm tra quyền: chỉ admin mới có thể chặn người dùng
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ success: false, message: "Permission denied" });
+      }
 
-//     res.status(200).json({
-//       success: true,
-//       message: "Upload ảnh thành công",
-//       data: {
-//         url: result.secure_url,
-//         public_id: result.public_id,
-//         format: result.format,
-//         width: result.width,
-//         height: result.height,
-//       },
-//     });
-//   } catch (error) {
-//     console.error("Upload error:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Lỗi khi upload ảnh",
-//       error: error.message,
-//     });
-//   }
-// };
+      const userId = req.params.id;
+      const banInfo = req.body; // Có thể chứa lý do chặn
 
-// const uploadAvatar = async (req, res) => {
-//   try {
-//     // Kiểm tra xem có file được upload không
-//     if (!req.files || !req.files.image) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Vui lòng upload một file ảnh",
-//       });
-//     }
+      const user = await userService.banUser(userId, banInfo);
 
-//     const file = req.files.image;
+      res.status(200).json({
+        success: true,
+        data: user,
+        message: "User has been banned successfully",
+      });
+    } catch (error) {
+      if (error.message === "User not found" || error.message === "Cannot ban an admin user") {
+        return res.status(400).json({ success: false, message: error.message });
+      }
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 
-//     // Kiểm tra định dạng file
-//     const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-//     if (!allowedTypes.includes(file.mimetype)) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Chỉ chấp nhận file JPEG, JPG hoặc PNG",
-//       });
-//     }
+  // Bỏ chặn người dùng
+  async unbanUser(req, res) {
+    try {
+      // Kiểm tra quyền: chỉ admin mới có thể bỏ chặn người dùng
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ success: false, message: "Permission denied" });
+      }
 
-//     // Gọi service để upload lên Cloudinary
-//     const uploadResult = await uploadSingleFile(file);
+      const userId = req.params.id;
 
-//     // Trả về kết quả
-//     res.status(200).json({
-//       success: true,
-//       message: "Upload ảnh thành công",
-//       data: uploadResult,
-//     });
-//   } catch (error) {
-//     console.error("Upload error:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Lỗi khi upload ảnh",
-//       error: error.message,
-//     });
-//   }
-// };
+      const user = await userService.unbanUser(userId);
 
-// const uploadMultipleImages = async (req, res) => {
-//   try {
-//     console.log(req.files);
-//     if (!req.files || !req.files.image) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Vui lòng upload ít nhất một file ảnh",
-//       });
-//     }
+      res.status(200).json({
+        success: true,
+        data: user,
+        message: "User has been unbanned successfully",
+      });
+    } catch (error) {
+      if (error.message === "User not found" || error.message === "User is not currently banned") {
+        return res.status(400).json({ success: false, message: error.message });
+      }
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 
-//     // Chuyển thành mảng nếu chỉ upload 1 file
-//     const files = Array.isArray(req.files.image) ? req.files.image : [req.files.image];
+  // === Quản lý địa chỉ ===
 
-//     // Kiểm tra định dạng tất cả file
-//     const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-//     const invalidFiles = files.filter((file) => !allowedTypes.includes(file.mimetype));
-//     if (invalidFiles.length > 0) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Chỉ chấp nhận file JPEG, JPG hoặc PNG",
-//       });
-//     }
+  // Thêm địa chỉ mới
+  async addUserAddress(req, res) {
+    try {
+      // Người dùng chỉ có thể thêm địa chỉ cho chính mình hoặc admin có thể thêm cho bất kỳ ai
+      const userId = req.params.id || req.user.id;
+      if (req.user.role !== "admin" && req.user.id !== userId) {
+        return res.status(403).json({ success: false, message: "Permission denied" });
+      }
 
-//     // Upload nhiều file lên Cloudinary
-//     const uploadResults = await uploadMultipleFiles(files);
+      const address = await userService.addUserAddress(userId, req.body);
+      res.status(201).json({ success: true, data: address });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 
-//     res.status(200).json({
-//       success: true,
-//       message: "Upload nhiều ảnh thành công",
-//       data: uploadResults,
-//     });
-//   } catch (error) {
-//     console.error("Multiple upload error:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Lỗi khi upload nhiều ảnh",
-//       error: error.message,
-//     });
-//   }
-// };
+  // Cập nhật địa chỉ
+  async updateUserAddress(req, res) {
+    try {
+      const userId = req.params.userId || req.user.id;
+      const addressId = req.params.addressId;
 
-// module.exports = {
-//   logout,
-//   getCurrentUser,
-//   refreshAccessToken,
-//   forgotPassword,
-//   getAllUsers,
-//   deleteUser,
-//   updateUser,
-//   updateUserByAdmin,
-//   createUser,
-//   uploadImage,
-//   uploadAvatar,
-//   uploadMultipleImages,
-// };
+      // Kiểm tra quyền
+      if (req.user.role !== "admin" && req.user.id !== userId) {
+        return res.status(403).json({ success: false, message: "Permission denied" });
+      }
+
+      const address = await userService.updateUserAddress(userId, addressId, req.body);
+      res.status(200).json({ success: true, data: address });
+    } catch (error) {
+      if (error.message === "User not found" || error.message === "Address not found") {
+        return res.status(404).json({ success: false, message: error.message });
+      }
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  // Xóa địa chỉ
+  async deleteUserAddress(req, res) {
+    try {
+      const userId = req.params.userId || req.user.id;
+      const addressId = req.params.addressId;
+
+      // Kiểm tra quyền
+      if (req.user.role !== "admin" && req.user.id !== userId) {
+        return res.status(403).json({ success: false, message: "Permission denied" });
+      }
+
+      const result = await userService.deleteUserAddress(userId, addressId);
+      res.status(200).json(result);
+    } catch (error) {
+      if (error.message === "User not found" || error.message === "Address not found") {
+        return res.status(404).json({ success: false, message: error.message });
+      }
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  // Cập nhật preferences
+  async updateUserPreferences(req, res) {
+    try {
+      const userId = req.params.id || req.user.id;
+
+      // Kiểm tra quyền
+      if (req.user.role !== "admin" && req.user.id !== userId) {
+        return res.status(403).json({ success: false, message: "Permission denied" });
+      }
+
+      const preferences = await userService.updateUserPreferences(userId, req.body);
+      res.status(200).json({ success: true, data: preferences });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+}
+
+module.exports = new UserController();

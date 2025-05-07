@@ -3,12 +3,11 @@ import { calculateShippingFee, getDistanceAPI } from '../../services/mapService'
 import { createOrderAPI } from '../../services/orderService';
 
 const initialState = {
+  orderItems: [],
   shippingInfo: null,
   paymentMethod: 'COD', // Mặc định là thanh toán khi nhận hàng
   couponDiscount: 0,
   appliedCoupon: null,
-  orderItems: [],
-  directBuyItem: null, // Để lưu thông tin sản phẩm "mua ngay"
   note: '',
   distance: 0,
   shippingCost: 0,
@@ -32,7 +31,6 @@ export const calculateDistance = createAsyncThunk(
   }
 );
 
-// Tạo đơn hàng mới
 export const createNewOrder = createAsyncThunk('order/createNewOrder', async (orderData, { rejectWithValue }) => {
   try {
     const response = await createOrderAPI(orderData);
@@ -89,14 +87,6 @@ const orderSlice = createSlice({
     // Cập nhật phí vận chuyển
     updateShippingCost: (state, action) => {
       state.shippingCost = action.payload;
-    },
-    // Xử lý chức năng "mua ngay"
-    setDirectBuyItem: (state, action) => {
-      state.directBuyItem = action.payload;
-      state.orderItems = [action.payload];
-    },
-    clearDirectBuyItem: (state) => {
-      state.directBuyItem = null;
     },
     // Reset state sau khi hoàn thành đơn hàng
     resetOrder: (state) => {

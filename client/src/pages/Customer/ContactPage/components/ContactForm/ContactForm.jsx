@@ -11,12 +11,12 @@ function ContactForm() {
       <div className='flex h-[400px] flex-col gap-5'>
         <div className='flex h-[400px] flex-col gap-5'>
           <div className='flex flex-col gap-5 sm:flex-row'>
-            {/* <Input placeholder={'Họ và tên'} name={'name'} />
-            <Input placeholder={'Email'} name={'email'} /> */}
+            <Input placeholder={'Họ và tên'} name={'name'} />
+            <Input placeholder={'Email'} name={'email'} />
           </div>
           <Textarea placeholder={'Ghi chú'} />
         </div>
-        <Button size={'medium'}>Gửi</Button>
+        <Button>Gửi</Button>
       </div>
     </div>
   );

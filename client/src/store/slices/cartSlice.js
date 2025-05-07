@@ -6,6 +6,7 @@ import {
   removeCartItemService,
   updateCartItemService
 } from '@/services/cartService.js';
+import { removeMultipleCartItemsService } from '../../services/cartService';
 
 // Định nghĩa async thunk để gọi API
 export const getCart = createAsyncThunk('cart/getCart', async (_, { rejectWithValue }) => {
@@ -69,6 +70,20 @@ export const removeCartItem = createAsyncThunk('cart/removeCartItem', async (ite
     return rejectWithValue(error.response?.data || 'Failed to remove item');
   }
 });
+
+export const removeMultipleCartItems = createAsyncThunk(
+  'cart/removeMultipleCartItems',
+  async (itemIds, { rejectWithValue }) => {
+    console.log('itemIds', itemIds);
+    try {
+      const response = await removeMultipleCartItemsService(itemIds);
+      console.log('sau khi xóa', response);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to remove item');
+    }
+  }
+);
 
 const cartSlice = createSlice({
   name: 'carts',
@@ -153,6 +168,22 @@ const cartSlice = createSlice({
         state.totalPrice = action.payload.data.totalPrice;
       })
       .addCase(removeCartItem.rejected, (state, action) => {
+        state.loadingRemove = false;
+        state.error = action.payload;
+      })
+
+      // Remove Multiple Cart Items
+      .addCase(removeMultipleCartItems.pending, (state) => {
+        state.loadingRemove = true;
+        state.error = null;
+      })
+      .addCase(removeMultipleCartItems.fulfilled, (state, action) => {
+        console.log('accion.payload', action.payload);
+        state.loadingRemove = false;
+        state.items = action.payload.data.items;
+        state.totalPrice = action.payload.data.totalPrice;
+      })
+      .addCase(removeMultipleCartItems.rejected, (state, action) => {
         state.loadingRemove = false;
         state.error = action.payload;
       });

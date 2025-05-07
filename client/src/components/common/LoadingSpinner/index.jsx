@@ -22,6 +22,9 @@ const LoadingSpinner = ({ size = 'medium', fullPage = false }) => {
           className={`${sizeClasses[size]} absolute left-0 top-0 animate-spin rounded-full border-4 border-blue-600 border-t-transparent`}
         ></div>
       </div>
+      {/* <div className='flex h-screen w-full items-center justify-center bg-white'>
+        <div className='h-12 w-12 animate-spin rounded-full border-t-4 border-solid border-primaryColor'></div>
+      </div> */}
     </div>
   );
 };

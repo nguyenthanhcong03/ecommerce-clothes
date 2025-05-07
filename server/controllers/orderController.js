@@ -28,7 +28,7 @@ const createOrder = async (req, res) => {
     // Tính phí vận chuyển
     let shippingFee = 0;
     if (distance) {
-      shippingFee = orderService.calculateShippingFee(distance).shippingCost;
+      shippingFee = orderService.calculateShippingFee(distance);
     }
 
     // Apply coupon if provided
@@ -62,10 +62,6 @@ const createOrder = async (req, res) => {
 
     // Calculate final price
     const totalPrice = Math.max(0, subtotal - discountAmount + shippingFee);
-    console.log("subtotal", subtotal);
-    console.log("shippingFee", shippingFee);
-    console.log("discountAmount", discountAmount);
-    console.log("totalPrice", totalPrice);
 
     // Generate tracking number
     const trackingNumber = orderService.generateTrackingNumber();
@@ -90,8 +86,20 @@ const createOrder = async (req, res) => {
 
     const savedOrder = await newOrder.save();
 
-    // If order is created successfully, clear the user's cart
-    // await Cart.findOneAndUpdate({ userId }, { products: [] }, { new: true });
+    // Nếu tạo đơn hàng thành công, xóa các sản phẩm giỏ hàng
+    const cart = await Cart.findOne({ userId: userId });
+
+    if (cart) {
+      cart.items = cart.items.filter(
+        (item) =>
+          !products.some(
+            (product) =>
+              product.productId === item.productId.toString() && product.variantId === item.variantId.toString()
+          )
+      );
+      console.log("cart.items", cart.items);
+      await cart.save();
+    }
 
     return res.status(201).json({
       success: true,

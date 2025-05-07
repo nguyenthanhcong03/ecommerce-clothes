@@ -1,111 +1,148 @@
-import ProtectedRoute from '@/components/auth/ProtectedRoute/ProtectedRoute.jsx';
-import NotFound from '@/components/auth/NotFound/NotFound.jsx';
+import { createBrowserRouter } from 'react-router-dom';
+import React, { lazy, Suspense } from 'react';
+
+// Layouts
 import AdminLayout from '@/layouts/AdminLayout.jsx';
 import MainLayout from '@/layouts/MainLayout.jsx';
 
-// Admin pages
-import AnalyticsPage from '@/pages/Admin/AnalyticsPage/AnalyticsPage.jsx';
-import CategoryPage from '@/pages/Admin/CategoryPage/CategoryPage';
-import OrdersPage from '@/pages/Admin/OrdersPage/OrdersPage.jsx';
-import OverviewPage from '@/pages/Admin/OverviewPage/OverviewPage.jsx';
-import ProductPage from '@/pages/Admin/ProductPage/ProductPage';
-import SalesPage from '@/pages/Admin/SalesPage/SalesPage.jsx';
-import SettingsPage from '@/pages/Admin/SettingsPage/SettingsPage.jsx';
-import UsersPage from '@/pages/Admin/UsersPage/UsersPage.jsx';
-import CouponPage from '@/pages/Admin/CouponPage/CouponPage.jsx';
+// Components
+import ProtectedRoute from '@/components/auth/ProtectedRoute/ProtectedRoute.jsx';
+import NotFound from '@/components/auth/NotFound/NotFound.jsx';
 
-// Auth pages
-import LoginPage from '@/pages/Auth/LoginPage.jsx';
-import RegisterPage from '@/pages/Auth/RegisterPage.jsx';
+// Pages
+import HomePage from '@/pages/customer/HomePage/HomePage.jsx';
+import AboutPage from '@/pages/customer/AboutPage/AboutPage.jsx';
+import OurShopPage from '@/pages/customer/OurShopPage/OurShopPage.jsx';
+import NewsPage from '@/pages/customer/NewsPage/NewsPage.jsx';
+import ContactPage from '@/pages/customer/ContactPage/ContactPage.jsx';
+import DetailProduct from '@/pages/customer/DetailProduct/DetailProduct.jsx';
+import PaymentSuccessPage from '@/pages/customer/PaymentSuccessPage/PaymentSuccessPage.jsx';
+import PaymentFailedPage from '@/pages/customer/PaymentFailedPage/PaymentFailedPage.jsx';
+import LoginPage from '@/pages/auth/LoginPage.jsx';
+import RegisterPage from '@/pages/auth/RegisterPage.jsx';
+import Unauthorized from '@/components/auth/Unauthorized/Unauthorized.jsx';
+import CartPage from '@/pages/customer/CartPage/CartPage.jsx';
+import WishlistPage from '@/pages/customer/WishlistPage/WishlistPage.jsx';
+import CheckoutPage from '@/pages/customer/CheckoutPage/CheckoutPage.jsx';
 
-// Customer pages
-import AboutPage from '@/pages/Customer/AboutPage/AboutPage.jsx';
-import CartPage from '@/pages/Customer/CartPage/CartPage.jsx';
-import ContactPage from '@/pages/Customer/ContactPage/ContactPage.jsx';
-import DetailProduct from '@/pages/Customer/DetailProduct/DetailProduct.jsx';
-import HomePage from '@/pages/Customer/HomePage/HomePage.jsx';
-import NewsPage from '@/pages/Customer/NewsPage/NewsPage.jsx';
-import OurShopPage from '@/pages/Customer/OurShopPage/OurShopPage.jsx';
-import WishlistPage from '@/pages/Customer/WishlistPage/WishlistPage.jsx';
-import PaymentSuccessPage from '@/pages/Customer/PaymentSuccessPage/PaymentSuccessPage.jsx';
-import PaymentFailedPage from '@/pages/Customer/PaymentFailedPage/PaymentFailedPage.jsx';
+import OverviewPage from '@/pages/admin/OverviewPage/OverviewPage.jsx';
+import ProductPage from '@/pages/admin/ProductPage/ProductPage.jsx';
+import CategoryPage from '@/pages/admin/CategoryPage/CategoryPage.jsx';
+import UserPage from '@/pages/admin/UserPage/UserPage.jsx';
+import SalesPage from '@/pages/admin/SalesPage/SalesPage.jsx';
+import OrdersPage from '@/pages/admin/OrdersPage/OrdersPage.jsx';
+import AnalyticsPage from '@/pages/admin/AnalyticsPage/AnalyticsPage.jsx';
+import SettingsPage from '@/pages/admin/SettingsPage/SettingsPage.jsx';
+import CouponPage from '@/pages/admin/CouponPage/CouponPage.jsx';
 
-import { createBrowserRouter } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
-import InputFormExample from '../components/examples/InputFormExample';
-import CheckoutPage from '../pages/Customer/CheckoutPage/CheckoutPage';
+// Fake delay function
+// const lazyWithDelay = (importFunc, delay = 1000) => {
+//   return React.lazy(() =>
+//     Promise.all([
+//       importFunc(),
+//       new Promise((resolve) => setTimeout(resolve, delay)) // fake delay
+//     ]).then(([moduleExports]) => moduleExports)
+//   );
+// };
 
-// Lazy-loaded components for better performance
-const UnauthorizedPage = lazy(() => import('@/components/auth/Unauthorized/Unauthorized.jsx'));
+// Loading fallback for all lazy-loaded components
+const LoadingFallback = () => (
+  <div className='flex h-screen w-full items-center justify-center bg-white'>
+    <div className='h-12 w-12 animate-spin rounded-full border-t-4 border-solid border-primaryColor'></div>
+  </div>
+);
 
+// Helper function for wrapping components with Suspense
+const withSuspense = (Component) => (
+  <Suspense fallback={<LoadingFallback />}>
+    <Component />
+  </Suspense>
+);
+
+// Public routes accessible to all users
+const publicRoutes = [
+  { index: true, element: <HomePage /> },
+  { path: 'about', element: <AboutPage /> },
+  { path: 'shop', element: <OurShopPage /> },
+  { path: 'news', element: <NewsPage /> },
+  { path: 'contact', element: <ContactPage /> },
+  { path: 'product/:id', element: <DetailProduct /> },
+  { path: 'payment-success', element: <PaymentSuccessPage /> },
+  { path: 'payment-failed', element: <PaymentFailedPage /> }
+];
+
+// Auth routes (login/register)
+const authRoutes = [
+  {
+    path: 'login',
+    element: (
+      <ProtectedRoute requireAuth={false}>
+        <LoginPage />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: 'register',
+    element: (
+      <ProtectedRoute requireAuth={false}>
+        <RegisterPage />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: 'unauthorized',
+    element: <Unauthorized />
+  }
+];
+
+// Customer authenticated routes
+const customerProtectedRoutes = [
+  {
+    path: 'cart',
+    element: (
+      <ProtectedRoute>
+        <CartPage />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: 'wishlist',
+    element: (
+      <ProtectedRoute>
+        <WishlistPage />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: 'checkout',
+    element: (
+      <ProtectedRoute>
+        <CheckoutPage />
+      </ProtectedRoute>
+    )
+  }
+];
+
+// Admin
+const adminRoutes = [
+  { index: true, element: <OverviewPage /> },
+  { path: 'products', element: <ProductPage /> },
+  { path: 'categories', element: <CategoryPage /> },
+  { path: 'users', element: <UserPage /> },
+  { path: 'sales', element: <SalesPage /> },
+  { path: 'orders', element: <OrdersPage /> },
+  { path: 'analytics', element: <AnalyticsPage /> },
+  { path: 'settings', element: <SettingsPage /> },
+  { path: 'coupons', element: <CouponPage /> }
+];
+
+// Main router configuration
 const Router = [
   {
     path: '/',
-    element: <MainLayout />,
+    element: withSuspense(MainLayout),
     errorElement: <NotFound />,
-    children: [
-      // Public routes
-      { index: true, element: <HomePage /> },
-      { path: 'about', element: <AboutPage /> },
-      { path: 'shop', element: <OurShopPage /> },
-      { path: 'news', element: <NewsPage /> },
-      { path: 'contact', element: <ContactPage /> },
-      { path: 'product/:id', element: <DetailProduct /> },
-      { path: 'payment-success', element: <PaymentSuccessPage /> },
-      { path: 'payment-failed', element: <PaymentFailedPage /> },
-
-      // Auth routes
-      {
-        path: 'login',
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <LoginPage />
-          </ProtectedRoute>
-        )
-      },
-      {
-        path: 'register',
-        element: (
-          <ProtectedRoute requireAuth={false}>
-            <RegisterPage />
-          </ProtectedRoute>
-        )
-      },
-      {
-        path: 'unauthorized',
-        element: (
-          <Suspense fallback={<div className='loading'>Loading...</div>}>
-            <UnauthorizedPage />
-          </Suspense>
-        )
-      },
-
-      // Customer authenticated routes
-      {
-        path: 'cart',
-        element: (
-          <ProtectedRoute>
-            <CartPage />
-          </ProtectedRoute>
-        )
-      },
-      {
-        path: 'wishlist',
-        element: (
-          <ProtectedRoute>
-            <WishlistPage />
-          </ProtectedRoute>
-        )
-      },
-      {
-        path: 'checkout',
-        element: (
-          <ProtectedRoute>
-            <CheckoutPage />
-          </ProtectedRoute>
-        )
-      }
-    ]
+    children: [...publicRoutes, ...authRoutes, ...customerProtectedRoutes]
   },
   {
     path: 'admin',
@@ -115,18 +152,7 @@ const Router = [
       </ProtectedRoute>
     ),
     errorElement: <NotFound />,
-    children: [
-      { index: true, element: <OverviewPage /> },
-      { path: 'products', element: <ProductPage /> },
-      { path: 'categories', element: <CategoryPage /> },
-      { path: 'users', element: <UsersPage /> },
-      { path: 'sales', element: <SalesPage /> },
-      { path: 'orders', element: <OrdersPage /> },
-      { path: 'analytics', element: <AnalyticsPage /> },
-      { path: 'settings', element: <SettingsPage /> },
-      { path: 'coupons', element: <CouponPage /> },
-      { path: 'example', element: <InputFormExample /> }
-    ]
+    children: adminRoutes
   },
   {
     path: '*',

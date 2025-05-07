@@ -13,7 +13,6 @@ const addressSchema = new mongoose.Schema({
 
 const preferencesSchema = new mongoose.Schema({
   language: { type: String, default: "en" },
-  currency: { type: String, default: "USD" },
   notifications: { type: Boolean, default: true },
 });
 
@@ -61,21 +60,17 @@ const userSchema = new mongoose.Schema(
     status: { type: String, enum: ["active", "inactive", "banned"], default: "active" },
     lastLogin: { type: Date, default: Date.now },
 
-    // Preferences and features
+    // Preferences
     preferences: preferencesSchema,
-    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
 
     // Authentication and security
     verificationToken: { type: String },
     verificationStatus: { type: String, enum: ["pending", "verified"], default: "pending" },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
-    refreshToken: { type: String },
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
   }
 );
 
@@ -83,41 +78,5 @@ const userSchema = new mongoose.Schema(
 userSchema.virtual("fullName").get(function () {
   return `${this.firstName} ${this.lastName}`;
 });
-
-// // Mã hóa mật khẩu trước khi lưu
-// userSchema.pre("save", async function (next) {
-//   if (!this.isModified("password")) return next();
-//   try {
-//     const salt = await bcrypt.genSalt(10);
-//     this.password = await bcrypt.hash(this.password, salt);
-//     next();
-//   } catch (error) {
-//     next(error);
-//   }
-// });
-
-// // So sánh mật khẩu
-// userSchema.methods.matchPassword = async function (enteredPassword) {
-//   return await bcrypt.compare(enteredPassword, this.password);
-// };
-
-// // Generate password reset token
-// userSchema.methods.generatePasswordResetToken = function () {
-//   const resetToken = crypto.lib.WordArray.random(20).toString();
-
-//   this.resetPasswordToken = crypto.SHA256(resetToken).toString();
-//   this.resetPasswordExpires = Date.now() + 3600000; // 1 hour
-
-//   return resetToken;
-// };
-
-// // Generate email verification token
-// userSchema.methods.generateVerificationToken = function () {
-//   const verificationToken = crypto.lib.WordArray.random(20).toString();
-
-//   this.verificationToken = crypto.SHA256(verificationToken).toString();
-
-//   return verificationToken;
-// };
 
 module.exports = mongoose.model("User", userSchema);

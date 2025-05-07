@@ -12,6 +12,7 @@ import facebook from '@/assets/icons/facebook.png';
 import instagram from '@/assets/icons/instagram.png';
 import messenger from '@/assets/icons/messenger.png';
 import Collapse from '../../../components/common/Collapse/Collapse';
+import { setOrderItems } from '../../../store/slices/orderSlice';
 
 const getImageUrl = (image) => {
   return typeof image === 'string' ? image : image?.url || '';
@@ -158,6 +159,39 @@ const DetailProduct = () => {
     setShowValidation(false);
   };
 
+  const handleProceedToCheckout = () => {
+    if (!selectedSize || !selectedColor) {
+      setShowValidation(true);
+      return;
+    }
+    const selectedVariant = product.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
+
+    const orderItems = [
+      {
+        productId: product._id,
+        variantId: selectedVariant._id,
+        quantity: quantity,
+        snapshot: {
+          name: product.name,
+          price: selectedVariant.price,
+          discountPrice: selectedVariant.discountPrice,
+          color: selectedVariant.color,
+          size: selectedVariant.size,
+          image:
+            selectedVariant.images && selectedVariant.images.length > 0 ? selectedVariant.images[0] : product.images[0]
+        }
+      }
+    ];
+    // Lưu các sản phẩm đã chọn vào localStorage
+    localStorage.setItem('orderItems', JSON.stringify(orderItems));
+
+    // Đặt các sản phẩm đã chọn vào trạng thái đơn hàng
+    dispatch(setOrderItems(orderItems));
+
+    // Chuyển hướng đến trang thanh toán
+    navigate('/checkout');
+  };
+
   // Hàm xử lý sự kiện khi nhấn nút "Mua ngay"
   const handleBuyNow = () => {
     if (!selectedSize || !selectedColor) {
@@ -168,25 +202,26 @@ const DetailProduct = () => {
     const selectedVariant = product.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
     const imageUrl = product.images && product.images.length > 0 ? getImageUrl(product.images[0]) : '';
 
-    const productItem = {
-      productId: product._id,
-      variantId: selectedVariant._id,
-      quantity: quantity,
-      snapshot: {
-        name: product.name,
-        price: selectedVariant.price,
-        discountPrice: selectedVariant.discountPrice,
-        color: selectedVariant.color,
-        size: selectedVariant.size,
-        image: imageUrl
+    const orderItems = [
+      {
+        productId: product._id,
+        variantId: selectedVariant._id,
+        quantity: quantity,
+        snapshot: {
+          name: product.name,
+          price: selectedVariant.price,
+          discountPrice: selectedVariant.discountPrice,
+          color: selectedVariant.color,
+          size: selectedVariant.size,
+          image: imageUrl
+        }
       }
-    };
+    ];
 
-    // Sử dụng action setDirectBuyItem thay vì addToCart
-    dispatch(setDirectBuyItem(productItem));
+    // Lưu các sản phẩm đã chọn vào localStorage
+    localStorage.setItem('orderItems', JSON.stringify(orderItems));
+    dispatch(setOrderItems(orderItems));
     navigate('/checkout');
-
-    setShowValidation(false);
   };
 
   const handleQuantityChange = (item, newQuantity) => {

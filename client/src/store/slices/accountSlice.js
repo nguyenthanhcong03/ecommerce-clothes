@@ -54,10 +54,6 @@ export const updateUserPassword = createAsyncThunk(
 );
 
 const initialState = {
-  isAuthenticated: false, // Sẽ được cập nhật sau khi kiểm tra session
-  isLoading: false, // Bắt đầu với trạng thái loading để kiểm tra session
-  error: null,
-  successMessage: null,
   user: {
     _id: '',
     email: '',
@@ -68,6 +64,11 @@ const initialState = {
     avatar: '',
     accessToken: ''
   },
+  isAuthenticated: false,
+  isLoading: true,
+  error: null,
+  successMessage: null,
+
   preferences: {
     language: 'en',
     currency: 'USD',
@@ -98,14 +99,6 @@ export const accountSlice = createSlice({
         state.preferences[key] = value;
       }
     },
-
-    doGetAccountAction: (state, action) => {
-      state.isAuthenticated = true;
-      state.isLoading = false;
-      state.error = null;
-      state.user = action.payload;
-    },
-
     doLogoutAction: (state) => {
       localStorage.removeItem('accessToken');
       state.isAuthenticated = false;
@@ -163,7 +156,7 @@ export const accountSlice = createSlice({
 
       // Fetch current user cases
       .addCase(fetchCurrentUser.pending, (state) => {
-        state.isLoading = true;
+        // state.isLoading = true;
         state.error = null;
       })
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {

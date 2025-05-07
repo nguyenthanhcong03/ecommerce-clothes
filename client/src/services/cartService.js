@@ -21,8 +21,16 @@ export const updateCartItemService = async (data) => {
 };
 
 export const removeCartItemService = async (itemId) => {
-  let url = BASE_API;
-  const res = await axios.delete(`${url}/${itemId}`);
+  const res = await axios.delete(`${BASE_API}/${itemId}`);
+  return res;
+};
+
+export const removeMultipleCartItemsService = async (itemIds) => {
+  console.log('itemIds service', itemIds);
+  const res = await axios.delete(`${BASE_API}/multiple`, {
+    data: { itemIds }
+  });
+  console.log('res');
   return res;
 };
 

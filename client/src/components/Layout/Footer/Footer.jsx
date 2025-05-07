@@ -11,7 +11,7 @@ const items = [
 
 function Footer() {
   return (
-    <footer className='w-full bg-[#F1F1F1] p-5 text-primaryColor'>
+    <footer className='w-full border-t-4 border-t-primaryColor bg-[##FBFBFB] p-5 text-primaryColor'>
       <div className='container mx-auto flex max-w-[1280px] flex-col md:grid md:grid-cols-4 md:justify-items-center'>
         <Collapse title={'HỖ TRỢ KHÁCH HÀNG'} isShow={true} isFooter={true}>
           <div className='flex flex-col gap-2'>
