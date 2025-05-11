@@ -40,28 +40,28 @@ export const getProductByIdAPI = (id) => {
 
 // Tạo sản phẩm mới
 export const createProductAPI = (product) => {
-  return axios.post('/products', product).then((response) => {
+  return axios.post('${BASE_API}', product).then((response) => {
     return response.data;
   });
 };
 
 // Cập nhật sản phẩm
 export const updateProductByIdAPI = (id, product) => {
-  return axios.put(`/products/${id}`, product).then((response) => {
-    return response.data;
+  return axios.put(`${BASE_API}/${id}`, product).then((response) => {
+    return response;
   });
 };
 
 // Xóa sản phẩm
 export const deleteProductByIdAPI = (id) => {
-  return axios.delete(`/products/${id}`).then((response) => {
+  return axios.delete(`${BASE_API}/${id}`).then((response) => {
     return response.data;
   });
 };
 
 // Lấy sản phẩm nổi bật
 export const getFeaturedProductsAPI = (limit = 8) => {
-  return axios.get('/products/featured', { params: { limit } }).then((response) => {
+  return axios.get('/product/featured', { params: { limit } }).then((response) => {
     return response.data;
   });
 };
@@ -69,7 +69,7 @@ export const getFeaturedProductsAPI = (limit = 8) => {
 // Lấy sản phẩm theo danh mục
 export const getProductsByCategoryAPI = (categoryId, page = 1, limit = 10) => {
   return axios
-    .get(`/products/category/${categoryId}`, {
+    .get(`/product/category/${categoryId}`, {
       params: { page, limit }
     })
     .then((response) => {
@@ -79,7 +79,7 @@ export const getProductsByCategoryAPI = (categoryId, page = 1, limit = 10) => {
 
 // Thêm đánh giá sản phẩm
 export const addProductReviewAPI = (productId, reviewData) => {
-  return axios.post(`/products/${productId}/reviews`, reviewData).then((response) => {
+  return axios.post(`/product/${productId}/reviews`, reviewData).then((response) => {
     return response.data;
   });
 };
@@ -87,7 +87,7 @@ export const addProductReviewAPI = (productId, reviewData) => {
 // Lấy đánh giá của sản phẩm
 export const getProductReviewsAPI = (productId, page = 1, limit = 10) => {
   return axios
-    .get(`/products/${productId}/reviews`, {
+    .get(`/product/${productId}/reviews`, {
       params: { page, limit }
     })
     .then((response) => {
@@ -97,7 +97,7 @@ export const getProductReviewsAPI = (productId, page = 1, limit = 10) => {
 
 // Cập nhật trạng thái sản phẩm (active/inactive)
 export const updateProductStatusAPI = (productId, isActive) => {
-  return axios.patch(`/products/${productId}/status`, { isActive }).then((response) => {
+  return axios.patch(`/product/${productId}/status`, { isActive }).then((response) => {
     return response.data;
   });
 };

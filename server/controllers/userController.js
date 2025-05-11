@@ -1,5 +1,5 @@
 const userService = require("../services/userService");
-
+const User = require("../models/user");
 class UserController {
   // Lấy danh sách người dùng với phân trang và lọc
   async getAllUsers(req, res) {
@@ -74,11 +74,43 @@ class UserController {
 
   // Cập nhật thông tin người dùng
   async updateUser(req, res) {
+    const { username, email, phone, ...rest } = req.body;
     try {
       const userId = req.params.id;
       // Kiểm tra quyền: admin có thể cập nhật bất kỳ user nào, user thường chỉ có thể cập nhật chính mình
       if (req.user.role !== "admin" && req.user.id !== userId) {
         return res.status(403).json({ success: false, message: "Permission denied" });
+      }
+
+      const errors = [];
+
+      // Kiểm tra username đã tồn tại ở user khác
+      if (username) {
+        const existing = await User.findOne({ username, _id: { $ne: userId } });
+        if (existing) {
+          errors.push({ field: "username", message: "Username đã tồn tại" });
+        }
+      }
+
+      // Kiểm tra email đã tồn tại ở user khác
+      if (email) {
+        const existing = await User.findOne({ email, _id: { $ne: userId } });
+        if (existing) {
+          errors.push({ field: "email", message: "Email đã tồn tại" });
+        }
+      }
+
+      // Kiểm tra phone đã tồn tại ở user khác
+      if (phone) {
+        const existing = await User.findOne({ phone, _id: { $ne: userId } });
+        if (existing) {
+          errors.push({ field: "phone", message: "Số điện thoại đã tồn tại" });
+        }
+      }
+
+      // Nếu có lỗi, trả về 400 và danh sách lỗi
+      if (errors.length > 0) {
+        return res.status(400).json({ errors });
       }
 
       const updatedUser = await userService.updateUser(userId, req.body);
@@ -108,6 +140,16 @@ class UserController {
       if (error.message === "User not found") {
         return res.status(404).json({ success: false, message: error.message });
       }
+
+      // Handle specific validation errors
+      if (
+        error.message === "Username already exists" ||
+        error.message === "Email already exists" ||
+        error.message === "Phone number already exists"
+      ) {
+        return res.status(400).json({ success: false, message: error.message });
+      }
+
       res.status(500).json({ success: false, message: error.message });
     }
   }

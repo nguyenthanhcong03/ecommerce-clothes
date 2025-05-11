@@ -42,17 +42,15 @@ export const updateUserAdmin = createAsyncThunk(
   }
 );
 
-export const changeUserStatus = createAsyncThunk(
-  'users/changeStatus',
-  async ({ userId, status }, { rejectWithValue }) => {
-    try {
-      const response = await userService.changeUserStatus(userId, status);
-      return response;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || { message: error.message });
-    }
+export const updateUser = createAsyncThunk('users/update', async ({ userId, userData }, { rejectWithValue }) => {
+  try {
+    const response = await userService.updateUser(userId, userData);
+    console.log('response', response);
+    return response;
+  } catch (error) {
+    return rejectWithValue(error.response?.data || { message: error.message });
   }
-);
+});
 
 export const deleteUser = createAsyncThunk('users/delete', async (userId, { rejectWithValue }) => {
   try {
@@ -179,28 +177,24 @@ const userSlice = createSlice({
         state.actionError = action.payload || { message: 'Failed to update user' };
       })
 
-      // Change user status
-      .addCase(changeUserStatus.pending, (state) => {
+      // Update user (regular user update)
+      .addCase(updateUser.pending, (state) => {
         state.actionLoading = true;
         state.actionError = null;
       })
-      .addCase(changeUserStatus.fulfilled, (state, action) => {
+      .addCase(updateUser.fulfilled, (state, action) => {
         state.actionLoading = false;
+        state.currentUser = action.payload.data;
 
-        // Update in the users list if present
+        // Also update in the users list if present
         const index = state.users.findIndex((user) => user._id === action.payload.data._id);
         if (index !== -1) {
           state.users[index] = action.payload.data;
         }
-
-        // Update current user if it's the same
-        if (state.currentUser && state.currentUser._id === action.payload.data._id) {
-          state.currentUser = action.payload.data;
-        }
       })
-      .addCase(changeUserStatus.rejected, (state, action) => {
+      .addCase(updateUser.rejected, (state, action) => {
         state.actionLoading = false;
-        state.actionError = action.payload || { message: 'Failed to change user status' };
+        state.actionError = action.payload || { message: 'Failed to update user' };
       })
 
       // Delete user

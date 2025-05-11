@@ -11,11 +11,6 @@ const addressSchema = new mongoose.Schema({
   isDefault: { type: Boolean, default: false },
 });
 
-const preferencesSchema = new mongoose.Schema({
-  language: { type: String, default: "en" },
-  notifications: { type: Boolean, default: true },
-});
-
 const userSchema = new mongoose.Schema(
   {
     // Account information
@@ -51,8 +46,8 @@ const userSchema = new mongoose.Schema(
       match: [/^(\+\d{1,3}[- ]?)?\d{10}$/, "Please enter a valid phone number"],
     },
     avatar: { type: String },
-    gender: { type: String, enum: ["male", "female", "other"] },
-    dateOfBirth: { type: Date },
+    gender: { enum: ["male", "female", "other", null] },
+    dateOfBirth: { type: String },
     address: [addressSchema],
 
     // Account status and roles
@@ -61,7 +56,7 @@ const userSchema = new mongoose.Schema(
     lastLogin: { type: Date, default: Date.now },
 
     // Preferences
-    preferences: preferencesSchema,
+    language: { type: String, enum: ["en", "vi"], default: "vi" },
 
     // Authentication and security
     verificationToken: { type: String },

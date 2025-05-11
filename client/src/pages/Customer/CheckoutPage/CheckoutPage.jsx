@@ -153,7 +153,7 @@ const CheckoutPage = () => {
 
   // Xử lý khi submit form
   const onSubmit = (data) => {
-    // Tìm tên tỉnh/thành và quận/huyện từ mã
+    // 1. Tìm tên tỉnh/thành và quận/huyện từ mã
     const provinceObj = provinceOptions.find((p) => p.value == data.city) || {};
     const districtObj = districtOptions.find((d) => d.value == data.state) || {};
     const provinceName = provinceObj.label || data.city;
@@ -169,17 +169,11 @@ const CheckoutPage = () => {
       state: data.state,
       country: data.country
     };
-
     dispatch(saveShippingInfo(shippingData));
-
-    // Cập nhật phương thức thanh toán
     dispatch(setPaymentMethod(data.paymentMethod));
-
-    // Cập nhật ghi chú
     dispatch(updateOrderNote(data.note));
 
-    // Tiến hành đặt hàng
-    // Chuẩn bị dữ liệu đơn hàng
+    // 2. Chuẩn bị dữ liệu đơn hàng
     const orderData = {
       products: orderItems,
       shippingAddress: {
@@ -198,7 +192,7 @@ const CheckoutPage = () => {
     };
     console.log('orderData', orderData);
 
-    // Dispatch action tạo đơn hàng
+    // 3. Tạo đơn hàng
     dispatch(createNewOrder(orderData))
       .unwrap()
       .then((response) => {
@@ -222,11 +216,8 @@ const CheckoutPage = () => {
             .then((response) => {
               // Chuyển hướng người dùng đến trang thanh toán
               if (response && response.success && response.paymentUrl) {
-                // Xóa giỏ hàng sau khi đơn hàng đã được tạo thành công
                 dispatch(setOrderItems([]));
-                dispatch(clearCart());
                 localStorage.removeItem('orderItems');
-                localStorage.removeItem('cartItems');
                 window.location.href = response.paymentUrl;
               } else {
                 toast.error('Không thể tạo liên kết thanh toán. Vui lòng thử lại sau.');
@@ -239,9 +230,7 @@ const CheckoutPage = () => {
         } else {
           // Xử lý các phương thức thanh toán khác (COD)
           dispatch(setOrderItems([])); // Xóa sản phẩm trong redux sau khi đặt hàng thành công
-          dispatch(clearCart()); // Xóa sản phẩm trong giỏ hàng
           localStorage.removeItem('orderItems'); // Xóa sản phẩm trong localStorage
-          localStorage.removeItem('cartItems'); // Xóa luôn giỏ hàng trong localStorage
           toast.success('Đặt hàng thành công!');
         }
       })
@@ -256,7 +245,6 @@ const CheckoutPage = () => {
     return <OrderSuccess />;
   }
 
-  // Show loading state
   if (isLoading) {
     return <LoadingSpinner fullPage size='large' />;
   }

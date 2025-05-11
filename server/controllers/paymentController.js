@@ -133,16 +133,15 @@ const vnpayReturn2 = async (req, res) => {
   let crypto = require("crypto");
   let hmac = crypto.createHmac("sha512", secretKey);
   let signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
-
   if (secureHash === signed) {
-    // Giao dịch thành công
+    // Chữ ký hợp lệ - tiếp tục xử lý
     // Lấy mã đơn hàng và số tiền
     const orderId = vnp_Params["vnp_TxnRef"];
     const amount = parseInt(vnp_Params["vnp_Amount"]) / 100; // Chuyển về đơn vị gốc
 
     if (vnp_Params["vnp_ResponseCode"] === "00") {
       try {
-        // Cập nhật trạng thái đơn hàng trong cơ sở dữ liệu
+        // Giao dịch thành công - cập nhật trạng thái đã thanh toán
         await Order.findByIdAndUpdate(orderId, {
           "payment.method": "VNPay",
           "payment.isPaid": true,
@@ -161,31 +160,40 @@ const vnpayReturn2 = async (req, res) => {
         return res.redirect(`${process.env.FRONTEND_URL}/payment-failed?reason=server_error&paymentMethod=vnpay`);
       }
     } else {
-      // Giao dịch thất bại - Ánh xạ mã phản hồi VNPay thành thông báo thân thiện
-      let failureReason = "Lỗi không xác định";
+      try {
+        // Giao dịch thất bại - cập nhật hoặc giữ nguyên trạng thái chưa thanh toán
+        await Order.findByIdAndUpdate(orderId, {
+          "payment.method": "VNPay",
+          "payment.isPaid": false,
+          "payment.failureReason": vnp_Params["vnp_ResponseCode"],
+        });
 
-      // Ánh xạ mã phản hồi VNPay thành thông báo thân thiện
-      const responseCodeMap = {
-        "01": "Giao dịch chưa hoàn tất",
-        "02": "Lỗi giao dịch",
-        "04": "Số tiền không hợp lệ",
-        13: "Giao dịch không hợp lệ",
-        24: "Khách hàng hủy giao dịch",
-        51: "Số dư tài khoản không đủ",
-        65: "Vượt quá hạn mức giao dịch",
-        75: "Ngân hàng đang bảo trì",
-        79: "OTP không hợp lệ",
-        99: "Kết nối timed out",
-      };
+        // Ánh xạ mã phản hồi VNPay thành thông báo thân thiện
+        let failureReason = "Lỗi không xác định";
 
-      if (responseCodeMap[vnp_Params["vnp_ResponseCode"]]) {
-        failureReason = responseCodeMap[vnp_Params["vnp_ResponseCode"]];
+        // Ánh xạ mã phản hồi VNPay thành thông báo thân thiện
+        const responseCodeMap = {
+          "01": "Giao dịch chưa hoàn tất",
+          "02": "Lỗi giao dịch",
+          "04": "Số tiền không hợp lệ",
+          13: "Giao dịch không hợp lệ",
+          24: "Khách hàng hủy giao dịch",
+          51: "Số dư tài khoản không đủ",
+          65: "Vượt quá hạn mức giao dịch",
+          75: "Ngân hàng đang bảo trì",
+          79: "OTP không hợp lệ",
+          99: "Kết nối timed out",
+        };
+
+        if (responseCodeMap[vnp_Params["vnp_ResponseCode"]]) {
+          failureReason = responseCodeMap[vnp_Params["vnp_ResponseCode"]];
+        }
+      } catch (error) {
+        // Chuyển hướng đến trang thất bại với thông tin lỗi
+        return res.redirect(
+          `${process.env.FRONTEND_URL}/payment-failed?orderId=${orderId}&reason=${failureReason}&paymentMethod=vnpay`
+        );
       }
-
-      // Chuyển hướng đến trang thất bại với thông tin lỗi
-      return res.redirect(
-        `${process.env.FRONTEND_URL}/payment-failed?orderId=${orderId}&reason=${failureReason}&paymentMethod=vnpay`
-      );
     }
   } else {
     // Chữ ký không hợp lệ

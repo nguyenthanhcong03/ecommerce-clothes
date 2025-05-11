@@ -68,7 +68,7 @@ const createOrder = async (req, res) => {
 
     // Create the order
     const newOrder = new Order({
-      userId,
+      userId: userId || null,
       products,
       totalPrice: totalPrice,
       shippingAddress,

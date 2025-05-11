@@ -92,6 +92,7 @@ class UserService {
 
   // Cập nhật thông tin người dùng
   async updateUser(userId, userData) {
+    console.log("userData", userData);
     // Không cho phép cập nhật một số trường nhạy cảm qua phương thức này
     const { password, resetPasswordToken, resetPasswordExpires, verificationToken, ...updateData } = userData;
 
@@ -106,6 +107,42 @@ class UserService {
   async updateUserByAdmin(userId, userData) {
     // Admin có thể cập nhật các trường nhạy cảm hơn như role, status,...
     const { password, resetPasswordToken, resetPasswordExpires, verificationToken, ...updateData } = userData;
+
+    // Check if username already exists (if trying to update username)
+    if (updateData.username) {
+      const existingUsername = await User.findOne({
+        username: updateData.username,
+        _id: { $ne: userId },
+      });
+
+      if (existingUsername) {
+        throw new Error("Username already exists");
+      }
+    }
+
+    // Check if email already exists (if trying to update email)
+    if (updateData.email) {
+      const existingEmail = await User.findOne({
+        email: updateData.email,
+        _id: { $ne: userId },
+      });
+
+      if (existingEmail) {
+        throw new Error("Email already exists");
+      }
+    }
+
+    // Check if phone already exists (if trying to update phone)
+    if (updateData.phone) {
+      const existingPhone = await User.findOne({
+        phone: updateData.phone,
+        _id: { $ne: userId },
+      });
+
+      if (existingPhone) {
+        throw new Error("Phone number already exists");
+      }
+    }
 
     // Nếu admin muốn cập nhật mật khẩu
     if (userData.newPassword) {

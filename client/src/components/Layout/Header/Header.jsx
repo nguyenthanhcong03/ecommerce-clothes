@@ -79,7 +79,7 @@ function Header() {
             </div>
             <span>|</span>
             <div>{t('description')}</div>
-            {/* <div>Free Shipping for all Order of $99</div> */}
+            <div>Free Shipping for all Order of $99</div>
           </div>
           <div className='flex items-center gap-4'>
             <div className='flex items-center gap-3'>
@@ -89,12 +89,6 @@ function Header() {
               <a href='https://www.facebook.com/nguyenthanhcong03' target='_blank'>
                 <Instagram width={18} height={18} />
               </a>
-              {/* <a href='https://www.facebook.com/nguyenthanhcong03' target='_blank'>
-                <SiZalo />
-              </a>
-              <a href='https://www.facebook.com/nguyenthanhcong03' target='_blank'>
-                <SiShopee />
-              </a> */}
             </div>
             <span>|</span>
             <div className='flex items-center gap-2'>
@@ -103,11 +97,12 @@ function Header() {
             <span>|</span>
             <div>
               {isAuthenticated && user ? (
-                <div className='relative flex items-center'>
-                  <div
-                    className='flex cursor-pointer items-center gap-2'
-                    onClick={() => setIsShowUserDropdown(!isShowUserDropdown)}
-                  >
+                <div
+                  className={`after:content[""] relative`}
+                  onMouseEnter={() => setIsShowUserDropdown(true)}
+                  onMouseLeave={() => setIsShowUserDropdown(false)}
+                >
+                  <div className='flex cursor-pointer items-center gap-2'>
                     <img
                       src={user?.avatar ? user.avatar : avatarDefault}
                       alt=''

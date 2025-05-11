@@ -24,7 +24,7 @@ const cartItemSchema = new mongoose.Schema(
       color: String,
       size: String,
       image: String,
-      // stock: Number,
+      stock: Number,
     },
     isAvailable: {
       type: Boolean,
@@ -41,10 +41,10 @@ const cartSchema = new mongoose.Schema(
       ref: "User",
       required: false,
     },
-    sessionId: {
-      type: String, // Cho khách chưa đăng nhập
-      required: false,
-    },
+    // sessionId: {
+    //   type: String, // Cho khách chưa đăng nhập
+    //   required: false,
+    // },
     items: [cartItemSchema],
   },
   {

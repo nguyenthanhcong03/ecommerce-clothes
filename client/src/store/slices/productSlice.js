@@ -85,6 +85,7 @@ export const updateProductById = createAsyncThunk(
   async ({ productId, payload }, { rejectWithValue }) => {
     try {
       const response = await updateProductByIdAPI(productId, payload);
+      console.log('response update', response);
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || { message: error.message });
@@ -385,6 +386,7 @@ const productSlice = createSlice({
         state.error = null;
       })
       .addCase(updateProductById.fulfilled, (state, action) => {
+        console.log('action.payload', action.payload);
         state.loading = false;
         const updatedProduct = action.payload.data;
         state.products = state.products.map((product) =>

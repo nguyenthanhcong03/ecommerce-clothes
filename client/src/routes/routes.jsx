@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import React, { lazy, Suspense } from 'react';
 
 // Layouts
@@ -34,6 +34,14 @@ import OrdersPage from '@/pages/admin/OrdersPage/OrdersPage.jsx';
 import AnalyticsPage from '@/pages/admin/AnalyticsPage/AnalyticsPage.jsx';
 import SettingsPage from '@/pages/admin/SettingsPage/SettingsPage.jsx';
 import CouponPage from '@/pages/admin/CouponPage/CouponPage.jsx';
+import ProfilePage from '@/pages/customer/AccountPage/ProfilePage.jsx';
+import AddressPage from '@/pages/customer/AccountPage/AddressPage.jsx';
+import PrivacyPage from '@/pages/customer/AccountPage/PrivacyPage.jsx';
+import ChangePasswordPage from '@/pages/customer/AccountPage/ChangePasswordPage.jsx';
+import OrderPage from '@/pages/customer/OrderPage/OrderPage.jsx';
+import VoucherPage from '@/pages/customer/VoucherPage/VoucherPage.jsx';
+import AccountLayout from '../layouts/AccountLayout';
+import ProfileForm from '../components/examples/Example';
 
 // Fake delay function
 // const lazyWithDelay = (importFunc, delay = 1000) => {
@@ -120,6 +128,45 @@ const customerProtectedRoutes = [
         <CheckoutPage />
       </ProtectedRoute>
     )
+  },
+  {
+    path: 'user',
+    element: (
+      <ProtectedRoute>
+        <AccountLayout />
+      </ProtectedRoute>
+    ),
+    errorElement: <NotFound />,
+    children: [
+      {
+        index: true,
+        element: <Navigate to='profile' replace />
+      },
+      {
+        path: 'profile',
+        element: <ProfilePage />
+      },
+      {
+        path: 'change-password',
+        element: <ChangePasswordPage />
+      },
+      {
+        path: 'privacy-settings',
+        element: <PrivacyPage />
+      },
+      {
+        path: 'orders',
+        element: <OrderPage />
+      },
+      {
+        path: 'vouchers',
+        element: <VoucherPage />
+      },
+      {
+        path: 'example',
+        element: <ProfileForm />
+      }
+    ]
   }
 ];
 

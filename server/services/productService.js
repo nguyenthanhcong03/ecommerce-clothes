@@ -65,6 +65,7 @@ const updateProduct = async (productId, updateData) => {
         product[key] = updateData[key];
       }
     });
+    console.log("product.variants", product.variants);
 
     await product.save();
     return product;

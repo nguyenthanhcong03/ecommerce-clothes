@@ -68,12 +68,12 @@ export const processPayment = async (paymentMethod, orderData) => {
       default:
         throw new Error('Phương thức thanh toán không được hỗ trợ');
     }
-    if (response && response.data && response.data.paymentUrl) {
-      redirectToPaymentGateway(response.data.paymentUrl);
-      return response;
-    } else {
-      throw new Error('Phản hồi thanh toán không hợp lệ');
-    }
+    // if (response && response.data && response.data.paymentUrl) {
+    //   redirectToPaymentGateway(response.data.paymentUrl);
+    //   return response;
+    // } else {
+    //   throw new Error('Phản hồi thanh toán không hợp lệ');
+    // }
   } catch (error) {
     console.error(`Lỗi khi xử lý thanh toán ${paymentMethod}:`, error);
     throw error;
