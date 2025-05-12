@@ -52,10 +52,12 @@ const orderSchema = new mongoose.Schema(
       default: "Processing",
     },
     shippingAddress: {
+      fullName: { type: String, required: true },
+      phoneNumber: { type: String, required: true },
       street: { type: String, required: true },
-      city: { type: String, required: true },
-      state: { type: String, required: true },
-      country: { type: String, required: true },
+      district: { type: String, required: true },
+      province: { type: String, required: true },
+      note: { type: String },
     },
     payment: {
       method: {
@@ -96,8 +98,80 @@ const orderSchema = new mongoose.Schema(
       type: String,
       maxlength: 1000,
     },
+    cancelReason: {
+      type: String,
+      maxlength: 1000,
+    },
+    cancelTime: {
+      type: Date,
+    },
+    isReviewed: {
+      type: Boolean,
+      default: false,
+    },
+    review: {
+      rating: {
+        type: Number,
+        min: 1,
+        max: 5,
+      },
+      comment: {
+        type: String,
+        maxlength: 1000,
+      },
+      reviewDate: {
+        type: Date,
+      },
+    },
+    productReviews: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+        },
+        rating: {
+          type: Number,
+          min: 1,
+          max: 5,
+        },
+        comment: {
+          type: String,
+          maxlength: 1000,
+        },
+        reviewDate: {
+          type: Date,
+        },
+      },
+    ],
+    // Lưu trữ thời gian cập nhật trạng thái đơn hàng
+    statusUpdates: {
+      processing: {
+        type: Date,
+        default: Date.now,
+      },
+      shipping: {
+        type: Date,
+      },
+      delivered: {
+        type: Date,
+      },
+      cancelled: {
+        type: Date,
+      },
+    },
   },
   { timestamps: true }
 );
+
+// Middleware để cập nhật thời gian khi trạng thái đơn hàng thay đổi
+orderSchema.pre("save", function (next) {
+  if (this.isModified("status")) {
+    const status = this.status.toLowerCase();
+    if (this.statusUpdates && status in this.statusUpdates) {
+      this.statusUpdates[status] = Date.now();
+    }
+  }
+  next();
+});
 
 module.exports = mongoose.model("Order", orderSchema);

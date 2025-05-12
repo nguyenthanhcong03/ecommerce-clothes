@@ -119,7 +119,7 @@ const OrderSuccess = () => {
         <h2 className='mb-2 text-2xl font-medium text-gray-700'>Đang tải thông tin đơn hàng...</h2>
         <p className='text-gray-500'>
           Vui lòng đợi hoặc{' '}
-          <Link to='/account/orders' className='text-blue-600 hover:underline'>
+          <Link to='/user/orders' className='text-blue-600 hover:underline'>
             xem lịch sử đơn hàng
           </Link>
         </p>
@@ -171,7 +171,7 @@ const OrderSuccess = () => {
                 In hóa đơn
               </button>
               <Link
-                to='/account/orders'
+                to='/user/orders'
                 className='inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700'
               >
                 <Clock className='mr-2 h-4 w-4' />
@@ -251,7 +251,7 @@ const OrderSuccess = () => {
                   <p className='mt-2 text-sm text-gray-500'>
                     {shippingInfo?.street || 'N/A'}
                     <br />
-                    {shippingInfo?.state}, {shippingInfo?.city}, {shippingInfo?.country}
+                    {shippingInfo?.district}, {shippingInfo?.province}, {shippingInfo?.country}
                   </p>
                   <p className='mt-2 text-sm text-gray-500'>
                     <span className='font-medium'>Điện thoại:</span> {shippingInfo?.phoneNumber || 'N/A'}
@@ -377,7 +377,7 @@ const OrderSuccess = () => {
               Tiếp tục mua sắm
             </Link>
 
-            <Link to='/account/orders' className='text-sm text-blue-600 hover:underline'>
+            <Link to='/user/orders' className='text-sm text-blue-600 hover:underline'>
               Xem lịch sử đơn hàng
             </Link>
           </div>

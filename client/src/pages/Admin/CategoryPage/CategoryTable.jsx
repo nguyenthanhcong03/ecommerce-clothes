@@ -2,22 +2,20 @@ import { deleteCategory, fetchCategories } from '@/store/slices/categorySlice';
 import { buildTree } from '@/utils/convertFlatArrToTreeArr';
 import { Button, Image, Input, Popconfirm, Space, Table, Tag, Tooltip, message } from 'antd';
 import { Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
-import React, { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
 const CategoryTable = ({
   categories,
   loading,
-  searchText,
-  currentPage,
-  pageSize,
-  onPageChange,
-  onPageSizeChange,
-  onSearchChange,
+  pagination,
+  onChange,
+  onSearch,
   onRefresh,
   onDelete,
   onEdit,
-  onAdd
+  searchText,
+  filters
 }) => {
   console.log('table');
   const dispatch = useDispatch();
@@ -27,19 +25,6 @@ const CategoryTable = ({
     dispatch(fetchCategories({ page: 1, limit: 10 }));
     message.success('Danh sách danh mục đã được cập nhật');
   }, [dispatch]);
-
-  // Xử lý xóa danh mục
-  const handleDeleteCategory = useCallback(
-    async (id) => {
-      const resultAction = await dispatch(deleteCategory(id));
-      if (deleteCategory.fulfilled.match(resultAction)) {
-        message.success('Xóa danh mục thành công!');
-      } else if (deleteCategory.rejected.match(resultAction)) {
-        message.error(resultAction.payload?.message || 'Có lỗi xảy ra khi xóa danh mục');
-      }
-    },
-    [dispatch]
-  );
 
   // Định nghĩa các cột trong bảng - tối ưu bằng useMemo
   const columns = useMemo(
@@ -102,6 +87,7 @@ const CategoryTable = ({
           { text: 'Hoạt động', value: true },
           { text: 'Không hoạt động', value: false }
         ],
+        filteredValue: filters.status ? [filters.status] : null,
         onFilter: (value, record) => record.isActive === value, // Lọc theo trạng thái
         render: (isActive) => (isActive ? <Tag color='green'>Hoạt động</Tag> : <Tag color='red'>Không hoạt động</Tag>)
       },
@@ -164,32 +150,22 @@ const CategoryTable = ({
         )
       }
     ],
-    [onEdit, onDelete]
+    [onEdit, onDelete, filters]
   );
 
   // Memoize dữ liệu cây danh mục để tránh tính toán lại
   const treeData = useMemo(() => buildTree(categories), [categories]);
 
   return (
-    <div className='rounded-md bg-white p-4 shadow-sm'>
-      <div className='mb-4 flex items-center justify-between'>
-        <div className='flex items-center gap-2'>
-          {/* Nút thêm danh mục mới */}
-          <Button type='primary' icon={<Plus size={16} />} onClick={onAdd} className='flex items-center'>
-            Thêm danh mục mới
-          </Button>
-          {/* Nút làm mới danh sách */}
-          <Button icon={<RefreshCw size={16} />} onClick={handleRefresh} className='ml-2 flex items-center'>
-            Làm mới
-          </Button>
-        </div>
-        {/* Ô tìm kiếm danh mục */}
+    <div className='rounded bg-white shadow'>
+      <div className='flex items-center justify-between border-b p-4'>
+        <h3 className='text-lg font-semibold'>Danh sách người dùng</h3>
         <Input
-          placeholder='Tìm kiếm danh mục...'
-          prefix={<Search size={16} color='#999' />}
-          value={searchText}
-          onChange={onSearchChange}
+          placeholder='Tìm kiếm người dùng...'
+          prefix={<Search />}
           style={{ width: 250 }}
+          value={searchText}
+          onChange={onSearch}
           allowClear
         />
       </div>
@@ -200,13 +176,12 @@ const CategoryTable = ({
         scroll={{ x: 'max-content' }} // Cho phép cuộn ngang
         rowKey='_id'
         columns={columns}
-        dataSource={treeData} // Sử dụng dữ liệu đã được memoize
+        dataSource={treeData}
         loading={loading}
         pagination={{
-          pageSize,
-          current: currentPage,
-          onChange: onPageChange,
-          onShowSizeChange: onPageSizeChange,
+          current: pagination.page,
+          pageSize: pagination.limit,
+          total: pagination.total,
           position: ['bottomCenter'],
           showSizeChanger: true,
           pageSizeOptions: ['5', '10', '20', '50'],
@@ -227,6 +202,8 @@ const CategoryTable = ({
         expandable={{
           defaultExpandAllRows: false // Mặc định không mở rộng tất cả
         }}
+        onChange={onChange}
+        // scroll={{ x: 1000 }}
       />
     </div>
   );

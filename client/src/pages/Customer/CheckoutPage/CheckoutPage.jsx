@@ -66,9 +66,8 @@ const CheckoutPage = () => {
       phoneNumber: shippingInfo?.phoneNumber || '',
       email: shippingInfo?.email || '',
       street: shippingInfo?.street || '',
-      city: shippingInfo?.city || '',
-      state: shippingInfo?.state || '',
-      country: shippingInfo?.country || 'Vietnam',
+      province: shippingInfo?.province || '',
+      district: shippingInfo?.district || '',
       paymentMethod: paymentMethod || 'COD',
       note: ''
     },
@@ -154,10 +153,10 @@ const CheckoutPage = () => {
   // Xử lý khi submit form
   const onSubmit = (data) => {
     // 1. Tìm tên tỉnh/thành và quận/huyện từ mã
-    const provinceObj = provinceOptions.find((p) => p.value == data.city) || {};
-    const districtObj = districtOptions.find((d) => d.value == data.state) || {};
-    const provinceName = provinceObj.label || data.city;
-    const districtName = districtObj.label || data.state;
+    const provinceObj = provinceOptions.find((p) => p.value == data.province) || {};
+    const districtObj = districtOptions.find((d) => d.value == data.district) || {};
+    const provinceName = provinceObj.label || data.province;
+    const districtName = districtObj.label || data.district;
 
     // Lưu thông tin giao hàng
     const shippingData = {
@@ -165,8 +164,8 @@ const CheckoutPage = () => {
       phoneNumber: data.phoneNumber,
       email: data.email,
       street: data.street,
-      city: data.city,
-      state: data.state,
+      province: data.province,
+      district: data.district,
       country: data.country
     };
     dispatch(saveShippingInfo(shippingData));
@@ -179,9 +178,8 @@ const CheckoutPage = () => {
       shippingAddress: {
         fullName: data.fullName,
         street: data.street,
-        city: provinceName,
-        state: districtName,
-        country: data.country,
+        province: provinceName,
+        district: districtName,
         phoneNumber: data.phoneNumber,
         email: data.email
       },

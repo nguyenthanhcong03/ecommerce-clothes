@@ -37,13 +37,17 @@ const CouponFilter = ({ filters, onFilterChange, onResetFilters }) => {
       setValue('endDate', null);
     }
   }, [filters, setValue]);
-
   const handleFormSubmit = (data) => {
     // Xử lý và chuẩn hóa dữ liệu trước khi gửi đi
     const cleanValues = {};
 
+    // Xử lý code - chỉ thêm khi có giá trị
     if (data.code) cleanValues.code = data.code;
-    if (data.isActive) cleanValues.isActive = data.isActive;
+
+    // Xử lý isActive - cần kiểm tra rõ ràng để bao gồm cả trường hợp false
+    if (data.isActive !== undefined && data.isActive !== '') {
+      cleanValues.isActive = data.isActive;
+    }
 
     if (data.startDate) {
       // Kiểm tra xem data.startDate có phải đối tượng moment không
@@ -61,14 +65,16 @@ const CouponFilter = ({ filters, onFilterChange, onResetFilters }) => {
 
     onFilterChange(cleanValues);
   };
-
   const handleReset = () => {
+    // Đặt lại tất cả các giá trị form về mặc định
     reset({
       code: '',
       isActive: '',
       startDate: null,
       endDate: null
     });
+
+    // Gọi callback để reset filters ở component cha
     onResetFilters();
   };
 
@@ -112,12 +118,21 @@ const CouponFilter = ({ filters, onFilterChange, onResetFilters }) => {
             </Col>
 
             <Col xs={24} sm={12} md={6}>
+              {' '}
               <Form.Item label='Trạng thái'>
                 <Controller
                   name='isActive'
                   control={control}
                   render={({ field }) => (
-                    <Select {...field} placeholder='Tất cả' allowClear>
+                    <Select
+                      {...field}
+                      placeholder='Tất cả'
+                      allowClear
+                      onChange={(value) => {
+                        // Đảm bảo xử lý giá trị khi clear
+                        field.onChange(value === undefined ? '' : value);
+                      }}
+                    >
                       <Select.Option value='true'>Đang kích hoạt</Select.Option>
                       <Select.Option value='false'>Đã vô hiệu hóa</Select.Option>
                     </Select>

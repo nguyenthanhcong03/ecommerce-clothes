@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from 'antd';
 import Button from '@/components/common/Button/Button';
-import Popup from '@/components/common/Popup/Popup';
+import Modal from '@/components/common/Modal/Modal';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 const CartSummary = ({
@@ -72,7 +72,7 @@ const CartSummary = ({
       </div>
 
       {/* Confirmation Popup */}
-      <Popup isOpen={isConfirmPopupOpen} onClose={() => setIsConfirmPopupOpen(false)} size='sm' title='Xác nhận xóa'>
+      <Modal isOpen={isConfirmPopupOpen} onClose={() => setIsConfirmPopupOpen(false)} size='sm' title='Xác nhận xóa'>
         <div className='space-y-4'>
           <p>Bạn có chắc chắn muốn xóa {selectedItems?.length} sản phẩm đã chọn khỏi giỏ hàng?</p>
           <div className='flex justify-end space-x-2'>
@@ -84,7 +84,7 @@ const CartSummary = ({
             </Button>
           </div>
         </div>
-      </Popup>
+      </Modal>
     </div>
   );
 };

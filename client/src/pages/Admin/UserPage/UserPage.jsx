@@ -186,7 +186,6 @@ const UserPage = () => {
           <StatCard name='Bị chặn' icon={AlertTriangle} value={userStats.bannedUsers} color='#EF4444' />
         </motion.div>
 
-        {/* Actions Button */}
         <div className='mb-4 flex justify-between'>
           <div></div>
           <Button type='primary' icon={<UserPlus size={16} />} onClick={handleAddUser}>

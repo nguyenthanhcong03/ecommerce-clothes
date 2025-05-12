@@ -1,15 +1,8 @@
-import React, { useMemo } from 'react';
-import { Table, Space, Tag, Button, Input, Tooltip, Popconfirm } from 'antd';
-import {
-  EditOutlined,
-  DeleteOutlined,
-  UserOutlined,
-  SearchOutlined,
-  LockOutlined,
-  UnlockOutlined
-} from '@ant-design/icons';
 import { formatDate } from '@/utils/formatDate';
+import { SearchOutlined, UserOutlined } from '@ant-design/icons';
+import { Input, Popconfirm, Space, Table, Tag, Tooltip } from 'antd';
 import { Lock, LockOpen, Pencil, Trash2 } from 'lucide-react';
+import { useMemo } from 'react';
 
 const UserTable = ({
   users,

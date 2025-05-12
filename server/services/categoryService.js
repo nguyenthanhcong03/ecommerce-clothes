@@ -33,9 +33,9 @@ const getCategories = async (options = {}) => {
     return {
       categories,
       pagination: {
-        current: Number(page),
-        pageSize: Number(limit),
         total,
+        page: Number(page),
+        limit: Number(limit),
         totalPages: Math.ceil(total / limit),
       },
     };

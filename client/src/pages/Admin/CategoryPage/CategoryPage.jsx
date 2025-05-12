@@ -1,28 +1,117 @@
 import Header from '@/components/AdminComponents/common/Header';
 import StatCard from '@/components/AdminComponents/common/StatCard';
 import { deleteCategory, fetchCategories } from '@/store/slices/categorySlice';
-import { message } from 'antd';
+import { Button, message } from 'antd';
 import { motion } from 'framer-motion';
-import { Calendar, FolderOpen, FolderPlus, FolderTree } from 'lucide-react';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { Calendar, FolderOpen, FolderPlus, FolderTree, UserPlus } from 'lucide-react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import CategoryForm from './CategoryForm';
 import CategoryTable from './CategoryTable';
-
+import { setFilters } from '../../../store/slices/userSlice';
+import useDebounce from '@/hooks/useDebounce';
 const CategoryPage = () => {
   console.log('page');
   const dispatch = useDispatch();
-  const { categories, loading, error } = useSelector((state) => state.category);
+  const { categories, loading, error, pagination, filters } = useSelector((state) => state.category);
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
   const [searchText, setSearchText] = useState('');
+  const [sortInfo, setSortInfo] = useState({
+    field: 'createdAt',
+    order: 'descend'
+  });
+
+  const debouncedSearchText = useDebounce(searchText, 500);
+
+  // Tạo params cho API từ state
+  const fetchAllCategories = useCallback(
+    (params = {}) => {
+      const queryParams = {
+        page: params.page || pagination.page || 1,
+        limit: params.limit || pagination.limit || 10,
+        search: params.search !== undefined ? params.search : debouncedSearchText,
+        status: params.status || filters.status,
+        sortBy: params.sortBy || sortInfo.field,
+        sortOrder: params.sortOrder === 'ascend' ? 'asc' : 'desc'
+      };
+
+      dispatch(fetchCategories(queryParams));
+    },
+    [dispatch, pagination.page, pagination.limit, debouncedSearchText, filters.status, sortInfo.field]
+  );
 
   useEffect(() => {
-    // Lấy tất cả danh mục từ server khi component được render
-    dispatch(fetchCategories({ page: 1, limit: 100 })); // Lấy tất cả danh mục để phân tích thống kê
-  }, [dispatch]);
+    fetchAllCategories();
+  }, [fetchAllCategories]);
+
+  // Hiển thị lỗi nếu có
+  useEffect(() => {
+    if (error) {
+      message.error(`Lỗi khi tải danh sách danh mục: ${error.message}`);
+    }
+  }, [error]);
+
+  // Handlers for table actions
+  const handleTableChange = (pagination, filters, sorter) => {
+    const params = {
+      page: pagination.current,
+      limit: pagination.pageSize,
+      status: filters.status && filters.status.length > 0 ? filters.status[0] : null,
+      sortBy: sorter.field || 'createdAt',
+      sortOrder: sorter.order || 'descend'
+    };
+
+    // Lưu giá trị filters vào Redux
+    dispatch(
+      setFilters({
+        status: params.status
+      })
+    );
+
+    // Lưu thông tin sort
+    setSortInfo({
+      field: params.sortBy,
+      order: params.sortOrder
+    });
+
+    fetchCategories(params);
+  };
+
+  const handleSearch = (e) => {
+    setSearchText(e.target.value);
+  };
+
+  const handleOpenFormEditCategory = (category) => {
+    setSelectedCategory(category);
+    setIsOpenForm(true);
+  };
+
+  const handleOpenFormAddCategory = () => {
+    setSelectedCategory(null);
+    setIsOpenForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsOpenForm(false);
+    setSelectedCategory(null);
+    // Làm mới danh sách danh mục sau khi đóng form
+    // fetchAllCategories();
+  };
+
+  const handleDeleteCategory = async (id) => {
+    try {
+      await dispatch(deleteCategory(id)).unwrap();
+      message.success('Xóa danh mục thành công');
+      fetchCategories();
+    } catch (error) {
+      message.error(`Lỗi khi xóa danh mục: ${error.message}`);
+    }
+  };
+
+  const handleRefresh = () => {
+    dispatch(fetchCategories({ page: 1, limit: 10 }));
+  };
 
   // Tính toán các thống kê về danh mục
   const categoryStats = useMemo(() => {
@@ -53,64 +142,6 @@ const CategoryPage = () => {
     };
   }, [categories]);
 
-  const handleOpenFormEditCategory = (category) => {
-    setSelectedCategory(category);
-    setIsOpenForm(true);
-  };
-
-  const handleOpenFormAddCategory = () => {
-    setSelectedCategory(null);
-    setIsOpenForm(true);
-  };
-
-  const handleCloseForm = () => {
-    setIsOpenForm(false);
-  };
-
-  // Các handlers được định nghĩa ở component cha và truyền xuống component con
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handlePageSizeChange = (current, size) => {
-    setPageSize(size);
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchText(e.target.value);
-  };
-
-  const handleRefresh = () => {
-    dispatch(fetchCategories({ page: 1, limit: 10 }));
-  };
-
-  const handleDeleteCategory = async (id) => {
-    const resultAction = await dispatch(deleteCategory(id));
-    if (deleteCategory.fulfilled.match(resultAction)) {
-      message.success('Xóa danh mục thành công!');
-    } else if (deleteCategory.rejected.match(resultAction)) {
-      console.log('hihi');
-      message.error(resultAction?.payload?.message || 'Có lỗi xảy ra khi xóa danh mục');
-    }
-    console.log('error', error);
-  };
-
-  // Lọc danh mục dựa trên từ khóa tìm kiếm
-  const filteredCategories = useMemo(() => {
-    if (!searchText) return categories;
-
-    return categories.filter(
-      (category) =>
-        category.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        (category.description && category.description.toLowerCase().includes(searchText.toLowerCase()))
-    );
-  }, [categories, searchText]);
-
-  // Hiển thị trạng thái loading khi đang tải dữ liệu
-  if (loading && !categories.length) {
-    return <div className='flex h-full items-center justify-center'>Đang tải danh mục...</div>;
-  }
-
   return (
     <div className='relative z-10 flex-1 overflow-auto'>
       <Header title='Categories Management' />
@@ -129,6 +160,13 @@ const CategoryPage = () => {
           <StatCard name='Parent Categories' icon={Calendar} value={categoryStats.parentCategories} color='#8B5CF6' />
         </motion.div>
 
+        <div className='mb-4 flex justify-between'>
+          <div></div>
+          <Button type='primary' icon={<UserPlus size={16} />} onClick={handleOpenFormAddCategory}>
+            Thêm người dùng mới
+          </Button>
+        </div>
+
         {/* Phần bảng danh mục */}
         <motion.div
           className='flex flex-col gap-2'
@@ -137,18 +175,16 @@ const CategoryPage = () => {
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           <CategoryTable
-            categories={filteredCategories}
-            loading={loading}
-            searchText={searchText}
-            currentPage={currentPage}
-            pageSize={pageSize}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            onSearchChange={handleSearchChange}
             onRefresh={handleRefresh}
-            onDelete={handleDeleteCategory}
+            categories={categories}
+            loading={loading}
+            pagination={pagination}
+            onChange={handleTableChange}
+            onSearch={handleSearch}
+            searchText={searchText}
             onEdit={handleOpenFormEditCategory}
-            onAdd={handleOpenFormAddCategory}
+            onDelete={handleDeleteCategory}
+            filters={filters}
           />
         </motion.div>
       </main>

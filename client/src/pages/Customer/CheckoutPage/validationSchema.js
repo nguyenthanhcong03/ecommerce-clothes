@@ -9,9 +9,8 @@ export const checkoutSchema = yup.object().shape({
   phoneNumber: yup.string().required('Vui lòng nhập số điện thoại').matches(phoneRegExp, 'Số điện thoại không hợp lệ'),
   email: yup.string().email('Email không hợp lệ').required('Vui lòng nhập email'),
   street: yup.string().required('Vui lòng nhập địa chỉ'),
-  city: yup.string().required('Vui lòng chọn tỉnh/thành phố'),
-  state: yup.string().required('Vui lòng chọn quận/huyện'),
-  country: yup.string().required('Vui lòng chọn quốc gia'),
+  province: yup.string().required('Vui lòng chọn tỉnh/thành phố'),
+  district: yup.string().required('Vui lòng chọn quận/huyện'),
   paymentMethod: yup.string().required('Vui lòng chọn phương thức thanh toán'),
   note: yup.string().max(500, 'Ghi chú không được vượt quá 500 ký tự'),
   // Không bắt buộc acceptedTerms nếu form không có
@@ -24,9 +23,8 @@ export const shippingSchema = yup.object().shape({
   phoneNumber: yup.string().required('Vui lòng nhập số điện thoại').matches(phoneRegExp, 'Số điện thoại không hợp lệ'),
   email: yup.string().email('Email không hợp lệ').required('Vui lòng nhập email'),
   street: yup.string().required('Vui lòng nhập địa chỉ'),
-  city: yup.string().required('Vui lòng chọn tỉnh/thành phố'),
-  state: yup.string().required('Vui lòng chọn quận/huyện'),
-  country: yup.string().required('Vui lòng chọn quốc gia')
+  province: yup.string().required('Vui lòng chọn tỉnh/thành phố'),
+  district: yup.string().required('Vui lòng chọn quận/huyện')
 });
 
 export const paymentSchema = yup.object().shape({

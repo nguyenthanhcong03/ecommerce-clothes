@@ -8,6 +8,7 @@ import searchReducer from './slices/searchSlice';
 import sidebarReducer from './slices/sidebarSlice';
 import couponReducer from './slices/couponSlice';
 import orderReducer from './slices/orderSlice';
+import userOrderReducer from './slices/userOrderSlice';
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +20,7 @@ export const store = configureStore({
     user: userReducer,
     category: categoryReducer,
     coupon: couponReducer,
-    order: orderReducer
+    order: orderReducer,
+    userOrder: userOrderReducer
   }
 });

@@ -171,16 +171,6 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
         priority: selectedCategory?.priority || 0
       });
       // Không gọi setLocalFiles ở đây để tránh render thừa
-    } else {
-      // Khởi tạo form trống khi thêm mới danh mục
-      reset({
-        name: '',
-        parentId: null,
-        description: '',
-        images: [],
-        isActive: true,
-        priority: 0
-      });
     }
     // Chỉ gọi setLocalFiles một lần sau khi reset form
     setLocalFiles([]);
@@ -272,8 +262,8 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
   );
 
   // Xử lý gửi form
-  const onSubmit = useCallback(
-    async (data) => {
+  const onSubmit =
+    (async (data) => {
       try {
         setUploading(true);
 
@@ -324,9 +314,8 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
         setUploading(false);
       }
     },
-    [localFiles, selectedCategory, handleUpdateCategory, handleAddCategory, uploadFiles, onClose]
+    [localFiles, selectedCategory, handleUpdateCategory, handleAddCategory, uploadFiles, onClose]);
     // Loại bỏ dispatch từ dependencies
-  );
 
   // Xử lý hủy form
   const handleCancel = useCallback(() => {

@@ -21,7 +21,7 @@ const getAllCategories = async (req, res) => {
 
     const response = {
       success: true,
-      data: result.categories,
+      categories: result.categories,
       pagination: result.pagination,
     };
 

@@ -52,9 +52,16 @@ export const deleteCategory = createAsyncThunk('categories/deleteCategory', asyn
 // Trạng thái ban đầu
 const initialState = {
   categories: [],
-  total: 0,
-  page: 0,
-  pages: 1,
+  pagination: {
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  },
+  filters: {
+    search: '',
+    status: null
+  },
   loading: false,
   error: null
 };
@@ -66,6 +73,9 @@ const categorySlice = createSlice({
     // Xóa trạng thái lỗi
     clearError: (state) => {
       state.error = null;
+    },
+    setFilters: (state, action) => {
+      state.filters = { ...state.filters, ...action.payload };
     }
   },
   extraReducers: (builder) => {
@@ -77,10 +87,8 @@ const categorySlice = createSlice({
       })
       .addCase(fetchCategories.fulfilled, (state, action) => {
         state.loading = false;
-        state.categories = action.payload.data;
-        state.total = action.payload.pagination?.total || 0;
-        state.page = action.payload.page || 0;
-        state.pages = action.payload.pages || 1;
+        state.categories = action.payload.categories || [];
+        state.pagination = action.payload.pagination;
       })
       .addCase(fetchCategories.rejected, (state, action) => {
         state.loading = false;

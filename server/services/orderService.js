@@ -17,29 +17,6 @@ class OrderService {
     }
   }
 
-  // Generate a unique tracking number
-  generateTrackingNumber() {
-    return "TRK" + Date.now() + Math.floor(Math.random() * 1000);
-  }
-
-  // Get orders with pagination
-  async getOrders(query = {}, options = {}) {
-    const { page = 1, limit = 10, sort = { createdAt: -1 }, populate } = options;
-
-    const skip = (page - 1) * limit;
-
-    const orders = await Order.find(query).skip(skip).limit(limit).sort(sort).populate(populate);
-
-    const totalOrders = await Order.countDocuments(query);
-
-    return {
-      orders,
-      totalPages: Math.ceil(totalOrders / limit),
-      currentPage: page,
-      totalOrders,
-    };
-  }
-
   // Apply a coupon to calculate discount
   calculateDiscount(totalPrice, coupon) {
     if (!coupon) {
@@ -60,6 +37,92 @@ class OrderService {
     }
 
     return discountAmount;
+  }
+
+  // Generate a unique tracking number
+  generateTrackingNumber() {
+    return "TRK" + Date.now() + Math.floor(Math.random() * 1000);
+  }
+  // Get orders with pagination
+  async getOrders(query = {}, options = {}) {
+    const { page = 1, limit = 10, sort = { createdAt: -1 }, populate } = options;
+
+    const skip = (page - 1) * limit;
+
+    const orders = await Order.find(query).skip(skip).limit(limit).sort(sort).populate(populate);
+
+    const totalOrders = await Order.countDocuments(query);
+
+    return {
+      orders,
+      totalPages: Math.ceil(totalOrders / limit),
+      currentPage: page,
+      totalOrders,
+    };
+  }
+
+  // Tìm kiếm đơn hàng theo từ khóa
+  async searchOrders(query, keyword, options = {}) {
+    const { page = 1, limit = 10, sort = { createdAt: -1 } } = options;
+    const skip = (page - 1) * limit;
+
+    // Kết hợp query và keyword để tạo full query
+    const searchQuery = {
+      ...query,
+      $or: [
+        { trackingNumber: { $regex: keyword, $options: "i" } },
+        { "shippingAddress.fullName": { $regex: keyword, $options: "i" } },
+        { "shippingAddress.phoneNumber": { $regex: keyword, $options: "i" } },
+      ],
+    };
+
+    // Thực hiện tìm kiếm
+    const orders = await Order.find(searchQuery).skip(skip).limit(limit).sort(sort);
+
+    const totalOrders = await Order.countDocuments(searchQuery);
+
+    return {
+      orders,
+      totalPages: Math.ceil(totalOrders / limit),
+      currentPage: page,
+      totalOrders,
+    };
+  }
+
+  // Tạo đánh giá cho sản phẩm sau khi đơn hàng hoàn thành
+  async createReview(orderId, userId, reviewData) {
+    // Kiểm tra đơn hàng có tồn tại và thuộc về người dùng
+    const order = await Order.findOne({
+      _id: orderId,
+      userId,
+      status: "Delivered",
+      isReviewed: false,
+    });
+
+    if (!order) {
+      throw new Error("Order not found or cannot be reviewed");
+    }
+
+    // Cập nhật đơn hàng với thông tin đánh giá
+    order.isReviewed = true;
+    order.review = {
+      rating: reviewData.rating,
+      comment: reviewData.comment,
+      reviewDate: new Date(),
+    };
+
+    // Lưu thông tin đánh giá sản phẩm nếu có
+    if (reviewData.productReviews && reviewData.productReviews.length > 0) {
+      order.productReviews = reviewData.productReviews.map((review) => ({
+        productId: review.productId,
+        rating: review.rating,
+        comment: review.comment,
+        reviewDate: new Date(),
+      }));
+    }
+
+    await order.save();
+    return order;
   }
 
   // Calculate order statistics for admin dashboard

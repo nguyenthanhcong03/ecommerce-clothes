@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Form, Input, Select, Button, Row, Col, Spin, Card, Modal } from 'antd';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -15,7 +15,7 @@ const UserForm = ({ user, onClose, loading }) => {
     control,
     handleSubmit,
     setValue,
-    formState: { errors },
+    formState: { errors, isDirty },
     reset
   } = useForm({
     resolver: yupResolver(userAdminSchema),
@@ -87,11 +87,29 @@ const UserForm = ({ user, onClose, loading }) => {
     }
   };
 
+  // Xử lý hủy form
+  const handleCancel = useCallback(() => {
+    if (isDirty) {
+      // Hiện dialog xác nhận nếu có thay đổi chưa lưu
+      Modal.confirm({
+        title: 'Xác nhận hủy',
+        content: 'Bạn có chắc muốn hủy? Các thay đổi sẽ không được lưu.',
+        okText: 'Hủy thay đổi',
+        cancelText: 'Tiếp tục chỉnh sửa',
+        onOk: () => {
+          onClose(); // Đóng form
+        }
+      });
+    } else {
+      onClose(); // Đóng form mà không cần xác nhận
+    }
+  }, [isDirty, onClose]);
+
   return (
     <Modal
       open={true}
       title={user ? `Chỉnh sửa người dùng: ${user.username}` : 'Thêm người dùng mới'}
-      onCancel={onClose}
+      onCancel={handleCancel}
       footer={null}
       width={700}
     >

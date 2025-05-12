@@ -7,6 +7,9 @@ const {
   updateOrderStatus,
   updatePaymentStatus,
   getOrderStatistics,
+  cancelOrder,
+  searchOrders,
+  reviewOrder,
 } = require("../controllers/orderController");
 const { verifyToken, checkRole } = require("../middlewares/auth");
 
@@ -16,6 +19,9 @@ const router = express.Router();
 router.post("/", verifyToken, createOrder);
 router.get("/user", verifyToken, getUserOrders);
 router.get("/:id", verifyToken, getOrderById);
+router.post("/:id/cancel", verifyToken, cancelOrder);
+router.post("/:id/review", verifyToken, reviewOrder);
+router.get("/search", verifyToken, searchOrders);
 
 // Admin routes
 router.get("/", verifyToken, checkRole("admin"), getAllOrders);

@@ -310,6 +310,212 @@ const getOrderStatistics = async (req, res) => {
   }
 };
 
+// Cancel order (user can only cancel their own orders in Pending or Processing state)
+const cancelOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const userId = req.user._id;
+
+    if (!reason) {
+      return res.status(400).json({
+        success: false,
+        message: "Cancellation reason is required",
+      });
+    }
+
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Check if the user is authorized (must be the order owner)
+    if (order.userId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to cancel this order",
+      });
+    }
+
+    // Check if the order can be cancelled (only Pending or Processing orders can be cancelled)
+    if (!["Pending", "Processing"].includes(order.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Only pending or processing orders can be cancelled",
+      });
+    }
+
+    // Update order status to Cancelled
+    order.status = "Cancelled";
+    order.cancelReason = reason;
+    order.cancelTime = new Date();
+
+    const updatedOrder = await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Order cancelled successfully",
+      data: updatedOrder,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Search orders by keyword (order ID, product name, phone number, etc.)
+const searchOrders = async (req, res) => {
+  try {
+    const { keyword } = req.query;
+    const userId = req.user._id;
+    const isAdmin = req.user.role === "admin";
+
+    if (!keyword) {
+      return res.status(400).json({
+        success: false,
+        message: "Search keyword is required",
+      });
+    }
+
+    // Build search query
+    let query = {};
+
+    // For admin, search all orders, for regular users, only their own orders
+    if (!isAdmin) {
+      query.userId = userId;
+    }
+
+    // Search by order ID if the keyword matches MongoDB ObjectId pattern
+    if (/^[0-9a-fA-F]{24}$/.test(keyword)) {
+      query._id = keyword;
+    } else {
+      // Search by tracking number or in the shipping address fields
+      query = {
+        ...query,
+        $or: [
+          { trackingNumber: { $regex: keyword, $options: "i" } },
+          { "shippingAddress.fullName": { $regex: keyword, $options: "i" } },
+          { "shippingAddress.phoneNumber": { $regex: keyword, $options: "i" } },
+          { "products.snapshot.name": { $regex: keyword, $options: "i" } },
+        ],
+      };
+    }
+
+    const options = {
+      page: parseInt(req.query.page || 1, 10),
+      limit: parseInt(req.query.limit || 10, 10),
+      sort: { createdAt: -1 },
+    };
+
+    // Sử dụng service để tìm kiếm đơn hàng
+    const result = await orderService.searchOrders(query, keyword, options);
+
+    return res.status(200).json({
+      success: true,
+      message: "Orders retrieved successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Review an order after delivery
+const reviewOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { orderRating, comment, productReviews } = req.body;
+    const userId = req.user._id;
+
+    // Validate input
+    if (!orderRating || orderRating < 1 || orderRating > 5) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid order rating (1-5) is required",
+      });
+    }
+
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Check if the user is authorized (must be the order owner)
+    if (order.userId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to review this order",
+      });
+    }
+
+    // Check if the order has been delivered
+    if (order.status !== "Delivered") {
+      return res.status(400).json({
+        success: false,
+        message: "Only delivered orders can be reviewed",
+      });
+    }
+
+    // Check if order has already been reviewed
+    if (order.isReviewed) {
+      return res.status(400).json({
+        success: false,
+        message: "This order has already been reviewed",
+      });
+    }
+
+    // Process the review
+    order.review = {
+      rating: orderRating,
+      comment: comment || "",
+      reviewDate: new Date(),
+    };
+    order.isReviewed = true;
+
+    // Save product reviews if provided
+    if (productReviews && Array.isArray(productReviews)) {
+      // First we should save each product review in a product review collection
+      // This part would typically involve creating product reviews in another collection
+      // But for simplicity, we'll just add them to the order for now
+      order.productReviews = productReviews.map((review) => ({
+        productId: review.productId,
+        rating: review.rating,
+        comment: review.comment || "",
+        reviewDate: new Date(),
+      }));
+
+      // In a real application, you would also update the product's average rating
+      // and associate the review with the product in a separate collection
+    }
+
+    const updatedOrder = await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Order reviewed successfully",
+      data: updatedOrder,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   createOrder,
   getAllOrders,
@@ -318,4 +524,7 @@ module.exports = {
   updateOrderStatus,
   updatePaymentStatus,
   getOrderStatistics,
+  cancelOrder,
+  searchOrders,
+  reviewOrder,
 };

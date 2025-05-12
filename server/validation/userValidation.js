@@ -11,15 +11,11 @@ const addressSchema = Joi.object({
     "any.required": "Địa chỉ đường phố là bắt buộc",
     "string.empty": "Địa chỉ đường phố không được để trống",
   }),
-  city: Joi.string().required().messages({
+  province: Joi.string().required().messages({
     "any.required": "Thành phố là bắt buộc",
     "string.empty": "Thành phố không được để trống",
   }),
-  state: Joi.string().allow(""),
-  country: Joi.string().required().messages({
-    "any.required": "Quốc gia là bắt buộc",
-    "string.empty": "Quốc gia không được để trống",
-  }),
+  district: Joi.string().allow(""),
   isDefault: Joi.boolean().default(false),
 });
 

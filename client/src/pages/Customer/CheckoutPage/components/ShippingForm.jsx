@@ -16,8 +16,8 @@ const ShippingForm = ({ control, errors, watch, setValue, onProvincesLoaded, onD
   const dispatch = useDispatch();
 
   // Watch city to update districts
-  const watchedCity = watch('city');
-  const watchedState = watch('state');
+  const watchedCity = watch('province');
+  const watchedState = watch('district');
 
   // // Initialize selectedProvince from watchedCity on component mount
   // useEffect(() => {
@@ -62,12 +62,12 @@ const ShippingForm = ({ control, errors, watch, setValue, onProvincesLoaded, onD
         // that matches the new district options
         const currentState = watchedState;
         if (!currentState) {
-          setValue('state', '');
+          setValue('district', '');
         } else {
           // Validate that the current state is in the new districts
           const stateExists = response.some((district) => district.value == currentState);
           if (!stateExists) {
-            setValue('state', '');
+            setValue('district', '');
           }
         }
       } catch (error) {
@@ -153,14 +153,14 @@ const ShippingForm = ({ control, errors, watch, setValue, onProvincesLoaded, onD
           {/* Thành phố */}
           <Controller
             control={control}
-            name='city'
+            name='province'
             render={({ field }) => (
               <Select
                 {...field}
                 label='Tỉnh/Thành phố'
                 placeholder='-- Chọn Tỉnh/Thành phố --'
                 options={provinces}
-                error={errors.city?.message}
+                error={errors.province?.message}
                 required
                 onChange={(e) => {
                   field.onChange(e);
@@ -173,14 +173,14 @@ const ShippingForm = ({ control, errors, watch, setValue, onProvincesLoaded, onD
           {/* Quận/Huyện */}
           <Controller
             control={control}
-            name='state'
+            name='district'
             render={({ field }) => (
               <Select
                 {...field}
                 label='Quận/Huyện'
                 placeholder='-- Chọn Quận/Huyện --'
                 options={districts}
-                error={errors.state?.message}
+                error={errors.district?.message}
                 required
                 disabled={!watchedCity}
                 onChange={(e) => {

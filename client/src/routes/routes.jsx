@@ -35,10 +35,11 @@ import AnalyticsPage from '@/pages/admin/AnalyticsPage/AnalyticsPage.jsx';
 import SettingsPage from '@/pages/admin/SettingsPage/SettingsPage.jsx';
 import CouponPage from '@/pages/admin/CouponPage/CouponPage.jsx';
 import ProfilePage from '@/pages/customer/AccountPage/ProfilePage.jsx';
-import AddressPage from '@/pages/customer/AccountPage/AddressPage.jsx';
+import OrderPage from '@/pages/customer/AccountPage/OrderPage.jsx';
+import OrderDetailPage from '@/pages/customer/AccountPage/OrderDetailPage.jsx';
+import OrderReviewPage from '@/pages/customer/AccountPage/OrderReviewPage.jsx';
 import PrivacyPage from '@/pages/customer/AccountPage/PrivacyPage.jsx';
 import ChangePasswordPage from '@/pages/customer/AccountPage/ChangePasswordPage.jsx';
-import OrderPage from '@/pages/customer/OrderPage/OrderPage.jsx';
 import VoucherPage from '@/pages/customer/VoucherPage/VoucherPage.jsx';
 import AccountLayout from '../layouts/AccountLayout';
 import ProfileForm from '../components/examples/Example';
@@ -157,6 +158,14 @@ const customerProtectedRoutes = [
       {
         path: 'orders',
         element: <OrderPage />
+      },
+      {
+        path: 'order/detail/:orderId',
+        element: <OrderDetailPage />
+      },
+      {
+        path: 'order/review/:orderId',
+        element: <OrderReviewPage />
       },
       {
         path: 'vouchers',
