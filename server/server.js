@@ -10,7 +10,6 @@ const fileUpload = require("express-fileupload");
 const app = express();
 const port = process.env.PORT || 8888;
 
-app.use(fileUpload());
 app.use(
   cors({
     origin: "http://localhost:5173", // domain FE của bạn
@@ -19,6 +18,7 @@ app.use(
 );
 app.use(helmet());
 app.use(cookieParser());
+app.use(fileUpload());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

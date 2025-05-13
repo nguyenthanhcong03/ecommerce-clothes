@@ -34,10 +34,10 @@ export const userAdminSchema = yup.object({
     .required('Vai trò là bắt buộc')
     .oneOf(['admin', 'customer'], 'Vai trò phải là admin hoặc customer'),
 
-  status: yup
-    .string()
-    .required('Trạng thái là bắt buộc')
-    .oneOf(['active', 'inactive', 'banned'], 'Trạng thái phải là active, inactive hoặc banned'),
+  // isBlocked: yup
+  //   .string()
+  //   .required('Trạng thái là bắt buộc')
+  //   .oneOf([true, false], 'Trạng thái phải là active, inactive hoặc banned'),
 
   gender: yup
     .string()

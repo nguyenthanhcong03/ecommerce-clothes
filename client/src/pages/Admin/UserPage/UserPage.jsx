@@ -39,20 +39,27 @@ const UserPage = () => {
         limit: params.limit || pagination.limit || 10,
         search: params.search !== undefined ? params.search : debouncedSearchText,
         role: params.role || filters.role,
-        status: params.status || filters.status,
+        isBlocked: params.isBlocked || filters.isBlocked,
         sortBy: params.sortBy || sortInfo.field,
         sortOrder: params.sortOrder === 'ascend' ? 'asc' : 'desc'
       };
 
+      // Xử lý trường hợp đặc biệt khi cả hai trạng thái isBlocked được chọn
+      if (Array.isArray(queryParams.isBlocked) && queryParams.isBlocked.length === 2) {
+        // Nếu chọn cả hai trạng thái (true và false), không cần lọc theo isBlocked
+        console.log('Both blocked states selected, removing filter');
+        delete queryParams.isBlocked;
+      }
+
       dispatch(fetchAllUsers(queryParams));
     },
-    [dispatch, pagination.page, pagination.limit, debouncedSearchText, filters.role, filters.status, sortInfo.field]
+    [dispatch, pagination.page, pagination.limit, debouncedSearchText, filters.role, filters.isBlocked, sortInfo.field]
   );
 
   // Fetch users khi component mount hoặc các dependencies thay đổi
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+  }, []);
 
   // Hiển thị lỗi nếu có
   useEffect(() => {
@@ -63,20 +70,26 @@ const UserPage = () => {
 
   // Handlers for table actions
   const handleTableChange = (pagination, filters, sorter) => {
+    console.log('Table pagination:', pagination); // Debug log
+
     const params = {
       page: pagination.current,
       limit: pagination.pageSize,
-      role: filters.role && filters.role.length > 0 ? filters.role[0] : null,
-      status: filters.status && filters.status.length > 0 ? filters.status[0] : null,
+      // role: filters.role && filters.role.length > 0 ? filters.role[0] : null,
+      role: filters.role && filters.role.length > 0 ? filters.role : null,
+      isBlocked: filters.isBlocked && filters.isBlocked.length > 0 ? filters.isBlocked : null,
       sortBy: sorter.field || 'createdAt',
       sortOrder: sorter.order || 'descend'
     };
+
+    // Debug log
+    console.log('Params being sent:', params);
 
     // Lưu giá trị filters vào Redux
     dispatch(
       setFilters({
         role: params.role,
-        status: params.status
+        isBlocked: params.isBlocked
       })
     );
 
@@ -163,16 +176,16 @@ const UserPage = () => {
   // Tính toán thống kê người dùng
   const userStats = {
     totalUsers: pagination.total || 0,
-    activeUsers: users.filter((user) => user.status === 'active').length,
+    activeUsers: users.filter((user) => user.isBlocked === false).length,
     adminUsers: users.filter((user) => user.role === 'admin').length,
-    bannedUsers: users.filter((user) => user.status === 'banned').length
+    bannedUsers: users.filter((user) => user.isBlocked === true).length
   };
 
   return (
     <div className='relative z-10 flex-1 overflow-auto'>
       <Header title='User Management' />
 
-      <main className='mx-auto max-w-7xl px-4 py-6 lg:px-8'>
+      <main className='mx-auto px-4 py-6 lg:px-8'>
         {/* Statistics Cards */}
         <motion.div
           className='mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4'

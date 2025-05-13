@@ -6,8 +6,8 @@ const { registerSchema, loginSchema, passwordUpdateSchema } = require("../valida
 
 const router = express.Router();
 
-router.post("/register", validator(registerSchema), authController.register);
-router.post("/login", validator(loginSchema), authController.login);
+router.post("/register", authController.register);
+router.post("/login", authController.login);
 router.get("/current", verifyToken, authController.getCurrentUser);
 router.post("/logout", verifyToken, authController.logout);
 router.post("/forgot-password", authController.forgotPassword);

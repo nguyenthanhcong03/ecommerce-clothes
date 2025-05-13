@@ -18,7 +18,7 @@ router.post(
   "/admin/create",
   verifyToken,
   checkRole("admin"),
-  validator(registerSchema),
+  // validator(registerSchema),
   userController.createUserByAdmin
 );
 
@@ -26,29 +26,20 @@ router.post(
 router.get("/:id", verifyToken, validator(idSchema, "params"), userController.getUserById);
 
 // Cập nhật thông tin người dùng
-router.put("/:id", verifyToken, validator(idSchema, "params"), validator(updateSchema), userController.updateUser);
+router.put("/:id", verifyToken, validator(updateSchema), userController.updateUser);
 
 // Cập nhật thông tin người dùng bởi Admin (có nhiều quyền hạn hơn)
 router.put(
   "/admin/:id",
   verifyToken,
   checkRole("admin"),
-  validator(idSchema, "params"),
-  validator(updateSchema),
+  // validator(idSchema, "params"),
+  // validator(updateSchema),
   userController.updateUserByAdmin
 );
 
 // Thay đổi mật khẩu
 router.put("/password/change", verifyToken, validator(passwordUpdateSchema), userController.changePassword);
-
-// Thay đổi trạng thái người dùng (active/inactive/banned) - chỉ admin
-router.put(
-  "/:id/status",
-  verifyToken,
-  checkRole("admin"),
-  validator(idSchema, "params"),
-  userController.changeUserStatus
-);
 
 // Chặn người dùng (chỉ admin)
 router.put("/:id/ban", verifyToken, checkRole("admin"), userController.banUser);

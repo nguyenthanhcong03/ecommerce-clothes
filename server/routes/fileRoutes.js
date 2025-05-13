@@ -4,10 +4,10 @@ const { verifyToken, checkRole } = require("../middlewares/auth");
 
 router.post("/cloud/upload", fileController.uploadFile);
 
-router.post("/cloud/upload/multiple", fileController.uploadMultipleFilesHandler);
+router.post("/cloud/upload/multiple", fileController.uploadMultipleFiles);
 
-router.delete("/cloud/delete", fileController.deleteFileHandler);
+router.delete("/cloud/delete", fileController.deleteFile);
 
-router.delete("/cloud/delete/multiple", fileController.deleteMultipleFilesHandler);
+router.delete("/cloud/delete/multiple", fileController.deleteMultipleFiles);
 
 module.exports = router;

@@ -95,7 +95,7 @@ const initialState = {
   filters: {
     search: '',
     role: null,
-    status: null
+    isBlocked: null
   }
 };
 

@@ -39,7 +39,7 @@ const verifyToken = async (req, res, next) => {
     }
 
     // Check if user is active
-    if (currentUser.status !== "active") {
+    if (currentUser.isBlocked === true) {
       return res.status(403).json({
         success: false,
         message: "Tài khoản đã bị khóa hoặc vô hiệu hóa",
@@ -70,27 +70,6 @@ const verifyToken = async (req, res, next) => {
     });
   }
 };
-
-// /**
-//  * Check if user is an admin
-//  */
-// const admin = (req, res, next) => {
-//   if (!req.user) {
-//     return res.status(401).json({
-//       success: false,
-//       message: "Vui lòng đăng nhập",
-//     });
-//   }
-
-//   if (req.user.role === "admin") {
-//     next();
-//   } else {
-//     res.status(403).json({
-//       success: false,
-//       message: "Bạn không có quyền truy cập",
-//     });
-//   }
-// };
 
 /**
  * Check if user has one of the allowed roles

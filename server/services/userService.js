@@ -6,12 +6,34 @@ class UserService {
   // Tìm tất cả người dùng với phân trang và lọc
   async getAllUsers(filters = {}, options = {}) {
     const { page = 1, limit = 10, sortBy = "createdAt", sortOrder = -1 } = options;
-    const skip = (page - 1) * limit;
-
-    // Xây dựng query filters
+    const skip = (page - 1) * limit; // Xây dựng query filters
     const query = {};
     if (filters.role) query.role = filters.role;
-    if (filters.status) query.status = filters.status;
+    // Xử lý filter isBlocked
+    if (filters.isBlocked) query.isBlocked = filters.isBlocked;
+    // if (filters.isBlocked !== undefined && filters.isBlocked !== null) {
+    //   console.log("isBlocked filter:", filters.isBlocked); // Debug log
+
+    //   // Nếu isBlocked là mảng và chứa cả 2 giá trị ('true' và 'false'), không cần lọc
+    //   if (
+    //     Array.isArray(filters.isBlocked) &&
+    //     ((filters.isBlocked.includes("true") && filters.isBlocked.includes("false")) ||
+    //       (filters.isBlocked.length === 2 && filters.isBlocked.includes(true) && filters.isBlocked.includes(false)))
+    //   ) {
+    //     // Không thêm điều kiện isBlocked vào query
+    //     console.log("Filtering by isBlocked: Both values selected, not filtering");
+    //   } else if (Array.isArray(filters.isBlocked)) {
+    //     // Nếu là mảng với 1 giá trị
+    //     const value = filters.isBlocked[0];
+    //     query.isBlocked = value === "true" || value === true;
+    //     console.log("Filtering by isBlocked (array):", query.isBlocked);
+    //   } else {
+    //     // Nếu là giá trị đơn
+    //     query.isBlocked = filters.isBlocked === "true" || filters.isBlocked === true;
+    //     console.log("Filtering by isBlocked (single):", query.isBlocked);
+    //   }
+    // }
+
     if (filters.search) {
       query.$or = [
         { firstName: { $regex: filters.search, $options: "i" } },
@@ -70,8 +92,8 @@ class UserService {
     userData.password = await bcrypt.hash(userData.password, salt);
 
     // Mặc định trạng thái active nếu không được cung cấp
-    if (!userData.status) {
-      userData.status = "active";
+    if (!userData.isBlocked) {
+      userData.isBlocked = false;
     }
 
     // Tạo người dùng mới
@@ -191,19 +213,6 @@ class UserService {
     return { success: true, message: "User deleted successfully" };
   }
 
-  // Thay đổi trạng thái người dùng (active/inactive/banned)
-  async changeUserStatus(userId, status) {
-    if (!["active", "inactive", "banned"].includes(status)) {
-      throw new Error("Invalid status");
-    }
-
-    const user = await User.findByIdAndUpdate(userId, { status }, { new: true }).select(
-      "-password -resetPasswordToken -resetPasswordExpires -verificationToken"
-    );
-
-    return user;
-  }
-
   // Chặn người dùng
   async banUser(userId, banInfo) {
     const user = await User.findById(userId);
@@ -217,7 +226,7 @@ class UserService {
     }
 
     // Cập nhật trạng thái người dùng
-    user.status = "banned";
+    user.isBlocked = true;
 
     await user.save();
 
@@ -232,12 +241,12 @@ class UserService {
     }
 
     // Kiểm tra nếu người dùng đang bị chặn
-    if (user.status !== "banned") {
+    if (user.isBlocked !== true) {
       throw new Error("User is not currently banned");
     }
 
     // Cập nhật trạng thái người dùng
-    user.status = "active";
+    user.isBlocked = false;
 
     await user.save();
 

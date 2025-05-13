@@ -1,14 +1,13 @@
 import Header from '@/components/AdminComponents/common/Header';
 import StatCard from '@/components/AdminComponents/common/StatCard';
-import { deleteCategory, fetchCategories } from '@/store/slices/categorySlice';
+import { deleteCategory, fetchCategories, setFilters } from '@/store/slices/categorySlice';
 import { Button, message } from 'antd';
 import { motion } from 'framer-motion';
-import { Calendar, FolderOpen, FolderPlus, FolderTree, UserPlus } from 'lucide-react';
+import { Calendar, FolderOpen, FolderPlus, FolderTree } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import CategoryForm from './CategoryForm';
 import CategoryTable from './CategoryTable';
-import { setFilters } from '../../../store/slices/userSlice';
 import useDebounce from '@/hooks/useDebounce';
 const CategoryPage = () => {
   console.log('page');
@@ -31,19 +30,24 @@ const CategoryPage = () => {
         page: params.page || pagination.page || 1,
         limit: params.limit || pagination.limit || 10,
         search: params.search !== undefined ? params.search : debouncedSearchText,
-        status: params.status || filters.status,
         sortBy: params.sortBy || sortInfo.field,
         sortOrder: params.sortOrder === 'ascend' ? 'asc' : 'desc'
       };
 
+      // // Xử lý trường hợp có nhiều giá trị isActive (mảng)
+      // if (Array.isArray(queryParams.isActive) && queryParams.isActive.length === 2) {
+      //   // Nếu chọn cả "active" và "inactive", không cần lọc theo trạng thái
+      //   delete queryParams.isActive;
+      // }
+
       dispatch(fetchCategories(queryParams));
     },
-    [dispatch, pagination.page, pagination.limit, debouncedSearchText, filters.status, sortInfo.field]
+    [dispatch, pagination.page, pagination.limit, debouncedSearchText, sortInfo.field]
   );
 
   useEffect(() => {
     fetchAllCategories();
-  }, [fetchAllCategories]);
+  }, []);
 
   // Hiển thị lỗi nếu có
   useEffect(() => {
@@ -57,7 +61,6 @@ const CategoryPage = () => {
     const params = {
       page: pagination.current,
       limit: pagination.pageSize,
-      status: filters.status && filters.status.length > 0 ? filters.status[0] : null,
       sortBy: sorter.field || 'createdAt',
       sortOrder: sorter.order || 'descend'
     };
@@ -65,7 +68,7 @@ const CategoryPage = () => {
     // Lưu giá trị filters vào Redux
     dispatch(
       setFilters({
-        status: params.status
+        // isActive: params.isActive
       })
     );
 
@@ -75,7 +78,7 @@ const CategoryPage = () => {
       order: params.sortOrder
     });
 
-    fetchCategories(params);
+    fetchAllCategories(params);
   };
 
   const handleSearch = (e) => {
@@ -98,19 +101,17 @@ const CategoryPage = () => {
     // Làm mới danh sách danh mục sau khi đóng form
     // fetchAllCategories();
   };
-
   const handleDeleteCategory = async (id) => {
     try {
       await dispatch(deleteCategory(id)).unwrap();
       message.success('Xóa danh mục thành công');
-      fetchCategories();
+      fetchAllCategories(); // Sử dụng hàm fetchAllCategories đã định nghĩa thay vì gọi fetchCategories trực tiếp
     } catch (error) {
       message.error(`Lỗi khi xóa danh mục: ${error.message}`);
     }
   };
-
   const handleRefresh = () => {
-    dispatch(fetchCategories({ page: 1, limit: 10 }));
+    fetchAllCategories({ page: 1, limit: 10 }); // Sử dụng hàm fetchAllCategories đã định nghĩa
   };
 
   // Tính toán các thống kê về danh mục
@@ -119,7 +120,6 @@ const CategoryPage = () => {
       // Trả về giá trị mặc định nếu không có danh mục nào
       return {
         total: 0,
-        active: 0,
         newToday: 0,
         parentCategories: 0
       };
@@ -130,7 +130,6 @@ const CategoryPage = () => {
 
     return {
       total: categories.length, // Tổng số danh mục
-      active: categories.filter((cat) => cat.isActive).length, // Số danh mục đang hoạt động
       // Đếm số danh mục được tạo hôm nay
       newToday: categories.filter((cat) => {
         const createdAt = new Date(cat.createdAt);
@@ -146,7 +145,7 @@ const CategoryPage = () => {
     <div className='relative z-10 flex-1 overflow-auto'>
       <Header title='Categories Management' />
 
-      <main className='mx-auto max-w-7xl px-4 py-6 lg:px-8'>
+      <main className='mx-auto px-4 py-6 lg:px-8'>
         {/* Phần hiển thị các thẻ thống kê */}
         <motion.div
           className='mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4'
@@ -156,17 +155,15 @@ const CategoryPage = () => {
         >
           <StatCard name='Total Categories' icon={FolderTree} value={categoryStats.total} color='#6366F1' />
           <StatCard name='New Today' icon={FolderPlus} value={categoryStats.newToday} color='#10B981' />
-          <StatCard name='Active Categories' icon={FolderOpen} value={categoryStats.active} color='#F59E0B' />
+          {/* <StatCard name='Active Categories' icon={FolderOpen} value={categoryStats.active} color='#F59E0B' /> */}
           <StatCard name='Parent Categories' icon={Calendar} value={categoryStats.parentCategories} color='#8B5CF6' />
-        </motion.div>
-
+        </motion.div>{' '}
         <div className='mb-4 flex justify-between'>
           <div></div>
-          <Button type='primary' icon={<UserPlus size={16} />} onClick={handleOpenFormAddCategory}>
-            Thêm người dùng mới
+          <Button type='primary' icon={<FolderPlus size={16} />} onClick={handleOpenFormAddCategory}>
+            Thêm danh mục mới
           </Button>
         </div>
-
         {/* Phần bảng danh mục */}
         <motion.div
           className='flex flex-col gap-2'

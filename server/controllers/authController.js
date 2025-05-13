@@ -11,8 +11,10 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { user, accessToken, refreshToken } = await authService.loginUser(req.body);
+    console.log("hi");
 
+    const { user, accessToken, refreshToken } = await authService.loginUser(req.body);
+    console.log("hi");
     // Lưu accessToken vào cookie
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
@@ -36,6 +38,7 @@ const login = async (req, res) => {
     if (error.message === "Vui lòng xác thực email trước khi đăng nhập") {
       return res.status(403).json({ success: false, message: error.message });
     }
+    console.log("error", error);
     res.status(400).json({ success: false, message: error.message });
   }
 };

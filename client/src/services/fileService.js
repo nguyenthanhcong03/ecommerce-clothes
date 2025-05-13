@@ -6,10 +6,10 @@ const BASE_API = '/api/file';
  * @param {File} file - The file to upload
  * @returns {Promise} - The uploaded file data
  */
-export const uploadFile = (file) => {
+export const uploadFile = (file, folder = 'uploads') => {
   const formData = new FormData();
   formData.append('file', file);
-  return axios.post(`${BASE_API}/cloud/upload`, formData, {
+  return axios.post(`${BASE_API}/cloud/upload?folder=${folder}`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
@@ -21,14 +21,18 @@ export const uploadFile = (file) => {
  * @param {File[]} files - Array of files to upload
  * @returns {Promise} - The uploaded files data
  */
-export const uploadMultipleFiles = (files) => {
+export const uploadMultipleFiles = (files, folder = 'uploads') => {
   const formData = new FormData();
   Array.from(files).forEach((file) => {
     formData.append('files', file);
   });
-  console.log('formData entries', Array.from(formData.entries()));
+
   // Để axios tự thiết lập header, không chỉ định thủ công
-  return axios.post(`${BASE_API}/cloud/upload/multiple`, formData);
+  return axios.post(`${BASE_API}/cloud/upload/multiple?folder=${folder}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
 };
 
 /**

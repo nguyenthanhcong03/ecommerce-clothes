@@ -48,8 +48,8 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Processing", "Shipping", "Delivered", "Cancelled"],
-      default: "Processing",
+      enum: ["Pending", "Processing", "Shipping", "Delivered", "Cancelled"],
+      default: "Pending",
     },
     shippingAddress: {
       fullName: { type: String, required: true },
@@ -63,7 +63,7 @@ const orderSchema = new mongoose.Schema(
       method: {
         type: String,
         required: true,
-        enum: ["COD", "Credit Card", "Momo", "VNPay"],
+        enum: ["COD", "Momo", "VNPay"],
       },
       isPaid: {
         type: Boolean,

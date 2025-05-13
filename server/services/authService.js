@@ -65,7 +65,6 @@ const verifyUserEmail = async (token) => {
  */
 const loginUser = async (credentials) => {
   const { username, password } = credentials;
-
   // Tìm người dùng
   const user = await User.findOne({ username });
   if (!user) {

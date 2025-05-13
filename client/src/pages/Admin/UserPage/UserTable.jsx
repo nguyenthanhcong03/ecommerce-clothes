@@ -76,25 +76,17 @@ const UserTable = ({
       },
       {
         title: 'Trạng thái',
-        dataIndex: 'status',
-        key: 'status',
-        render: (status) => {
-          let color = 'blue';
-          if (status === 'inactive') {
-            color = 'orange';
-          } else if (status === 'banned') {
-            color = 'red';
-          } else if (status === 'active') {
-            color = 'green';
-          }
-          return <Tag color={color}>{status.toUpperCase()}</Tag>;
+        dataIndex: 'isBlocked',
+        key: 'isBlocked',
+        render: (isBlocked) => {
+          let color = isBlocked ? 'red' : 'green';
+          return <Tag color={color}>{isBlocked ? 'Bị cấm' : 'Hoạt động'}</Tag>;
         },
         filters: [
-          { text: 'Active', value: 'active' },
-          { text: 'Inactive', value: 'inactive' },
-          { text: 'Banned', value: 'banned' }
+          { text: 'Hoạt động', value: 'false' },
+          { text: 'Bị cấm', value: 'true' }
         ],
-        filteredValue: filters.status ? [filters.status] : null
+        filteredValue: filters.isBlocked ? [filters.isBlocked] : null
       },
       {
         title: 'Ngày tạo',
@@ -119,7 +111,7 @@ const UserTable = ({
 
             {/* Không cho phép chặn người dùng là admin */}
             {record.role !== 'admin' &&
-              (record.status === 'banned' ? (
+              (record.isBlocked === true ? (
                 <Tooltip title='Bỏ chặn người dùng'>
                   <button
                     className='rounded-[5px] bg-[#52c41a] p-1 transition-colors'
@@ -178,6 +170,7 @@ const UserTable = ({
           current: pagination.page,
           pageSize: pagination.limit,
           total: pagination.total,
+          position: ['bottomCenter'],
           showSizeChanger: true,
           showTotal: (total) => `Tổng cộng ${total} người dùng`
         }}

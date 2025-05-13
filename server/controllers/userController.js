@@ -6,7 +6,7 @@ class UserController {
     try {
       const filters = {
         role: req.query.role,
-        status: req.query.status,
+        isBlocked: req.query.isBlocked,
         search: req.query.search,
       };
 
@@ -183,28 +183,6 @@ class UserController {
       if (error.message === "Current password is incorrect") {
         return res.status(400).json({ success: false, message: error.message });
       }
-      res.status(500).json({ success: false, message: error.message });
-    }
-  }
-
-  // Thay đổi trạng thái người dùng (active/inactive/banned) - chỉ admin
-  async changeUserStatus(req, res) {
-    try {
-      // Kiểm tra quyền: chỉ admin mới có thể thay đổi trạng thái
-      if (req.user.role !== "admin") {
-        return res.status(403).json({ success: false, message: "Permission denied" });
-      }
-
-      const { status } = req.body;
-      const userId = req.params.id;
-
-      const updatedUser = await userService.changeUserStatus(userId, status);
-      if (!updatedUser) {
-        return res.status(404).json({ success: false, message: "User not found" });
-      }
-
-      res.status(200).json({ success: true, data: updatedUser });
-    } catch (error) {
       res.status(500).json({ success: false, message: error.message });
     }
   }

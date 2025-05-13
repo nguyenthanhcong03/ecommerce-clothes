@@ -1,16 +1,11 @@
 const {
-  uploadSingleFile,
-  uploadMultipleFiles,
+  uploadSingleFileService,
+  uploadMultipleFilesService,
   formatImagesForDB,
-  deleteFile,
-  deleteMultipleFiles,
+  deleteFileService,
+  deleteMultipleFilesService,
 } = require("../services/fileService");
 
-/**
- * Upload một file đơn lẻ lên Cloudinary
- * @route POST /api/file/upload
- * @access Public/Private (tùy thuộc vào middleware)
- */
 const uploadFile = async (req, res) => {
   try {
     // Kiểm tra nếu có file đã được upload
@@ -25,7 +20,7 @@ const uploadFile = async (req, res) => {
     const folder = req.query.folder || "uploads";
 
     // Upload lên Cloudinary
-    const result = await uploadSingleFile(req.files.file, folder);
+    const result = await uploadSingleFileService(req.files.file, folder);
 
     // Trả về phản hồi thành công
     res.status(200).json({
@@ -50,12 +45,7 @@ const uploadFile = async (req, res) => {
   }
 };
 
-/**
- * Upload nhiều files lên Cloudinary
- * @route POST /api/file/upload/multiple
- * @access Public/Private (tùy thuộc vào middleware)
- */
-const uploadMultipleFilesHandler = async (req, res) => {
+const uploadMultipleFiles = async (req, res) => {
   try {
     // Kiểm tra nếu có files đã được upload
     if (!req.files || Object.keys(req.files).length === 0) {
@@ -64,16 +54,12 @@ const uploadMultipleFilesHandler = async (req, res) => {
         message: "Không có files nào được tải lên",
       });
     }
-
     // Lấy tham số thư mục hoặc sử dụng giá trị mặc định
     const folder = req.query.folder || "uploads";
-
     // Upload lên Cloudinary
-    const results = await uploadMultipleFiles(req.files, folder);
-
+    const results = await uploadMultipleFilesService(req.files, folder);
     // Định dạng cho cơ sở dữ liệu nếu cần
     const formattedResults = formatImagesForDB(results);
-
     // Trả về phản hồi thành công
     res.status(200).json({
       success: true,
@@ -96,7 +82,7 @@ const uploadMultipleFilesHandler = async (req, res) => {
  * @route DELETE /api/file/delete
  * @access Public/Private (tùy thuộc vào middleware)
  */
-const deleteFileHandler = async (req, res) => {
+const deleteFile = async (req, res) => {
   try {
     const { publicId, url } = req.body;
 
@@ -108,7 +94,7 @@ const deleteFileHandler = async (req, res) => {
     }
 
     // Xóa file từ Cloudinary
-    const result = await deleteFile(publicId || url);
+    const result = await deleteFileService(publicId || url);
 
     // Trả về phản hồi thành công
     res.status(200).json({
@@ -131,7 +117,7 @@ const deleteFileHandler = async (req, res) => {
  * @route DELETE /api/file/delete/multiple
  * @access Public/Private (tùy thuộc vào middleware)
  */
-const deleteMultipleFilesHandler = async (req, res) => {
+const deleteMultipleFiles = async (req, res) => {
   try {
     const { files } = req.body;
 
@@ -143,7 +129,7 @@ const deleteMultipleFilesHandler = async (req, res) => {
     }
 
     // Xóa nhiều files từ Cloudinary
-    const results = await deleteMultipleFiles(files);
+    const results = await deleteMultipleFilesService(files);
 
     // Trả về phản hồi thành công
     res.status(200).json({
@@ -163,7 +149,7 @@ const deleteMultipleFilesHandler = async (req, res) => {
 
 module.exports = {
   uploadFile,
-  uploadMultipleFilesHandler,
-  deleteFileHandler,
-  deleteMultipleFilesHandler,
+  uploadMultipleFiles,
+  deleteFile,
+  deleteMultipleFiles,
 };

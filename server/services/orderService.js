@@ -51,13 +51,16 @@ class OrderService {
 
     const orders = await Order.find(query).skip(skip).limit(limit).sort(sort).populate(populate);
 
-    const totalOrders = await Order.countDocuments(query);
+    const total = await Order.countDocuments(query);
 
     return {
       orders,
-      totalPages: Math.ceil(totalOrders / limit),
-      currentPage: page,
-      totalOrders,
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 

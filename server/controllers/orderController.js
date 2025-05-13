@@ -117,30 +117,137 @@ const createOrder = async (req, res) => {
 // Get all orders (admin)
 const getAllOrders = async (req, res) => {
   try {
-    const { page = 1, limit = 10, status } = req.query;
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      paymentStatus,
+      paymentMethod,
+      startDate,
+      endDate,
+      search,
+      minAmount,
+      maxAmount,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+    } = req.query;
 
+    // Xây dựng query động dựa trên các tham số lọc
     const query = {};
+
+    // Lọc theo trạng thái đơn hàng
     if (status) {
-      query.status = status;
+      // Hỗ trợ nhiều trạng thái (dạng mảng)
+      if (Array.isArray(status)) {
+        query.status = { $in: status };
+      } else {
+        query.status = status;
+      }
     }
+
+    // Lọc theo trạng thái thanh toán
+    if (paymentStatus) {
+      if (Array.isArray(paymentStatus)) {
+        query["payment.isPaid"] = { $in: paymentStatus };
+      } else {
+        query["payment.isPaid"] = paymentStatus;
+      }
+    }
+
+    // Lọc theo phương thức thanh toán
+    if (paymentMethod) {
+      if (Array.isArray(paymentMethod)) {
+        query["payment.method"] = { $in: paymentMethod };
+      } else {
+        query["payment.method"] = paymentMethod;
+      }
+    }
+
+    // Lọc theo khoảng thời gian
+    if (startDate || endDate) {
+      query.createdAt = {};
+
+      if (startDate) {
+        query.createdAt.$gte = new Date(startDate);
+      }
+
+      if (endDate) {
+        // Thêm 1 ngày để bao gồm cả ngày kết thúc
+        const endOfDay = new Date(endDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        query.createdAt.$lte = endOfDay;
+      }
+    }
+
+    // Lọc theo khoảng giá trị đơn hàng
+    if (minAmount || maxAmount) {
+      query.totalPrice = {};
+
+      if (minAmount) {
+        query.totalPrice.$gte = parseFloat(minAmount);
+      }
+
+      if (maxAmount) {
+        query.totalPrice.$lte = parseFloat(maxAmount);
+      }
+    }
+
+    // Tìm kiếm theo từ khóa (ID, tên khách hàng, số điện thoại, email)
+    if (search) {
+      // Kiểm tra xem search có phải là MongoDB ObjectId không
+      const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(search);
+
+      const searchQuery = [
+        { "shippingAddress.fullName": { $regex: search, $options: "i" } },
+        { "shippingAddress.phoneNumber": { $regex: search, $options: "i" } },
+        { trackingNumber: { $regex: search, $options: "i" } },
+        { "products.snapshot.name": { $regex: search, $options: "i" } },
+      ];
+
+      // Thêm tìm kiếm theo ID nếu search là ObjectId hợp lệ
+      if (isValidObjectId) {
+        searchQuery.push({ _id: search });
+      }
+
+      query.$or = searchQuery;
+    }
+
+    // Cấu hình sorting và phân trang
+    const sort = {};
+    sort[sortBy] = sortOrder === "asc" ? 1 : -1;
 
     const options = {
       page: parseInt(page, 10),
       limit: parseInt(limit, 10),
-      sort: { createdAt: -1 },
-      populate: "userId",
+      sort: sort,
+      populate: [
+        { path: "userId", select: "firstName lastName username email phone" },
+        { path: "couponApplied", select: "code discountType discountValue" },
+      ],
     };
 
+    // Gọi service để lấy đơn hàng với các tùy chọn đã cấu hình
     const result = await orderService.getOrders(query, options);
+
+    // Thêm thông tin tổng kết về kết quả lọc
+    const summary = {
+      totalOrders: result.pagination.totalDocs,
+      totalPages: result.pagination.totalPages,
+      totalRevenue: result.orders.reduce((sum, order) => sum + order.totalPrice, 0),
+    };
 
     return res.status(200).json({
       success: true,
-      data: result,
+      data: {
+        ...result,
+        summary,
+      },
     });
   } catch (error) {
+    console.error("Error in getAllOrders:", error);
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message || "Có lỗi xảy ra khi lấy danh sách đơn hàng",
     });
   }
 };
@@ -218,10 +325,10 @@ const updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!["Processing", "Shipping", "Delivered", "Cancelled"].includes(status)) {
+    if (!["Pending", "Processing", "Shipping", "Delivered", "Cancelled"].includes(status)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid status value",
+        message: "Không thể cập nhật trạng thái đơn hàng này, vui lòng chọn trạng thái khác.",
       });
     }
 

@@ -55,7 +55,7 @@ const userSchema = new mongoose.Schema(
 
     // Account status and roles
     role: { type: String, enum: ["customer", "admin"], default: "customer" },
-    status: { type: String, enum: ["active", "inactive", "banned"], default: "active" },
+    isBlocked: { type: Boolean, default: false },
     lastLogin: { type: Date, default: Date.now },
 
     // Preferences

@@ -2,7 +2,7 @@ const cloudinary = require("../config/cloudinary");
 const fs = require("fs");
 const path = require("path");
 
-const uploadSingleFile = async (file, folder = "uploads") => {
+const uploadSingleFileService = async (file, folder = "uploads") => {
   try {
     // Xử lý file từ express-fileupload
     if (file.data) {
@@ -48,7 +48,7 @@ const uploadSingleFile = async (file, folder = "uploads") => {
   }
 };
 
-const uploadMultipleFiles = async (files, folder = "uploads") => {
+const uploadMultipleFilesService = async (files, folder = "uploads") => {
   try {
     // Xử lý trường hợp files là một đối tượng với nhiều file
     // express-fileupload trả về dạng { fieldName1: file1, fieldName2: file2 } hoặc { fieldName: [file1, file2] }
@@ -67,7 +67,7 @@ const uploadMultipleFiles = async (files, folder = "uploads") => {
       filesToUpload = files;
     }
 
-    const uploadPromises = filesToUpload.map((file) => uploadSingleFile(file, folder));
+    const uploadPromises = filesToUpload.map((file) => uploadSingleFileService(file, folder));
     return Promise.all(uploadPromises);
   } catch (error) {
     console.error("Lỗi upload nhiều files:", error);
@@ -80,7 +80,7 @@ const uploadMultipleFiles = async (files, folder = "uploads") => {
  * @param {String|Object} file - public_id, URL hoặc đối tượng file
  * @returns {Promise} - Trả về kết quả xóa từ Cloudinary
  */
-const deleteFile = async (file) => {
+const deleteFileService = async (file) => {
   try {
     let publicId;
 
@@ -133,9 +133,9 @@ const deleteFile = async (file) => {
  * @param {Array} files - Mảng các public_ids, URLs hoặc đối tượng file
  * @returns {Promise} - Trả về mảng kết quả xóa từ Cloudinary
  */
-const deleteMultipleFiles = async (files) => {
+const deleteMultipleFilesService = async (files) => {
   try {
-    const deletePromises = files.map((file) => deleteFile(file));
+    const deletePromises = files.map((file) => deleteFileService(file));
     return Promise.all(deletePromises);
   } catch (error) {
     console.error("Lỗi xóa nhiều files:", error);
@@ -156,9 +156,9 @@ const formatImagesForDB = (uploadResults) => {
 };
 
 module.exports = {
-  uploadSingleFile,
-  uploadMultipleFiles,
-  deleteFile,
-  deleteMultipleFiles,
+  uploadSingleFileService,
+  uploadMultipleFilesService,
+  deleteFileService,
+  deleteMultipleFilesService,
   formatImagesForDB,
 };

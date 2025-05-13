@@ -26,7 +26,7 @@ const UserForm = ({ user, onClose, loading }) => {
       username: '',
       phone: '',
       role: 'customer',
-      status: 'active',
+      isBlocked: false,
       gender: '',
       newPassword: ''
     }
@@ -42,7 +42,7 @@ const UserForm = ({ user, onClose, loading }) => {
         username: user.username || '',
         phone: user.phone || '',
         role: user.role || 'customer',
-        status: user.status || 'active',
+        isBlocked: user.isBlocked || false,
         gender: user.gender || '',
         newPassword: ''
       });
@@ -54,12 +54,6 @@ const UserForm = ({ user, onClose, loading }) => {
     { value: 'admin', label: 'Admin' }
   ];
 
-  const statusOptions = [
-    { value: 'active', label: 'Active' },
-    { value: 'inactive', label: 'Inactive' },
-    { value: 'banned', label: 'Banned' }
-  ];
-
   const genderOptions = [
     { value: 'male', label: 'Nam' },
     { value: 'female', label: 'Nữ' },
@@ -67,6 +61,7 @@ const UserForm = ({ user, onClose, loading }) => {
   ];
 
   const onSubmit = async (data) => {
+    console.log('dataIndex', data);
     try {
       if (user && user._id) {
         // Chế độ cập nhật
@@ -108,10 +103,20 @@ const UserForm = ({ user, onClose, loading }) => {
   return (
     <Modal
       open={true}
-      title={user ? `Chỉnh sửa người dùng: ${user.username}` : 'Thêm người dùng mới'}
-      onCancel={handleCancel}
-      footer={null}
       width={700}
+      title={user ? `Chỉnh sửa người dùng: ${user.username}` : 'Thêm người dùng mới'}
+      okText={user ? 'Cập nhật' : 'Tạo mới'}
+      cancelText='Hủy'
+      okButtonProps={{
+        autoFocus: true,
+        htmlType: 'submit',
+        loading: loading,
+        disabled: !isDirty
+      }}
+      onCancel={handleCancel}
+      destroyOnClose
+      onOk={handleSubmit(onSubmit)}
+      maskClosable={false}
     >
       <Spin spinning={loading}>
         <Form layout='vertical' onFinish={handleSubmit(onSubmit)}>
@@ -196,10 +201,14 @@ const UserForm = ({ user, onClose, loading }) => {
               </Form.Item>
             </Col>
 
-            <Col xs={24} sm={12}>
-              <Form.Item label='Trạng thái' validateStatus={errors.status ? 'error' : ''} help={errors.status?.message}>
+            {/* <Col xs={24} sm={12}>
+              <Form.Item
+                label='Trạng thái'
+                validateStatus={errors.isBlocked ? 'error' : ''}
+                help={errors.isBlocked?.message}
+              >
                 <Controller
-                  name='status'
+                  name='isBlocked'
                   control={control}
                   render={({ field }) => (
                     <Select {...field}>
@@ -212,7 +221,7 @@ const UserForm = ({ user, onClose, loading }) => {
                   )}
                 />
               </Form.Item>
-            </Col>
+            </Col> */}
           </Row>
 
           <Form.Item
@@ -221,15 +230,6 @@ const UserForm = ({ user, onClose, loading }) => {
             help={errors.newPassword?.message}
           >
             <Controller name='newPassword' control={control} render={({ field }) => <Input.Password {...field} />} />
-          </Form.Item>
-
-          <Form.Item className='flex justify-end'>
-            <Button type='default' onClick={onClose} style={{ marginRight: 8 }}>
-              Hủy
-            </Button>
-            <Button type='primary' htmlType='submit' loading={loading}>
-              {user ? 'Cập nhật' : 'Tạo mới'}
-            </Button>
           </Form.Item>
         </Form>
       </Spin>

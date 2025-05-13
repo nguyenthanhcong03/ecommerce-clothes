@@ -9,6 +9,7 @@ export const loginUser = createAsyncThunk(
       const data = await login(username, password, rememberMe);
       return data;
     } catch (err) {
+      console.log('first', err);
       return rejectWithValue(err.response?.data?.message || 'Đăng nhập thất bại');
     }
   }
@@ -61,19 +62,12 @@ const initialState = {
     firstName: '',
     lastName: '',
     role: '',
-    avatar: '',
-    accessToken: ''
+    avatar: ''
   },
   isAuthenticated: false,
   isLoading: true,
   error: null,
-  successMessage: null,
-
-  preferences: {
-    language: 'en',
-    currency: 'USD',
-    theme: 'light'
-  }
+  successMessage: null
 };
 
 export const accountSlice = createSlice({
@@ -92,15 +86,27 @@ export const accountSlice = createSlice({
     clearSuccessMessage(state) {
       state.successMessage = null;
     },
-
-    setUserPreference(state, action) {
-      const { key, value } = action.payload;
-      if (state.preferences.hasOwnProperty(key)) {
-        state.preferences[key] = value;
-      }
+    setLoading(state, action) {
+      state.isLoading = action.payload;
     },
+
     doLogoutAction: (state) => {
+      // CASE 1: For httpOnly cookies
+      // Server will clear cookies on logout response
+
+      // CASE 2: For non-httpOnly cookies
+      // Clear cookies on the client side
+      // Note: Need to import Cookies from 'js-cookie' in this file if this is uncommented
+      /* 
+      Cookies.remove('accessToken');
+      Cookies.remove('refreshToken');
+      */
+
+      // CASE 3: For localStorage fallback
       localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+
+      // Reset authentication state
       state.isAuthenticated = false;
       state.isLoading = false;
       state.error = null;
@@ -170,19 +176,6 @@ export const accountSlice = createSlice({
         state.isAuthenticated = false;
       })
 
-      // Refresh token cases
-      .addCase(refreshToken.fulfilled, (state, action) => {
-        if (action.payload.accessToken) {
-          state.user.accessToken = action.payload.accessToken;
-          state.isAuthenticated = true;
-          state.error = null;
-        }
-      })
-      .addCase(refreshToken.rejected, (state) => {
-        // If token refresh fails, user needs to login again
-        state.isAuthenticated = false;
-      })
-
       // Update password cases
       .addCase(updateUserPassword.pending, (state) => {
         state.isLoading = true;
@@ -204,19 +197,19 @@ export const accountSlice = createSlice({
 export const {
   doLoginAction,
   setUser,
+  setLoading,
   doGetAccountAction,
   doLogoutAction,
   clearError,
-  clearSuccessMessage,
-  setUserPreference
+  clearSuccessMessage
 } = accountSlice.actions;
 
-// Selectors
-export const selectCurrentUser = (state) => state.account.user;
-export const selectIsAuthenticated = (state) => state.account.isAuthenticated;
-export const selectIsLoading = (state) => state.account.isLoading;
-export const selectAuthError = (state) => state.account.error;
-export const selectUserRole = (state) => state.account.user.role;
-export const selectUserPreferences = (state) => state.account.preferences;
+// // Selectors
+// export const selectCurrentUser = (state) => state.account.user;
+// export const selectIsAuthenticated = (state) => state.account.isAuthenticated;
+// export const selectIsLoading = (state) => state.account.isLoading;
+// export const selectAuthError = (state) => state.account.error;
+// export const selectUserRole = (state) => state.account.user.role;
+// export const selectUserPreferences = (state) => state.account.preferences;
 
 export default accountSlice.reducer;

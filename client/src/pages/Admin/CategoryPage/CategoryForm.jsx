@@ -15,26 +15,22 @@ const categorySchema = yup.object({
   parentId: yup.string().nullable().default(null),
   description: yup.string().trim().optional(),
   images: yup.array().of(yup.mixed()).min(1, 'Phải chọn ít nhất một ảnh'),
-  isActive: yup.boolean().default(true),
   priority: yup.number().default(0).min(0, 'Ưu tiên phải là số không âm')
 });
 
 // Component tải lên hình ảnh có thể tái sử dụng
 const ImageUpload = memo(({ value = [], onChange, disabled }) => {
-  const handleChange = useCallback(
-    ({ fileList }) => {
-      // Xử lý xem trước cho các file mới
-      const newFileList = fileList.map((file) => {
-        if (!file.url && !file.preview && file.originFileObj) {
-          file.preview = URL.createObjectURL(file.originFileObj);
-        }
-        return file;
-      });
+  const handleChange = ({ fileList }) => {
+    // Xử lý xem trước cho các file mới
+    const newFileList = fileList.map((file) => {
+      if (!file.url && !file.preview && file.originFileObj) {
+        file.preview = URL.createObjectURL(file.originFileObj);
+      }
+      return file;
+    });
 
-      onChange(newFileList);
-    },
-    [onChange]
-  );
+    onChange(newFileList);
+  };
 
   const onPreview = useCallback((file) => {
     const src = file.url || file.preview;
@@ -53,15 +49,6 @@ const ImageUpload = memo(({ value = [], onChange, disabled }) => {
             status: 'done',
             url: item
           };
-        } else if (item.url) {
-          // Nếu item là một đối tượng có URL
-          return {
-            uid: item.public_id || item.uid || item.url,
-            name: (item.public_id || item.url).split('/').pop(),
-            status: 'done',
-            url: item.url,
-            public_id: item.public_id
-          };
         }
         return item;
       })
@@ -69,15 +56,15 @@ const ImageUpload = memo(({ value = [], onChange, disabled }) => {
 
   return (
     <Upload
-      multiple
+      // multiple // Cho phép chọn nhiều file trong explorer
       listType='picture-card'
       beforeUpload={() => false} // Không tải lên ngay lập tức
-      fileList={fileList}
+      fileList={fileList} // danh sách file hiện tại
       onChange={handleChange}
       onPreview={onPreview}
       disabled={disabled}
     >
-      {value?.length < 8 && !disabled && (
+      {value?.length < 1 && !disabled && (
         <div>
           <UploadOutlined />
           <div style={{ marginTop: 8 }}>Chọn ảnh</div>
@@ -88,7 +75,6 @@ const ImageUpload = memo(({ value = [], onChange, disabled }) => {
 });
 
 const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
-  console.log('form');
   const dispatch = useDispatch();
   const [uploading, setUploading] = useState(false); // Trạng thái đang tải file
   const [localFiles, setLocalFiles] = useState([]); // Lưu trữ danh sách file mới
@@ -153,7 +139,6 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
       parentId: null,
       description: '',
       images: [],
-      isActive: true,
       priority: 0
     }
   });
@@ -167,7 +152,6 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
         parentId: selectedCategory?.parentId || null,
         description: selectedCategory?.description || '',
         images: selectedCategory?.images || [],
-        isActive: selectedCategory?.isActive ?? true,
         priority: selectedCategory?.priority || 0
       });
       // Không gọi setLocalFiles ở đây để tránh render thừa
@@ -221,9 +205,7 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
         public_id: file.public_id
       }));
 
-      // Kết hợp file đã tải lên với file hiện có
-      const existingFiles = files.filter((file) => !file.originFileObj);
-      return [...existingFiles, ...uploadedFiles];
+      return uploadedFiles;
     } catch (error) {
       console.error('Error uploading files:', error);
       message.error('Tải lên ảnh thất bại: ' + error.message);
@@ -231,7 +213,7 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
     } finally {
       setUploading(false);
     }
-  }, []); // Không có dependencies vì không phụ thuộc vào state
+  }, []);
 
   // Thêm danh mục mới
   const handleAddCategory = useCallback(
@@ -262,60 +244,59 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
   );
 
   // Xử lý gửi form
-  const onSubmit =
-    (async (data) => {
-      try {
-        setUploading(true);
+  const onSubmit = async (data) => {
+    try {
+      setUploading(true);
 
-        // Xử lý hình ảnh - tải lên cái mới, giữ lại cái cũ
-        let processedImages = [...data.images];
-        if (localFiles.length > 0) {
-          // Kết hợp hình ảnh cũ (không có originFileObj) với hình ảnh mới (có originFileObj)
-          const combinedFiles = [...data.images.filter((img) => !img.originFileObj), ...localFiles];
-          processedImages = await uploadFiles(combinedFiles);
-        }
-
-        // Chuẩn bị dữ liệu để gửi
-        const formData = {
-          name: data.name,
-          description: data.description || '',
-          parentId: data.parentId || null,
-          priority: data.priority,
-          isActive: data.isActive,
-          images: processedImages.map((file) => (typeof file === 'string' ? file : file.url))
-        };
-
-        // Xử lý xóa hình ảnh khi cập nhật
-        if (selectedCategory) {
-          const oldImages = selectedCategory.images;
-          const currentImageUrls = processedImages.map((img) => (typeof img === 'string' ? img : img.url));
-          const deletedImages = oldImages.filter((img) => !currentImageUrls.includes(img));
-
-          if (deletedImages.length > 0) {
-            try {
-              await deleteMultipleFiles(deletedImages.map((img) => img.public_id || img));
-            } catch (deleteErr) {
-              console.error('Lỗi khi xóa ảnh:', deleteErr);
-            }
-          }
-
-          await handleUpdateCategory(formData);
-        } else {
-          await handleAddCategory(formData);
-        }
-
-        // Đặt lại local files sau khi gửi thành công
-        setLocalFiles([]);
-        onClose(); // Đóng form sau khi hoàn tất
-      } catch (error) {
-        console.error('Error:', error);
-        message.error('Có lỗi xảy ra khi xử lý danh mục.');
-      } finally {
-        setUploading(false);
+      // Xử lý hình ảnh - tải lên cái mới, giữ lại cái cũ
+      let processedImages = [...data.images.filter((img) => !img.originFileObj)];
+      if (localFiles.length > 0) {
+        const imagesUpload = await uploadFiles(localFiles);
+        processedImages.push(...imagesUpload);
       }
-    },
-    [localFiles, selectedCategory, handleUpdateCategory, handleAddCategory, uploadFiles, onClose]);
-    // Loại bỏ dispatch từ dependencies
+
+      // Chuẩn bị dữ liệu để gửi
+      const formData = {
+        name: data.name,
+        description: data.description || '',
+        parentId: data.parentId || null,
+        priority: data.priority,
+        images: processedImages.map((file) => (typeof file === 'string' ? file : file.url))
+      };
+
+      // Xử lý xóa hình ảnh khi cập nhật
+      if (selectedCategory) {
+        const oldImages = selectedCategory.images;
+        const currentImageUrls = processedImages.map((img) => (typeof img === 'string' ? img : img.url));
+        const deletedImages = oldImages.filter((img) => !currentImageUrls.includes(img));
+        console.log('deletedImages', deletedImages);
+
+        if (deletedImages.length > 0) {
+          try {
+            await deleteMultipleFiles(deletedImages.map((img) => img.public_id || img));
+          } catch (deleteErr) {
+            console.error('Lỗi khi xóa ảnh:', deleteErr);
+          }
+        }
+        console.log('formData', formData);
+
+        await handleUpdateCategory(formData);
+      } else {
+        await handleAddCategory(formData);
+      }
+
+      // Đặt lại local files sau khi gửi thành công
+      setLocalFiles([]);
+      onClose();
+    } catch (error) {
+      console.error('Error:', error);
+      message.error('Có lỗi xảy ra khi xử lý danh mục.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Loại bỏ dispatch từ dependencies
 
   // Xử lý hủy form
   const handleCancel = useCallback(() => {
@@ -425,23 +406,6 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
         </Form.Item>
 
         <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-          {/* Trường bật/tắt trạng thái hoạt động */}
-          <Form.Item label='Trạng thái hoạt động'>
-            <Controller
-              name='isActive'
-              control={control}
-              render={({ field }) => (
-                <Switch
-                  checked={field.value}
-                  onChange={field.onChange}
-                  disabled={uploading || loading}
-                  checkedChildren='Hoạt động'
-                  unCheckedChildren='Không hoạt động'
-                />
-              )}
-            />
-          </Form.Item>
-
           {/* Trường nhập mức độ ưu tiên */}
           <Form.Item
             label='Ưu tiên'

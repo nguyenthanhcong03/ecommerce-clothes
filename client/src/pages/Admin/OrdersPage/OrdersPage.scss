@@ -1,0 +1,136 @@
+// OrdersPage.scss
+// Custom styles for status selects
+
+.status-select {
+  &.status-pending {
+    .ant-select-selector {
+      border-color: #faad14 !important; // Yellow for pending
+      color: #faad14 !important;
+
+      .ant-select-selection-item {
+        color: #faad14 !important;
+        // font-weight: 600;
+      }
+    }
+
+    &:not(.ant-select-disabled) {
+      .ant-select-arrow {
+        color: #faad14 !important;
+      }
+    }
+  }
+
+  &.status-processing {
+    .ant-select-selector {
+      border-color: #1890ff !important; // Blue for processing
+      color: #1890ff !important;
+
+      .ant-select-selection-item {
+        color: #1890ff !important;
+        // font-weight: 600;
+      }
+    }
+
+    &:not(.ant-select-disabled) {
+      .ant-select-arrow {
+        color: #1890ff !important;
+      }
+    }
+  }
+
+  &.status-shipping {
+    .ant-select-selector {
+      border-color: #722ed1 !important; // Purple for shipping
+      color: #722ed1 !important;
+
+      .ant-select-selection-item {
+        color: #722ed1 !important;
+        // font-weight: 600;
+      }
+    }
+
+    &:not(.ant-select-disabled) {
+      .ant-select-arrow {
+        color: #722ed1 !important;
+      }
+    }
+  }
+
+  &.status-delivered {
+    .ant-select-selector {
+      border-color: #52c41a !important; // Green for delivered
+      color: #52c41a !important;
+
+      .ant-select-selection-item {
+        color: #52c41a !important;
+        // font-weight: 600;
+      }
+    }
+
+    &:not(.ant-select-disabled) {
+      .ant-select-arrow {
+        color: #52c41a !important;
+      }
+    }
+  }
+
+  &.status-cancelled {
+    .ant-select-selector {
+      border-color: #f5222d !important; // Red for cancelled
+      color: #f5222d !important;
+
+      .ant-select-selection-item {
+        color: #f5222d !important;
+        // font-weight: 600;
+      }
+    }
+
+    &:not(.ant-select-disabled) {
+      .ant-select-arrow {
+        color: #f5222d !important;
+      }
+    }
+  }
+
+  // Style for disabled state
+  &.ant-select-disabled {
+    .ant-select-selector {
+      opacity: 0.7;
+
+      .ant-select-selection-item {
+        opacity: 0.7;
+      }
+    }
+  }
+}
+
+// Customize dropdown styles
+.dropdown-pending .ant-select-item-option-selected {
+  background-color: rgba(250, 173, 20, 0.1) !important;
+  color: #faad14 !important;
+}
+
+.dropdown-processing .ant-select-item-option-selected {
+  background-color: rgba(24, 144, 255, 0.1) !important;
+  color: #1890ff !important;
+}
+
+.dropdown-shipping .ant-select-item-option-selected {
+  background-color: rgba(114, 46, 209, 0.1) !important;
+  color: #722ed1 !important;
+}
+
+.dropdown-delivered .ant-select-item-option-selected {
+  background-color: rgba(82, 196, 26, 0.1) !important;
+  color: #52c41a !important;
+}
+
+.dropdown-cancelled .ant-select-item-option-selected {
+  background-color: rgba(245, 34, 45, 0.1) !important;
+  color: #f5222d !important;
+}
+
+// Hover effect for dropdown items
+.ant-select-dropdown .ant-select-item-option:hover:not(.ant-select-item-option-selected) {
+  background-color: rgba(0, 0, 0, 0.04);
+}

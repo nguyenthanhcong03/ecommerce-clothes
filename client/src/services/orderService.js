@@ -33,17 +33,51 @@ export const getOrderByIdAPI = (orderId) => {
 };
 
 /**
- * [ADMIN] Lấy tất cả đơn hàng trong hệ thống
+ * [ADMIN] Lấy tất cả đơn hàng trong hệ thống với các tùy chọn lọc nâng cao
  * @param {Object} options - Các tùy chọn phân trang và lọc
  * @param {number} [options.page=1] - Trang hiện tại
  * @param {number} [options.limit=10] - Số lượng đơn hàng mỗi trang
- * @param {string} [options.status] - Trạng thái đơn hàng cần lọc
+ * @param {string} [options.search] - Từ khóa tìm kiếm
+ * @param {string} [options.sortBy] - Trường cần sắp xếp
+ * @param {string} [options.sortOrder] - Thứ tự sắp xếp ('asc' hoặc 'desc')
+ * @param {string} [options.status] - Trạng thái đơn hàng
+ * @param {string} [options.paymentStatus] - Trạng thái thanh toán ('paid' hoặc 'unpaid')
+ * @param {string} [options.paymentMethod] - Phương thức thanh toán ('COD', 'Momo', 'VNPay')
+ * @param {string} [options.startDate] - Ngày bắt đầu (chuỗi ISO)
+ * @param {string} [options.endDate] - Ngày kết thúc (chuỗi ISO)
+ * @param {number} [options.minAmount] - Giá trị đơn hàng tối thiểu
+ * @param {number} [options.maxAmount] - Giá trị đơn hàng tối đa
  * @returns {Promise} - Danh sách đơn hàng và thông tin phân trang
  */
 export const getAllOrdersAPI = (options = {}) => {
-  const { page = 1, limit = 10, status } = options;
+  const {
+    page = 1,
+    limit = 10,
+    search,
+    sortBy,
+    sortOrder,
+    status,
+    paymentStatus,
+    paymentMethod,
+    startDate,
+    endDate,
+    minAmount,
+    maxAmount
+  } = options;
+
   const params = { page, limit };
+
+  // Thêm các tham số tìm kiếm và lọc nếu có
+  if (search) params.search = search;
+  if (sortBy) params.sortBy = sortBy;
+  if (sortOrder) params.sortOrder = sortOrder;
   if (status) params.status = status;
+  if (paymentStatus) params.paymentStatus = paymentStatus;
+  if (paymentMethod) params.paymentMethod = paymentMethod;
+  if (startDate) params.startDate = startDate;
+  if (endDate) params.endDate = endDate;
+  if (minAmount) params.minAmount = minAmount;
+  if (maxAmount) params.maxAmount = maxAmount;
 
   return axios.get(`${BASE_API}`, { params });
 };

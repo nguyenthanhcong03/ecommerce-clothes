@@ -115,7 +115,7 @@ const CouponPage = () => {
       <div className='relative z-10 flex-1 overflow-auto'>
         <Header title='Products' />
 
-        <main className='mx-auto max-w-7xl px-4 py-6 lg:px-8'>
+        <main className='mx-auto px-4 py-6 lg:px-8'>
           {/* STATS */}
           <motion.div
             className='mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4'

@@ -29,10 +29,6 @@ const categorySchema = new Schema(
         type: String,
       },
     ],
-    isActive: {
-      type: Boolean,
-      default: true, // Mặc định là true (hoạt động)
-    },
     priority: {
       type: Number,
       default: 0, // Mặc định priority là 0

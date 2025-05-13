@@ -7,7 +7,7 @@ const categoryService = require("../services/categoryService");
 
 const getAllCategories = async (req, res) => {
   try {
-    const { page, limit, sortBy, order, search, isActive, parentId } = req.query;
+    const { page, limit, sortBy, order, search, parentId } = req.query;
 
     const result = await categoryService.getCategories({
       page,
@@ -15,7 +15,6 @@ const getAllCategories = async (req, res) => {
       sortBy,
       order,
       search,
-      isActive,
       parentId,
     });
 

@@ -1,9 +1,7 @@
-import { deleteCategory, fetchCategories } from '@/store/slices/categorySlice';
 import { buildTree } from '@/utils/convertFlatArrToTreeArr';
-import { Button, Image, Input, Popconfirm, Space, Table, Tag, Tooltip, message } from 'antd';
-import { Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
-import { memo, useCallback, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
+import { Image, Input, Popconfirm, Space, Table, Tooltip } from 'antd';
+import { Pencil, Search, Trash2 } from 'lucide-react';
+import { memo, useMemo } from 'react';
 
 const CategoryTable = ({
   categories,
@@ -17,16 +15,6 @@ const CategoryTable = ({
   searchText,
   filters
 }) => {
-  console.log('table');
-  const dispatch = useDispatch();
-
-  // Làm mới danh sách danh mục
-  const handleRefresh = useCallback(() => {
-    dispatch(fetchCategories({ page: 1, limit: 10 }));
-    message.success('Danh sách danh mục đã được cập nhật');
-  }, [dispatch]);
-
-  // Định nghĩa các cột trong bảng - tối ưu bằng useMemo
   const columns = useMemo(
     () => [
       {
@@ -76,29 +64,6 @@ const CategoryTable = ({
         },
         dataIndex: 'description',
         key: 'description'
-      },
-      {
-        title: 'Trạng thái',
-        dataIndex: 'isActive',
-        align: 'center',
-        key: 'isActive',
-        width: 120,
-        filters: [
-          { text: 'Hoạt động', value: true },
-          { text: 'Không hoạt động', value: false }
-        ],
-        filteredValue: filters.status ? [filters.status] : null,
-        onFilter: (value, record) => record.isActive === value, // Lọc theo trạng thái
-        render: (isActive) => (isActive ? <Tag color='green'>Hoạt động</Tag> : <Tag color='red'>Không hoạt động</Tag>)
-      },
-      {
-        title: 'Ưu tiên',
-        dataIndex: 'priority',
-        key: 'priority',
-        align: 'center',
-        width: 100,
-        sorter: (a, b) => a.priority - b.priority, // Sắp xếp theo mức độ ưu tiên
-        render: (priority) => <span className='text-gray-700'>{priority || 0}</span>
       },
       {
         title: 'Hành động',
@@ -159,9 +124,9 @@ const CategoryTable = ({
   return (
     <div className='rounded bg-white shadow'>
       <div className='flex items-center justify-between border-b p-4'>
-        <h3 className='text-lg font-semibold'>Danh sách người dùng</h3>
+        <h3 className='text-lg font-semibold'>Danh sách danh mục</h3>
         <Input
-          placeholder='Tìm kiếm người dùng...'
+          placeholder='Tìm kiếm danh mục...'
           prefix={<Search />}
           style={{ width: 250 }}
           value={searchText}
@@ -184,7 +149,7 @@ const CategoryTable = ({
           total: pagination.total,
           position: ['bottomCenter'],
           showSizeChanger: true,
-          pageSizeOptions: ['5', '10', '20', '50'],
+          // pageSizeOptions: ['5', '10', '20', '50'],
           showTotal: (total) => `Tổng số ${total} danh mục`
         }}
         locale={{

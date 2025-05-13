@@ -5,12 +5,11 @@ const slugify = require("slugify");
 
 const getCategories = async (options = {}) => {
   try {
-    const { page = 1, limit = 10, sortBy = "createdAt", order = "desc", search, isActive = true, parentId } = options;
+    const { page = 1, limit = 10, sortBy = "createdAt", order = "desc", search, parentId } = options;
 
     // Build query
     let query = {};
 
-    if (isActive !== undefined) query.isActive = isActive;
     if (parentId !== undefined) {
       query.parentId = parentId === "null" ? null : parentId;
     }
@@ -159,7 +158,7 @@ const deleteCategory = async (categoryId) => {
 
 const createCategory = async (categoryData) => {
   try {
-    const { name, parentId, description, isActive, priority, images } = categoryData;
+    const { name, parentId, description, priority, images } = categoryData;
 
     // Generate slug
     const slug = slugify(name, {
@@ -189,7 +188,6 @@ const createCategory = async (categoryData) => {
       parentId: parentId && mongoose.Types.ObjectId.isValid(parentId) ? parentId : null,
       description,
       images: images,
-      isActive: isActive !== undefined ? isActive : true,
       priority: priority || 0,
     });
 
@@ -223,7 +221,7 @@ const getCategoryById = async (categoryId) => {
 
 const updateCategory = async (categoryId, updateData) => {
   try {
-    const { name, parentId, description, isActive, priority, images } = updateData;
+    const { name, parentId, description, priority, images } = updateData;
 
     // Check if category exists
     const category = await Category.findById(categoryId);
@@ -250,7 +248,6 @@ const updateCategory = async (categoryId, updateData) => {
     }
 
     if (description !== undefined) dataToUpdate.description = description;
-    if (isActive !== undefined) dataToUpdate.isActive = isActive;
     if (priority !== undefined) dataToUpdate.priority = priority;
 
     // Handle new images if provided

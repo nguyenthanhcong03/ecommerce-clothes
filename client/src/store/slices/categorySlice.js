@@ -9,6 +9,7 @@ import {
 export const fetchCategories = createAsyncThunk('categories/fetchCategories', async (params, { rejectWithValue }) => {
   try {
     const data = await getAllCategoriesAPI(params);
+    console.log('categories', data);
     return data;
   } catch (error) {
     return rejectWithValue(error.response?.data || error.message);
@@ -59,8 +60,8 @@ const initialState = {
     totalPages: 0
   },
   filters: {
-    search: '',
-    status: null
+    search: ''
+    // isActive: null
   },
   loading: false,
   error: null
@@ -161,6 +162,6 @@ const categorySlice = createSlice({
   }
 });
 
-export const { setIsOpenForm, setSelectedCategory, clearError } = categorySlice.actions;
+export const { setIsOpenForm, setSelectedCategory, clearError, setFilters } = categorySlice.actions;
 
 export default categorySlice.reducer;

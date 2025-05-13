@@ -7,17 +7,26 @@ const userService = {
     const response = await axios.get(`${BASE_API}/me`);
     return response.data;
   },
-
   // Lấy danh sách tất cả người dùng (dành cho admin)
   getAllUsers: async (params = {}) => {
-    const { page = 1, limit = 10, search = '', role, status, sortBy, sortOrder } = params;
+    const { page = 1, limit = 10, search = '', role, isBlocked, sortBy, sortOrder } = params;
     const queryParams = new URLSearchParams();
 
     if (page) queryParams.append('page', page);
     if (limit) queryParams.append('limit', limit);
     if (search) queryParams.append('search', search);
     if (role) queryParams.append('role', role);
-    if (status) queryParams.append('status', status);
+    if (isBlocked) queryParams.append('isBlocked', isBlocked);
+    // if (isBlocked !== undefined && isBlocked !== null) {
+    //   // Nếu isBlocked là mảng, xử lý từng giá trị
+    //   if (Array.isArray(isBlocked)) {
+    //     isBlocked.forEach((value) => {
+    //       queryParams.append('isBlocked', value);
+    //     });
+    //   } else {
+    //     queryParams.append('isBlocked', isBlocked);
+    //   }
+    // }
     if (sortBy) queryParams.append('sortBy', sortBy);
     if (sortOrder) queryParams.append('sortOrder', sortOrder);
 

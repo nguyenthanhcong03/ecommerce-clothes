@@ -51,14 +51,14 @@ function LoginPage() {
     }
   }, [isAuthenticated, navigate, location]);
 
-  // Hiệu ứng hiển thị lỗi nếu có
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-      // Xóa lỗi sau khi đã hiển thị
-      dispatch(clearError());
-    }
-  }, [error, dispatch]);
+  // // Hiệu ứng hiển thị lỗi nếu có
+  // useEffect(() => {
+  //   if (error) {
+  //     toast.error(error);
+  //     // Xóa lỗi sau khi đã hiển thị
+  //     dispatch(clearError());
+  //   }
+  // }, [error, dispatch]);
 
   // Xử lý khi submit form
   const onSubmit = async (data) => {
