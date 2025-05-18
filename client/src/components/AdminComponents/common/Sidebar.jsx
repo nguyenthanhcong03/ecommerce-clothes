@@ -20,10 +20,9 @@ const SIDEBAR_ITEMS = [
   { name: 'Categories', icon: ChartBarStacked, color: '#333', href: '/admin/categories' },
   { name: 'Coupons', icon: Tag, color: '#333', href: '/admin/coupons' },
   { name: 'Users', icon: Users, color: '#333', href: '/admin/users' },
-  { name: 'Sales', icon: DollarSign, color: '#333', href: '/admin/sales' },
   { name: 'Orders', icon: ShoppingCart, color: '#333', href: '/admin/orders' },
-  { name: 'Analytics', icon: TrendingUp, color: '#333', href: '/admin/analytics' },
-  { name: 'Settings', icon: Settings, color: '#333', href: '/admin/settings' }
+  { name: 'Analytics', icon: TrendingUp, color: '#333', href: '/admin/analytics' }
+  // { name: 'Settings', icon: Settings, color: '#333', href: '/admin/settings' }
 ];
 
 const Sidebar = () => {

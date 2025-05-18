@@ -1,6 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { message } from 'antd';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -8,20 +8,17 @@ import { toast } from 'react-toastify';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 import { calculateDiscount, validateCoupon } from '../../../services/couponService';
 import { processPayment } from '../../../services/paymentService';
-import { clearCart } from '../../../store/slices/cartSlice';
 import {
   applyCoupon,
-  clearDirectBuyItem,
   createNewOrder,
   removeCoupon,
   resetOrder,
   saveShippingInfo,
-  selectDirectBuyItem,
   selectOrderItems,
   selectOrderSuccess,
+  setOrderItems,
   setPaymentMethod,
-  updateOrderNote,
-  setOrderItems
+  updateOrderNote
 } from '../../../store/slices/orderSlice';
 import OrderSuccess from './components/OrderSuccess';
 import OrderSummary from './components/OrderSummary';

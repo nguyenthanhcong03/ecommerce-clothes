@@ -19,40 +19,38 @@ const UserDropdown = ({ handleLogout }) => {
         </Link>
         <hr className='my-2' />
         <ul>
-          <li className='cursor-pointer rounded-md px-[10px] py-[10px] text-sm text-[#666] hover:bg-[#f7f7f7] hover:text-primaryColor'>
-            <Link to={'/user/profile'} className='py-2'>
-              Trang cá nhân
-            </Link>
-          </li>
-          {isAuthenticated && user?.role === 'admin' && (
+          <Link to={'/user/profile'} className='py-2'>
             <li className='cursor-pointer rounded-md px-[10px] py-[10px] text-sm text-[#666] hover:bg-[#f7f7f7] hover:text-primaryColor'>
-              <Link to={'/admin'} className='py-2'>
-                Trang quản trị
-              </Link>
+              Trang cá nhân
             </li>
+          </Link>
+          {isAuthenticated && user?.role === 'admin' && (
+            <Link to={'/admin'} className='py-2'>
+              <li className='cursor-pointer rounded-md px-[10px] py-[10px] text-sm text-[#666] hover:bg-[#f7f7f7] hover:text-primaryColor'>
+                Trang quản trị
+              </li>
+            </Link>
           )}
         </ul>
         <hr className='my-2' />
         <ul>
-          <li className='cursor-pointer rounded-md px-[10px] py-[10px] text-sm text-[#666] hover:bg-[#f7f7f7] hover:text-primaryColor'>
-            <Link className='py-2 text-[#666] hover:text-primaryColor'>Viết blog</Link>
-          </li>
-          <li className='cursor-pointer rounded-md px-[10px] py-[10px] text-sm text-[#666] hover:bg-[#f7f7f7] hover:text-primaryColor'>
-            <Link className='py-2 text-[#666] hover:text-primaryColor'>Bài viết của tôi</Link>
-          </li>
-          <li className='cursor-pointer rounded-md px-[10px] py-[10px] text-sm text-[#666] hover:bg-[#f7f7f7] hover:text-primaryColor'>
-            <Link className='py-2 text-[#666] hover:text-primaryColor'>Bài viết đã lưu</Link>
-          </li>
+          <Link to={'/user/orders'} className='py-2 text-[#666] hover:text-primaryColor'>
+            <li className='cursor-pointer rounded-md px-[10px] py-[10px] text-sm text-[#666] hover:bg-[#f7f7f7] hover:text-primaryColor'>
+              Đơn mua
+            </li>
+          </Link>
+          <Link to={'/user/vouchers'} className='py-2 text-[#666] hover:text-primaryColor'>
+            <li className='cursor-pointer rounded-md px-[10px] py-[10px] text-sm text-[#666] hover:bg-[#f7f7f7] hover:text-primaryColor'>
+              Kho Voucher
+            </li>
+          </Link>
         </ul>
         <hr className='my-2' />
         <ul>
           <li className='cursor-pointer rounded-md px-[10px] py-[10px] text-sm text-[#666] hover:bg-[#f7f7f7] hover:text-primaryColor'>
-            <span className='py-2 text-[#666] hover:text-primaryColor'>Cài đặt</span>
-          </li>
-          <li className='cursor-pointer rounded-md px-[10px] py-[10px] text-sm text-[#666] hover:bg-[#f7f7f7] hover:text-primaryColor'>
-            <span className='py-2 text-[#666] hover:text-primaryColor' onClick={handleLogout}>
+            <button className='text-[#666] hover:text-primaryColor' onClick={handleLogout}>
               Đăng xuất
-            </span>
+            </button>
           </li>
         </ul>
       </ul>

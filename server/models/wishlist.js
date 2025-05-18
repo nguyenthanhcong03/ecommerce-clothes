@@ -20,8 +20,8 @@ const wishlistItemSchema = new mongoose.Schema(
       trim: true,
       maxlength: 500, // User can add personal notes about the item
     },
-  },
-  { _id: true }
+  }
+  // { _id: true }
 );
 
 const wishlistSchema = new mongoose.Schema(

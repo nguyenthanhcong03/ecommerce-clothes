@@ -40,7 +40,7 @@ import OrderDetailPage from '@/pages/customer/AccountPage/OrderDetailPage.jsx';
 import OrderReviewPage from '@/pages/customer/AccountPage/OrderReviewPage.jsx';
 import PrivacyPage from '@/pages/customer/AccountPage/PrivacyPage.jsx';
 import ChangePasswordPage from '@/pages/customer/AccountPage/ChangePasswordPage.jsx';
-import VoucherPage from '@/pages/customer/VoucherPage/VoucherPage.jsx';
+import VoucherPage from '@/pages/customer/AccountPage/VoucherPage.jsx';
 import AccountLayout from '../layouts/AccountLayout';
 import ProfileForm from '../components/examples/Example';
 
@@ -76,6 +76,7 @@ const publicRoutes = [
   { path: 'news', element: <NewsPage /> },
   { path: 'contact', element: <ContactPage /> },
   { path: 'product/:id', element: <DetailProduct /> },
+  { path: 'vouchers', element: <VoucherPage /> },
   { path: 'payment-success', element: <PaymentSuccessPage /> },
   { path: 'payment-failed', element: <PaymentFailedPage /> }
 ];
@@ -145,6 +146,7 @@ const customerProtectedRoutes = [
       },
       {
         path: 'profile',
+
         element: <ProfilePage />
       },
       {

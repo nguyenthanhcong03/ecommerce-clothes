@@ -151,6 +151,7 @@ const toggleCouponStatus = async (req, res) => {
 };
 
 const getActiveCoupons = async (req, res) => {
+  console.log("first");
   try {
     const coupons = await couponService.getActiveCoupons();
     res.status(200).json({

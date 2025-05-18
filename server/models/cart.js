@@ -30,8 +30,8 @@ const cartItemSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-  },
-  { _id: true }
+  }
+  // { _id: true }
 );
 
 const cartSchema = new mongoose.Schema(
@@ -53,8 +53,8 @@ const cartSchema = new mongoose.Schema(
 );
 
 // Index để tìm kiếm nhanh cart theo user hoặc session
-cartSchema.index({ userId: 1 });
-cartSchema.index({ sessionId: 1 });
+cartSchema.index({ userId: 1 }, { unique: true });
+// cartSchema.index({ sessionId: 1 });
 
 const Cart = mongoose.model("Cart", cartSchema);
 

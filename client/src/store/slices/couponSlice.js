@@ -5,10 +5,18 @@ import couponService from '../../services/couponService';
 export const fetchCoupons = createAsyncThunk('coupons/fetchCoupons', async (params, { rejectWithValue }) => {
   try {
     const response = await couponService.getCoupons(params);
-    console.log('response', response);
     return response;
   } catch (error) {
     return rejectWithValue(error.response?.data || { message: 'Không thể tải danh sách mã giảm giá' });
+  }
+});
+
+export const fetchActiveCoupons = createAsyncThunk('coupons/fetchActiveCoupons', async (_, { rejectWithValue }) => {
+  try {
+    const response = await couponService.getActiveCoupons();
+    return response;
+  } catch (error) {
+    return rejectWithValue(error.response?.data || { message: 'Không thể tải danh sách mã giảm giá đang hoạt động' });
   }
 });
 
@@ -131,6 +139,20 @@ const couponSlice = createSlice({
       .addCase(fetchCoupons.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || 'Không thể tải danh sách mã giảm giá';
+      })
+
+      // Fetch active coupons
+      .addCase(fetchActiveCoupons.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchActiveCoupons.fulfilled, (state, action) => {
+        state.loading = false;
+        state.coupons = action.payload.data;
+      })
+      .addCase(fetchActiveCoupons.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || 'Không thể tải danh sách mã giảm giá đang hoạt động';
       })
 
       // Fetch coupon by ID

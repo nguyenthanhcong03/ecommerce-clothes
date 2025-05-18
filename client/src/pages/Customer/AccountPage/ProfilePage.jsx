@@ -136,7 +136,8 @@ const ProfilePage = () => {
         email: currentUser.email || '',
         phone: currentUser.phone || '',
         gender: currentUser.gender || '',
-        dateOfBirth: dateOfBirthFormatted
+        // dateOfBirth: dateOfBirthFormatted,
+        dateOfBirth: currentUser.dateOfBirth || ''
       });
 
       // Hiển thị avatar nếu có
@@ -186,6 +187,7 @@ const ProfilePage = () => {
 
   // Xử lý cập nhật thông tin cá nhân
   const onSubmit = async (data) => {
+    console.log('data', data);
     if (!user || !user._id) {
       toast.error('Không tìm thấy thông tin người dùng');
       return;
@@ -271,7 +273,7 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className='mx-auto max-w-4xl rounded-md bg-white p-4'>
+    <div className='mx-auto max-w-7xl bg-white p-4'>
       <h1 className='mb-6 text-2xl font-bold text-primaryColor'>Hồ sơ của tôi</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className='animate-fadeIn'>
@@ -472,7 +474,7 @@ const ProfilePage = () => {
             {(isDirty || avatarChanged) && (
               <button
                 type='button'
-                className='rounded-md border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:border-gray-400 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2'
+                className='rounded-sm border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:border-gray-400 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2'
                 onClick={() => {
                   if (currentUser) {
                     // Reset về giá trị ban đầu từ currentUser

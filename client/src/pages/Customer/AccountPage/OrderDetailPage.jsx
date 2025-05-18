@@ -456,3 +456,18 @@ const OrderDetailPage = () => {
 };
 
 export default OrderDetailPage;
+
+function g({ error, navigate }) {
+  return (
+    <div className='container mx-auto p-4'>
+      <div className='rounded-md bg-red-50 p-4 text-red-600'>{error}</div>
+      <button
+        onClick={() => navigate('/account/orders')}
+        className='mt-4 flex items-center text-orange-500 hover:text-orange-600'
+      >
+        <ArrowLeft className='mr-1 h-5 w-5' />
+        Quay lại danh sách đơn hàng
+      </button>
+    </div>
+  );
+}

@@ -16,7 +16,6 @@ function App() {
     if (user) {
       dispatch(fetchCurrentUser());
     }
-    dispatch(setLoading(false));
   }, [dispatch]);
 
   // Sau khi đã xác thực người dùng thành công, tải giỏ hàng

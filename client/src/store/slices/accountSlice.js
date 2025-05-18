@@ -162,7 +162,7 @@ export const accountSlice = createSlice({
 
       // Fetch current user cases
       .addCase(fetchCurrentUser.pending, (state) => {
-        // state.isLoading = true;
+        state.isLoading = true;
         state.error = null;
       })
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {

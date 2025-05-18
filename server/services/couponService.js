@@ -189,13 +189,18 @@ const incrementCouponUsage = async (couponId) => {
 const getActiveCoupons = async () => {
   try {
     const now = new Date();
+    // Sửa: Không thể so sánh trường này bằng $lt trong truy vấn
+    // Lấy tất cả coupon hoạt động trong ngày và lọc thêm sau
     const coupons = await Coupon.find({
       isActive: true,
       startDate: { $lte: now },
       endDate: { $gte: now },
-      $or: [{ usageLimit: 0 }, { usedCount: { $lt: "$usageLimit" } }],
     }).sort({ createdAt: -1 });
 
+    // // Lọc những coupon còn lượt sử dụng
+    // const filteredCoupons = coupons.filter((coupon) => coupon.usageLimit === 0 || coupon.usedCount < coupon.usageLimit);
+
+    // return filteredCoupons;
     return coupons;
   } catch (error) {
     throw error;

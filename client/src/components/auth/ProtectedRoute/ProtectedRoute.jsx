@@ -7,15 +7,14 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 const ProtectedRoute = memo(
   ({ children, requireAuth = true, roles = [], redirectPath = '/login', fallbackComponent = null }) => {
     const location = useLocation();
-    const { user, isAuthenticated, isLoading } = useSelector((state) => state.account);
-
-    // // Hiển thị trạng thái loading khi đang kiểm tra xác thực
+    const { user, isAuthenticated, isLoading } = useSelector((state) => state.account); // Hiển thị trạng thái loading khi đang kiểm tra xác thực
     if (isLoading) {
       return fallbackComponent || <LoadingSpinner fullPage />;
     }
 
     // Chuyển hướng người dùng không được xác thực đến trang đăng nhập với đường dẫn trở về
-    if (requireAuth && !isAuthenticated) {
+    // Chỉ khi đã hoàn thành việc kiểm tra xác thực (isLoading = false) và user thực sự chưa đăng nhập
+    if (requireAuth && !isAuthenticated && !isLoading) {
       return <Navigate to={redirectPath} state={{ from: location.pathname }} replace />;
     }
 

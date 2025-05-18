@@ -58,8 +58,6 @@ const ShippingForm = ({ control, errors, watch, setValue, onProvincesLoaded, onD
         setDistricts(response);
         onDistrictsLoaded(response);
 
-        // Don't reset state if there's a previously saved value
-        // that matches the new district options
         const currentState = watchedState;
         if (!currentState) {
           setValue('district', '');
@@ -215,7 +213,7 @@ const ShippingForm = ({ control, errors, watch, setValue, onProvincesLoaded, onD
             render={({ field }) => (
               <textarea
                 {...field}
-                className='mt-1 w-full flex-1 resize-none rounded border-[1px] border-gray-300 p-3 px-[10px] text-sm outline-none focus:border-primaryColor'
+                className='mt-1 w-full flex-1 resize-none rounded-sm border-[1px] border-gray-300 p-3 px-[10px] text-sm outline-none focus:border-primaryColor'
                 placeholder='Nhập ghi chú cho đơn hàng (không bắt buộc)'
                 rows={3}
               />
