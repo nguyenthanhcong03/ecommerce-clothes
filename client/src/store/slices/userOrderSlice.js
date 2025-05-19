@@ -2,6 +2,17 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { getUserOrdersAPI, getOrderByIdAPI, cancelOrderAPI, reviewOrderAPI } from '@/services/orderService';
 import { toast } from 'react-toastify';
 
+const initialState = {
+  orders: [],
+  orderDetail: null,
+  loading: false,
+  error: null,
+  totalOrders: 0,
+  totalPages: 1,
+  currentPage: 1,
+  activeTab: 'all' // 'all', 'pending', 'processing', 'shipping', 'delivered', 'cancelled'
+};
+
 // Lấy tất cả đơn hàng của người dùng
 export const fetchUserOrders = createAsyncThunk(
   'userOrder/fetchUserOrders',
@@ -53,16 +64,7 @@ export const reviewOrder = createAsyncThunk(
 
 const userOrderSlice = createSlice({
   name: 'userOrder',
-  initialState: {
-    orders: [],
-    orderDetail: null,
-    loading: false,
-    error: null,
-    totalOrders: 0,
-    totalPages: 1,
-    currentPage: 1,
-    activeTab: 'all' // 'all', 'pending', 'processing', 'shipping', 'delivered', 'cancelled'
-  },
+  initialState: initialState,
   reducers: {
     setActiveTab: (state, action) => {
       state.activeTab = action.payload;

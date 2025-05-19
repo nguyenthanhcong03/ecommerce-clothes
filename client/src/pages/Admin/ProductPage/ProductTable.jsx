@@ -22,55 +22,19 @@ const { Option } = Select;
 
 const ProductTable = ({
   products,
-  loading,
+  pagination,
+  onChange,
+  onSearch,
   searchText,
-  currentPage,
-  pageSize,
-  totalItems,
-  totalPages,
-  sortType,
-  filters,
-  onPageChange,
-  onPageSizeChange,
-  onSearchChange,
-  onSortChange,
-  onFilterChange,
-  onToggleFilterValue,
-  onClearFilters,
+  loading,
   onRefresh,
   onDelete,
   onEdit,
-  onAdd
+  onAdd,
+  filters
 }) => {
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [priceRange, setPriceRange] = useState([0, 10000000]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
-  // Đảm bảo priceRange được cập nhật khi filters thay đổi
-  useEffect(() => {
-    // Nếu có minPrice hoặc maxPrice trong filters, sử dụng chúng
-    if (filters.minPrice !== null || filters.maxPrice !== null) {
-      setPriceRange([(filters.minPrice = 0), (filters.maxPrice = 10000000)]);
-    }
-  }, [filters.minPrice, filters.maxPrice]);
-
-  // Toggle hiển thị bộ lọc
-  const toggleFilterPanel = () => {
-    setIsFilterOpen(!isFilterOpen);
-  };
-
-  // Xử lý lọc theo khoảng giá
-  const handlePriceChange = (values) => {
-    setPriceRange(values);
-  };
-
-  // Áp dụng lọc giá khi thả thanh trượt
-  const handlePriceAfterChange = (values) => {
-    onFilterChange('minPrice', values[0]);
-    onFilterChange('maxPrice', values[1]);
-  };
-
-  // Cột cho bảng sản phẩm
   const columns = useMemo(
     () => [
       {
@@ -78,8 +42,7 @@ const ProductTable = ({
         dataIndex: 'index',
         key: 'index',
         align: 'center',
-        width: 60,
-        render: (_, __, index) => (currentPage - 1) * pageSize + index + 1
+        width: 60
       },
       {
         title: 'Ảnh',
@@ -284,67 +247,8 @@ const ProductTable = ({
         )
       }
     ],
-    [currentPage, pageSize, filters.isActive]
+    [onEdit, onDelete, filters]
   );
-
-  // Xử lý sự kiện khi table thay đổi (filters, sorter)
-  const handleTableChange = (pagination, tableFilters, sorter) => {
-    // Xử lý sắp xếp
-    if (sorter && sorter.order) {
-      // Xác định loại sắp xếp dựa trên field và order
-      let newSortType;
-
-      switch (sorter.field) {
-        case 'name':
-          newSortType = sorter.order === 'ascend' ? 'name_asc' : 'name_desc';
-          break;
-        case 'price':
-          newSortType = sorter.order === 'ascend' ? 'price_asc' : 'price_desc';
-          break;
-        case 'salesCount':
-          newSortType = 'top_sales';
-          break;
-        case 'averageRating':
-          newSortType = 'rating';
-          break;
-        default:
-          newSortType = sorter.order === 'ascend' ? 'createdAt_asc' : 'latest';
-      }
-
-      onSortChange(newSortType);
-    }
-
-    // Xử lý các filter từ Table
-    if (tableFilters) {
-      // Xử lý filter danh mục
-      if (tableFilters.category && tableFilters.category.length > 0) {
-        onFilterChange('category', tableFilters.category[0]);
-      } else if (tableFilters.category && tableFilters.category.length === 0) {
-        onFilterChange('category', null);
-      }
-
-      // Xử lý filter stock
-      if (tableFilters.inStock && tableFilters.inStock.length > 0) {
-        onFilterChange('inStock', tableFilters.inStock[0] === 'true');
-      } else if (tableFilters.inStock && tableFilters.inStock.length === 0) {
-        onFilterChange('inStock', false);
-      }
-
-      // Xử lý filter isActive
-      if (tableFilters.isActive && tableFilters.isActive.length > 0) {
-        onFilterChange('isActive', tableFilters.isActive[0] === 'true');
-      } else if (tableFilters.isActive && tableFilters.isActive.length === 0 && filters.isActive !== undefined) {
-        onFilterChange('isActive', true); // Reset về mặc định true
-      }
-
-      // Xử lý filter brand
-      if (tableFilters.brand && tableFilters.brand.length > 0) {
-        onFilterChange('brand', tableFilters.brand);
-      } else if (tableFilters.brand && tableFilters.brand.length === 0) {
-        onFilterChange('brand', []);
-      }
-    }
-  };
 
   // Xử lý chọn row
   const onSelectChange = (newSelectedRowKeys) => {
@@ -355,9 +259,6 @@ const ProductTable = ({
     selectedRowKeys,
     onChange: onSelectChange
   };
-
-  // Tạo danh sách thương hiệu duy nhất từ sản phẩm
-  const uniqueBrands = !loading && products.length > 0 ? [...new Set(products.map((product) => product.brand))] : [];
 
   // Tạo danh sách màu sắc và kích thước duy nhất từ các biến thể sản phẩm
   const getUniqueVariantValues = (field) => {
@@ -370,24 +271,6 @@ const ProductTable = ({
 
   const uniqueColors = getUniqueVariantValues('color');
   const uniqueSizes = getUniqueVariantValues('size');
-  console.log('uniqueColors', uniqueColors);
-  console.log('uniqueSizes', uniqueSizes);
-
-  // Tính tổng số bộ lọc đang được áp dụng
-  const getActiveFiltersCount = () => {
-    let count = 0;
-    if (filters.search) count++;
-    if (filters.category) count++;
-    if (filters.brand) count++;
-    if (filters.minPrice || filters.maxPrice) count++;
-    if (filters.colors) count++;
-    if (filters.sizes) count++;
-    if (filters.featured) count++;
-    if (filters.inStock) count++;
-    return count;
-  };
-
-  const activeFiltersCount = getActiveFiltersCount();
 
   return (
     <div className='rounded-md bg-white p-4 shadow-sm'>
@@ -401,36 +284,20 @@ const ProductTable = ({
           <Button icon={<RefreshCw size={16} />} onClick={onRefresh} className='flex items-center'>
             Làm mới
           </Button>
-          {/* Nút toggle hiển thị bộ lọc */}
-          <Button
-            icon={<Filter size={16} />}
-            onClick={toggleFilterPanel}
-            type={isFilterOpen ? 'default' : 'dashed'}
-            className='flex items-center'
-          >
-            Bộ lọc{' '}
-            {Object.values(filters).some(
-              (value) =>
-                (Array.isArray(value) && value.length > 0) ||
-                (value !== null && value !== undefined && value !== false && value !== '' && value !== true)
-            ) ? (
-              <span className='ml-1 text-xs'>(đang áp dụng)</span>
-            ) : null}
-          </Button>
         </div>
 
         {/* Ô tìm kiếm sản phẩm */}
         <div className='flex flex-wrap items-center gap-2'>
           <Input
-            placeholder='Tìm kiếm sản phẩm...'
-            prefix={<Search size={16} color='#999' />}
-            value={searchText}
-            onChange={onSearchChange}
+            placeholder='Tìm kiếm danh mục...'
+            prefix={<Search />}
             style={{ width: 250 }}
+            value={searchText}
+            onChange={onSearch}
             allowClear
           />
 
-          {/* Dropdown sắp xếp */}
+          {/* Dropdown sắp xếp
           <Select placeholder='Sắp xếp theo' value={sortType} onChange={onSortChange} style={{ width: 180 }}>
             <Option value='latest'>Mới nhất</Option>
             <Option value='popular'>Phổ biến</Option>
@@ -438,153 +305,37 @@ const ProductTable = ({
             <Option value='price_asc'>Giá tăng dần</Option>
             <Option value='price_desc'>Giá giảm dần</Option>
             <Option value='rating'>Đánh giá</Option>
-          </Select>
+          </Select> */}
         </div>
       </div>
 
-      {/* Panel bộ lọc mở rộng */}
-      {isFilterOpen && (
-        <div className='mb-4 rounded-md border border-gray-200 bg-gray-50 p-4'>
-          <div className='mb-2 flex items-center justify-between'>
-            <h3 className='text-lg font-medium'>Bộ lọc nâng cao</h3>
-            <Button type='text' onClick={onClearFilters}>
-              Xóa bộ lọc
-            </Button>
-          </div>
-
-          <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
-            {/* Lọc theo danh mục */}
-            <div>
-              <h4 className='mb-2 font-medium'>Danh mục</h4>
-              <Select
-                placeholder='Chọn danh mục'
-                style={{ width: '100%' }}
-                value={filters.category}
-                onChange={(value) => onFilterChange('category', value)}
-                allowClear
-              >
-                {/* {facets?.categories?.map((cat) => (
-                  <Option key={cat._id} value={cat._id}>
-                    {cat.name} ({cat.count})
-                  </Option>
-                ))} */}
-              </Select>
-            </div>
-
-            {/* Lọc theo khoảng giá */}
-            <div>
-              <h4 className='mb-2 font-medium'>Khoảng giá</h4>
-              <Slider
-                range
-                min={0}
-                max={10000000}
-                value={priceRange}
-                onChange={handlePriceChange}
-                onAfterChange={handlePriceAfterChange}
-                tipFormatter={(value) => `${formatCurrency(value)}`}
-              />
-              <div className='flex items-center justify-between'>
-                <span>{formatCurrency(priceRange[0])}</span>
-                <span>{formatCurrency(priceRange[1])}</span>
-              </div>
-            </div>
-
-            {/* Các bộ lọc khác */}
-            <div>
-              <h4 className='mb-2 font-medium'>Trạng thái</h4>
-              <div className='flex flex-col gap-1'>
-                <Checkbox
-                  checked={filters.inStock === true}
-                  onChange={() => onToggleFilterValue('inStock', !filters.inStock)}
-                >
-                  Chỉ hiện sản phẩm còn hàng
-                </Checkbox>
-                <Checkbox
-                  checked={filters.featured === true}
-                  onChange={() => onToggleFilterValue('featured', !filters.featured)}
-                >
-                  Sản phẩm nổi bật
-                </Checkbox>
-                <Checkbox
-                  checked={filters.isActive === true}
-                  onChange={() => onFilterChange('isActive', !filters.isActive)}
-                >
-                  Chỉ hiện sản phẩm đang hoạt động
-                </Checkbox>
-              </div>
-            </div>
-
-            {/* Lọc theo size */}
-            {uniqueSizes && uniqueSizes.length > 0 && (
-              <div>
-                <h4 className='mb-2 font-medium'>Kích thước</h4>
-                <div className='flex max-h-40 flex-wrap gap-1 overflow-y-auto'>
-                  {uniqueSizes.map((size) => (
-                    <Tag
-                      key={size}
-                      color={filters.size?.includes(size) ? 'blue' : 'default'}
-                      className='cursor-pointer'
-                      onClick={() => onToggleFilterValue('size', size)}
-                    >
-                      {size} ({size?.count})
-                    </Tag>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Lọc theo màu sắc */}
-            {uniqueColors && uniqueColors.length > 0 && (
-              <div>
-                <h4 className='mb-2 font-medium'>Màu sắc</h4>
-                <div className='flex max-h-40 flex-wrap gap-1 overflow-y-auto'>
-                  {uniqueColors.map((color) => (
-                    <Tag
-                      key={color}
-                      color={filters.color?.includes(color) ? 'blue' : 'default'}
-                      className='cursor-pointer'
-                      onClick={() => onToggleFilterValue('color', color)}
-                    >
-                      {color} ({color?.count})
-                    </Tag>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Đánh giá */}
-            <div>
-              <h4 className='mb-2 font-medium'>Đánh giá</h4>
-              <Select
-                placeholder='Chọn đánh giá'
-                style={{ width: '100%' }}
-                value={filters.rating}
-                onChange={(value) => onFilterChange('rating', value)}
-                allowClear
-              >
-                <Option value={5}>5 sao</Option>
-                <Option value={4}>Từ 4 sao</Option>
-                <Option value={3}>Từ 3 sao</Option>
-                <Option value={2}>Từ 2 sao</Option>
-                <Option value={1}>Từ 1 sao</Option>
-              </Select>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Bảng danh sách sản phẩm */}
       <Table
+        bordered
         rowKey='_id'
         className='product-table rounded-lg border bg-white'
         rowSelection={rowSelection}
         scroll={{ x: 'max-content' }}
         columns={columns}
         dataSource={products}
-        pagination={false} // Tắt phân trang của antd, dùng component Pagination riêng
+        pagination={{
+          current: pagination.page,
+          pageSize: pagination.limit,
+          total: pagination.total,
+          position: ['bottomCenter'],
+          showSizeChanger: true,
+          // pageSizeOptions: ['5', '10', '20', '50'],
+          showTotal: (total) => `Tổng số ${total} danh mục`
+        }}
         loading={loading}
-        onChange={handleTableChange}
-        locale={{ emptyText: loading ? 'Đang tải dữ liệu...' : 'Không có dữ liệu' }}
+        onChange={onChange}
+        locale={{
+          emptyText: loading
+            ? 'Đang tải dữ liệu...'
+            : searchText
+              ? 'Không tìm thấy kết quả phù hợp'
+              : 'Không có dữ liệu'
+        }}
         title={() => (
           <div className='flex items-center justify-between rounded-t-lg'>
             <h3 className='text-lg font-bold'>Danh sách sản phẩm</h3>
@@ -599,7 +350,7 @@ const ProductTable = ({
       />
 
       {/* Phân trang custom */}
-      <div className='mt-4 flex flex-wrap items-center justify-between gap-2 px-4'>
+      {/* <div className='mt-4 flex flex-wrap items-center justify-between gap-2 px-4'>
         <div>
           <span className='text-sm text-gray-600'>
             Hiển thị {products?.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} -{' '}
@@ -623,7 +374,7 @@ const ProductTable = ({
             showSizeChanger={false}
           />
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

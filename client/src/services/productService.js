@@ -3,29 +3,41 @@ const BASE_API = '/api/product';
 
 // Lấy danh sách sản phẩm với các tùy chọn lọc, sắp xếp, phân trang
 export const getAllProductsAPI = (params) => {
-  // Xử lý các tham số định dạng đặc biệt
-  const queryParams = { ...params };
+  const {
+    page = 1,
+    limit = 10,
+    search,
+    category,
+    minPrice,
+    maxPrice,
+    featured,
+    isActive = 'true',
+    tags,
+    size,
+    color,
+    rating,
+    inStock,
+    sortBy,
+    sortOrder
+  } = params;
 
-  // Xử lý các mảng (chuyển thành chuỗi phân tách bởi dấu phẩy)
-  ['brand', 'size', 'color', 'tags'].forEach((param) => {
-    if (queryParams[param] && Array.isArray(queryParams[param]) && queryParams[param].length > 0) {
-      queryParams[param] = queryParams[param].join(',');
-    }
-  });
+  const queryParams = { page, limit };
 
-  // Xử lý các giá trị boolean, chuyển thành chuỗi 'true' hoặc 'false'
-  ['inStock', 'featured', 'isActive'].forEach((param) => {
-    if (queryParams[param] !== undefined) {
-      queryParams[param] = queryParams[param].toString();
-    }
-  });
-
-  // Xử lý giá trị số
-  ['rating', 'minPrice', 'maxPrice'].forEach((param) => {
-    if (queryParams[param] !== undefined && queryParams[param] !== null && queryParams[param] !== '') {
-      queryParams[param] = queryParams[param].toString();
-    }
-  });
+  // Thêm các tham số tìm kiếm và lọc nếu có
+  if (search) queryParams.search = search;
+  if (sortBy) queryParams.sortBy = sortBy;
+  if (sortOrder) queryParams.sortOrder = sortOrder;
+  if (category) queryParams.category = category;
+  if (tags) queryParams.tags = tags;
+  if (size) queryParams.size = size;
+  if (color) queryParams.color = color;
+  if (rating) queryParams.rating = rating;
+  if (featured) queryParams.featured = featured;
+  if (isActive) queryParams.isActive = isActive;
+  if (inStock) queryParams.inStock = inStock;
+  if (minPrice) queryParams.minPrice = minPrice;
+  if (maxPrice) queryParams.maxPrice = maxPrice;
+  console.log('queryParams', queryParams);
 
   // Sửa lỗi cú pháp khi gọi axios
   return axios.get(`${BASE_API}`, { params: queryParams });

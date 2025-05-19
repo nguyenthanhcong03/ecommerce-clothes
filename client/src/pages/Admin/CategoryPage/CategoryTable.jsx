@@ -137,7 +137,6 @@ const CategoryTable = ({
 
       {/* Bảng danh sách danh mục */}
       <Table
-        bordered
         scroll={{ x: 'max-content' }} // Cho phép cuộn ngang
         rowKey='_id'
         columns={columns}

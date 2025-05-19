@@ -1,53 +1,61 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
+  addProductReviewAPI,
+  createProductAPI,
+  deleteProductByIdAPI,
   getAllProductsAPI,
   getFeaturedProductsAPI,
   getProductByIdAPI,
-  createProductAPI,
-  updateProductByIdAPI,
-  deleteProductByIdAPI,
-  addProductReviewAPI,
-  getProductReviewsAPI
+  getProductReviewsAPI,
+  updateProductByIdAPI
 } from '../../services/productService';
-import { set } from 'react-hook-form';
+
+const initialState = {
+  products: [],
+  pagination: {
+    page: 1,
+    limit: 5,
+    total: 0,
+    totalPages: 0
+  },
+  filters: {
+    search: '',
+    category: null,
+    minPrice: null,
+    maxPrice: null,
+    size: [],
+    color: [],
+    rating: null,
+    tags: [],
+    inStock: false,
+    featured: false,
+    isActive: true
+  },
+  sort: {
+    sortType: 'latest',
+    sortBy: 'createdAt',
+    sortOrder: 'desc'
+  },
+  currentProduct: null,
+  productReviews: [],
+  totalReviews: 0,
+  isDetailModalOpen: false,
+  modalProductId: null,
+  loading: false,
+  error: null
+};
 
 // Định nghĩa async thunk để gọi API
-export const fetchProducts = createAsyncThunk(
-  'product/fetchProducts',
-  async (params, { getState, rejectWithValue }) => {
-    try {
-      // Nếu không có params được truyền vào, lấy từ state
-      if (!params) {
-        const state = getState().product; // Sửa từ products thành product
-        params = {
-          page: state.pagination.currentPage,
-          limit: state.pagination.pageSize,
-          sort: state.sort.sortBy,
-          order: state.sort.order,
-          search: state.filters.search || undefined,
-          category: state.filters.category || undefined,
-          brand: state.filters.brand,
-          minPrice: state.filters.minPrice || undefined,
-          maxPrice: state.filters.maxPrice || undefined,
-          size: state.filters.size,
-          color: state.filters.color,
-          rating: state.filters.rating || undefined,
-          tags: state.filters.tags,
-          inStock: state.filters.inStock || undefined,
-          featured: state.filters.featured || undefined
-        };
-      }
-
-      console.log('Params sent to API:', params);
-      const response = await getAllProductsAPI(params);
-      console.log('API Response:', response);
-      return response.data;
-    } catch (error) {
-      console.error('API error:', error);
-      return rejectWithValue(error.response?.data || { message: error.message });
-    }
+export const fetchProducts = createAsyncThunk('product/fetchProducts', async (params, { rejectWithValue }) => {
+  try {
+    const response = await getAllProductsAPI(params);
+    console.log('API Response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('API error:', error);
+    return rejectWithValue(error.response?.data || { message: error.message });
   }
-);
+});
 
 export const fetchProductById = createAsyncThunk('product/fetchProductById', async (id, { rejectWithValue }) => {
   try {
@@ -130,44 +138,9 @@ export const fetchProductReviews = createAsyncThunk(
 );
 
 const productSlice = createSlice({
-  name: 'product', // Sửa từ products thành product để khớp với tên trong store
-  initialState: {
-    products: [],
-    loading: false,
-    error: null,
-    pagination: {
-      currentPage: 1,
-      pageSize: 5,
-      totalProducts: 0,
-      totalPages: 0
-    },
-    filters: {
-      search: '',
-      category: null,
-      brand: [],
-      minPrice: null,
-      maxPrice: null,
-      size: [],
-      color: [],
-      rating: null,
-      tags: [],
-      inStock: false,
-      featured: false,
-      isActive: true // Default to showing only active products
-    },
-    sort: {
-      sortType: 'latest',
-      sortBy: 'createdAt',
-      order: 'desc'
-    },
-    currentProduct: null,
-    productReviews: [],
-    totalReviews: 0,
-    isDetailModalOpen: false,
-    modalProductId: null
-  },
+  name: 'product',
+  initialState: initialState,
   reducers: {
-    // Modal actions
     openProductDetailModal: (state, action) => {
       state.isDetailModalOpen = true;
       state.modalProductId = action.payload;
@@ -177,12 +150,8 @@ const productSlice = createSlice({
       state.modalProductId = null;
     },
 
-    // Filter actions
-    setFilter: (state, action) => {
-      const { name, value } = action.payload;
-      state.filters[name] = value;
-      // Reset to page 1 when filter changes
-      state.pagination.currentPage = 1;
+    setFilters: (state, action) => {
+      state.filters = { ...state.filters, ...action.payload };
     },
 
     toggleFilterValue: (state, action) => {
@@ -266,16 +235,6 @@ const productSlice = createSlice({
             state.sort.order = direction === 'asc' ? 'asc' : 'desc';
           }
       }
-    },
-
-    // Pagination actions
-    setPage: (state, action) => {
-      state.pagination.currentPage = action.payload;
-    },
-
-    setPageSize: (state, action) => {
-      state.pagination.pageSize = action.payload;
-      state.pagination.currentPage = 1; // Reset to first page when changing page size
     }
   },
   extraReducers: (builder) => {
@@ -287,17 +246,8 @@ const productSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
-
-        // Cập nhật danh sách sản phẩm từ cấu trúc API
         state.products = action.payload.products || [];
-
-        // Cập nhật phân trang
-        state.pagination = {
-          currentPage: action.payload.pagination?.page || 1,
-          pageSize: action.payload.pagination?.limit || 10,
-          totalProducts: action.payload.pagination?.totalProducts || 0,
-          totalPages: action.payload.pagination?.totalPages || 0
-        };
+        state.pagination = action.payload.pagination;
 
         // Lưu các filter đã áp dụng (nếu có)
         if (action.payload.filters) {
@@ -307,11 +257,6 @@ const productSlice = createSlice({
           // Chuyển đổi giá trị string từ API sang kiểu dữ liệu phù hợp
           if (apiFilters.search) state.filters.search = apiFilters.search;
           if (apiFilters.category) state.filters.category = apiFilters.category;
-
-          if (apiFilters.brand) {
-            // Xử lý nếu brand là chuỗi ngăn cách bởi dấu phẩy
-            state.filters.brand = apiFilters.brand.includes(',') ? apiFilters.brand.split(',') : [apiFilters.brand];
-          }
 
           if (apiFilters.size) {
             state.filters.size = apiFilters.size.includes(',') ? apiFilters.size.split(',') : [apiFilters.size];
@@ -432,12 +377,10 @@ const productSlice = createSlice({
 export const {
   openProductDetailModal,
   closeProductDetailModal,
-  setFilter,
+  setFilters,
   toggleFilterValue,
   clearFilters,
-  setSortType,
-  setPage,
-  setPageSize
+  setSortType
 } = productSlice.actions;
 
 export default productSlice.reducer;

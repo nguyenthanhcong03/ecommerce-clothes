@@ -7,25 +7,24 @@ const { default: mongoose } = require("mongoose");
 // Get all products
 const getAllProducts = async (req, res) => {
   try {
-    // Destructure query parameters with defaults
     const {
       page = 1,
       limit = 10,
-      sort = "createdAt",
-      order = "desc",
-      search = "",
-      category = "",
-      brand = "",
-      minPrice = "",
-      maxPrice = "",
-      featured = "",
+      search,
+      category,
+      minPrice,
+      maxPrice,
+      featured,
       isActive = "true",
-      tags = "",
-      size = "",
-      color = "",
-      rating = "", // Thêm trường rating
-      inStock = "", // Thêm trường inStock
+      tags,
+      size,
+      color,
+      rating,
+      inStock,
+      sortBy = "createdAt",
+      sortOrder = "desc",
     } = req.query;
+    console.log("req.query", req.query);
 
     // Convert page and limit to integers
     const pageNumber = parseInt(page);
@@ -34,87 +33,91 @@ const getAllProducts = async (req, res) => {
     // Calculate skip for pagination
     const skip = (pageNumber - 1) * limitNumber;
 
-    // Build filter object
-    const filter = {};
+    // Xây dựng query động dựa trên các tham số lọc
+    const query = {};
 
-    // Active products filter (default to showing only active products)
-    if (isActive !== "") {
-      filter.isActive = isActive === "true";
-    }
-
-    // Category filter
+    // Lọc theo danh mục
     if (category) {
-      filter.categoryId = category;
-    }
-
-    // Brand filter
-    if (brand) {
-      // If multiple brands are provided as comma-separated values
-      if (brand.includes(",")) {
-        filter.brand = { $in: brand.split(",") };
+      // Hỗ trợ nhiều danh mục (dạng mảng)
+      if (Array.isArray(category)) {
+        query.category = { $in: category };
       } else {
-        filter.brand = brand;
+        query.category = category;
       }
     }
 
-    // Featured products filter
-    if (featured !== "") {
-      filter.featured = featured === "true";
+    if (isActive !== "") {
+      query.isActive = isActive === "true";
     }
 
+    // if (featured !== "") {
+    //   query.featured = featured === "true";
+    // }
+
+    // Lọc theo khoảng giá
     // Price range filter
     const priceFilter = {};
-    if (minPrice !== "") {
-      priceFilter.$gte = parseFloat(minPrice);
-    }
-    if (maxPrice !== "") {
-      priceFilter.$lte = parseFloat(maxPrice);
+    if (minPrice || maxPrice) {
+      if (minAmount) {
+        priceFilter.$gte = parseFloat(minPrice);
+      }
+
+      if (maxAmount) {
+        priceFilter.$lte = parseFloat(maxPrice);
+      }
     }
 
     if (Object.keys(priceFilter).length > 0) {
       filter["variants.price"] = priceFilter;
     }
 
-    // Tags filter
+    // Lọc theo tags
     if (tags) {
-      filter.tags = { $in: tags.split(",") };
-    }
-
-    // Size filter - chấp nhận nhiều size ngăn cách bởi dấu phẩy
-    if (size) {
-      if (size.includes(",")) {
-        filter["variants.size"] = { $in: size.split(",") };
+      // Hỗ trợ nhiều tags (dạng mảng)
+      if (Array.isArray(tags)) {
+        query.tags = { $in: tags };
       } else {
-        filter["variants.size"] = size;
+        query.tags = tags;
       }
     }
 
-    // Color filter - chấp nhận nhiều color ngăn cách bởi dấu phẩy
-    if (color) {
-      if (color.includes(",")) {
-        filter["variants.color"] = { $in: color.split(",") };
+    // Lọc theo size
+    if (size) {
+      // Hỗ trợ nhiều size (dạng mảng)
+      if (Array.isArray(size)) {
+        query["variants.size"] = { $in: size };
       } else {
-        filter["variants.color"] = color;
+        query["variants.size"] = size;
+      }
+    }
+
+    // Lọc theo color
+    if (color) {
+      // Hỗ trợ nhiều color (dạng mảng)
+      if (Array.isArray(color)) {
+        query["variants.color"] = { $in: color };
+      } else {
+        query["variants.color"] = color;
       }
     }
 
     // Rating filter - lọc sản phẩm có rating >= giá trị đã cho
-    if (rating !== "") {
-      filter.averageRating = { $gte: parseFloat(rating) };
+    if (rating) {
+      query.averageRating = { $gte: parseFloat(rating) };
     }
 
     // InStock filter - chỉ hiển thị sản phẩm còn hàng
     if (inStock !== "") {
       if (inStock === "true") {
-        filter["variants.countInStock"] = { $gt: 0 };
+        query["variants.countInStock"] = { $gt: 0 };
       } else if (inStock === "false") {
-        filter["variants.countInStock"] = { $lte: 0 };
+        query["variants.countInStock"] = { $lte: 0 };
       }
     }
 
     // Text search if provided
     if (search) {
-      filter.$or = [
+      query.$or = [
         { name: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
         { tags: { $in: [new RegExp(search, "i")] } },
@@ -132,33 +135,34 @@ const getAllProducts = async (req, res) => {
     }
 
     // Determine sort options
-    const sortOptions = {};
+    const sort = {};
 
     // Handle special sorts
-    if (sort === "price") {
+    if (sortBy === "price") {
       // Sort by the lowest price in the variants
-      sortOptions["variants.price"] = order === "asc" ? 1 : -1;
-    } else if (sort === "popularity") {
+      sort["variants.price"] = sortOrder === "asc" ? 1 : -1;
+    } else if (sortBy === "popularity") {
       // Sort by sales count
-      sortOptions.salesCount = order === "asc" ? 1 : -1;
-    } else if (sort === "rating") {
+      sort.salesCount = sortOrder === "asc" ? 1 : -1;
+    } else if (sortBy === "rating") {
       // Sort by average rating
-      sortOptions.averageRating = order === "asc" ? 1 : -1;
+      sort.averageRating = sortOrder === "asc" ? 1 : -1;
     } else {
       // Default sorting by any field
-      sortOptions[sort] = order === "asc" ? 1 : -1;
+      sort[sortBy] = sortOrder === "asc" ? 1 : -1;
     }
+    console.log("query database", query);
 
     // Execute query with pagination
-    const products = await Product.find(filter)
+    const products = await Product.find(query)
       .populate("categoryId", "name slug") // Populate category data
-      .sort(sortOptions)
+      .sort(sort)
       .skip(skip)
       .limit(limitNumber)
       .lean(); // Convert to plain JS objects for better performance
 
     // Get total count for pagination
-    const totalProducts = await Product.countDocuments(filter);
+    const totalProducts = await Product.countDocuments(query);
 
     // Calculate total pages
     const totalPages = Math.ceil(totalProducts / limitNumber);
@@ -168,26 +172,10 @@ const getAllProducts = async (req, res) => {
       data: {
         products,
         pagination: {
-          page: pageNumber,
-          limit: limitNumber,
-          totalProducts,
-          totalPages,
-          hasNextPage: pageNumber < totalPages,
-          hasPrevPage: pageNumber > 1,
-        },
-        filters: {
-          search: search || null,
-          category: category || null,
-          brand: brand || null,
-          minPrice: minPrice || null,
-          maxPrice: maxPrice || null,
-          featured: featured || null,
-          isActive: isActive || null,
-          size: size || null,
-          color: color || null,
-          rating: rating || null,
-          inStock: inStock || null,
-          tags: tags || null,
+          total: totalProducts,
+          page: Number(pageNumber),
+          limit: Number(limitNumber),
+          totalPages: Math.ceil(totalPages / limitNumber),
         },
       },
     });

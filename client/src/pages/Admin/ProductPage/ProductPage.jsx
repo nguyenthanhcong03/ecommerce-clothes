@@ -15,13 +15,19 @@ import ProductTable from './ProductTable';
 
 const ProductPage = () => {
   const dispatch = useDispatch();
+  const { products, loading, pagination, error } = useSelector((state) => state.product);
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  // Lấy các state từ redux
-  const { products, loading, pagination, error } = useSelector((state) => state.product);
+  const [searchText, setSearchText] = useState('');
+  const [minPrice, setMinPrice] = useState(null);
+  const [maxPrice, setMaxPrice] = useState(null);
+  const [sortInfo, setSortInfo] = useState({
+    sortType: 'latest', // Mặc định sắp xếp theo mới nhất
+    field: 'createdAt',
+    order: 'descend'
+  });
 
-  // Local state để quản lý bộ lọc, sắp xếp và phân trang
   const [filters, setFilters] = useState({
     search: '',
     category: null,
@@ -37,113 +43,89 @@ const ProductPage = () => {
     isActive: true // Mặc định chỉ hiện sản phẩm đang hoạt động
   });
 
-  const [sort, setSort] = useState({
-    sortType: 'latest',
-    sortBy: 'createdAt',
-    order: 'desc'
-  });
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
-
   // Áp dụng debounce cho search để tránh gọi API quá nhiều
-  const debouncedSearchText = useDebounce(filters.search, 500);
-  const debouncedMinPrice = useDebounce(filters.minPrice, 800);
-  const debouncedMaxPrice = useDebounce(filters.maxPrice, 800);
+  const debouncedSearchText = useDebounce(searchText, 500);
+  const debouncedMinPrice = useDebounce(minPrice, 800);
+  const debouncedMaxPrice = useDebounce(maxPrice, 800);
 
-  // Tạo params cho API từ state với các giá trị đã debounce
-  const apiParams = useMemo(() => {
-    // Lọc ra các giá trị undefined và null
-    const params = {
-      page: currentPage,
-      limit: pageSize,
-      search: debouncedSearchText,
-      category: filters.category,
-      brand: filters.brand,
-      minPrice: debouncedMinPrice,
-      maxPrice: debouncedMaxPrice,
-      size: filters.size,
-      color: filters.color,
-      rating: filters.rating,
-      tags: filters.tags,
-      inStock: filters.inStock || undefined,
-      featured: filters.featured || undefined,
-      isActive: filters.isActive
-    };
+  // Tạo params cho API từ state
+  const fetchAllProducts = useCallback(
+    (params = {}) => {
+      const queryParams = {
+        page: params.page || pagination.page || 1,
+        limit: params.limit || pagination.limit || 10,
+        search: params.search !== undefined ? params.search : debouncedSearchText,
+        sortBy: params.sortBy || sortInfo.field,
+        sortOrder: params.sortOrder === 'ascend' ? 'asc' : 'desc',
+        category: params.category,
+        minPrice: debouncedMinPrice,
+        maxPrice: debouncedMaxPrice,
+        size: params.size,
+        color: params.color,
+        rating: params.rating,
+        tags: params.tags,
+        inStock: params.inStock || undefined,
+        featured: params.featured || undefined,
+        isActive: params.isActive
+      };
 
-    // Xử lý sắp xếp dựa vào sortType
-    if (sort.sortType) {
-      switch (sort.sortType) {
-        case 'latest':
-          params.sort = 'createdAt';
-          params.order = 'desc';
-          break;
-        case 'popular':
-          params.sort = 'viewCount';
-          params.order = 'desc';
-          break;
-        case 'top_sales':
-          params.sort = 'salesCount';
-          params.order = 'desc';
-          break;
-        case 'price_asc':
-          params.sort = 'price';
-          params.order = 'asc';
-          break;
-        case 'price_desc':
-          params.sort = 'price';
-          params.order = 'desc';
-          break;
-        case 'rating':
-          params.sort = 'averageRating';
-          params.order = 'desc';
-          break;
-        default:
-          params.sort = sort.sortBy;
-          params.order = sort.order;
+      // Xử lý sắp xếp dựa vào sortType
+      if (sortInfo.sortType) {
+        switch (sortInfo.sortType) {
+          case 'latest':
+            params.sort = 'createdAt';
+            params.order = 'desc';
+            break;
+          case 'popular':
+            params.sort = 'viewCount';
+            params.order = 'desc';
+            break;
+          case 'top_sales':
+            params.sort = 'salesCount';
+            params.order = 'desc';
+            break;
+          case 'price_asc':
+            params.sort = 'price';
+            params.order = 'asc';
+            break;
+          case 'price_desc':
+            params.sort = 'price';
+            params.order = 'desc';
+            break;
+          case 'rating':
+            params.sort = 'averageRating';
+            params.order = 'desc';
+            break;
+          default:
+            params.sort = sortInfo.sortBy;
+            params.order = sortInfo.order;
+        }
       }
-    }
 
-    // Loại bỏ các giá trị rỗng
-    Object.keys(params).forEach((key) => {
-      if (
-        params[key] === null ||
-        params[key] === undefined ||
-        (Array.isArray(params[key]) && params[key].length === 0) ||
-        params[key] === ''
-      ) {
-        delete params[key];
-      }
-    });
+      // Loại bỏ các tham số undefined
+      Object.keys(queryParams).forEach((key) => {
+        if (queryParams[key] === undefined) {
+          delete queryParams[key];
+        }
+      });
+      console.log('quaryParams', queryParams);
+      // // Xử lý trường hợp có nhiều giá trị isActive (mảng)
+      // if (Array.isArray(queryParams.isActive) && queryParams.isActive.length === 2) {
+      //   // Nếu chọn cả "active" và "inactive", không cần lọc theo trạng thái
+      //   delete queryParams.isActive;
+      // }
 
-    return params;
-  }, [
-    currentPage,
-    pageSize,
-    debouncedSearchText,
-    filters.category,
-    filters.brand,
-    debouncedMinPrice,
-    debouncedMaxPrice,
-    filters.size,
-    filters.color,
-    filters.rating,
-    filters.tags,
-    filters.inStock,
-    filters.featured,
-    filters.isActive,
-    sort
-  ]);
+      dispatch(fetchProducts(queryParams));
+    },
+    [dispatch, pagination.page, pagination.limit, debouncedSearchText, sortInfo.field]
+  );
 
-  // Function để fetch products - tách riêng để có thể gọi lại khi cần
-  const fetchProductsData = useCallback(() => {
-    dispatch(fetchProducts(apiParams));
-  }, [dispatch, apiParams]);
-
-  // Load sản phẩm khi params thay đổi
+  const handleSearch = (e) => {
+    setSearchText(e.target.value);
+  };
   useEffect(() => {
-    fetchProductsData();
-  }, [fetchProductsData]);
+    fetchAllProducts();
+  }, []);
 
   // Hiển thị lỗi nếu có
   useEffect(() => {
@@ -152,98 +134,43 @@ const ProductPage = () => {
     }
   }, [error]);
 
-  // Các handlers cho các hành động lọc
-  const handleSetFilter = useCallback((name, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [name]: value
-    }));
+  const handleTableChange = (pagination, filters, sorter) => {
+    console.log('filters', filters);
+    const params = {
+      page: pagination.current,
+      limit: pagination.pageSize,
+      sortBy: sorter.field || 'createdAt',
+      sortOrder: sorter.order || 'descend',
+      status: filters.status ? filters.status : undefined,
+      paymentStatus: filters['payment.isPaid'] ? filters['payment.isPaid'] : undefined,
+      paymentMethod: filters['payment.method'] ? filters['payment.method'] : undefined
+    };
 
-    // Reset về trang 1 khi thay đổi bộ lọc
-    setCurrentPage(1);
-  }, []);
+    // Lưu giá trị filters vào Redux và state
+    dispatch(
+      setFilters({
+        status: params.status,
+        paymentStatus: params.paymentStatus,
+        paymentMethod: params.paymentMethod
+      })
+    );
 
-  const handleToggleFilterValue = useCallback((name, value) => {
-    setFilters((prev) => {
-      // Xử lý cho các trường dạng mảng như brand, size, color
-      if (Array.isArray(prev[name])) {
-        const currentValues = [...prev[name]];
-        const index = currentValues.indexOf(value);
+    // Lưu thông tin filters hiện tại để có thể đặt lại sau này
+    setFilteredInfo(filters);
 
-        if (index !== -1) {
-          // Nếu giá trị đã tồn tại thì xóa đi
-          currentValues.splice(index, 1);
-        } else {
-          // Nếu giá trị chưa tồn tại thì thêm vào
-          currentValues.push(value);
-        }
-
-        return {
-          ...prev,
-          [name]: currentValues
-        };
-      }
-      // Xử lý cho các trường dạng boolean như inStock, featured
-      else if (typeof prev[name] === 'boolean') {
-        return {
-          ...prev,
-          [name]: !prev[name]
-        };
-      }
-
-      // Trường hợp mặc định
-      return prev;
+    // Lưu thông tin sort
+    setSortInfo({
+      field: params.sortBy,
+      order: params.sortOrder
     });
+    console.log('paymentStatus', params.paymentStatus);
 
-    // Reset về trang 1 khi thay đổi bộ lọc
-    setCurrentPage(1);
-  }, []);
-
-  const handleClearFilters = useCallback(() => {
-    setFilters({
-      search: '',
-      category: null,
-      brand: [],
-      minPrice: null,
-      maxPrice: null,
-      size: [],
-      color: [],
-      rating: null,
-      tags: [],
-      inStock: false,
-      featured: false,
-      isActive: true // Giữ lại mặc định chỉ hiện sản phẩm đang hoạt động
-    });
-    setCurrentPage(1);
-  }, []);
-
-  const handleSetSortType = useCallback((sortType) => {
-    setSort((prev) => ({
-      ...prev,
-      sortType
-    }));
-  }, []);
-
-  const handleSetPage = useCallback((page) => {
-    setCurrentPage(page);
-  }, []);
-
-  const handleSetPageSize = useCallback((size) => {
-    setPageSize(size);
-    setCurrentPage(1); // Reset về trang đầu tiên khi thay đổi số lượng item mỗi trang
-  }, []);
-
-  const handleSearchChange = useCallback(
-    (e) => {
-      const searchValue = e.target.value;
-      handleSetFilter('search', searchValue);
-    },
-    [handleSetFilter]
-  );
+    fetchAllOrders(params);
+  };
 
   const handleRefresh = useCallback(() => {
-    fetchProductsData();
-  }, [fetchProductsData]);
+    fetchProducts();
+  }, []);
 
   // Tính toán các thống kê về sản phẩm
   const productStats = useMemo(() => {
@@ -333,25 +260,16 @@ const ProductPage = () => {
         >
           <ProductTable
             products={products}
+            pagination={pagination}
+            onChange={handleTableChange}
+            onSearch={handleSearch}
+            searchText={searchText}
             loading={loading}
-            searchText={filters.search}
-            currentPage={currentPage}
-            pageSize={pageSize}
-            totalItems={pagination?.totalProducts || 0}
-            totalPages={pagination?.totalPages || 0}
-            sortType={sort.sortType}
-            filters={filters}
-            onPageChange={handleSetPage}
-            onPageSizeChange={handleSetPageSize}
-            onSearchChange={handleSearchChange}
-            onSortChange={handleSetSortType}
-            onFilterChange={handleSetFilter}
-            onToggleFilterValue={handleToggleFilterValue}
-            onClearFilters={handleClearFilters}
             onRefresh={handleRefresh}
             onDelete={handleDeleteProduct}
             onEdit={handleOpenFormEditProduct}
             onAdd={handleOpenFormAddProduct}
+            filters={filters}
           />
         </motion.div>
 

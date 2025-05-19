@@ -1,29 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { getAllOrdersAPI, updateOrderStatusAPI } from '../../services/orderService.js';
 
-export const fetchOrders = createAsyncThunk('orders/fetchOrders', async (params, { rejectWithValue }) => {
-  try {
-    const data = await getAllOrdersAPI(params);
-    console.log('orders', data);
-    return data;
-  } catch (error) {
-    return rejectWithValue(error.response?.data || error.message);
-  }
-});
-
-export const updateOrderStatus = createAsyncThunk(
-  'orders/updateOrderStatus',
-  async ({ orderId, status }, { rejectWithValue }) => {
-    try {
-      const response = await updateOrderStatusAPI(orderId, status);
-      console.log('da', response);
-      return response;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
-    }
-  }
-);
-
 // Trạng thái ban đầu
 const initialState = {
   orders: [],
@@ -51,6 +28,29 @@ const initialState = {
   loading: false,
   error: null
 };
+
+export const fetchOrders = createAsyncThunk('orders/fetchOrders', async (params, { rejectWithValue }) => {
+  try {
+    const data = await getAllOrdersAPI(params);
+    console.log('orders', data);
+    return data;
+  } catch (error) {
+    return rejectWithValue(error.response?.data || error.message);
+  }
+});
+
+export const updateOrderStatus = createAsyncThunk(
+  'orders/updateOrderStatus',
+  async ({ orderId, status }, { rejectWithValue }) => {
+    try {
+      const response = await updateOrderStatusAPI(orderId, status);
+      console.log('da', response);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
 
 const adminOrderSlice = createSlice({
   name: 'adminOrder',

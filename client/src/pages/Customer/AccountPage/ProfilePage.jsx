@@ -6,11 +6,11 @@ import * as yup from 'yup';
 import { toast } from 'react-toastify';
 import { fetchUserById, updateUser } from '@/store/slices/userSlice';
 import { UserOutlined, MailOutlined, PhoneOutlined, CalendarOutlined } from '@ant-design/icons';
-import Button from '@/components/common/Button/Button';
 import avatarDefault from '@/assets/images/user.png';
 import Input from '@/components/common/Input/Input';
 import Select from '@/components/common/Select/Select';
 import { uploadFile } from '@/services/fileService';
+import Button from '@/components/common/Button/Button';
 
 // Schema xác thực cho form cập nhật thông tin cá nhân
 const profileSchema = yup.object({

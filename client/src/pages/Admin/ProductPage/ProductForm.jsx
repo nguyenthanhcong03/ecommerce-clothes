@@ -1,3 +1,4 @@
+import { colorOptions, sizeOptions } from '@/constants/colors';
 import { deleteMultipleFiles, uploadMultipleFiles } from '@/services/fileService';
 import { fetchCategories } from '@/store/slices/categorySlice';
 import { createProduct, updateProductById } from '@/store/slices/productSlice';
@@ -286,103 +287,104 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
   // Xử lý submission form với upload files
   const onSubmit = useCallback(
     async (data) => {
-      try {
-        setUploading(true);
+      console.log('Submitting data:', data);
+      // try {
+      //   setUploading(true);
 
-        // Xử lý hình ảnh sản phẩm chính - tải lên cái mới, giữ lại cái cũ
-        let processedImages = [...data.images];
-        if (localFiles.length > 0) {
-          // Kết hợp hình ảnh cũ (không có originFileObj) với hình ảnh mới (có originFileObj)
-          const combinedFiles = [...data.images.filter((img) => !img.originFileObj), ...localFiles];
-          processedImages = await uploadFiles(combinedFiles);
-        }
+      //   // Xử lý hình ảnh sản phẩm chính - tải lên cái mới, giữ lại cái cũ
+      //   let processedImages = [...data.images];
+      //   if (localFiles.length > 0) {
+      //     // Kết hợp hình ảnh cũ (không có originFileObj) với hình ảnh mới (có originFileObj)
+      //     const combinedFiles = [...data.images.filter((img) => !img.originFileObj), ...localFiles];
+      //     processedImages = await uploadFiles(combinedFiles);
+      //   }
 
-        // Xử lý biến thể và hình ảnh của chúng
-        const processedVariants = await Promise.all(
-          data.variants.map(async (variant, index) => {
-            let variantImages = variant.images || [];
+      //   // Xử lý biến thể và hình ảnh của chúng
+      //   const processedVariants = await Promise.all(
+      //     data.variants.map(async (variant, index) => {
+      //       let variantImages = variant.images || [];
 
-            // Nếu có file ảnh mới cho biến thể này
-            if (variantLocalFiles[index] && variantLocalFiles[index].length > 0) {
-              const variantCombinedFiles = [
-                ...(variant.images || []).filter((img) => !img.originFileObj),
-                ...variantLocalFiles[index]
-              ];
-              variantImages = await uploadFiles(variantCombinedFiles);
-            }
+      //       // Nếu có file ảnh mới cho biến thể này
+      //       if (variantLocalFiles[index] && variantLocalFiles[index].length > 0) {
+      //         const variantCombinedFiles = [
+      //           ...(variant.images || []).filter((img) => !img.originFileObj),
+      //           ...variantLocalFiles[index]
+      //         ];
+      //         variantImages = await uploadFiles(variantCombinedFiles);
+      //       }
 
-            return {
-              ...variant,
-              images: variantImages.map((file) => (typeof file === 'string' ? file : file.url))
-            };
-          })
-        );
+      //       return {
+      //         ...variant,
+      //         images: variantImages.map((file) => (typeof file === 'string' ? file : file.url))
+      //       };
+      //     })
+      //   );
 
-        // Chuẩn bị dữ liệu để gửi
-        const formData = {
-          name: data.name,
-          description: data.description || '',
-          categoryId: data.categoryId,
-          brand: data.brand,
-          variants: processedVariants,
-          isActive: data.isActive,
-          images: processedImages.map((file) => (typeof file === 'string' ? file : file.url)),
-          tags: data.tags || []
-        };
+      //   // Chuẩn bị dữ liệu để gửi
+      //   const formData = {
+      //     name: data.name,
+      //     description: data.description || '',
+      //     categoryId: data.categoryId,
+      //     brand: data.brand,
+      //     variants: processedVariants,
+      //     isActive: data.isActive,
+      //     images: processedImages.map((file) => (typeof file === 'string' ? file : file.url)),
+      //     tags: data.tags || []
+      //   };
 
-        console.log('formData', formData);
+      //   console.log('formData', formData);
 
-        // Xử lý xóa hình ảnh khi cập nhật
-        if (selectedProduct) {
-          // Xóa ảnh sản phẩm chính không còn được sử dụng
-          const oldImages = selectedProduct.images || [];
-          const currentImageUrls = processedImages.map((img) => (typeof img === 'string' ? img : img.url));
-          const deletedImages = oldImages.filter((img) => !currentImageUrls.includes(img));
+      //   // Xử lý xóa hình ảnh khi cập nhật
+      //   if (selectedProduct) {
+      //     // Xóa ảnh sản phẩm chính không còn được sử dụng
+      //     const oldImages = selectedProduct.images || [];
+      //     const currentImageUrls = processedImages.map((img) => (typeof img === 'string' ? img : img.url));
+      //     const deletedImages = oldImages.filter((img) => !currentImageUrls.includes(img));
 
-          // Xóa ảnh biến thể không còn được sử dụng
-          const oldVariantImages =
-            selectedProduct.variants?.reduce((acc, variant) => {
-              if (variant.images && variant.images.length > 0) {
-                acc.push(...variant.images);
-              }
-              return acc;
-            }, []) || [];
+      //     // Xóa ảnh biến thể không còn được sử dụng
+      //     const oldVariantImages =
+      //       selectedProduct.variants?.reduce((acc, variant) => {
+      //         if (variant.images && variant.images.length > 0) {
+      //           acc.push(...variant.images);
+      //         }
+      //         return acc;
+      //       }, []) || [];
 
-          const currentVariantImageUrls = processedVariants.reduce((acc, variant) => {
-            if (variant.images && variant.images.length > 0) {
-              acc.push(...variant.images);
-            }
-            return acc;
-          }, []);
+      //     const currentVariantImageUrls = processedVariants.reduce((acc, variant) => {
+      //       if (variant.images && variant.images.length > 0) {
+      //         acc.push(...variant.images);
+      //       }
+      //       return acc;
+      //     }, []);
 
-          const deletedVariantImages = oldVariantImages.filter((img) => !currentVariantImageUrls.includes(img));
+      //     const deletedVariantImages = oldVariantImages.filter((img) => !currentVariantImageUrls.includes(img));
 
-          // Tổng hợp tất cả ảnh cần xóa
-          const allDeletedImages = [...deletedImages, ...deletedVariantImages];
+      //     // Tổng hợp tất cả ảnh cần xóa
+      //     const allDeletedImages = [...deletedImages, ...deletedVariantImages];
 
-          if (allDeletedImages.length > 0) {
-            try {
-              await deleteMultipleFiles(allDeletedImages.map((img) => img.public_id || img));
-            } catch (deleteErr) {
-              console.error('Lỗi khi xóa ảnh:', deleteErr);
-            }
-          }
+      //     if (allDeletedImages.length > 0) {
+      //       try {
+      //         await deleteMultipleFiles(allDeletedImages.map((img) => img.public_id || img));
+      //       } catch (deleteErr) {
+      //         console.error('Lỗi khi xóa ảnh:', deleteErr);
+      //       }
+      //     }
 
-          await handleUpdateProduct(formData);
-        } else {
-          await handleAddProduct(formData);
-        }
+      //     await handleUpdateProduct(formData);
+      //   } else {
+      //     await handleAddProduct(formData);
+      //   }
 
-        // Đặt lại local files sau khi gửi thành công
-        setLocalFiles([]);
-        setVariantLocalFiles([]);
-        onClose(); // Đóng form sau khi hoàn tất
-      } catch (error) {
-        console.error('Error:', error);
-        message.error('Có lỗi xảy ra khi xử lý sản phẩm.');
-      } finally {
-        setUploading(false);
-      }
+      //   // Đặt lại local files sau khi gửi thành công
+      //   setLocalFiles([]);
+      //   setVariantLocalFiles([]);
+      //   onClose(); // Đóng form sau khi hoàn tất
+      // } catch (error) {
+      //   console.error('Error:', error);
+      //   message.error('Có lỗi xảy ra khi xử lý sản phẩm.');
+      // } finally {
+      //   setUploading(false);
+      // }
     },
     [localFiles, variantLocalFiles, selectedProduct, handleUpdateProduct, handleAddProduct, uploadFiles, onClose]
   );
@@ -569,9 +571,11 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
                     name={`variants[${index}].size`}
                     control={control}
                     render={({ field }) => (
-                      <Input
+                      <Select
                         {...field}
-                        placeholder='Nhập kích thước (ví dụ: S, M, L, XL)'
+                        value={field.value || undefined}
+                        options={sizeOptions}
+                        placeholder='Chọn size'
                         disabled={uploading || loading}
                       />
                     )}
@@ -585,7 +589,18 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
                     name={`variants[${index}].color`}
                     control={control}
                     render={({ field }) => (
-                      <Input {...field} placeholder='Nhập màu sắc' disabled={uploading || loading} />
+                      <Select
+                        {...field}
+                        value={field.value || undefined}
+                        placeholder='Chọn màu sắc'
+                        disabled={uploading || loading}
+                      >
+                        {colorOptions.map((color) => (
+                          <Option key={color.hex} value={color.name}>
+                            {color.name}
+                          </Option>
+                        ))}
+                      </Select>
                     )}
                   />
                 </Form.Item>
