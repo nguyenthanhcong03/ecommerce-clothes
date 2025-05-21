@@ -1,17 +1,20 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { Facebook, Heart, ShoppingCart, Star } from 'lucide-react';
 import Button from '@/components/common/Button/Button';
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
 import { addToCart } from '@/store/slices/cartSlice';
 import { fetchProductById } from '@/store/slices/productSlice';
 import { setDirectBuyItem } from '@/store/slices/orderSlice';
-import { Facebook, Heart, ShoppingCart, Star } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
+import Collapse from '@/components/common/Collapse/Collapse';
+import { setOrderItems } from '@/store/slices/orderSlice';
+import { getCategoryPath } from '@/utils/getCategoryPath';
+import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import facebook from '@/assets/icons/facebook.png';
 import instagram from '@/assets/icons/instagram.png';
 import messenger from '@/assets/icons/messenger.png';
-import Collapse from '../../../components/common/Collapse/Collapse';
-import { setOrderItems } from '../../../store/slices/orderSlice';
+import { getCategoriesTree } from '@/store/slices/categorySlice';
 
 const getImageUrl = (image) => {
   return typeof image === 'string' ? image : image?.url || '';
@@ -22,6 +25,7 @@ const DetailProduct = () => {
   const dispatch = useDispatch();
   const { id } = useParams();
   const { currentProduct: product, status } = useSelector((state) => state.product);
+  const { categoriesTree } = useSelector((state) => state.category);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -29,10 +33,38 @@ const DetailProduct = () => {
   const [showValidation, setShowValidation] = useState(false);
 
   useEffect(() => {
+    dispatch(getCategoriesTree());
+  }, [dispatch]);
+
+  useEffect(() => {
     if (id) {
       dispatch(fetchProductById(id));
     }
   }, [dispatch, id]);
+
+  // Generate breadcrumb items
+  const breadcrumbItems = useMemo(() => {
+    const items = [
+      {
+        label: 'Cửa hàng',
+        path: '/shop'
+      }
+    ];
+    if (product?.categoryId?._id && categoriesTree) {
+      const categoryPath = getCategoryPath(categoriesTree, product.categoryId._id);
+      const pathItems = categoryPath.map((cat, index) => ({
+        label: cat.name,
+        path: index === categoryPath.length - 1 ? null : `/shop/${cat.slug}/${cat._id}`
+      }));
+      items.push(...pathItems);
+    }
+
+    if (product) {
+      items.push({ label: product.name, path: null });
+    }
+
+    return items;
+  }, [product, categoriesTree]);
 
   // Tính toán available options
   const variantOptions = useMemo(() => {
@@ -161,38 +193,38 @@ const DetailProduct = () => {
     setShowValidation(false);
   };
 
-  const handleProceedToCheckout = () => {
-    if (!selectedSize || !selectedColor) {
-      setShowValidation(true);
-      return;
-    }
-    const selectedVariant = product.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
+  // const handleProceedToCheckout = () => {
+  //   if (!selectedSize || !selectedColor) {
+  //     setShowValidation(true);
+  //     return;
+  //   }
+  //   const selectedVariant = product.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
 
-    const orderItems = [
-      {
-        productId: product._id,
-        variantId: selectedVariant._id,
-        quantity: quantity,
-        snapshot: {
-          name: product.name,
-          price: selectedVariant.price,
-          discountPrice: selectedVariant.discountPrice,
-          color: selectedVariant.color,
-          size: selectedVariant.size,
-          image:
-            selectedVariant.images && selectedVariant.images.length > 0 ? selectedVariant.images[0] : product.images[0]
-        }
-      }
-    ];
-    // Lưu các sản phẩm đã chọn vào localStorage
-    localStorage.setItem('orderItems', JSON.stringify(orderItems));
+  //   const orderItems = [
+  //     {
+  //       productId: product._id,
+  //       variantId: selectedVariant._id,
+  //       quantity: quantity,
+  //       snapshot: {
+  //         name: product.name,
+  //         price: selectedVariant.price,
+  //         discountPrice: selectedVariant.discountPrice,
+  //         color: selectedVariant.color,
+  //         size: selectedVariant.size,
+  //         image:
+  //           selectedVariant.images && selectedVariant.images.length > 0 ? selectedVariant.images[0] : product.images[0]
+  //       }
+  //     }
+  //   ];
+  //   // Lưu các sản phẩm đã chọn vào localStorage
+  //   localStorage.setItem('orderItems', JSON.stringify(orderItems));
 
-    // Đặt các sản phẩm đã chọn vào trạng thái đơn hàng
-    dispatch(setOrderItems(orderItems));
+  //   // Đặt các sản phẩm đã chọn vào trạng thái đơn hàng
+  //   dispatch(setOrderItems(orderItems));
 
-    // Chuyển hướng đến trang thanh toán
-    navigate('/checkout');
-  };
+  //   // Chuyển hướng đến trang thanh toán
+  //   navigate('/checkout');
+  // };
 
   // Hàm xử lý sự kiện khi nhấn nút "Mua ngay"
   const handleBuyNow = () => {
@@ -269,7 +301,9 @@ const DetailProduct = () => {
   return (
     <div className='mx-auto mt-[60px] w-full max-w-[1280px] px-4 py-4 sm:mt-[80px] md:p-4'>
       {/* Breadcrumb */}
-      <div className='mb-4 overflow-x-auto sm:mb-6'></div>
+      <div className='mb-4 overflow-x-auto sm:mb-6'>
+        <Breadcrumb separator='/' items={breadcrumbItems} />
+      </div>
       <div className='mx-auto'>
         <div className='flex flex-col flex-wrap md:flex-row'>
           {/* Left Column - Product Images */}

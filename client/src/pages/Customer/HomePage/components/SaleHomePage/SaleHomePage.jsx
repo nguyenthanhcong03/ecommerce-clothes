@@ -6,7 +6,7 @@ function SaleHomePage() {
   const { translateXPosition } = useTranslateXImage();
 
   return (
-    <div className='mb-10 flex items-center justify-center'>
+    <div className='flex items-center justify-center'>
       <div
         className='hidden sm:block'
         style={{ transform: `translateX(${translateXPosition}px)`, transition: 'transform 0.5s ease-in' }}

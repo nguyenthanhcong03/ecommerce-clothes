@@ -72,6 +72,7 @@ const withSuspense = (Component) => (
 const publicRoutes = [
   { index: true, element: <HomePage /> },
   { path: 'about', element: <AboutPage /> },
+  { path: 'shop', element: <OurShopPage /> },
   { path: 'shop/:slug/:catId', element: <OurShopPage /> },
   { path: 'news', element: <NewsPage /> },
   { path: 'contact', element: <ContactPage /> },

@@ -170,8 +170,6 @@ const getAllProducts = async (req, res) => {
       sort[sortBy] = sortOrder === "asc" ? 1 : -1;
     }
 
-    console.log("query:", query);
-
     // Execute query with pagination
     const products = await Product.find(query)
       .populate("categoryId", "name slug") // Populate category data

@@ -56,9 +56,9 @@ function Header() {
     setFixedPosition(scrollPosition > 80 ? true : false);
   }, [scrollPosition]);
   return (
-    <header className=''>
+    <header>
       <div className='hidden h-[40px] w-full bg-[#222222] text-sm text-[#B2B2B2] lg:block'>
-        <div className='mx-auto flex h-full max-w-[1280px] items-center justify-between px-4'>
+        <div className='mx-auto flex h-full max-w-[1280px] items-center justify-between px-5'>
           <div className='flex items-center gap-4'>
             <div className='flex items-center gap-2'>
               <svg
@@ -132,7 +132,7 @@ function Header() {
         }`}
       >
         {/* Header container */}
-        <div className='mx-auto flex h-full max-w-[1280px] items-center justify-between gap-10 px-4'>
+        <div className='mx-auto flex h-full max-w-[1280px] items-center justify-between gap-10 px-5'>
           {/* Logo */}
           <Link to={'/'}>
             <img src={Logo} alt='Logo' className='h-[50px] w-[150px] cursor-pointer' />
