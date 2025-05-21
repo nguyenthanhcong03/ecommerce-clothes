@@ -2,12 +2,12 @@ import { fetchCurrentUser } from '@/store/slices/accountSlice.js';
 import { getCart } from '@/store/slices/cartSlice.js';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RouterProvider, useLocation, useNavigate } from 'react-router-dom';
+import { RouterProvider } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.scss';
 import router from './routes/routes.jsx';
-import { setLoading } from './store/slices/accountSlice.js';
+
 function App() {
   const dispatch = useDispatch();
   const { isLoading, isAuthenticated, user } = useSelector((state) => state.account);

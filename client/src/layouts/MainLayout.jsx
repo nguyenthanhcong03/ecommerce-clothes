@@ -22,7 +22,7 @@ function MainLayout() {
         <Header />
         <div className='min-h-screen bg-[#F5F5FA] pb-10'>
           {isHomePage && <Banner />}
-          <main className='mx-auto flex max-w-[1280px] flex-col px-5'>
+          <main className='mx-auto flex max-w-[1280px] flex-col'>
             <Outlet />
           </main>
           {isHomePage && <SaleHomePage />}

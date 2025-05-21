@@ -2,7 +2,7 @@ import { ShoppingCart } from 'lucide-react';
 import Button from '@/components/common/Button/Button';
 
 const EmptyCart = ({ onBackToShop }) => (
-  <div className='py-28'>
+  <div className='rounded-md bg-white py-28'>
     <div className='flex flex-col items-center justify-center gap-2 py-10'>
       <ShoppingCart fontSize={50} />
       <div className='text-2xl'>GIỎ HÀNG CỦA BẠN TRỐNG!</div>

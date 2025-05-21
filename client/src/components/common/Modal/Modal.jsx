@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { createPortal } from 'react-dom';
 import { cva } from 'class-variance-authority';
-import { cn } from '../../../utils/helpers/cn';
-import Button from '../Button/Button';
+import { cn } from '@/utils/helpers/cn';
+import Button from '@/components/common/Button';
 
 // Popup variants using class-variance-authority for better organization
 const popupVariants = cva(
@@ -41,7 +41,7 @@ const popupVariants = cva(
   }
 );
 
-const Popup = ({
+const Modal = ({
   isOpen,
   onClose,
   title,
@@ -106,7 +106,7 @@ const Popup = ({
   );
 };
 
-Popup.propTypes = {
+Modal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   title: PropTypes.node,
@@ -119,4 +119,4 @@ Popup.propTypes = {
   closeOnEsc: PropTypes.bool
 };
 
-export default Popup;
+export default Modal;

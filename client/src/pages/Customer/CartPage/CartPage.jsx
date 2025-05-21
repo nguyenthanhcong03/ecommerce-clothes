@@ -1,12 +1,12 @@
 import { getCart } from '@/store/slices/cartSlice';
-import React, { useEffect } from 'react';
+import { Skeleton } from 'antd';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Skeleton } from 'antd';
-import CartSteps from './components/CartSteps';
 import CartTable from './components/CartTable/CartTable';
 import EmptyCart from './components/EmptyCart';
-import LoadingSpinner from '../../../components/common/LoadingSpinner';
+import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
+import Headline from '@/components/common/Headline/Headline';
 
 // Cart skeleton loading component
 const CartSkeleton = () => (
@@ -64,8 +64,20 @@ function CartPage() {
   }, [dispatch]);
 
   return (
-    <div className='mt-[80px]'>
-      <CartSteps />
+    <div className='px-5 pt-[60px] lg:pt-[80px]'>
+      <div className='my-5'>
+        <Breadcrumb
+          items={[
+            {
+              label: 'Giỏ hàng',
+              path: '/cart'
+            }
+          ]}
+        />
+      </div>
+      <div className='my-8 rounded-md bg-white p-8'>
+        <Headline text1={'đừng bỏ lỡ ưu đãi, hãy tiến hành thanh toán'} text2={'GIỎ HÀNG'} />
+      </div>
       {loading ? (
         <CartSkeleton />
       ) : items && items.length > 0 ? (

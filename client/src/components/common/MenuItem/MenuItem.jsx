@@ -17,7 +17,7 @@ function MenuItem({ href, text, isMenuDropDown = false, onClick }) {
     >
       <div className='relative'>
         <div className='flex cursor-pointer items-center justify-center gap-2 pt-[2px] after:absolute after:top-full after:hidden after:h-[20px] after:w-full after:bg-transparent after:content-[""] after:group-hover:block'>
-          <span className={`mt-[6px]`}>{text}</span>
+          <span>{text}</span>
           {isMenuDropDown && (
             <svg
               className='mt-[3px] h-5 w-5 rotate-0 transform transition-transform group-hover:rotate-180'

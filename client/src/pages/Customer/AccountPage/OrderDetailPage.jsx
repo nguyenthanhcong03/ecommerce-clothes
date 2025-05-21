@@ -19,7 +19,8 @@ import {
 import { useState } from 'react';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import { formatDate } from '@/utils/format/formatDate';
-import { Modal } from '@/components/common/Modal';
+import { toast } from 'react-toastify';
+import Modal from '@/components/common/Modal/Modal2';
 
 // Component hiển thị trạng thái đơn hàng
 const OrderStatusBadge = ({ status }) => {

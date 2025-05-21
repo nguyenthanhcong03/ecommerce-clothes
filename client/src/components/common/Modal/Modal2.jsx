@@ -1,7 +1,7 @@
 import React, { Fragment, useRef } from 'react';
 import { XCircle } from 'lucide-react';
 
-export const Modal = ({ isOpen, onClose, title, children }) => {
+export const Modal2 = ({ isOpen, onClose, title, children }) => {
   const modalRef = useRef(null);
 
   if (!isOpen) return null;
@@ -41,4 +41,4 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
   );
 };
 
-export default Modal;
+export default Modal2;

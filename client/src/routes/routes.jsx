@@ -1,48 +1,48 @@
+import { Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import React, { lazy, Suspense } from 'react';
 
 // Layouts
 import AdminLayout from '@/layouts/AdminLayout.jsx';
 import MainLayout from '@/layouts/MainLayout.jsx';
 
 // Components
-import ProtectedRoute from '@/components/auth/ProtectedRoute/ProtectedRoute.jsx';
 import NotFound from '@/components/auth/NotFound/NotFound.jsx';
+import ProtectedRoute from '@/components/auth/ProtectedRoute/ProtectedRoute.jsx';
 
 // Pages
-import HomePage from '@/pages/customer/HomePage/HomePage.jsx';
-import AboutPage from '@/pages/customer/AboutPage/AboutPage.jsx';
-import OurShopPage from '@/pages/customer/OurShopPage/OurShopPage.jsx';
-import NewsPage from '@/pages/customer/NewsPage/NewsPage.jsx';
-import ContactPage from '@/pages/customer/ContactPage/ContactPage.jsx';
-import DetailProduct from '@/pages/customer/DetailProduct/DetailProduct.jsx';
-import PaymentSuccessPage from '@/pages/customer/PaymentSuccessPage/PaymentSuccessPage.jsx';
-import PaymentFailedPage from '@/pages/customer/PaymentFailedPage/PaymentFailedPage.jsx';
+import Unauthorized from '@/components/auth/Unauthorized/Unauthorized.jsx';
 import LoginPage from '@/pages/auth/LoginPage.jsx';
 import RegisterPage from '@/pages/auth/RegisterPage.jsx';
-import Unauthorized from '@/components/auth/Unauthorized/Unauthorized.jsx';
+import AboutPage from '@/pages/customer/AboutPage/AboutPage.jsx';
 import CartPage from '@/pages/customer/CartPage/CartPage.jsx';
-import WishlistPage from '@/pages/customer/WishlistPage/WishlistPage.jsx';
 import CheckoutPage from '@/pages/customer/CheckoutPage/CheckoutPage.jsx';
+import ContactPage from '@/pages/customer/ContactPage/ContactPage.jsx';
+import DetailProduct from '@/pages/customer/DetailProduct/DetailProduct.jsx';
+import HomePage from '@/pages/customer/HomePage/HomePage.jsx';
+import NewsPage from '@/pages/customer/NewsPage/NewsPage.jsx';
+import OurShopPage from '@/pages/customer/OurShopPage/OurShopPage.jsx';
+import PaymentFailedPage from '@/pages/customer/PaymentFailedPage/PaymentFailedPage.jsx';
+import PaymentSuccessPage from '@/pages/customer/PaymentSuccessPage/PaymentSuccessPage.jsx';
+import WishlistPage from '@/pages/customer/WishlistPage/WishlistPage.jsx';
 
+import AnalyticsPage from '@/pages/admin/AnalyticsPage/AnalyticsPage.jsx';
+import CategoryPage from '@/pages/admin/CategoryPage/CategoryPage.jsx';
+import CouponPage from '@/pages/admin/CouponPage/CouponPage.jsx';
+import OrdersPage from '@/pages/admin/OrdersPage/OrdersPage.jsx';
 import OverviewPage from '@/pages/admin/OverviewPage/OverviewPage.jsx';
 import ProductPage from '@/pages/admin/ProductPage/ProductPage.jsx';
-import CategoryPage from '@/pages/admin/CategoryPage/CategoryPage.jsx';
-import UserPage from '@/pages/admin/UserPage/UserPage.jsx';
 import SalesPage from '@/pages/admin/SalesPage/SalesPage.jsx';
-import OrdersPage from '@/pages/admin/OrdersPage/OrdersPage.jsx';
-import AnalyticsPage from '@/pages/admin/AnalyticsPage/AnalyticsPage.jsx';
 import SettingsPage from '@/pages/admin/SettingsPage/SettingsPage.jsx';
-import CouponPage from '@/pages/admin/CouponPage/CouponPage.jsx';
-import ProfilePage from '@/pages/customer/AccountPage/ProfilePage.jsx';
-import OrderPage from '@/pages/customer/AccountPage/OrderPage.jsx';
+import UserPage from '@/pages/admin/UserPage/UserPage.jsx';
+import ChangePasswordPage from '@/pages/customer/AccountPage/ChangePasswordPage.jsx';
 import OrderDetailPage from '@/pages/customer/AccountPage/OrderDetailPage.jsx';
+import OrderPage from '@/pages/customer/AccountPage/OrderPage.jsx';
 import OrderReviewPage from '@/pages/customer/AccountPage/OrderReviewPage.jsx';
 import PrivacyPage from '@/pages/customer/AccountPage/PrivacyPage.jsx';
-import ChangePasswordPage from '@/pages/customer/AccountPage/ChangePasswordPage.jsx';
+import ProfilePage from '@/pages/customer/AccountPage/ProfilePage.jsx';
 import VoucherPage from '@/pages/customer/AccountPage/VoucherPage.jsx';
-import AccountLayout from '../layouts/AccountLayout';
-import ProfileForm from '../components/examples/Example';
+import Example from '../components/examples/Example';
+import AccountLayout from '@/layouts/AccountLayout';
 
 // Fake delay function
 // const lazyWithDelay = (importFunc, delay = 1000) => {
@@ -79,7 +79,8 @@ const publicRoutes = [
   { path: 'product/:id', element: <DetailProduct /> },
   { path: 'vouchers', element: <VoucherPage /> },
   { path: 'payment-success', element: <PaymentSuccessPage /> },
-  { path: 'payment-failed', element: <PaymentFailedPage /> }
+  { path: 'payment-failed', element: <PaymentFailedPage /> },
+  { path: 'example', element: <Example /> }
 ];
 
 // Auth routes (login/register)
@@ -173,10 +174,6 @@ const customerProtectedRoutes = [
       {
         path: 'vouchers',
         element: <VoucherPage />
-      },
-      {
-        path: 'example',
-        element: <ProfileForm />
       }
     ]
   }

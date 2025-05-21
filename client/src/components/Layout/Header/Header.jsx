@@ -8,6 +8,7 @@ import { callLogout } from '@/services/authService';
 import { doLogoutAction } from '@/store/slices/accountSlice';
 import { toggleSearch } from '@/store/slices/searchSlice';
 import { setType, toggleSidebar } from '@/store/slices/sidebarSlice';
+import { SHOP_EMAIL } from '@/utils/constants';
 import { Tooltip } from 'antd';
 import { CircleUserRound, Facebook, Heart, Instagram, Menu, Search, ShoppingCart } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -76,11 +77,10 @@ function Header() {
                   d='M21.75 9v.906a2.25 2.25 0 0 1-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 0 0 1.183 1.981l6.478 3.488m8.839 2.51-4.66-2.51m0 0-1.023-.55a2.25 2.25 0 0 0-2.134 0l-1.022.55m0 0-4.661 2.51m16.5 1.615a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V8.844a2.25 2.25 0 0 1 1.183-1.981l7.5-4.039a2.25 2.25 0 0 1 2.134 0l7.5 4.039a2.25 2.25 0 0 1 1.183 1.98V19.5Z'
                 />
               </svg>
-              <span>nguyenthanhcong03@hotmail.com</span>
+              <a href={`mailto:${SHOP_EMAIL}`}>{SHOP_EMAIL}</a>
             </div>
             <span>|</span>
-            <div>{t('description')}</div>
-            <div>Free Shipping for all Order of $99</div>
+            <div>Freeship đơn từ 99k</div>
           </div>
           <div className='flex items-center gap-4'>
             <div className='flex items-center gap-3'>

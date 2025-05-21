@@ -1,5 +1,6 @@
 import certificateImage from '@/assets/images/certificate.png';
 import Collapse from '@/components/common/Collapse/Collapse';
+import { SHOP_ADDRESS, SHOP_EMAIL, SHOP_NAME, SHOP_PHONE } from '@/utils/constants';
 import { Facebook, Instagram } from 'lucide-react';
 import React from 'react';
 
@@ -27,20 +28,22 @@ function Footer() {
         <Collapse title={'VỀ CHÚNG TÔI'} isShow={true} isFooter={true}>
           <div className='flex flex-col gap-2'>
             <p>
-              <strong>Công ty TNHH Fasalo Việt Nam</strong>
+              <strong>Công ty TNHH {SHOP_NAME} Việt Nam</strong>
             </p>
             <p>
-              <strong>Địa chỉ: </strong>Số XX Thanh Bình, Phường Mỗ Lao, Quận Hà Đông, TP. Hà Nội
+              <strong>Địa chỉ: </strong>Số XX Thanh Bình,Mỗ Lao, Hà Đông, Hà Nội
             </p>
             <p>
               <strong>Mã số doanh nghiệp: </strong> 0123456789 do Sở kế hoạch và đầu tư thành phố Hà Nội cấp ngày
               23/09/2025
             </p>
             <p>
-              <strong>Điện thoại: </strong>0370.372.309
+              <strong>SĐT: </strong>
+              <a href={`tel:${SHOP_PHONE}`}>{SHOP_PHONE}</a>
             </p>
             <p>
-              <strong>Email: </strong>nguyenthanhcong03@hotmail.com
+              <strong>Email: </strong>
+              <a href={`mailto:${SHOP_EMAIL}`}>{SHOP_EMAIL}</a>
             </p>
             <div className='p-5'>
               <img src={certificateImage} alt='' />
@@ -51,13 +54,7 @@ function Footer() {
           <div className='flex flex-col gap-2'>
             <p>
               Hà Nội:
-              <br />
-              - 175 Tây Sơn, Phường Trung Liệt, Quận Đống Đa
-              <br />- 192 Trần Duy Hưng, Phường Trung Hòa, Quận Cầu Giấy
-            </p>
-            <p>
-              TP. Hồ Chí Minh:
-              <br />- 297/3 Tô Hiến Thành, Phường 13, Quận 10
+              <br />- {SHOP_ADDRESS}
             </p>
           </div>
         </Collapse>
@@ -70,18 +67,20 @@ function Footer() {
               <a href=''>
                 <Instagram />
               </a>
-              {/* <SiZalo />
-              <SiShopee /> */}
             </div>
             <p>
               ĐẶT HÀNG (08:30 - 22:00)
               <br />
-              <strong>037.037.2309</strong>
+              <a href={`tel:${SHOP_PHONE}`}>
+                <strong>{SHOP_PHONE}</strong>
+              </a>
             </p>
             <p>
               GÓP Ý, KHIẾU NẠI (08:30 - 22:00)
               <br />
-              <strong>037.037.2309</strong>
+              <a href={`tel:${SHOP_PHONE}`}>
+                <strong>{SHOP_PHONE}</strong>
+              </a>
             </p>
           </div>
         </Collapse>
