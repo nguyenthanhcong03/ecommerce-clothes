@@ -11,8 +11,8 @@ import EmptyProduct from '@/pages/customer/OurShopPage/components/EmptyProduct';
 import { FilterSidebar } from '@/pages/customer/OurShopPage/components/FilterSidebar';
 import SortSection from '@/pages/customer/OurShopPage/components/SortSection';
 import { fetchProducts } from '@/store/slices/productSlice';
-import { findCategoryById } from '@/utils/findCategoryById';
-import { getCategoryPath } from '@/utils/getCategoryPath';
+import { findCategoryById } from '@/utils/helpers/findCategoryById';
+import { getCategoryPath } from '@/utils/helpers/getCategoryPath';
 import { AppstoreOutlined, BarsOutlined, FilterOutlined } from '@ant-design/icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -56,13 +56,19 @@ function OurShopPage() {
 
     return items;
   }, [catId, categoriesTree]);
-
   // UI States
   const [viewMode, setViewMode] = useState('grid');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // Filter States
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  useEffect(() => {
+    const searchFromParams = searchParams.get('search');
+    if (searchFromParams) {
+      setSearchTerm(searchFromParams);
+    }
+  }, [searchParams]);
+
   const [priceRange, setPriceRange] = useState({
     min: searchParams.get('minPrice') || '',
     max: searchParams.get('maxPrice') || ''
@@ -207,9 +213,17 @@ function OurShopPage() {
 
   return (
     <div className='pt-[60px] lg:pt-[80px]'>
-      <div>
+      <div className='my-5'>
         <Breadcrumb separator='/' items={breadcrumbItems} />
       </div>
+      {/* Search result title */}
+      {searchTerm && (
+        <div className='mb-4 text-center'>
+          <h2 className='text-xl font-medium text-gray-600'>
+            Kết quả tìm kiếm cho "{searchTerm}" - {pagination?.total || 0} sản phẩm
+          </h2>
+        </div>
+      )}
       {/* Main content */}
       <div className='flex w-full flex-col gap-6 lg:flex-row'>
         {/* Mobile filters */}
@@ -282,14 +296,16 @@ function OurShopPage() {
 
         {/* Main content */}
         <div className='lg:w-3/4'>
-          <h1 className='mb-4 rounded-md bg-white p-4 text-[28px] font-bold'>
-            {currentCategory?.name || 'Tất cả sản phẩm'}
+          {' '}
+          <h1 className='mb-4 rounded-md bg-white p-4 text-2xl font-bold'>
+            {searchTerm ? 'Kết quả tìm kiếm' : currentCategory?.name || 'Tất cả sản phẩm'}
           </h1>
-          <div className='mb-4 h-[280px] w-full'>
-            <CountDownBanner backgroundImage={countdownBanner2} />
-          </div>
-
-          {currentCategory?.children?.length > 0 && (
+          {!searchTerm && (
+            <div className='mb-4 h-[280px] w-full'>
+              <CountDownBanner backgroundImage={countdownBanner2} />
+            </div>
+          )}{' '}
+          {!searchTerm && currentCategory?.children?.length > 0 && (
             <div className='mb-4 rounded-md bg-white p-4'>
               <h3>Khám phá theo danh mục</h3>
               <div className='mt-4 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6'>
@@ -311,7 +327,6 @@ function OurShopPage() {
               </div>
             </div>
           )}
-
           <SortSection
             currentCategory={currentCategory}
             viewMode={viewMode}
@@ -320,7 +335,6 @@ function OurShopPage() {
             searchParams={searchParams}
             onSortChange={handleSortChange}
           />
-
           {/* Products */}
           {loading ? (
             viewMode === 'grid' ? (

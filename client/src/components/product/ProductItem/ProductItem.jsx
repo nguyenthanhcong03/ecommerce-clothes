@@ -1,6 +1,6 @@
 import React from 'react';
 import { StarFilled } from '@ant-design/icons';
-import { formatCurrency } from '@/utils/formatCurrency';
+import { formatCurrency } from '@/utils/format/formatCurrency';
 
 const ProductItem = ({ product }) => {
   return (

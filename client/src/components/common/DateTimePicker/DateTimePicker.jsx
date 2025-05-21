@@ -1,5 +1,5 @@
 import React, { forwardRef, useState, useEffect, useCallback, useMemo } from 'react';
-import { cn } from '@/utils/cn';
+import { cn } from '@/utils/helpers/cn';
 
 // Calendar Icon component for consistent styling
 const CalendarIcon = ({ className = '' }) => (

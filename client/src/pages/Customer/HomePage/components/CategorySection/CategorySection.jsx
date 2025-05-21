@@ -46,7 +46,7 @@ export default function CategorySection() {
   }
 
   return (
-    <div className='flex justify-center gap-4 rounded-md p-4'>
+    <div className='flex justify-center gap-4 rounded-md'>
       {categoriesTree.map((category) => (
         <CategoryCard key={category._id} category={category} />
       ))}

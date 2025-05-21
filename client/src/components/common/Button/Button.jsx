@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import { cva } from 'class-variance-authority';
-import { cn } from '../../../utils/cn';
+import { cn } from '../../../utils/helpers/cn';
 
 // Button variants using class-variance-authority for better organization
 const buttonVariants = cva(

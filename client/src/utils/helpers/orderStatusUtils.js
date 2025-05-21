@@ -31,9 +31,6 @@ export const orderStatuses = [
 
 /**
  * Kiểm tra xem đơn hàng có thể chuyển sang trạng thái mới không
- * @param {string} currentStatus - Trạng thái hiện tại của đơn hàng
- * @param {string} newStatus - Trạng thái mới mà người dùng muốn chuyển sang
- * @returns {boolean} - true nếu có thể chuyển trạng thái, ngược lại là false
  */
 export const canChangeStatus = (currentStatus, newStatus) => {
   console.log('currentStatus', currentStatus);
@@ -65,8 +62,6 @@ export const canChangeStatus = (currentStatus, newStatus) => {
 
 /**
  * Lấy các trạng thái hợp lệ mà đơn hàng có thể chuyển sang
- * @param {string} currentStatus - Trạng thái hiện tại của đơn hàng
- * @returns {Array} - Mảng các trạng thái hợp lệ
  */
 export const getValidStatusTransitions = (currentStatus) => {
   return orderStatuses.filter((status) => canChangeStatus(currentStatus, status.value));

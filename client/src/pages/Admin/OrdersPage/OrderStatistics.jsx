@@ -9,7 +9,7 @@ import {
   FilterOutlined
 } from '@ant-design/icons';
 import { getOrderStatisticsAPI } from '@/services/orderService';
-import { formatCurrency } from '@/utils/formatCurrency';
+import { formatCurrency } from '@/utils/format/formatCurrency';
 import { useSelector } from 'react-redux';
 
 const OrderStatistics = () => {

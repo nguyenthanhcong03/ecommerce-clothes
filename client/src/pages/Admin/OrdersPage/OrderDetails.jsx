@@ -1,7 +1,7 @@
 import React from 'react';
 import { Table, Tag, Typography } from 'antd';
-import { formatDate } from '@/utils/formatDate';
-import { formatCurrency } from '../../../utils/formatCurrency';
+import { formatDate } from '@/utils/format/formatDate';
+import { formatCurrency } from '../../../utils/format/formatCurrency';
 
 const { Title } = Typography;
 

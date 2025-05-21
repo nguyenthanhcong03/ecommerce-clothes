@@ -1,3 +1,4 @@
+import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import ContactForm from '@/pages/customer/ContactPage/components/ContactForm/ContactForm';
 import ContactInfo from '@/pages/customer/ContactPage/components/ContactInfo/ContactInfo';
 import ContactMap from '@/pages/customer/ContactPage/components/ContactMap/ContactMap';
@@ -5,12 +6,21 @@ import React from 'react';
 
 function ContactPage() {
   return (
-    <div className='mx-auto w-full max-w-[1280px] px-10 pt-[60px] lg:pt-[80px]'>
-      <div className='my-5'></div>
-      <div className='mx-auto h-[450px] w-full'>
+    <div className='pt-[60px] lg:pt-[80px]'>
+      <div className='my-5'>
+        <Breadcrumb
+          items={[
+            {
+              label: 'Liên hệ',
+              path: '/contact'
+            }
+          ]}
+        />
+      </div>
+      <div className='mx-auto h-[450px] w-full rounded-sm bg-white p-4'>
         <ContactMap />
       </div>
-      <div className='mx-auto my-14 flex w-full flex-col gap-10 border-[1px] border-[#e1e1e1] md:flex-row md:gap-0'>
+      <div className='mx-auto mt-6 flex w-full flex-col gap-10 rounded-sm border-[1px] border-[#e1e1e1] bg-white md:flex-row md:gap-0'>
         <ContactInfo />
         <ContactForm />
       </div>

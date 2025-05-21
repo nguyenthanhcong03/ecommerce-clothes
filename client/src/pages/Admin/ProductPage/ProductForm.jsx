@@ -1,12 +1,12 @@
-import { colorOptions, sizeOptions } from '@/constants/colors';
-import { deleteMultipleFiles, uploadMultipleFiles } from '@/services/fileService';
+import { uploadMultipleFiles } from '@/services/fileService';
 import { fetchCategories } from '@/store/slices/categorySlice';
 import { createProduct, updateProductById } from '@/store/slices/productSlice';
-import { buildTree } from '@/utils/buildTree';
+import { COLOR_OPTIONS, SIZE_OPTIONS } from '@/utils/constants';
+import { buildTree } from '@/utils/helpers/buildTree';
 import { UploadOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Card, Form, Input, message, Modal, Select, Switch, TreeSelect, Upload } from 'antd';
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import * as yup from 'yup';
@@ -574,7 +574,7 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
                       <Select
                         {...field}
                         value={field.value || undefined}
-                        options={sizeOptions}
+                        options={SIZE_OPTIONS}
                         placeholder='Chọn size'
                         disabled={uploading || loading}
                       />
@@ -595,7 +595,7 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
                         placeholder='Chọn màu sắc'
                         disabled={uploading || loading}
                       >
-                        {colorOptions.map((color) => (
+                        {COLOR_OPTIONS.map((color) => (
                           <Option key={color.hex} value={color.name}>
                             {color.name}
                           </Option>

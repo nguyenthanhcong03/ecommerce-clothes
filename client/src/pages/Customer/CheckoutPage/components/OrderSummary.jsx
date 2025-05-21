@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Button from '../../../../components/common/Button/Button';
 import Input from '../../../../components/common/Input/Input';
-import { formatCurrency } from '../../../../utils/formatCurrency';
+import { formatCurrency } from '../../../../utils/format/formatCurrency';
 import { Spin, Alert, Tooltip } from 'antd';
 import { CloseOutlined, QuestionCircleOutlined, TagOutlined } from '@ant-design/icons';
 import { Trash2 } from 'lucide-react';

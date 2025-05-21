@@ -2,7 +2,6 @@ import React from 'react';
 import { X } from 'lucide-react';
 
 function CartItem({ item }) {
-  console.log('item', item);
   return (
     <div className='group relative flex items-start justify-between gap-5 overflow-hidden px-5 py-3 transition-colors duration-200 ease-in hover:bg-[#f7f7f7]'>
       <img src={item?.image} alt='' className='h-auto w-[70px] cursor-pointer' />

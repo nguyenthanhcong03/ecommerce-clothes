@@ -1,11 +1,15 @@
 import CartItem from '@/components/cart/CartItem/CartItem';
 import Button from '@/components/common/Button/Button';
 import MenuItem from '@/components/common/MenuItem/MenuItem';
+import { toggleSidebar } from '@/store/slices/sidebarSlice';
 import { Heart } from 'lucide-react';
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 function SideBarWishlist() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   return (
     <div className='flex h-full w-[300px] flex-col items-center justify-between gap-4 px-8 py-5 md:w-[400px]'>
       <div className='flex w-full flex-col gap-4'>
@@ -23,10 +27,22 @@ function SideBarWishlist() {
       </div>
 
       <div className='flex w-full flex-col gap-2'>
-        <Link to={'/wishlist'}>
-          <Button fullWidth>XEM TẤT CẢ</Button>
-        </Link>
-        <Button variant='secondary'>THÊM TẤT CẢ VÀO GIỎ HÀNG</Button>
+        <Button
+          onClick={() => {
+            dispatch(toggleSidebar());
+            navigate('/wishlist');
+          }}
+        >
+          XEM TẤT CẢ
+        </Button>
+        <Button
+          variant='secondary'
+          onClick={() => {
+            dispatch(toggleSidebar());
+          }}
+        >
+          THÊM TẤT CẢ VÀO GIỎ HÀNG
+        </Button>
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ import { fetchProductById } from '@/store/slices/productSlice';
 import { setDirectBuyItem } from '@/store/slices/orderSlice';
 import Collapse from '@/components/common/Collapse/Collapse';
 import { setOrderItems } from '@/store/slices/orderSlice';
-import { getCategoryPath } from '@/utils/getCategoryPath';
+import { getCategoryPath } from '@/utils/helpers/getCategoryPath';
 import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import facebook from '@/assets/icons/facebook.png';
 import instagram from '@/assets/icons/instagram.png';
@@ -299,12 +299,12 @@ const DetailProduct = () => {
   }
 
   return (
-    <div className='mx-auto mt-[60px] w-full max-w-[1280px] px-4 py-4 sm:mt-[80px] md:p-4'>
+    <div className='mt-[60px] sm:mt-[80px]'>
       {/* Breadcrumb */}
-      <div className='mb-4 overflow-x-auto sm:mb-6'>
+      <div className=''>
         <Breadcrumb separator='/' items={breadcrumbItems} />
       </div>
-      <div className='mx-auto'>
+      <div className='mx-auto rounded-sm bg-white'>
         <div className='flex flex-col flex-wrap md:flex-row'>
           {/* Left Column - Product Images */}
           <div className='w-full p-2 md:w-2/5 md:p-4'>
@@ -538,9 +538,9 @@ const DetailProduct = () => {
           </div>
         </div>
       </div>
-      <div className='mt-4 space-y-3 p-2 sm:space-y-4 sm:p-4'>
-        <Collapse title='CHI TIẾT SẢN PHẨM' className='bg-[#F7F7F7]' isShow={true}>
-          <div className='space-y-4 rounded bg-white p-3 text-xs sm:space-y-6 sm:p-4 sm:text-sm'>
+      <div className='mt-4 flex flex-col gap-2 rounded-sm bg-white p-4'>
+        <Collapse title='CHI TIẾT SẢN PHẨM' className='bg-[#FAFAFA]' isShow={true}>
+          <div className='space-y-4 rounded p-3 text-xs sm:space-y-6 sm:p-4 sm:text-sm'>
             {/* Thông tin danh mục và thương hiệu */}
             <div className='grid grid-cols-3 items-center gap-2 sm:grid-cols-4 sm:gap-4'>
               <h4 className='text-[#888888]'>Danh mục</h4>
@@ -582,15 +582,14 @@ const DetailProduct = () => {
             </div>
           </div>
         </Collapse>
-
-        <Collapse title='MÔ TẢ SẢN PHẨM' className='bg-[#F7F7F7]' isShow={true}>
+        <Collapse title='MÔ TẢ SẢN PHẨM' className='bg-[#FAFAFA]' isShow={true}>
           <div className='rounded bg-white p-3 sm:p-4'>
             <div className='prose prose-sm max-w-none whitespace-pre-line text-xs sm:text-sm'>
               {product.description}
             </div>
           </div>
         </Collapse>
-        <Collapse title='ĐÁNH GIÁ SẢN PHẨM' className='bg-[#F7F7F7]' isShow={true}>
+        <Collapse title='ĐÁNH GIÁ SẢN PHẨM' className='bg-[#FAFAFA]' isShow={true}>
           <div className='rounded bg-white p-3 sm:p-4'>
             <div className='prose prose-sm max-w-none whitespace-pre-line text-xs sm:text-sm'>
               {product.description}

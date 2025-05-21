@@ -11,8 +11,8 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 
 import { deleteCoupon, toggleCouponStatus } from '@/store/slices/couponSlice';
-import { formatCurrency } from '@/utils/formatCurrency';
-import { formatDate } from '@/utils/formatDate';
+import { formatCurrency } from '@/utils/format/formatCurrency';
+import { formatDate } from '@/utils/format/formatDate';
 
 const { Text } = Typography;
 const { confirm } = Modal;

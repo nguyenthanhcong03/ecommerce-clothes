@@ -8,13 +8,13 @@ import './OrdersPage.scss';
 import OrderDetails from './OrderDetails';
 import OrderFilters from './OrderFilters';
 import OrderStatistics from './OrderStatistics';
-import { formatCurrency } from '@/utils/formatCurrency';
-import { formatDate } from '@/utils/formatDate';
-import { statusColors } from '@/utils/orderStatusUtils';
+import { formatCurrency } from '@/utils/format/formatCurrency';
+import { formatDate } from '@/utils/format/formatDate';
+import { statusColors } from '@/utils/helpers/orderStatusUtils';
 import useDebounce from '@/hooks/useDebounce';
 import Header from '@/components/AdminComponents/common/Header';
 import { updateOrderStatus } from '../../../store/slices/adminOrderSlice';
-import { getValidStatusTransitions } from '../../../utils/orderStatusUtils';
+import { getValidStatusTransitions } from '../../../utils/helpers/orderStatusUtils';
 
 const { Title } = Typography;
 const { Option } = Select;

@@ -24,6 +24,7 @@ function Header() {
   const [fixedPosition, setFixedPosition] = useState(false);
   const [isShowUserDropdown, setIsShowUserDropdown] = useState(false);
   const location = useLocation();
+  const isHomePage = location.pathname === '/';
 
   const handleToggleSideBar = (type) => {
     if (
@@ -128,7 +129,7 @@ function Header() {
         className={`h-[60px] w-full lg:h-[80px] ${
           fixedPosition
             ? 'fixed top-[-60px] z-10 translate-y-[60px] bg-[#FFFFFFE6] shadow-shadowHeader backdrop-blur-sm transition-transform duration-500 ease-in lg:top-[-80px] lg:translate-y-[80px]'
-            : 'absolute bg-transparent'
+            : `absolute ${isHomePage ? 'bg-transparent' : 'bg-white shadow-shadowHeader'}`
         }`}
       >
         {/* Header container */}
@@ -171,11 +172,6 @@ function Header() {
               {/* Search Desktop */}
               <div className='flex items-center gap-2' onClick={() => handleToggleSearchModal()}>
                 <Search className='hidden lg:block' fontSize={20} cursor={'pointer'} />
-                {/* <input
-                  className='hidden rounded-2xl border-[1px] border-[#e1e1e1] bg-inherit px-[10px] py-[4px] text-sm outline-none xl:block'
-                  type='text'
-                  placeholder='Tìm kiếm sản phẩm...'
-                /> */}
               </div>
             </div>
 
@@ -200,7 +196,6 @@ function Header() {
                   className='relative cursor-pointer'
                   onClick={() => {
                     handleToggleSideBar('cart');
-                    console.log('click');
                   }}
                 >
                   <ShoppingCart />
@@ -212,11 +207,6 @@ function Header() {
                 </div>
               </Tooltip>
 
-              {/* Account icon */}
-              {/* <div className='hidden lg:block'>
-                <PiUserCircleLight fontSize={26} cursor={'pointer'} />
-              </div> */}
-              {/* Menu icon mobile */}
               <div className='lg:hidden' onClick={() => handleToggleSideBar('menu')}>
                 <Menu fontSize={26} cursor={'pointer'} />
               </div>

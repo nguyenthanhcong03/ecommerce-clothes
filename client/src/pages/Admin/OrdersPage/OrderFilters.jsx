@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Space, Input, Button, Select, DatePicker, Row, Col, Divider, InputNumber } from 'antd';
 import { SearchOutlined, FilterOutlined, ClearOutlined, CalendarOutlined } from '@ant-design/icons';
-import { orderStatuses } from '@/utils/orderStatusUtils';
+import { orderStatuses } from '@/utils/helpers/orderStatusUtils';
 import locale from 'antd/es/date-picker/locale/vi_VN';
 
 const { RangePicker } = DatePicker;

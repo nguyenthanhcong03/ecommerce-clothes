@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { formatCurrency } from '@/utils/formatCurrency';
+import { formatCurrency } from '@/utils/format/formatCurrency';
 import Button from '../../../components/common/Button/Button';
 
 const PaymentSuccessPage = () => {

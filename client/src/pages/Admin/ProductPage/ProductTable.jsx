@@ -16,7 +16,7 @@ import {
 import { Filter, Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
 import React, { useMemo, useState, useEffect } from 'react';
 import './styles.css';
-import { formatCurrency } from '@/utils/formatCurrency';
+import { formatCurrency } from '@/utils/format/formatCurrency';
 
 const { Option } = Select;
 

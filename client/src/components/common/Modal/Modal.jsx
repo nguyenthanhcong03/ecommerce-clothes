@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { createPortal } from 'react-dom';
 import { cva } from 'class-variance-authority';
-import { cn } from '../../../utils/cn';
+import { cn } from '../../../utils/helpers/cn';
 import Button from '../Button/Button';
 
 // Popup variants using class-variance-authority for better organization

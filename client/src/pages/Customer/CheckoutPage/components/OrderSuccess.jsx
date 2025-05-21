@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectCurrentOrder, selectShippingInfo } from '../../../../store/slices/orderSlice';
-import { formatCurrency } from '../../../../utils/formatCurrency';
-import { formatDate } from '../../../../utils/formatDate';
+import { formatCurrency } from '../../../../utils/format/formatCurrency';
+import { formatDate } from '../../../../utils/format/formatDate';
 
 // Icons
 import truckIcon from '../../../../assets/icons/truckIcon.svg';

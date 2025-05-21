@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect } from 'react';
-import { Form, Input, Select, Button, Row, Col, Spin, Card, Modal } from 'antd';
-import { useForm, Controller } from 'react-hook-form';
+import { createUserByAdmin, updateUserAdmin } from '@/store/slices/userSlice';
+import { userAdminSchema } from '@/utils/validate/userValidationSchema';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { userAdminSchema } from '@/utils/userValidationSchema';
+import { Col, Form, Input, Modal, Row, Select, Spin } from 'antd';
+import { useCallback, useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
-import { updateUserAdmin } from '@/store/slices/userSlice';
-import { createUserByAdmin } from '../../../store/slices/userSlice';
 
 const { Option } = Select;
 

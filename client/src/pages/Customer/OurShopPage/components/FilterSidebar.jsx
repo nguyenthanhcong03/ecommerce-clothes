@@ -1,4 +1,4 @@
-import { colorOptions, sizeOptions } from '@/constants/colors';
+import { COLOR_OPTIONS, SIZE_OPTIONS } from '@/utils/constants';
 import { CloseOutlined, StarFilled } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 
@@ -133,7 +133,7 @@ export function FilterSidebar({
           )}
         </div>
         <div className='flex flex-wrap gap-3'>
-          {colorOptions.map((color, index) => (
+          {COLOR_OPTIONS.map((color, index) => (
             <div key={index} className='group relative'>
               <button
                 onClick={() => handleToggleColor(color.name)}
@@ -169,7 +169,7 @@ export function FilterSidebar({
           )}
         </div>
         <div className='flex flex-wrap gap-2'>
-          {sizeOptions.map((size) => (
+          {SIZE_OPTIONS.map((size) => (
             <button
               key={size.value}
               onClick={() => handleToggleSize(size.value)}

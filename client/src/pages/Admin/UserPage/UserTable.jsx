@@ -1,4 +1,4 @@
-import { formatDate } from '@/utils/formatDate';
+import { formatDate } from '@/utils/format/formatDate';
 import { SearchOutlined, UserOutlined } from '@ant-design/icons';
 import { Input, Popconfirm, Space, Table, Tag, Tooltip } from 'antd';
 import { Lock, LockOpen, Pencil, Trash2 } from 'lucide-react';

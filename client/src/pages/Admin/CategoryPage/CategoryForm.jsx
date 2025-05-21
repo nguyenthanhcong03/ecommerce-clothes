@@ -1,6 +1,6 @@
 import { deleteMultipleFiles, uploadMultipleFiles } from '@/services/fileService';
 import { createCategory, updateCategoryById } from '@/store/slices/categorySlice';
-import { buildTree } from '@/utils/buildTree';
+import { buildTree } from '@/utils/helpers/buildTree';
 import { UploadOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Form, Input, message, Modal, Switch, TreeSelect, Upload } from 'antd';

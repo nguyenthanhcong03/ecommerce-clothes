@@ -1,4 +1,8 @@
-export const colorOptions = [
+export const SHOP_NAME = 'Outfitory';
+export const SHOP_ADDRESS = '175 Tây Sơn, Trung Liệt, Đống Đa, Hà Nội, Việt Nam';
+export const SHOP_PHONE = '0373702309';
+export const SHOP_EMAIL = 'nguyenthanhcong03@hotmail.com';
+export const COLOR_OPTIONS = [
   { name: 'Đen', hex: '#000000' },
   { name: 'Trắng', hex: '#FFFFFF' },
   { name: 'Xám', hex: '#808080' },
@@ -12,7 +16,7 @@ export const colorOptions = [
   { name: 'Cam', hex: '#fd7e14' },
   { name: 'Tím', hex: '#6f42c1' }
 ];
-export const sizeOptions = [
+export const SIZE_OPTIONS = [
   { name: 'S', value: 'S' },
   { name: 'M', value: 'M' },
   { name: 'L', value: 'L' },

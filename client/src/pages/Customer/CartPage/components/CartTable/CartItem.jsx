@@ -1,6 +1,6 @@
 import { Trash2 } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import { formatCurrency } from '@/utils/formatCurrency';
+import { formatCurrency } from '@/utils/format/formatCurrency';
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
 
 const CartItem = ({ item, onQuantityChange, onRemove, onSelect, isSelected }) => {

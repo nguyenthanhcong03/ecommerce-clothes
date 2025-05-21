@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Skeleton } from 'antd';
 import Button from '@/components/common/Button/Button';
 import Modal from '@/components/common/Modal/Modal';
-import { formatCurrency } from '@/utils/formatCurrency';
+import { formatCurrency } from '@/utils/format/formatCurrency';
 
 const CartSummary = ({
   onNavigateToCheckout,

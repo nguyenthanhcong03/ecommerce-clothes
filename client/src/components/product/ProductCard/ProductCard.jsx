@@ -1,13 +1,13 @@
 import Button from '@/components/common/Button/Button';
-import { colorOptions } from '@/constants/colors';
 import { addToCart } from '@/store/slices/cartSlice';
 import { openProductDetailModal } from '@/store/slices/productSlice';
+import { COLOR_OPTIONS } from '@/utils/constants';
 import { Eye, Heart, ShoppingCart, Star } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-function ProductCard({ item, isShowVariant = true }) {
+function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowActionButtons = true }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [selectedSize, setSelectedSize] = useState('');
@@ -21,7 +21,7 @@ function ProductCard({ item, isShowVariant = true }) {
     const sizeMap = new Map();
     const colorImageMap = new Map(); // Map để lưu trữ màu sắc và hình ảnh tương ứng
 
-    item.variants.forEach((variant) => {
+    item?.variants.forEach((variant) => {
       // Map color to images
       if (!colorMap.has(variant.color)) {
         colorMap.set(variant.color, new Set());
@@ -46,7 +46,7 @@ function ProductCard({ item, isShowVariant = true }) {
       colorMap,
       colorImageMap // Thêm colorImageMap vào kết quả
     };
-  }, [item.variants]);
+  }, [item?.variants]);
 
   const getAvailableColors = (size) => {
     return Array.from(variantOptions.sizeMap.get(size) || []);
@@ -172,41 +172,45 @@ function ProductCard({ item, isShowVariant = true }) {
           src={hoverImage}
         />
 
-        <div className='absolute right-3 top-3 flex flex-col gap-2 bg-transparent transition-all duration-300 group-hover:right-3 group-hover:opacity-100 group-hover:transition-all group-hover:duration-300 lg:right-0 lg:opacity-0'>
-          <button className='flex h-[40px] w-[40px] items-center justify-center rounded-full border-2 bg-white hover:bg-primaryColor hover:text-white'>
-            <Heart strokeWidth={1.5} width={20} />
-          </button>
-        </div>
+        {isShowActionButtons && (
+          <div className='absolute right-3 top-3 flex flex-col gap-2 bg-transparent transition-all duration-300 group-hover:right-3 group-hover:opacity-100 group-hover:transition-all group-hover:duration-300 lg:right-0 lg:opacity-0'>
+            <button className='flex h-[40px] w-[40px] items-center justify-center rounded-full border-2 bg-white hover:bg-primaryColor hover:text-white'>
+              <Heart strokeWidth={1.5} width={20} />
+            </button>
+          </div>
+        )}
       </div>
       <div className={`flex h-full w-full flex-col items-start justify-between p-2 sm:px-3`}>
         {/* Color Selection */}
-        <div className='flex w-full justify-center gap-1'>
-          {variantOptions.colors.map((color) => {
-            return (
-              <button
-                key={color}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleColorSelect(color);
-                }}
-                className={`h-[25px] w-[25px] rounded-full border p-[2px] text-[10px] sm:text-xs ${
-                  selectedColor === color && 'border-black text-black'
-                }`}
-              >
-                {colorOptions.map(
-                  (option) =>
-                    option.name === color && (
-                      <div
-                        key={option.name}
-                        className='h-full w-full rounded-full border'
-                        style={{ backgroundColor: option.hex }}
-                      ></div>
-                    )
-                )}
-              </button>
-            );
-          })}
-        </div>
+        {isShowVariant && (
+          <div className='flex w-full justify-center gap-1'>
+            {variantOptions.colors.map((color) => {
+              return (
+                <button
+                  key={color}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleColorSelect(color);
+                  }}
+                  className={`h-[25px] w-[25px] rounded-full border p-[2px] text-[10px] sm:text-xs ${
+                    selectedColor === color && 'border-black text-black'
+                  }`}
+                >
+                  {COLOR_OPTIONS.map(
+                    (option) =>
+                      option.name === color && (
+                        <div
+                          key={option.name}
+                          className='h-full w-full rounded-full border'
+                          style={{ backgroundColor: option.hex }}
+                        ></div>
+                      )
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
         <div className='mt-1 w-full cursor-pointer text-sm text-primaryColor' onClick={handleNavigateToDetail}>
           {item?.name}
         </div>
@@ -235,19 +239,22 @@ function ProductCard({ item, isShowVariant = true }) {
           </div>
         </div>
       </div>
-      {/* Buttons */}
-      <div className='grid w-full grid-cols-2 items-center justify-between gap-1'>
-        <Button onClick={handleBuyNow} className='transition-all duration-200 active:scale-[0.98]'>
-          <ShoppingCart strokeWidth={1} width={16} height={16} className='mr-1' />
-          <span className='hidden lg:inline'>Mua nhanh</span>
-          <span className='lg:hidden'>Mua</span>
-        </Button>
-        <Button variant='secondary' onClick={handleNavigateToDetail}>
-          <Eye strokeWidth={1} width={15} height={15} className='mr-1' />
-          <span className='hidden lg:inline'>Chi tiết</span>
-          <span className='lg:hidden'>Xem</span>
-        </Button>
-      </div>
+
+      {/* Button  */}
+      {isShowButton && (
+        <div className='grid w-full grid-cols-2 items-center justify-between gap-1'>
+          <Button onClick={handleBuyNow} className='transition-all duration-200 active:scale-[0.98]'>
+            <ShoppingCart strokeWidth={1} width={16} height={16} className='mr-1' />
+            <span className='hidden lg:inline'>Mua nhanh</span>
+            <span className='lg:hidden'>Mua</span>
+          </Button>
+          <Button variant='secondary' onClick={handleNavigateToDetail}>
+            <Eye strokeWidth={1} width={15} height={15} className='mr-1' />
+            <span className='hidden lg:inline'>Chi tiết</span>
+            <span className='lg:hidden'>Xem</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

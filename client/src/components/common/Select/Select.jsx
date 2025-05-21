@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { cn } from '@/utils/cn';
+import { cn } from '@/utils/helpers/cn';
 
 // Arrow Down Icon component
 const ArrowDownIcon = ({ className = '' }) => (
