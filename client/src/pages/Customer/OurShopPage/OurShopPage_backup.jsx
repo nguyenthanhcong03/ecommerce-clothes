@@ -13,14 +13,16 @@ import {
   TagOutlined,
   StarFilled,
   AppstoreOutlined,
-  BarsOutlined,
-  LoadingOutlined
+  BarsOutlined
 } from '@ant-design/icons';
 import Button from '@/components/common/Button/Button';
+import { colorOptions, sizeOptions } from '@/constants/colors';
+import { fetchCategories } from '@/store/slices/categorySlice';
 
 function OurShopPage() {
   const dispatch = useDispatch();
   const { products, loading, pagination, sort } = useSelector((state) => state.product);
+  const { categories } = useSelector((state) => state.category);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' hoặc 'list'
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
@@ -29,33 +31,6 @@ function OurShopPage() {
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Danh sách danh mục, màu sắc và kích thước (thông thường sẽ lấy từ API)
-  const categories = [
-    { id: '1', name: 'Quần áo nam' },
-    { id: '2', name: 'Quần áo nữ' },
-    { id: '3', name: 'Phụ kiện' },
-    { id: '4', name: 'Giày dép' },
-    { id: '5', name: 'Đồ thể thao' }
-  ];
-
-  const colors = [
-    { id: 'black', name: 'Đen', hex: '#000000' },
-    { id: 'white', name: 'Trắng', hex: '#ffffff' },
-    { id: 'red', name: 'Đỏ', hex: '#ff0000' },
-    { id: 'blue', name: 'Xanh dương', hex: '#0000ff' },
-    { id: 'green', name: 'Xanh lá', hex: '#00ff00' },
-    { id: 'yellow', name: 'Vàng', hex: '#ffff00' }
-  ];
-
-  const sizes = [
-    { id: 's', name: 'S' },
-    { id: 'm', name: 'M' },
-    { id: 'l', name: 'L' },
-    { id: 'xl', name: 'XL' },
-    { id: 'xxl', name: 'XXL' }
-  ];
-
   // Tùy chọn sắp xếp
   const sortOptions = [
     { label: 'Mặc định', value: 'default' },
@@ -75,8 +50,8 @@ function OurShopPage() {
       category: selectedCategories.length > 0 ? selectedCategories.join(',') : undefined,
       minPrice: priceRange.min || undefined,
       maxPrice: priceRange.max || undefined,
-      color: selectedColors.length > 0 ? selectedColors.join(',') : undefined,
-      size: selectedSizes.length > 0 ? selectedSizes.join(',') : undefined,
+      color: selectedColors.length > 0 ? selectedColors : undefined,
+      size: selectedSizes.length > 0 ? selectedSizes : undefined,
       rating: selectedRating || undefined,
       sortBy: sort?.sortBy,
       sortOrder: sort?.sortOrder
@@ -118,6 +93,13 @@ function OurShopPage() {
       })
     );
 
+    console.log('params', params);
+    // Loại bỏ các tham số undefined
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key];
+      }
+    });
     // Fetch products with new filters
     dispatch(fetchProducts(params));
 
@@ -195,7 +177,18 @@ function OurShopPage() {
         sortOrder: 'desc'
       })
     );
-  }, [dispatch]);
+    dispatch(
+      fetchCategories({
+        page: 1,
+        limit: 12,
+        sortBy: 'createdAt',
+        sortOrder: 'desc'
+      })
+    );
+  }, [dispatch]); // Add view transition animation
+  useEffect(() => {
+    document.body.style.transition = '0.3s opacity ease-in-out';
+  }, []);
 
   // Render stars for rating selector
   const renderStars = () => {
@@ -236,16 +229,17 @@ function OurShopPage() {
           <div className='flex items-center gap-2'>
             <button
               onClick={() => setViewMode('grid')}
-              className={`rounded-md p-2 ${viewMode === 'grid' ? 'bg-primary-100 text-primary-600' : 'bg-gray-100'}`}
+              className={`rounded-md p-2 ${viewMode === 'grid' ? 'bg-[#F3F4F6]' : 'bg-white'}`}
               aria-label='Grid view'
             >
               <AppstoreOutlined />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`rounded-md p-2 ${viewMode === 'list' ? 'bg-primary-100 text-primary-600' : 'bg-gray-100'}`}
+              className={`rounded-md p-2 ${viewMode === 'list' ? 'bg-[#F3F4F6]' : 'bg-white'}`}
               aria-label='List view'
             >
+              hihi
               <BarsOutlined />
             </button>
           </div>
@@ -262,12 +256,10 @@ function OurShopPage() {
               <CloseOutlined />
             </button>
           </div>
-
           {/* Filter title - desktop */}
           <div className='mb-4 hidden lg:block'>
             <h2 className='text-lg font-semibold'>Bộ lọc sản phẩm</h2>
           </div>
-
           {/* Search */}
           <div className='mb-6'>
             <h3 className='text-md mb-2 font-medium'>Tìm kiếm</h3>
@@ -283,115 +275,164 @@ function OurShopPage() {
                 <SearchOutlined />
               </span>
             </div>
-          </div>
-
+          </div>{' '}
           {/* Categories */}
           <div className='mb-6'>
-            <h3 className='text-md mb-2 font-medium'>Danh mục</h3>
+            <div className='flex items-center justify-between'>
+              <h3 className='text-md mb-2 font-medium'>Danh mục</h3>
+              {selectedCategories.length > 0 && (
+                <button
+                  className='text-primary-600 hover:text-primary-700 text-xs'
+                  onClick={() => setSelectedCategories([])}
+                >
+                  Bỏ chọn
+                </button>
+              )}
+            </div>
             <div className='space-y-2'>
               {categories.map((category) => (
-                <div key={category.id} className='flex items-center'>
+                <div key={category._id} className='flex items-center'>
                   <input
                     type='checkbox'
-                    id={`category-${category.id}`}
-                    checked={selectedCategories.includes(category.id)}
-                    onChange={() => toggleCategory(category.id)}
-                    className='text-primary-600 focus:ring-primary-500 h-4 w-4 rounded border-gray-300'
+                    id={`category-${category._id}`}
+                    checked={selectedCategories.includes(category._id)}
+                    onChange={() => toggleCategory(category._id)}
+                    className='h-4 w-4 rounded border-gray-300 text-[#333] focus:ring-[#333]'
                   />
-                  <label htmlFor={`category-${category.id}`} className='ml-2 text-sm text-gray-700'>
+                  <p
+                    htmlFor={`category-${category._id}`}
+                    className='ml-2 flex-grow cursor-pointer text-sm text-gray-700 hover:text-[#333]'
+                    onClick={() => toggleCategory(category._id)}
+                  >
                     {category.name}
-                  </label>
+                  </p>
                 </div>
               ))}
             </div>
           </div>
-
           {/* Price range */}
           <div className='mb-6'>
             <h3 className='text-md mb-2 font-medium'>Khoảng giá</h3>
             <div className='flex items-center gap-2'>
-              <input
-                type='number'
-                value={priceRange.min}
-                onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
-                placeholder='Từ'
-                min='0'
-                className='w-full rounded-md border border-gray-300 p-2'
-              />
-              <span>-</span>
-              <input
-                type='number'
-                value={priceRange.max}
-                onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
-                placeholder='Đến'
-                min='0'
-                className='w-full rounded-md border border-gray-300 p-2'
-              />
+              <div className='w-full'>
+                <label htmlFor='min-price' className='sr-only'>
+                  Giá thấp nhất
+                </label>
+                <input
+                  id='min-price'
+                  type='number'
+                  value={priceRange.min}
+                  onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
+                  placeholder='Từ'
+                  min='0'
+                  aria-label='Giá thấp nhất'
+                  className='focus:ring-primary-300 focus:border-primary-400 w-full rounded-md border border-gray-300 p-2 focus:ring-2'
+                />
+              </div>
+              <span className='text-gray-500'>-</span>
+              <div className='w-full'>
+                <label htmlFor='max-price' className='sr-only'>
+                  Giá cao nhất
+                </label>
+                <input
+                  id='max-price'
+                  type='number'
+                  value={priceRange.max}
+                  onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
+                  placeholder='Đến'
+                  min='0'
+                  aria-label='Giá cao nhất'
+                  className='focus:ring-primary-300 focus:border-primary-400 w-full rounded-md border border-gray-300 p-2 focus:ring-2'
+                />
+              </div>
             </div>
-          </div>
-
+            {priceRange.min && priceRange.max && parseInt(priceRange.min) > parseInt(priceRange.max) && (
+              <p className='mt-1 text-sm text-red-500'>Giá thấp nhất không thể lớn hơn giá cao nhất</p>
+            )}
+          </div>{' '}
           {/* Colors */}
           <div className='mb-6'>
-            <h3 className='text-md mb-2 font-medium'>Màu sắc</h3>
-            <div className='flex flex-wrap gap-2'>
-              {colors.map((color) => (
-                <button
-                  key={color.id}
-                  onClick={() => toggleColor(color.id)}
-                  className={`h-8 w-8 rounded-full border-2 transition ${selectedColors.includes(color.id) ? 'border-primary-500 scale-110' : 'border-gray-200'} `}
-                  style={{ backgroundColor: color.hex }}
-                  title={color.name}
-                  aria-label={color.name}
-                />
-              ))}
+            <div className='flex items-center justify-between'>
+              <h3 className='text-md mb-2 font-medium'>Màu sắc</h3>
+              {selectedColors.length > 0 && (
+                <button className='text-xs text-gray-600 hover:text-primaryColor' onClick={() => setSelectedColors([])}>
+                  Bỏ chọn
+                </button>
+              )}
             </div>
-          </div>
-
+            <div className='flex flex-wrap gap-3'>
+              {colorOptions.map((color, index) => {
+                return (
+                  <div key={index} className='group relative'>
+                    <button
+                      onClick={() => toggleColor(color.name)}
+                      className={`h-6 w-6 transform rounded-full border transition hover:scale-125 ${selectedColors.includes(color.name) ? 'scale-125 border-[#333]' : 'border-gray-200'} `}
+                      style={{ backgroundColor: color.hex }}
+                      aria-label={color.name}
+                      aria-pressed={selectedColors.includes(color.name)}
+                    />
+                    <div className='pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 -translate-y-1 transform rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100'>
+                      {color.name}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>{' '}
           {/* Sizes */}
           <div className='mb-6'>
-            <h3 className='text-md mb-2 font-medium'>Kích thước</h3>
+            <div className='flex items-center justify-between'>
+              <h3 className='text-md mb-2 font-medium'>Kích thước</h3>
+              {selectedSizes.length > 0 && (
+                <button className='text-xs text-gray-600 hover:text-primaryColor' onClick={() => setSelectedSizes([])}>
+                  Bỏ chọn
+                </button>
+              )}
+            </div>
             <div className='flex flex-wrap gap-2'>
-              {sizes.map((size) => (
+              {sizeOptions.map((size) => (
                 <button
-                  key={size.id}
-                  onClick={() => toggleSize(size.id)}
-                  className={`flex h-10 w-10 items-center justify-center rounded-md border text-sm transition ${
-                    selectedSizes.includes(size.id)
-                      ? 'border-primary-500 bg-primary-50 text-primary-600'
-                      : 'border-gray-300 bg-white text-gray-700'
+                  key={size.value}
+                  onClick={() => toggleSize(size.value)}
+                  className={`flex h-8 w-8 items-center justify-center rounded-sm border text-xs transition ${
+                    selectedSizes.includes(size.value)
+                      ? 'border-[#333] font-medium'
+                      : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                   } `}
+                  aria-pressed={selectedSizes.includes(size.value)}
                 >
                   {size.name}
                 </button>
               ))}
             </div>
           </div>
-
           {/* Rating */}
           <div className='mb-6'>
-            <h3 className='text-md mb-2 font-medium'>Đánh giá</h3>
+            <div className='flex items-center justify-between'>
+              <h3 className='text-md mb-2 font-medium'>Đánh giá</h3>
+              {selectedRating > 0 && (
+                <button className='text-xs text-gray-600 hover:text-primaryColor' onClick={() => setSelectedRating(0)}>
+                  Bỏ chọn
+                </button>
+              )}
+            </div>
             <div className='flex items-center text-xl'>{renderStars()}</div>
-            {selectedRating > 0 && (
-              <button onClick={() => setSelectedRating(0)} className='text-primary-600 mt-1 text-xs'>
-                Xóa lọc
-              </button>
-            )}
           </div>
-
           {/* Filter actions */}
           <div className='mt-6 flex gap-2'>
             <Button
-              variant='primary'
               onClick={handleApplyFilter}
-              // className='bg-primary-600 hover:bg-primary-700 flex-1 rounded px-4 py-2 text-white transition'
+              className='hover:bg-primary-700 flex flex-1 items-center justify-center rounded border bg-primaryColor px-4 py-2 text-white transition'
+              aria-label='Áp dụng bộ lọc'
             >
-              Áp dụng
+              <FilterOutlined className='mr-1' /> Áp dụng
             </Button>
             <button
               onClick={handleResetFilter}
-              className='flex-1 rounded bg-gray-100 px-4 py-2 text-gray-700 transition hover:bg-gray-200'
+              className='flex flex-1 items-center justify-center rounded bg-gray-100 px-4 py-2 text-gray-700 transition hover:bg-gray-200'
+              aria-label='Đặt lại bộ lọc'
             >
-              Đặt lại
+              <CloseOutlined className='mr-1' /> Đặt lại
             </button>
           </div>
         </div>
@@ -412,14 +453,14 @@ function OurShopPage() {
               <div className='hidden items-center gap-2 lg:flex'>
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`rounded-md p-2 ${viewMode === 'grid' ? 'bg-primary-100 text-primary-600' : 'bg-gray-100'}`}
+                  className={`rounded-md p-2 ${viewMode === 'grid' ? 'bg-gray-100' : 'bg-white'}`}
                   aria-label='Grid view'
                 >
                   <AppstoreOutlined />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`rounded-md p-2 ${viewMode === 'list' ? 'bg-primary-100 text-primary-600' : 'bg-gray-100'}`}
+                  className={`rounded-md p-2 ${viewMode === 'list' ? 'bg-gray-100' : 'bg-white'}`}
                   aria-label='List view'
                 >
                   <BarsOutlined />
@@ -440,10 +481,43 @@ function OurShopPage() {
 
           {/* Products */}
           {loading ? (
-            <div className='flex h-64 items-center justify-center'>
-              <LoadingOutlined style={{ fontSize: 36 }} spin />
-              <span className='ml-2'>Đang tải sản phẩm...</span>
-            </div>
+            viewMode === 'grid' ? (
+              <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className='animate-pulse rounded-md border border-gray-200 p-4 shadow-sm'>
+                    <div className='mb-4 h-48 w-full rounded-md bg-gray-200'></div>
+                    <div className='mb-2 h-4 w-3/4 rounded-md bg-gray-200'></div>
+                    <div className='mb-4 h-4 w-1/2 rounded-md bg-gray-200'></div>
+                    <div className='mb-2 h-6 w-1/3 rounded-md bg-gray-200'></div>
+                    <div className='mt-2 flex items-center justify-between'>
+                      <div className='h-8 w-1/4 rounded-md bg-gray-200'></div>
+                      <div className='h-8 w-1/3 rounded-md bg-gray-200'></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className='flex flex-col gap-4'>
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className='flex animate-pulse flex-col overflow-hidden rounded-md border border-gray-200 md:flex-row'
+                  >
+                    <div className='h-60 bg-gray-200 md:h-48 md:w-1/3'></div>
+                    <div className='p-4 md:w-2/3'>
+                      <div className='mb-3 h-6 w-3/4 rounded-md bg-gray-200'></div>
+                      <div className='mb-4 h-4 w-1/2 rounded-md bg-gray-200'></div>
+                      <div className='mb-2 h-4 w-full rounded-md bg-gray-200'></div>
+                      <div className='mb-6 h-4 w-full rounded-md bg-gray-200'></div>
+                      <div className='mt-2 flex items-center justify-between'>
+                        <div className='h-8 w-1/4 rounded-md bg-gray-200'></div>
+                        <div className='h-8 w-1/3 rounded-md bg-gray-200'></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
           ) : products && products.length > 0 ? (
             <>
               {viewMode === 'grid' ? (
@@ -513,81 +587,106 @@ function OurShopPage() {
                   ))}
                 </div>
               )}
-
               {/* Pagination */}
               {pagination && pagination.totalPages > 1 && (
                 <div className='mt-8 flex justify-center'>
-                  <div className='flex space-x-1'>
-                    <button
-                      onClick={() => handlePageChange(Math.max(1, pagination.page - 1))}
-                      disabled={pagination.page === 1}
-                      className={`rounded px-3 py-1 ${
-                        pagination.page === 1
-                          ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
-                    >
-                      &laquo;
-                    </button>
+                  <nav aria-label='Phân trang'>
+                    <ul className='flex items-center space-x-2'>
+                      <li>
+                        <button
+                          onClick={() => handlePageChange(Math.max(1, pagination.page - 1))}
+                          disabled={pagination.page === 1}
+                          aria-label='Trang trước'
+                          className={`flex items-center justify-center rounded-md px-3 py-2 transition ${
+                            pagination.page === 1
+                              ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                              : 'hover:text-primary-600 bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          }`}
+                        >
+                          &laquo;
+                        </button>
+                      </li>
 
-                    {Array.from({ length: pagination.totalPages }).map((_, index) => {
-                      const pageNumber = index + 1;
-                      // Show only 5 pages and add ellipsis
-                      if (
-                        pageNumber === 1 ||
-                        pageNumber === pagination.totalPages ||
-                        (pageNumber >= pagination.page - 1 && pageNumber <= pagination.page + 1)
-                      ) {
-                        return (
-                          <button
-                            key={pageNumber}
-                            onClick={() => handlePageChange(pageNumber)}
-                            className={`rounded px-3 py-1 ${
-                              pageNumber === pagination.page
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                            }`}
-                          >
-                            {pageNumber}
-                          </button>
-                        );
-                      } else if (
-                        (pageNumber === 2 && pagination.page > 3) ||
-                        (pageNumber === pagination.totalPages - 1 && pagination.page < pagination.totalPages - 2)
-                      ) {
-                        return <span key={pageNumber}>...</span>;
-                      }
-                      return null;
-                    })}
+                      {Array.from({ length: pagination.totalPages }).map((_, index) => {
+                        const pageNumber = index + 1;
+                        // Show only 5 pages and add ellipsis
+                        if (
+                          pageNumber === 1 ||
+                          pageNumber === pagination.totalPages ||
+                          (pageNumber >= pagination.page - 1 && pageNumber <= pagination.page + 1)
+                        ) {
+                          return (
+                            <li key={pageNumber}>
+                              <button
+                                onClick={() => handlePageChange(pageNumber)}
+                                aria-label={`Trang ${pageNumber}`}
+                                aria-current={pageNumber === pagination.page ? 'page' : undefined}
+                                className={`flex h-[40px] min-w-[40px] items-center justify-center rounded-md transition ${
+                                  pageNumber === pagination.page
+                                    ? 'bg-primary-600 font-medium text-white'
+                                    : 'hover:text-primary-600 bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                }`}
+                              >
+                                {pageNumber}
+                              </button>
+                            </li>
+                          );
+                        } else if (
+                          (pageNumber === 2 && pagination.page > 3) ||
+                          (pageNumber === pagination.totalPages - 1 && pagination.page < pagination.totalPages - 2)
+                        ) {
+                          return (
+                            <li key={pageNumber} className='flex items-center'>
+                              <span className='text-gray-500'>...</span>
+                            </li>
+                          );
+                        }
+                        return null;
+                      })}
 
-                    <button
-                      onClick={() => handlePageChange(Math.min(pagination.totalPages, pagination.page + 1))}
-                      disabled={pagination.page === pagination.totalPages}
-                      className={`rounded px-3 py-1 ${
-                        pagination.page === pagination.totalPages
-                          ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
-                    >
-                      &raquo;
-                    </button>
-                  </div>
+                      <li>
+                        <button
+                          onClick={() => handlePageChange(Math.min(pagination.totalPages, pagination.page + 1))}
+                          disabled={pagination.page === pagination.totalPages}
+                          aria-label='Trang sau'
+                          className={`flex items-center justify-center rounded-md px-3 py-2 transition ${
+                            pagination.page === pagination.totalPages
+                              ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                              : 'hover:text-primary-600 bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          }`}
+                        >
+                          &raquo;
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
                 </div>
               )}
             </>
           ) : (
-            <div className='flex flex-col items-center justify-center rounded-lg bg-gray-50 py-16'>
-              <TagOutlined style={{ fontSize: 48 }} className='mb-4 text-gray-300' />
+            <div className='animate-fade-in flex flex-col items-center justify-center rounded-lg bg-gray-50 py-16'>
+              <div className='mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100'>
+                <TagOutlined style={{ fontSize: 32 }} className='text-gray-300' />
+              </div>
               <h3 className='mb-2 text-xl font-medium text-gray-700'>Không tìm thấy sản phẩm</h3>
-              <p className='max-w-md text-center text-gray-500'>
+              <p className='mb-3 max-w-md text-center text-gray-500'>
                 Không có sản phẩm nào phù hợp với bộ lọc hiện tại. Vui lòng thử lại với các tiêu chí khác.
               </p>
-              <button
-                onClick={handleResetFilter}
-                className='bg-primary-600 hover:bg-primary-700 mt-4 rounded px-4 py-2 text-white transition'
-              >
-                Xóa bộ lọc
-              </button>
+              <div className='mt-2 flex gap-3'>
+                <button
+                  onClick={handleResetFilter}
+                  className='bg-primary-600 hover:bg-primary-700 flex items-center rounded-md px-4 py-2 text-white transition'
+                  aria-label='Xóa tất cả bộ lọc'
+                >
+                  <CloseOutlined className='mr-1' /> Xóa bộ lọc
+                </button>
+                <button
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  className='rounded-md bg-gray-200 px-4 py-2 text-gray-700 transition hover:bg-gray-300'
+                >
+                  Quay lại đầu trang
+                </button>
+              </div>
             </div>
           )}
         </div>

@@ -3,6 +3,7 @@ import {
   createCategoryAPI,
   deleteCategoryByIdAPI,
   getAllCategoriesAPI,
+  getCategoryTreeAPI,
   updateCategoryByIdAPI
 } from '../../services/categoryService.js';
 
@@ -11,6 +12,15 @@ export const fetchCategories = createAsyncThunk('categories/fetchCategories', as
     const data = await getAllCategoriesAPI(params);
     console.log('categories', data);
     return data;
+  } catch (error) {
+    return rejectWithValue(error.response?.data || error.message);
+  }
+});
+
+export const getCategoriesTree = createAsyncThunk('categories/getCategoriesTree', async (_, { rejectWithValue }) => {
+  try {
+    const response = await getCategoryTreeAPI();
+    return response.data;
   } catch (error) {
     return rejectWithValue(error.response?.data || error.message);
   }
@@ -53,6 +63,7 @@ export const deleteCategory = createAsyncThunk('categories/deleteCategory', asyn
 // Trạng thái ban đầu
 const initialState = {
   categories: [],
+  categoriesTree: [], // Thêm trạng thái cho cây danh mục
   pagination: {
     page: 1,
     limit: 10,
@@ -64,6 +75,7 @@ const initialState = {
     // isActive: null
   },
   loading: false,
+  treeLoading: false, // Thêm trạng thái loading riêng cho cây danh mục
   error: null
 };
 
@@ -93,6 +105,20 @@ const categorySlice = createSlice({
       })
       .addCase(fetchCategories.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload || action.error.message;
+      })
+
+      // LẤY CÂY DANH MỤC
+      .addCase(getCategoriesTree.pending, (state) => {
+        state.treeLoading = true;
+        state.error = null;
+      })
+      .addCase(getCategoriesTree.fulfilled, (state, action) => {
+        state.treeLoading = false;
+        state.categoriesTree = action.payload || [];
+      })
+      .addCase(getCategoriesTree.rejected, (state, action) => {
+        state.treeLoading = false;
         state.error = action.payload || action.error.message;
       })
 

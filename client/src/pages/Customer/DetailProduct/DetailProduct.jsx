@@ -1,4 +1,3 @@
-import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import Button from '@/components/common/Button/Button';
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
 import { addToCart } from '@/store/slices/cartSlice';
@@ -122,13 +121,16 @@ const DetailProduct = () => {
         };
       }
     }
+
     // Giá mặc định (giá thấp nhất)
-    const defaultVariant = product?.variants.reduce((min, variant) =>
-      !min || variant.price < min.price ? variant : min
-    );
+    let defaultVariant = null;
+    if (product.variants && product.variants.length > 0) {
+      defaultVariant = product?.variants.reduce((min, variant) => (!min || variant.price < min.price ? variant : min));
+    }
+
     return {
-      price: defaultVariant?.price,
-      discountPrice: defaultVariant?.discountPrice
+      price: defaultVariant?.price || 0,
+      discountPrice: defaultVariant?.discountPrice || null
     };
   };
 
@@ -229,14 +231,6 @@ const DetailProduct = () => {
     setQuantity(newQuantity);
   };
 
-  const breadcrumbItems = [
-    { label: 'Outfitory', path: '/' },
-    { label: 'Sản phẩm', path: '/shop' },
-    // Nếu có category
-    ...(product?.categoryId ? [{ label: product.categoryId.name, path: `/category/${product.categoryId}` }] : []),
-    { label: product?.name || 'Chi tiết sản phẩm' }
-  ];
-
   if (status === 'loading') {
     return (
       <div className='flex h-screen items-center justify-center'>
@@ -275,9 +269,7 @@ const DetailProduct = () => {
   return (
     <div className='mx-auto mt-[60px] w-full max-w-[1280px] px-4 py-4 sm:mt-[80px] md:p-4'>
       {/* Breadcrumb */}
-      <div className='mb-4 overflow-x-auto sm:mb-6'>
-        <Breadcrumb items={breadcrumbItems} />
-      </div>
+      <div className='mb-4 overflow-x-auto sm:mb-6'></div>
       <div className='mx-auto'>
         <div className='flex flex-col flex-wrap md:flex-row'>
           {/* Left Column - Product Images */}

@@ -58,7 +58,7 @@ export const getCategoryByIdAPI = async (id) => {
  * @param {Boolean} onlyActive Chỉ lấy các danh mục đang hoạt động
  * @returns {Promise} Kết quả từ API chứa cây danh mục
  */
-export const getCategoryTreeAPI = async (onlyActive = true) => {
-  const url = `${BASE_API}/tree?onlyActive=${onlyActive}`;
+export const getCategoryTreeAPI = async () => {
+  const url = `${BASE_API}/tree`;
   return await axios.get(url);
 };

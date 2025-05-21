@@ -59,7 +59,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, className = '' }) =
         onClick={() => onPageChange(pageNumber)}
         disabled={isActive}
         className={`rounded-md px-3 py-1 ${
-          isActive ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+          isActive ? 'bg-[#333] text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
         }`}
         aria-current={isActive ? 'page' : undefined}
       >
@@ -86,7 +86,6 @@ const Pagination = ({ currentPage, totalPages, onPageChange, className = '' }) =
         }`}
         aria-label='Previous page'
       >
-        {' '}
         <ChevronLeft className='h-5 w-5' />
       </button>
 

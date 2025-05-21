@@ -2,7 +2,7 @@ import { colorOptions, sizeOptions } from '@/constants/colors';
 import { deleteMultipleFiles, uploadMultipleFiles } from '@/services/fileService';
 import { fetchCategories } from '@/store/slices/categorySlice';
 import { createProduct, updateProductById } from '@/store/slices/productSlice';
-import { buildTree } from '@/utils/convertFlatArrToTreeArr';
+import { buildTree } from '@/utils/buildTree';
 import { UploadOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Card, Form, Input, message, Modal, Select, Switch, TreeSelect, Upload } from 'antd';

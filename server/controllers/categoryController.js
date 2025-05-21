@@ -185,10 +185,7 @@ const deleteCategory = async (req, res) => {
 
 const getTreeCategories = async (req, res) => {
   try {
-    const { onlyActive } = req.query;
-    const activeFilter = onlyActive === "false" ? false : true; // Mặc định là chỉ lấy categories đang active
-
-    const categoriesTree = await categoryService.getCategoryTree(activeFilter);
+    const categoriesTree = await categoryService.getCategoryTree();
 
     return res.status(200).json({
       success: true,

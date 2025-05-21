@@ -11,9 +11,9 @@ const buttonVariants = cva(
     variants: {
       // Different visual variants
       variant: {
-        primary: 'bg-primaryColor hover:bg-opacity-90 text-white',
-        secondary: 'bg-white border border-primaryColor hover:bg-opacity-90 text-text1',
-        outline: 'border border-primaryColor bg-white text-primaryColor hover:bg-primaryColor hover:text-white',
+        primary: 'bg-primaryColor hover:bg-opacity-90 transition duration-300 text-white',
+        secondary: 'bg-white border border-primaryColor transition duration-300 hover:bg-neutral-100 text-text1',
+        outline: 'border border-primaryColor bg-white text-primaryColor',
         ghost: 'bg-transparent hover:bg-gray-100 text-primaryColor',
         link: 'bg-transparent underline-offset-4 hover:underline text-primaryColor p-0 height-auto',
         danger: 'bg-red-600 hover:bg-red-700 text-white',

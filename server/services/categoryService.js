@@ -43,10 +43,10 @@ const getCategories = async (options = {}) => {
   }
 };
 
-const getCategoryTree = async (onlyActive = true) => {
+const getCategoryTree = async () => {
   try {
     // Fetch all categories or only active ones
-    const query = onlyActive ? { isActive: true } : {};
+    const query = {};
     const categories = await Category.find(query).sort({ priority: -1 });
 
     // Create a map for quick lookup
@@ -298,6 +298,41 @@ const updateCategory = async (categoryId, updateData) => {
   }
 };
 
+/**
+ * Lấy tất cả ID của danh mục con (bao gồm cả cháu, chắt...) của một danh mục cha
+ * @param {String} categoryId - ID của danh mục cha
+ * @returns {Promise<Array>} - Mảng chứa ID của danh mục cha và tất cả con cháu
+ */
+async function getAllChildCategoryIds(categoryId) {
+  try {
+    // Khởi tạo mảng kết quả với ID của danh mục cha
+    const allCategoryIds = [categoryId];
+
+    // Hàm đệ quy để tìm tất cả con cháu
+    async function findChildren(parentId) {
+      // Tìm tất cả danh mục con trực tiếp
+      const childCategories = await Category.find({ parentId });
+
+      // Nếu không có danh mục con, dừng đệ quy
+      if (childCategories.length === 0) return;
+
+      // Thêm ID của các danh mục con vào kết quả
+      for (const child of childCategories) {
+        allCategoryIds.push(child._id.toString());
+        // Tìm tiếp các con của con (cháu)
+        await findChildren(child._id);
+      }
+    }
+
+    // Bắt đầu tìm kiếm đệ quy
+    await findChildren(categoryId);
+
+    return allCategoryIds;
+  } catch (error) {
+    throw new Error(`Error getting child categories: ${error.message}`);
+  }
+}
+
 module.exports = {
   getCategories,
   getCategoryTree,
@@ -308,4 +343,5 @@ module.exports = {
   createCategory,
   getCategoryById,
   updateCategory,
+  getAllChildCategoryIds, // Thêm export function mới
 };

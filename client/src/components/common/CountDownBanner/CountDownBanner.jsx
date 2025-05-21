@@ -7,7 +7,7 @@ function CountDownBanner({ backgroundImage }) {
   const targetDate = '2025-12-31T00:00:00';
   return (
     <div
-      className='flex h-full w-full flex-col items-center justify-center gap-5 border bg-cover bg-center bg-no-repeat p-5'
+      className='flex h-full w-full flex-col items-center justify-center gap-5 rounded-md border bg-cover bg-center bg-no-repeat p-5'
       style={{
         backgroundImage: `url(${backgroundImage})`
       }}

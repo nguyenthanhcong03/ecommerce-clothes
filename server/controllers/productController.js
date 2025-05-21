@@ -1,6 +1,7 @@
 const { response } = require("express");
 const Product = require("../models/product");
 const productService = require("../services/productService");
+const categoryService = require("../services/categoryService");
 const slugify = require("slugify");
 const { default: mongoose } = require("mongoose");
 
@@ -24,7 +25,6 @@ const getAllProducts = async (req, res) => {
       sortBy = "createdAt",
       sortOrder = "desc",
     } = req.query;
-    console.log("req.query", req.query);
 
     // Convert page and limit to integers
     const pageNumber = parseInt(page);
@@ -34,15 +34,39 @@ const getAllProducts = async (req, res) => {
     const skip = (pageNumber - 1) * limitNumber;
 
     // Xây dựng query động dựa trên các tham số lọc
-    const query = {};
-
-    // Lọc theo danh mục
+    const query = {}; // Lọc theo danh mục (bao gồm cả danh mục con)
     if (category) {
       // Hỗ trợ nhiều danh mục (dạng mảng)
       if (Array.isArray(category)) {
-        query.category = { $in: category };
+        // Tìm tất cả sản phẩm thuộc các danh mục được chỉ định và các danh mục con của chúng
+        const allCategoryIds = [];
+
+        // Duyệt qua từng danh mục được chỉ định
+        for (const catId of category) {
+          try {
+            // Lấy danh mục hiện tại và tất cả con cháu của nó
+            const childCategoryIds = await categoryService.getAllChildCategoryIds(catId);
+            allCategoryIds.push(...childCategoryIds);
+          } catch (error) {
+            // Nếu có lỗi (ví dụ: ID không hợp lệ), bỏ qua và tiếp tục
+            console.error(`Error getting child categories for ${catId}:`, error.message);
+          }
+        }
+
+        // Loại bỏ các ID trùng lặp
+        const uniqueCategoryIds = [...new Set(allCategoryIds)];
+        query.categoryId = { $in: uniqueCategoryIds };
       } else {
-        query.category = category;
+        // Nếu chỉ có một danh mục
+        try {
+          // Lấy tất cả ID danh mục con
+          const allCategoryIds = await categoryService.getAllChildCategoryIds(category);
+          query.categoryId = { $in: allCategoryIds };
+        } catch (error) {
+          // Nếu có lỗi, chỉ sử dụng danh mục hiện tại
+          console.error(`Error getting child categories:`, error.message);
+          query.categoryId = category;
+        }
       }
     }
 
@@ -55,20 +79,18 @@ const getAllProducts = async (req, res) => {
     // }
 
     // Lọc theo khoảng giá
-    // Price range filter
     const priceFilter = {};
     if (minPrice || maxPrice) {
-      if (minAmount) {
+      if (minPrice) {
         priceFilter.$gte = parseFloat(minPrice);
       }
 
-      if (maxAmount) {
+      if (maxPrice) {
         priceFilter.$lte = parseFloat(maxPrice);
       }
     }
-
     if (Object.keys(priceFilter).length > 0) {
-      filter["variants.price"] = priceFilter;
+      query["variants.price"] = priceFilter;
     }
 
     // Lọc theo tags
@@ -134,24 +156,21 @@ const getAllProducts = async (req, res) => {
       // }
     }
 
-    // Determine sort options
     const sort = {};
 
     // Handle special sorts
     if (sortBy === "price") {
-      // Sort by the lowest price in the variants
       sort["variants.price"] = sortOrder === "asc" ? 1 : -1;
     } else if (sortBy === "popularity") {
-      // Sort by sales count
       sort.salesCount = sortOrder === "asc" ? 1 : -1;
     } else if (sortBy === "rating") {
-      // Sort by average rating
       sort.averageRating = sortOrder === "asc" ? 1 : -1;
     } else {
       // Default sorting by any field
       sort[sortBy] = sortOrder === "asc" ? 1 : -1;
     }
-    console.log("query database", query);
+
+    console.log("query:", query);
 
     // Execute query with pagination
     const products = await Product.find(query)
@@ -175,7 +194,7 @@ const getAllProducts = async (req, res) => {
           total: totalProducts,
           page: Number(pageNumber),
           limit: Number(limitNumber),
-          totalPages: Math.ceil(totalPages / limitNumber),
+          totalPages: totalPages,
         },
       },
     });

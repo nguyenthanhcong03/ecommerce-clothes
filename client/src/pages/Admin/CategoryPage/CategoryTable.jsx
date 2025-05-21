@@ -1,4 +1,4 @@
-import { buildTree } from '@/utils/convertFlatArrToTreeArr';
+import { buildTree } from '@/utils/buildTree';
 import { Image, Input, Popconfirm, Space, Table, Tooltip } from 'antd';
 import { Pencil, Search, Trash2 } from 'lucide-react';
 import { memo, useMemo } from 'react';

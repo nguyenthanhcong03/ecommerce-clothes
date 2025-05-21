@@ -1,4 +1,3 @@
-import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import Collapse from '@/components/common/Collapse/Collapse';
 import Headline from '@/components/common/Headline/Headline';
 import AboutStory from '@/pages/customer/AboutPage/components/AboutStory/AboutStory';
@@ -7,15 +6,9 @@ import BrandSwiper from '@/pages/customer/AboutPage/components/BrandSwiper/Brand
 import React from 'react';
 
 function AboutPage() {
-  const breadcrumbItems = [
-    { label: 'Trang chủ', link: '/' },
-    { label: 'Về chúng tôi' } // Không có link, là trang hiện tại
-  ];
   return (
     <div className='mx-auto w-full max-w-[1280px] px-10 pt-[60px] lg:pt-[80px]'>
-      <div className='my-5'>
-        <Breadcrumb items={breadcrumbItems} />
-      </div>
+      <div className='my-5'></div>
       <div className='my-8'>
         <Headline text1={'Tận tâm vì phong cách của bạn'} text2={'CHÀO MỪNG ĐẾN VỚI FASALO'} />
       </div>

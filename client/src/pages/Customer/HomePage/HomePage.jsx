@@ -4,6 +4,7 @@ import CountDownBanner from '@/components/common/CountDownBanner/CountDownBanner
 import PopularProduct from '@/components/product/PopularProduct/PopularProduct';
 import Banner from '@/pages/customer/HomePage/components/Banner/Banner';
 import Info from '@/pages/customer/HomePage/components/Info/Info';
+import Categories from '@/pages/customer/HomePage/components/Categories/Categories';
 import SaleHomePage from '@/pages/customer/HomePage/components/SaleHomePage/SaleHomePage';
 import { fetchProducts } from '@/store/slices/productSlice';
 import { useEffect } from 'react';
@@ -21,6 +22,7 @@ function HomePage() {
       <Banner />
       <div className='px-5'>
         <Info />
+        <Categories />
         <div className='my-12'>
           <Headline text1={'đừng bỏ lỡ ưu đãi siêu lớn'} text2={'SẢN PHẨM BÁN CHẠY'} />
         </div>

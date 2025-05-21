@@ -1,4 +1,5 @@
 import Button from '@/components/common/Button/Button';
+import { colorOptions } from '@/constants/colors';
 import { addToCart } from '@/store/slices/cartSlice';
 import { openProductDetailModal } from '@/store/slices/productSlice';
 import { Eye, Heart, ShoppingCart, Star } from 'lucide-react';
@@ -163,7 +164,7 @@ function ProductCard({ item, isShowVariant = true }) {
   };
 
   return (
-    <div className='flex h-full w-full flex-col items-start justify-start overflow-hidden border'>
+    <div className='flex h-full w-full flex-col items-start justify-start overflow-hidden rounded-sm border bg-white hover:opacity-95 hover:shadow-xl'>
       <div className='group relative max-h-[340px] w-full cursor-pointer'>
         <img className='max-h-[340px] w-full object-cover' src={displayImage} alt={item?.name} />
         <img
@@ -192,17 +193,16 @@ function ProductCard({ item, isShowVariant = true }) {
                   selectedColor === color && 'border-black text-black'
                 }`}
               >
-                {color === 'Đỏ' && <div className='h-full w-full rounded-full border bg-red-500'></div>}
-                {color === 'Xanh' && <div className='h-full w-full rounded-full border bg-blue-500'></div>}
-                {color === 'Vàng' && <div className='h-full w-full rounded-full border bg-yellow-500'></div>}
-                {color === 'Trắng' && <div className='h-full w-full rounded-full border bg-white'></div>}
-                {color === 'Đen' && <div className='h-full w-full rounded-full border bg-black'></div>}
-                {color === 'Xám' && <div className='h-full w-full rounded-full border bg-gray-500'></div>}
-                {color === 'Xanh lá' && <div className='h-full w-full rounded-full border bg-green-500'></div>}
-                {color === 'Hồng' && <div className='h-full w-full rounded-full border bg-pink-500'></div>}
-                {color === 'Tím' && <div className='h-full w-full rounded-full border bg-purple-500'></div>}
-                {color === 'Cam' && <div className='h-full w-full rounded-full border bg-orange-500'></div>}
-                {color === 'Nâu' && <div className='h-full w-full rounded-full border bg-amber-950'></div>}
+                {colorOptions.map(
+                  (option) =>
+                    option.name === color && (
+                      <div
+                        key={option.name}
+                        className='h-full w-full rounded-full border'
+                        style={{ backgroundColor: option.hex }}
+                      ></div>
+                    )
+                )}
               </button>
             );
           })}
@@ -244,7 +244,7 @@ function ProductCard({ item, isShowVariant = true }) {
         </Button>
         <Button variant='secondary' onClick={handleNavigateToDetail}>
           <Eye strokeWidth={1} width={15} height={15} className='mr-1' />
-          <span className='hidden lg:inline'>Xem chi tiết</span>
+          <span className='hidden lg:inline'>Chi tiết</span>
           <span className='lg:hidden'>Xem</span>
         </Button>
       </div>

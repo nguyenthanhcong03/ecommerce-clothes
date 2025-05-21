@@ -10,41 +10,6 @@ import {
   updateProductByIdAPI
 } from '../../services/productService';
 
-const initialState = {
-  products: [],
-  pagination: {
-    page: 1,
-    limit: 5,
-    total: 0,
-    totalPages: 0
-  },
-  filters: {
-    search: '',
-    category: null,
-    minPrice: null,
-    maxPrice: null,
-    size: [],
-    color: [],
-    rating: null,
-    tags: [],
-    inStock: false,
-    featured: false,
-    isActive: true
-  },
-  sort: {
-    sortType: 'latest',
-    sortBy: 'createdAt',
-    sortOrder: 'desc'
-  },
-  currentProduct: null,
-  productReviews: [],
-  totalReviews: 0,
-  isDetailModalOpen: false,
-  modalProductId: null,
-  loading: false,
-  error: null
-};
-
 // Định nghĩa async thunk để gọi API
 export const fetchProducts = createAsyncThunk('product/fetchProducts', async (params, { rejectWithValue }) => {
   try {
@@ -139,7 +104,38 @@ export const fetchProductReviews = createAsyncThunk(
 
 const productSlice = createSlice({
   name: 'product',
-  initialState: initialState,
+  initialState: {
+    products: [],
+    pagination: {
+      page: 1,
+      limit: 5,
+      total: 0,
+      totalPages: 0
+    },
+    filters: {
+      search: '',
+      categories: [],
+      minPrice: null,
+      maxPrice: null,
+      sizes: [],
+      colors: [],
+      rating: null,
+      inStock: false,
+      featured: false,
+      isActive: true
+    },
+    sort: {
+      sortBy: 'createdAt',
+      sortOrder: 'desc'
+    },
+    currentProduct: null,
+    productReviews: [],
+    totalReviews: 0,
+    isDetailModalOpen: false,
+    modalProductId: null,
+    loading: false,
+    error: null
+  },
   reducers: {
     openProductDetailModal: (state, action) => {
       state.isDetailModalOpen = true;
@@ -154,87 +150,40 @@ const productSlice = createSlice({
       state.filters = { ...state.filters, ...action.payload };
     },
 
-    toggleFilterValue: (state, action) => {
-      const { name, value } = action.payload;
-
-      // Handle array fields like brand, size, color
-      if (Array.isArray(state.filters[name])) {
-        const index = state.filters[name].indexOf(value);
-
-        if (index !== -1) {
-          // Remove value if it already exists
-          state.filters[name].splice(index, 1);
+    toggleFilter: (state, action) => {
+      const { filterType, value } = action.payload;
+      if (state.filters[filterType]) {
+        if (Array.isArray(state.filters[filterType])) {
+          // Nếu filter là mảng, thêm hoặc xóa giá trị
+          if (state.filters[filterType].includes(value)) {
+            state.filters[filterType] = state.filters[filterType].filter((item) => item !== value);
+          } else {
+            state.filters[filterType].push(value);
+          }
         } else {
-          // Add value if it doesn't exist
-          state.filters[name].push(value);
+          // Nếu filter không phải mảng, chỉ cần gán giá trị
+          state.filters[filterType] = value;
         }
       }
-      // Handle boolean fields like inStock, featured
-      else if (typeof state.filters[name] === 'boolean') {
-        state.filters[name] = !state.filters[name];
+      // Nếu filter không tồn tại, khởi tạo nó
+      else {
+        state.filters[filterType] = Array.isArray(value) ? [value] : value;
       }
-
-      // Reset to page 1 when filter changes
-      state.pagination.currentPage = 1;
     },
 
-    clearFilters: (state) => {
+    resetFilters: (state) => {
       state.filters = {
         search: '',
-        category: null,
-        brand: [],
+        categories: [],
         minPrice: null,
         maxPrice: null,
-        size: [],
-        color: [],
+        sizes: [],
+        colors: [],
         rating: null,
-        tags: [],
         inStock: false,
         featured: false,
-        isActive: true // Keep default to showing only active products
+        isActive: true
       };
-      state.pagination.currentPage = 1;
-    },
-
-    // Sorting actions
-    setSortType: (state, action) => {
-      const sortType = action.payload;
-      state.sort.sortType = sortType;
-
-      // Update sortBy and order based on sortType
-      switch (sortType) {
-        case 'latest':
-          state.sort.sortBy = 'createdAt';
-          state.sort.order = 'desc';
-          break;
-        case 'popular':
-          state.sort.sortBy = 'viewCount';
-          state.sort.order = 'desc';
-          break;
-        case 'top_sales':
-          state.sort.sortBy = 'salesCount';
-          state.sort.order = 'desc';
-          break;
-        case 'price_asc':
-          state.sort.sortBy = 'price';
-          state.sort.order = 'asc';
-          break;
-        case 'price_desc':
-          state.sort.sortBy = 'price';
-          state.sort.order = 'desc';
-          break;
-        case 'rating':
-          state.sort.sortBy = 'averageRating';
-          state.sort.order = 'desc';
-          break;
-        default:
-          // Handle default or custom sort types
-          if (sortType.includes('_')) {
-            const [field, direction] = sortType.split('_');
-            state.sort.sortBy = field;
-            state.sort.order = direction === 'asc' ? 'asc' : 'desc';
-          }
-      }
     }
   },
   extraReducers: (builder) => {
@@ -374,13 +323,6 @@ const productSlice = createSlice({
   }
 });
 
-export const {
-  openProductDetailModal,
-  closeProductDetailModal,
-  setFilters,
-  toggleFilterValue,
-  clearFilters,
-  setSortType
-} = productSlice.actions;
+export const { openProductDetailModal, closeProductDetailModal, setFilters } = productSlice.actions;
 
 export default productSlice.reducer;
