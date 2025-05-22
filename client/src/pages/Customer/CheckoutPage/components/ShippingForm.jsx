@@ -6,95 +6,17 @@ import { getDistrictsAPI, getProvincesAPI } from '@/services/mapService';
 import { useDispatch, useSelector } from 'react-redux';
 import { calculateDistance } from '../../../../store/slices/orderSlice';
 
-const ShippingForm = ({ control, errors, watch, setValue, onProvincesLoaded, onDistrictsLoaded }) => {
-  const [provinces, setProvinces] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [selectedProvince, setSelectedProvince] = useState('');
-  const [selectedDistrict, setSelectedDistrict] = useState('');
-  const { distance } = useSelector((state) => state.order.distance);
-
-  const dispatch = useDispatch();
-
-  // Watch city to update districts
-  const watchedCity = watch('province');
-  const watchedState = watch('district');
-
-  // // Initialize selectedProvince from watchedCity on component mount
-  // useEffect(() => {
-  //   if (watchedCity && !selectedProvince) {
-  //     setSelectedProvince(watchedCity);
-  //   }
-  //   if (watchedState && !selectedDistrict) {
-  //     setSelectedDistrict(watchedState);
-  //   }
-  // }, [watchedCity, watchedState]);
-
-  // Load danh sách tỉnh
-  useEffect(() => {
-    if (watchedCity && !selectedProvince) {
-      setSelectedProvince(watchedCity);
-    }
-    if (watchedState && !selectedDistrict) {
-      setSelectedDistrict(watchedState);
-    }
-    const fetchProvinces = async () => {
-      try {
-        const response = await getProvincesAPI();
-        setProvinces(response);
-        onProvincesLoaded(response);
-      } catch (error) {
-        console.error('Error loading provinces:', error);
-      }
-    };
-
-    fetchProvinces();
-  }, []);
-
-  // Khi chọn tỉnh → load huyện
-  useEffect(() => {
-    const fetchDistricts = async () => {
-      try {
-        const response = await getDistrictsAPI(selectedProvince);
-        setDistricts(response);
-        onDistrictsLoaded(response);
-
-        const currentState = watchedState;
-        if (!currentState) {
-          setValue('district', '');
-        } else {
-          // Validate that the current state is in the new districts
-          const stateExists = response.some((district) => district.value == currentState);
-          if (!stateExists) {
-            setValue('district', '');
-          }
-        }
-      } catch (error) {
-        console.error('Error loading district:', error);
-      }
-    };
-    if (selectedProvince) {
-      fetchDistricts();
-    }
-  }, [selectedProvince, setValue, watchedState]);
-
-  // Khi chọn huyện → tính phí vận chuyển
-  useEffect(() => {
-    if (selectedProvince && selectedDistrict) {
-      let province = provinces.find((province) => province.value == selectedProvince);
-      let district = districts.find((district) => district.value == selectedDistrict);
-
-      if (province && district) {
-        const customerLocation = `${district.label}, ${province.label}, Việt Nam`;
-        const storeLocation = '175 Tây Sơn, Trung Liệt, Đống Đa, Hà Nội, Việt Nam';
-
-        // Tính khoảng cách giữa hai địa điểm
-        dispatch(calculateDistance({ storeLocation, customerLocation }));
-      }
-    }
-  }, [selectedDistrict, dispatch]);
-
+const ShippingForm = ({
+  control,
+  errors,
+  provinces,
+  setSelectedProvince,
+  districts,
+  setSelectedDistrict,
+  watchedCity
+}) => {
   return (
-    <div className='rounded-sm border bg-white p-6'>
+    <div className='rounded-sm bg-white p-6'>
       <h2 className='mb-6 text-xl font-bold'>Thông tin giao hàng</h2>
 
       <div className='space-y-6'>

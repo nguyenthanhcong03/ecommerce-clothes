@@ -17,10 +17,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 function Header() {
-  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.account);
-  const { totalQuantity } = useSelector((state) => state.cart);
+  const { totalCartItems } = useSelector((state) => state.cart);
   const { scrollPosition } = useScrollHandling();
   const [fixedPosition, setFixedPosition] = useState(false);
   const [isShowUserDropdown, setIsShowUserDropdown] = useState(false);
@@ -184,8 +183,8 @@ function Header() {
               {/* Cart icon */}
               <Tooltip
                 title={
-                  totalQuantity >= 1 ? (
-                    <span className='font-robotoMono'>Có {totalQuantity} sản phẩm trong giỏ hàng</span>
+                  totalCartItems >= 1 ? (
+                    <span className='font-robotoMono'>Có {totalCartItems} sản phẩm trong giỏ hàng</span>
                   ) : (
                     <span className='font-robotoMono'>Không có sản phẩm nào trong giỏ hàng</span>
                   )
@@ -199,9 +198,9 @@ function Header() {
                   }}
                 >
                   <ShoppingCart />
-                  {totalQuantity >= 1 && (
+                  {totalCartItems >= 1 && (
                     <div className='absolute bottom-3 left-3 h-5 w-5 rounded-full bg-primaryColor text-center text-xs leading-5 text-white'>
-                      {totalQuantity}
+                      {totalCartItems}
                     </div>
                   )}
                 </div>

@@ -1,15 +1,14 @@
 import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { selectCurrentOrder, selectShippingInfo } from '../../../../store/slices/orderSlice';
 import { formatCurrency } from '../../../../utils/format/formatCurrency';
 import { formatDate } from '../../../../utils/format/formatDate';
 
 // Icons
-import truckIcon from '../../../../assets/icons/truckIcon.svg';
+import { ArrowLeft, Clock, MapPin, Package, Printer } from 'lucide-react';
 import boxIcon from '../../../../assets/icons/boxIcon.svg';
 import creditCardIcon from '../../../../assets/icons/debitCardIcon.svg';
-import { CheckCircle, Printer, ArrowLeft, Package, Clock, MapPin } from 'lucide-react';
+import truckIcon from '../../../../assets/icons/truckIcon.svg';
 
 // Component hiển thị thông tin từng sản phẩm trong đơn hàng
 const OrderProductItem = React.memo(({ product }) => {
@@ -66,8 +65,8 @@ const translateOrderStatus = (status) => {
 const OrderSuccess = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const order = useSelector(selectCurrentOrder);
-  const shippingInfo = useSelector(selectShippingInfo);
+  const order = useSelector((state) => state.order.currentOrder);
+  const shippingInfo = useSelector((state) => state.order.shippingInfo);
 
   useEffect(() => {
     // Nếu không có thông tin đơn hàng và người dùng truy cập trực tiếp trang này,

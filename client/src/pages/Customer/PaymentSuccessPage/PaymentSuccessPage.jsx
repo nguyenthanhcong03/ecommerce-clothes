@@ -92,7 +92,7 @@ const PaymentSuccessPage = () => {
           <Button onClick={handleViewOrder} variant='primary'>
             Xem đơn hàng
           </Button>
-          <Button onClick={handleContinueShopping} variant='outline'>
+          <Button onClick={handleContinueShopping} variant='secondary'>
             Tiếp tục mua sắm
           </Button>
         </div>

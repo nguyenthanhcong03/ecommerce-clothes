@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setOrderItems } from '../../../store/slices/orderSlice';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const ProductDetailModal = () => {
   const dispatch = useDispatch();
@@ -162,7 +163,7 @@ const ProductDetailModal = () => {
     }
   };
 
-  // Get price based on selected size and color
+  // Lấy giá và thông tin của sản phẩm đã chọn
   const getSelectedPrice = () => {
     if (selectedSize && selectedColor && product?.variants) {
       const selectedVariant = product.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
@@ -175,7 +176,7 @@ const ProductDetailModal = () => {
         };
       }
     }
-    // Default price (lowest price)
+    // Giá mặc định (giá thấp nhất)
     const defaultVariant = product?.variants?.reduce((min, variant) =>
       !min || variant.price < min.price ? variant : min
     );
@@ -186,31 +187,35 @@ const ProductDetailModal = () => {
     };
   };
 
-  const handleAddToCart = () => {
-    if (!selectedSize || !selectedColor) {
-      setShowValidation(true);
-      return;
-    }
-
-    const selectedVariant = product.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
-
-    const cartItem = {
-      productId: product._id,
-      variantId: selectedVariant._id,
-      quantity: quantity,
-      snapshot: {
-        name: product.name,
-        price: selectedVariant.price,
-        discountPrice: selectedVariant.discountPrice,
-        color: selectedVariant.color,
-        size: selectedVariant.size,
-        image:
-          selectedVariant.images && selectedVariant.images.length > 0 ? selectedVariant.images[0] : product.images[0]
+  const handleAddToCart = async () => {
+    try {
+      if (!selectedSize || !selectedColor) {
+        setShowValidation(true);
+        return;
       }
-    };
 
-    dispatch(addToCart(cartItem));
-    setShowValidation(false);
+      const selectedVariant = product.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
+
+      const cartItem = {
+        productId: product._id,
+        variantId: selectedVariant._id,
+        quantity: quantity,
+        snapshot: {
+          name: product.name,
+          price: selectedVariant.price,
+          discountPrice: selectedVariant.discountPrice,
+          color: selectedVariant.color,
+          size: selectedVariant.size,
+          image:
+            selectedVariant.images && selectedVariant.images.length > 0 ? selectedVariant.images[0] : product.images[0]
+        }
+      };
+      await dispatch(addToCart(cartItem)).unwrap();
+      toast.success('Thêm sản phẩm vào giỏ hàng thành công');
+    } catch (error) {
+      toast.error('Thêm sản phẩm vào giỏ hàng thất bại');
+      console.log(error);
+    }
     handleCloseModal();
   };
 

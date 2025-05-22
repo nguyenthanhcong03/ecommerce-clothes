@@ -75,7 +75,7 @@ function CartPage() {
           ]}
         />
       </div>
-      <div className='my-8 rounded-md bg-white p-8'>
+      <div className='my-8 rounded-sm bg-white p-8'>
         <Headline text1={'đừng bỏ lỡ ưu đãi, hãy tiến hành thanh toán'} text2={'GIỎ HÀNG'} />
       </div>
       {loading ? (

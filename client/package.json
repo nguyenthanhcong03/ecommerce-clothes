@@ -25,6 +25,7 @@
     "lucide-react": "^0.487.0",
     "moment": "^2.30.1",
     "motion": "^12.6.3",
+    "query-string": "^9.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.56.1",

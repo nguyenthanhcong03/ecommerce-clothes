@@ -6,7 +6,7 @@ function PopularProduct({ data }) {
     // <div className='mt-[10px] flex flex-wrap items-center justify-center gap-[10px]'>
     <>
       {data.map((item) => (
-        <ProductCard item={item} key={item._id} isShowVariant={false} />
+        <ProductCard item={item} key={item._id} />
       ))}
     </>
     // </div>

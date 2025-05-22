@@ -18,26 +18,12 @@ export const getCart = createAsyncThunk('cart/getCart', async (_, { rejectWithVa
   }
 });
 
-export const addToCart = createAsyncThunk('cart/addToCart', async (product, { rejectWithValue }) => {
-  const cartItem = {
-    productId: product._id,
-    variantId: product.variants[0]._id,
-    quantity: 1,
-    snapshot: {
-      name: product.name,
-      price: product.variants[0].price,
-      discountPrice: product.variants[0].discountPrice,
-      color: product.variants[0].color,
-      size: product.variants[0].size,
-      image: product.variants[0].images[0]
-    }
-  };
+export const addToCart = createAsyncThunk('cart/addToCart', async (cartItem, { rejectWithValue }) => {
   try {
     const response = await addToCartService(cartItem);
-    toast.success('Thêm vào giỏ hàng thành công');
+    console.log('response', response);
     return response;
   } catch (error) {
-    toast.error(error.response?.data?.message || 'Thêm vào giỏ hàng thất bại');
     return rejectWithValue(error.response?.data || 'Failed to add to cart');
   }
 });
@@ -51,10 +37,8 @@ export const updateCartItem = createAsyncThunk(
         variantId,
         quantity
       });
-      toast.success('Cập nhật giỏ hàng thành công');
       return response;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Cập nhật giỏ hàng thất bại');
       return rejectWithValue(error.response?.data || 'Failed to update cart');
     }
   }
@@ -63,10 +47,8 @@ export const updateCartItem = createAsyncThunk(
 export const removeCartItem = createAsyncThunk('cart/removeCartItem', async (itemId, { rejectWithValue }) => {
   try {
     const response = await removeCartItemService(itemId);
-    toast.success('Xóa sản phẩm thành công');
     return response;
   } catch (error) {
-    toast.error(error.response?.data?.message || 'Xóa sản phẩm thất bại');
     return rejectWithValue(error.response?.data || 'Failed to remove item');
   }
 });
@@ -74,10 +56,8 @@ export const removeCartItem = createAsyncThunk('cart/removeCartItem', async (ite
 export const removeMultipleCartItems = createAsyncThunk(
   'cart/removeMultipleCartItems',
   async (itemIds, { rejectWithValue }) => {
-    console.log('itemIds', itemIds);
     try {
       const response = await removeMultipleCartItemsService(itemIds);
-      console.log('sau khi xóa', response);
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to remove item');
@@ -94,14 +74,17 @@ const cartSlice = createSlice({
     loadingRemove: false,
     itemUpdate: null,
     error: null,
-    totalQuantity: 0,
+    totalCartItems: 0,
     totalPrice: 0
   },
   reducers: {
     clearCart: (state) => {
       state.items = [];
-      state.totalQuantity = 0;
+      state.totalCartItems = 0;
       state.totalPrice = 0;
+    },
+    settotalCartItems: (state, action) => {
+      state.totalCartItems = action.payload;
     }
   },
   extraReducers: (builder) => {
@@ -112,9 +95,9 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(getCart.fulfilled, (state, action) => {
-        state.items = action.payload.items;
-        state.totalQuantity = action.payload.totalQuantity;
-        state.totalPrice = action.payload.totalPrice;
+        state.items = action.payload.data.items;
+        state.totalCartItems = action.payload.data.totalCartItems;
+        state.totalPrice = action.payload.data.totalPrice;
         state.loading = false;
       })
       .addCase(getCart.rejected, (state, action) => {
@@ -128,8 +111,8 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(addToCart.fulfilled, (state, action) => {
-        state.items = action.payload.cart.items;
-        state.totalQuantity = action.payload.cart.totalQuantity;
+        state.items = action.payload.data.items;
+        state.totalCartItems = action.payload.data.totalCartItems;
         state.loading = false;
       })
       .addCase(addToCart.rejected, (state, action) => {
@@ -147,7 +130,9 @@ const cartSlice = createSlice({
       })
       .addCase(updateCartItem.fulfilled, (state, action) => {
         state.loadingUpdate = false;
-        state.items = action.payload.cart.items;
+        state.items = action.payload.data.items;
+        state.totalCartItems = action.payload.data.totalCartItems;
+        state.totalPrice = action.payload.data.totalPrice;
         state.itemUpdate = null;
       })
       .addCase(updateCartItem.rejected, (state, action) => {
@@ -162,9 +147,9 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(removeCartItem.fulfilled, (state, action) => {
-        console.log('accion.payload', action.payload);
         state.loadingRemove = false;
         state.items = action.payload.data.items;
+        state.totalCartItems = action.payload.data.totalCartItems;
         state.totalPrice = action.payload.data.totalPrice;
       })
       .addCase(removeCartItem.rejected, (state, action) => {
@@ -178,9 +163,9 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(removeMultipleCartItems.fulfilled, (state, action) => {
-        console.log('accion.payload', action.payload);
         state.loadingRemove = false;
         state.items = action.payload.data.items;
+        state.totalCartItems = action.payload.data.totalCartItems;
         state.totalPrice = action.payload.data.totalPrice;
       })
       .addCase(removeMultipleCartItems.rejected, (state, action) => {

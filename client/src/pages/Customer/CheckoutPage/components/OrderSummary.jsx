@@ -82,7 +82,7 @@ const OrderSummary = ({
   return (
     <div className='space-y-6 lg:sticky lg:top-5 lg:col-span-2 lg:self-start'>
       {/* Product List */}
-      <div className='rounded-sm border bg-white p-6'>
+      <div className='rounded-sm bg-white p-6'>
         <div className='flex items-center justify-between'>
           <h2 className='text-xl font-bold'>Sản phẩm đặt hàng</h2>
           <span className='rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800'>
@@ -152,7 +152,7 @@ const OrderSummary = ({
       </div>
 
       {/* Coupon */}
-      <div className='rounded-sm border bg-white p-6'>
+      <div className='rounded-sm bg-white p-6'>
         <div className='flex items-center gap-2'>
           <TagOutlined className='text-blue-600' />
           <h3 className='font-medium'>Mã giảm giá</h3>
@@ -160,13 +160,14 @@ const OrderSummary = ({
 
         <div className='mt-3'>
           <div className='w-full'>
-            <div className='flex items-center'>
+            <div className='flex items-center gap-1'>
               <div className='flex-1'>
                 <Input
                   type='text'
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
                   placeholder='Nhập mã giảm giá'
+                  className='h-[38px]'
                   disabled={couponLoading || !!appliedCoupon}
                 />
               </div>
@@ -212,7 +213,7 @@ const OrderSummary = ({
       </div>
 
       {/* Order Summary */}
-      <div className='rounded-sm border bg-white p-6'>
+      <div className='rounded-sm bg-white p-6'>
         <h2 className='mb-4 text-xl font-bold'>Tóm tắt đơn hàng</h2>
 
         <div className='space-y-3 text-sm'>
@@ -258,7 +259,7 @@ const OrderSummary = ({
             {isLoading ? 'Đang xử lý...' : 'Đặt hàng ngay'}
           </Button>
 
-          <Button type='button' variant='outline' width='full' size='lg' onClick={() => navigate('/cart')}>
+          <Button type='button' variant='secondary' width='full' size='lg' onClick={() => navigate('/cart')}>
             Quay lại giỏ hàng
           </Button>
         </div>

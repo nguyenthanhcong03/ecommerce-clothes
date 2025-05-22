@@ -107,7 +107,6 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
       }
     }
     // Giá mặc định (giá thấp nhất)
-    // Check if variants array exists and is not empty
     if (!item?.variants || item.variants.length === 0) {
       return {
         price: 0,
@@ -126,35 +125,8 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
     };
   };
 
-  // Hàm xử lý sự kiện khi nhấn nút "Thêm vào giỏ hàng"
-  const handleAddToCart = () => {
-    const selectedVariant = item.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
-
-    if (!selectedVariant) {
-      alert('Vui lòng chọn size và màu sắc');
-      return;
-    }
-
-    const cartItem = {
-      productId: item._id,
-      variantId: selectedVariant._id,
-      quantity: 1,
-      snapshot: {
-        name: item.name,
-        price: selectedVariant.price,
-        discountPrice: selectedVariant.discountPrice,
-        color: selectedVariant.color,
-        size: selectedVariant.size,
-        image: item.images[0]
-      }
-    };
-    dispatch(addToCart(cartItem));
-    // dispatch(addToCart(product));
-  };
-
   // Hàm xử lý sự kiện khi nhấn nút "Mua ngay"
   const handleBuyNow = () => {
-    // Open the product detail modal with this product's data
     dispatch(openProductDetailModal(item._id));
   };
 

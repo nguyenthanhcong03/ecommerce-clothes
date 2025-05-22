@@ -38,7 +38,7 @@ const CartSummary = ({
   };
 
   return (
-    <div className='col-span-4 h-fit border bg-white p-6'>
+    <div className='col-span-4 h-fit rounded-sm bg-white p-6'>
       <div className='flex items-center gap-3'>
         <input
           type='checkbox'

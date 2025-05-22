@@ -111,7 +111,7 @@ const PaymentFailedPage = () => {
           <Button onClick={handleTryAgain} variant='primary'>
             Thử lại
           </Button>
-          <Button onClick={handleContactSupport} variant='outline'>
+          <Button onClick={handleContactSupport} variant='secondary'>
             Liên hệ hỗ trợ
           </Button>
         </div>

@@ -70,24 +70,6 @@ const orderSlice = createSlice({
     updateOrderNote: (state, action) => {
       state.note = action.payload;
     },
-    // Cập nhật khoảng cách để tính phí ship
-    updateDistance: (state, action) => {
-      if (typeof action.payload === 'number') {
-        state.distance = action.payload;
-      } else if (action.payload && typeof action.payload === 'object') {
-        // Nếu payload là object có chứa distance và shippingCost
-        if ('distance' in action.payload) {
-          state.distance = action.payload.distance;
-        }
-        if ('shippingCost' in action.payload) {
-          state.shippingCost = action.payload.shippingCost;
-        }
-      }
-    },
-    // Cập nhật phí vận chuyển
-    updateShippingCost: (state, action) => {
-      state.shippingCost = action.payload;
-    },
     // Reset state sau khi hoàn thành đơn hàng
     resetOrder: (state) => {
       return {
@@ -145,44 +127,9 @@ export const {
   applyCoupon,
   removeCoupon,
   updateOrderNote,
-  updateDistance,
-  updateShippingCost,
-  setDirectBuyItem,
-  clearDirectBuyItem,
   resetOrder,
   clearOrderError,
   setCalculatingDistance
 } = orderSlice.actions;
-
-// Selectors
-export const selectShippingInfo = (state) => state.order.shippingInfo;
-export const selectPaymentMethod = (state) => state.order.paymentMethod;
-export const selectShippingCost = (state) => state.order.shippingCost;
-export const selectCouponDiscount = (state) => state.order.couponDiscount;
-export const selectOrderItems = (state) => state.order.orderItems;
-export const selectDirectBuyItem = (state) => state.order.directBuyItem;
-export const selectAppliedCoupon = (state) => state.order.appliedCoupon;
-export const selectOrderNote = (state) => state.order.note;
-export const selectOrderLoading = (state) => state.order.loading;
-export const selectOrderSuccess = (state) => state.order.orderSuccess;
-export const selectOrderError = (state) => state.order.orderError;
-export const selectCurrentOrder = (state) => state.order.currentOrder;
-
-// Tính tổng tiền sản phẩm (chưa bao gồm ship, giảm giá)
-export const selectSubtotal = (state) => {
-  return state.order.orderItems.reduce((total, item) => {
-    const price = item.snapshot.discountPrice || item.snapshot.price;
-    return total + price * item.quantity;
-  }, 0);
-};
-
-// Tính tổng tiền cuối cùng (đã bao gồm ship, giảm giá)
-export const selectTotalPrice = (state) => {
-  const subtotal = selectSubtotal(state);
-  const shippingCost = state.order.shippingCost;
-  const discount = state.order.couponDiscount;
-
-  return Math.max(0, subtotal - discount + shippingCost);
-};
 
 export default orderSlice.reducer;

@@ -2,7 +2,6 @@ import countdownBanner2 from '@/assets/images/countdownBanner2.jpeg';
 import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import CountDownBanner from '@/components/common/CountDownBanner/CountDownBanner';
 import Pagination from '@/components/common/Pagination/Pagination';
-import Select from '@/components/common/Select/Select';
 import ProductCard from '@/components/product/ProductCard/ProductCard';
 import ProductItem from '@/components/product/ProductItem/ProductItem';
 import useDebounce from '@/hooks/useDebounce';

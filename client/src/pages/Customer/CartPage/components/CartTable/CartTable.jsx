@@ -13,7 +13,7 @@ import { removeMultipleCartItems } from '../../../../../store/slices/cartSlice';
 const CartTable = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { items, totalQuantity, totalPrice, loading } = useSelector((state) => state.cart);
+  const { items, totalCartItems, totalPrice, loading } = useSelector((state) => state.cart);
   const [selectedItems, setSelectedItems] = useState(items.map((item) => item._id));
   const [showShadow, setShowShadow] = useState(false);
   const sentinelRef = useRef(null);
@@ -61,36 +61,31 @@ const CartTable = () => {
       .reduce((total, item) => total + item.snapshot.price * item.quantity, 0);
   };
 
-  const handleQuantityChange = async (item, newQuantity) => {
-    try {
-      await dispatch(
-        updateCartItem({
-          productId: item.productId,
-          variantId: item.variantId,
-          quantity: newQuantity
-        })
-      ).unwrap();
-    } catch (error) {
-      toast.error('Cập nhật số lượng thất bại');
-    }
+  const handleQuantityChange = (item, newQuantity) => {
+    dispatch(
+      updateCartItem({
+        productId: item.productId,
+        variantId: item.variantId,
+        quantity: newQuantity
+      })
+    )
+      .unwrap()
+      .then(() => toast.success('Cập nhật số lượng thành công'))
+      .catch((err) => toast.error('Cập nhật số lượng thất bại: ' + err));
   };
 
-  const handleRemoveItem = async (itemId) => {
-    try {
-      await dispatch(removeCartItem(itemId)).unwrap();
-      toast.success('Xóa sản phẩm thành công');
-    } catch (error) {
-      toast.error('Xóa sản phẩm thất bại');
-    }
+  const handleRemoveItem = (itemId) => {
+    dispatch(removeCartItem(itemId))
+      .unwrap()
+      .then(() => toast.success('Xóa sản phẩm thành công'))
+      .catch((err) => toast.error('Xóa sản phẩm thất bại: ' + err));
   };
 
-  const handleRemoveMultipleItems = async (itemIds) => {
-    try {
-      await dispatch(removeMultipleCartItems(itemIds)).unwrap();
-      toast.success('Xóa sản phẩm thành công');
-    } catch (error) {
-      toast.error('Xóa sản phẩm thất bại');
-    }
+  const handleRemoveMultipleItems = (itemIds) => {
+    dispatch(removeMultipleCartItems(itemIds))
+      .unwrap()
+      .then(() => toast.success('Xóa sản phẩm thành công'))
+      .catch((err) => toast.error('Xóa sản phẩm thất bại: ' + err));
   };
 
   const handleProceedToCheckout = () => {
@@ -113,9 +108,9 @@ const CartTable = () => {
   };
 
   return (
-    <div className='mx-auto mt-10 max-w-[1280px] lg:p-8'>
+    <div>
       <div className='flex flex-col gap-8'>
-        <div className='border px-4'>
+        <div className='rounded-sm bg-white px-4'>
           <div className='grid-cols-12 items-center gap-2 border-b text-sm uppercase text-primaryColor md:grid'>
             <div className='flex items-center justify-between px-2 py-4'>
               <input

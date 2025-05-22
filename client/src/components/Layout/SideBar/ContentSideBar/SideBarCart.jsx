@@ -30,7 +30,18 @@ function SideBarCart() {
             }}
           />
         </div>
-        <div>{items && items?.map((item) => <CartItem item={item} key={item._id} />)}</div>
+        <div>
+          {items?.map((item) => (
+            <CartItem
+              key={item._id}
+              item={item}
+              onQuantityChange={handleQuantityChange}
+              onRemove={handleRemoveItem}
+              onSelect={handleSelectItem}
+              isSelected={selectedItems.includes(item._id)}
+            />
+          ))}
+        </div>
       </div>
 
       <div className='flex w-full flex-col gap-4'>

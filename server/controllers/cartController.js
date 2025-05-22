@@ -6,15 +6,25 @@ const { syncCartItemSnapshots } = require("../utils/cart.utils");
 const getCart = async (req, res) => {
   try {
     const userId = req.user?._id;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    if (!userId) return res.status(401).json({ message: "Không có quyền truy cập" });
 
     let cart = await Cart.findOne({ userId });
-    if (!cart) return res.json({ items: [], totalQuantity: 0, totalPrice: 0 });
-
-    const totalQuantity = cart?.items?.length || 0;
+    if (!cart)
+      return res.json({
+        success: false,
+        message: "Lấy giỏ hàng thất bại",
+        data: {
+          items: [],
+          totalCartItems: 0,
+          totalPrice: 0,
+        },
+      });
 
     // Cập nhật snapshot sản phẩm/variant trong giỏ hàng
     await syncCartItemSnapshots(cart);
+
+    const totalCartItems = cart?.items?.length || 0;
+
     // Tính tổng
     const summary = cart.items.reduce(
       (acc, item) => {
@@ -28,10 +38,13 @@ const getCart = async (req, res) => {
     );
 
     return res.status(200).json({
-      items: cart.items,
-      totalQuantity,
-      totalPrice: summary.totalPrice,
-      updatedAt: cart.updatedAt,
+      success: true,
+      message: "Lấy giỏ hàng thành công",
+      data: {
+        items: cart.items,
+        totalCartItems,
+        totalPrice: summary.totalPrice,
+      },
     });
   } catch (error) {
     console.error("Get cart error:", error);
@@ -92,9 +105,16 @@ const addToCart = async (req, res) => {
     }
 
     await cart.save();
-    const totalQuantity = cart?.items?.length || 0;
+    const totalCartItems = cart?.items.length || 0;
 
-    return res.status(200).json({ message: "Added to cart successfully.", cart, totalQuantity });
+    return res.status(200).json({
+      success: true,
+      message: "Thêm vào giỏ hàng thành công.",
+      data: {
+        items: cart.items,
+        totalCartItems,
+      },
+    });
   } catch (error) {
     console.error("Add to cart error:", error);
     return res.status(500).json({ message: "Internal server error" });
@@ -146,6 +166,8 @@ const updateCartItem = async (req, res) => {
       cart.items[itemIndex].isAvailable = variant.stock > 0;
     }
     // item.quantity = quantity;
+
+    const totalCartItems = cart?.items?.length || 0;
     // Tính tổng
     const summary = cart.items.reduce(
       (acc, item) => {
@@ -157,11 +179,17 @@ const updateCartItem = async (req, res) => {
       },
       { totalPrice: 0 }
     );
+
     await cart.save();
     return res.status(200).json({
-      message: "Cart updated successfully",
-      cart,
-      totalPrice: summary.totalPrice,
+      message: "Cập nhật giỏ hàng thành công",
+      success: true,
+      data: {
+        items: cart.items,
+        totalCartItems,
+        cartItemUpdated: cart.items[itemIndex],
+        totalPrice: summary.totalPrice,
+      },
     });
   } catch (error) {
     console.error("Update cart item error:", error);
@@ -210,7 +238,9 @@ const removeCartItem = async (req, res) => {
     cart.items.splice(itemIndex, 1);
     await cart.save();
 
-    // Calculate new total
+    const totalCartItems = cart?.items?.length || 0;
+
+    // Tính tổng giá trị giỏ hàng
     const summary = cart.items.reduce(
       (acc, item) => {
         if (item.isAvailable) {
@@ -223,11 +253,11 @@ const removeCartItem = async (req, res) => {
     );
     return res.status(200).json({
       success: true,
-      message: "Item removed successfully",
+      message: "Xóa sản phẩm khỏi giỏ hàng thành công",
       data: {
         items: cart.items,
+        totalCartItems,
         totalPrice: summary.totalPrice,
-        updatedAt: cart.updatedAt,
       },
     });
   } catch (error) {
@@ -280,6 +310,8 @@ const removeMultipleCartItems = async (req, res) => {
     // 3. Lưu giỏ hàng đã cập nhật
     await cart.save();
 
+    const totalCartItems = cart?.items?.length || 0;
+
     // 4. Tính tổng giá trị giỏ hàng
     const summary = cart.items.reduce(
       (acc, item) => {
@@ -294,11 +326,11 @@ const removeMultipleCartItems = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: `Successfully removed ${removedItemsCount} items from cart`,
+      message: `Đã xóa ${removedItemsCount} sản phẩm khỏi giỏ hàng`,
       data: {
         items: cart.items,
+        totalCartItems,
         totalPrice: summary.totalPrice,
-        updatedAt: cart.updatedAt,
       },
     });
   } catch (error) {
@@ -328,8 +360,13 @@ const clearCart = async (req, res) => {
     await cart.save();
 
     return res.status(200).json({
-      message: "All items removed from cart",
-      cart,
+      success: true,
+      message: "Xóa tất cả sản phẩm trong giỏ hàng thành công",
+      data: {
+        items: cart.items,
+        totalCartItems: 0,
+        totalPrice: 0,
+      },
     });
   } catch (error) {
     console.error("Clear cart error:", err);

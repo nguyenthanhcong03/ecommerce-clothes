@@ -1,20 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useParams, Link } from 'react-router-dom';
-import { Facebook, Heart, ShoppingCart, Star } from 'lucide-react';
-import Button from '@/components/common/Button/Button';
-import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
-import { addToCart } from '@/store/slices/cartSlice';
-import { fetchProductById } from '@/store/slices/productSlice';
-import { setDirectBuyItem } from '@/store/slices/orderSlice';
-import Collapse from '@/components/common/Collapse/Collapse';
-import { setOrderItems } from '@/store/slices/orderSlice';
-import { getCategoryPath } from '@/utils/helpers/getCategoryPath';
-import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import facebook from '@/assets/icons/facebook.png';
 import instagram from '@/assets/icons/instagram.png';
 import messenger from '@/assets/icons/messenger.png';
+import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
+import Button from '@/components/common/Button/Button';
+import Collapse from '@/components/common/Collapse/Collapse';
+import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
+import { addToCart } from '@/store/slices/cartSlice';
 import { getCategoriesTree } from '@/store/slices/categorySlice';
+import { setOrderItems } from '@/store/slices/orderSlice';
+import { fetchProductById } from '@/store/slices/productSlice';
+import { getCategoryPath } from '@/utils/helpers/getCategoryPath';
+import { Heart, ShoppingCart, Star } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const getImageUrl = (image) => {
   return typeof image === 'string' ? image : image?.url || '';
@@ -24,7 +23,7 @@ const DetailProduct = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { id } = useParams();
-  const { currentProduct: product, status } = useSelector((state) => state.product);
+  const { currentProduct: product, loading, error } = useSelector((state) => state.product);
   const { categoriesTree } = useSelector((state) => state.category);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -263,7 +262,7 @@ const DetailProduct = () => {
     setQuantity(newQuantity);
   };
 
-  if (status === 'loading') {
+  if (loading) {
     return (
       <div className='flex h-screen items-center justify-center'>
         <div className='h-12 w-12 animate-spin rounded-full border-4 border-primaryColor border-t-transparent'></div>
@@ -271,7 +270,7 @@ const DetailProduct = () => {
     );
   }
 
-  if (status === 'failed') {
+  if (error) {
     return (
       <div className='flex h-screen items-center justify-center'>
         <div className='text-center'>

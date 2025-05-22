@@ -50,7 +50,7 @@ const Select = forwardRef(
               'block w-full appearance-none rounded-sm border border-primaryColor px-3 py-2 pr-10 text-sm',
               error ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-primaryColor',
               'focus:outline-none',
-              disabled ? 'bg-gray-100 text-gray-500' : '',
+              disabled ? 'bg-neutral-100 text-gray-500' : '',
               className
             )}
           >
@@ -67,7 +67,23 @@ const Select = forwardRef(
             <ArrowDownIcon className={disabled ? 'text-gray-400' : 'text-gray-700'} />
           </div>
         </div>
-        {error && <p className='mt-1 text-sm text-red-600'>{typeof error === 'string' ? error : error.message}</p>}
+        {error && (
+          <div className='mt-1 flex items-center text-xs text-red-500'>
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              className='mr-1 h-3.5 w-3.5'
+              viewBox='0 0 20 20'
+              fill='currentColor'
+            >
+              <path
+                fillRule='evenodd'
+                d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z'
+                clipRule='evenodd'
+              />
+            </svg>
+            <span>{typeof error === 'string' ? error : error?.message}</span>
+          </div>
+        )}
       </div>
     );
   }

@@ -1,3 +1,6 @@
+import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
+import Headline from '@/components/common/Headline/Headline';
+import { getDistrictsAPI, getProvincesAPI } from '@/services/mapService';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { message } from 'antd';
 import { useEffect, useState } from 'react';
@@ -10,12 +13,11 @@ import { calculateDiscount, validateCoupon } from '../../../services/couponServi
 import { processPayment } from '../../../services/paymentService';
 import {
   applyCoupon,
+  calculateDistance,
   createNewOrder,
   removeCoupon,
   resetOrder,
   saveShippingInfo,
-  selectOrderItems,
-  selectOrderSuccess,
   setOrderItems,
   setPaymentMethod,
   updateOrderNote
@@ -31,17 +33,17 @@ const CheckoutPage = () => {
   const dispatch = useDispatch();
 
   const [couponCode, setCouponCode] = useState('');
-  const [storeAddress, setStoreAddress] = useState('227 Nguyễn Văn Cừ, Quận 5, Hồ Chí Minh, Việt Nam');
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
 
-  // State để lưu tên tỉnh/thành và quận/huyện
-  const [provinceOptions, setProvinceOptions] = useState([]);
-  const [districtOptions, setDistrictOptions] = useState([]);
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [selectedProvince, setSelectedProvince] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
 
   // Selectors từ Redux
-  const orderSuccess = useSelector(selectOrderSuccess);
-  const orderItems = useSelector(selectOrderItems);
+  const orderSuccess = useSelector((state) => state.order.orderSuccess);
+  const orderItems = useSelector((state) => state.order.orderItems);
   const shippingInfo = useSelector((state) => state.order.shippingInfo);
   const paymentMethod = useSelector((state) => state.order.paymentMethod);
   const isLoading = useSelector((state) => state.order.loading);
@@ -71,14 +73,70 @@ const CheckoutPage = () => {
     mode: 'onChange'
   });
 
-  // Cập nhật options state khi ShippingForm cập nhật danh sách tỉnh/huyện
-  const handleProvincesLoaded = (provinces) => {
-    setProvinceOptions(provinces);
-  };
+  // Watch city to update districts
+  const watchedCity = watch('province');
+  const watchedState = watch('district');
 
-  const handleDistrictsLoaded = (districts) => {
-    setDistrictOptions(districts);
-  };
+  // Load danh sách tỉnh
+  useEffect(() => {
+    if (watchedCity && !selectedProvince) {
+      setSelectedProvince(watchedCity);
+    }
+    if (watchedState && !selectedDistrict) {
+      setSelectedDistrict(watchedState);
+    }
+    const fetchProvinces = async () => {
+      try {
+        const response = await getProvincesAPI();
+        setProvinces(response);
+      } catch (error) {
+        console.error('Error loading provinces:', error);
+      }
+    };
+
+    fetchProvinces();
+  }, [selectedProvince, selectedDistrict]);
+
+  // Khi chọn tỉnh → load huyện
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      try {
+        const response = await getDistrictsAPI(selectedProvince);
+        setDistricts(response);
+
+        const currentState = watchedState;
+        if (!currentState) {
+          setValue('district', '');
+        } else {
+          const stateExists = response.some((district) => district.value == currentState);
+          if (!stateExists) {
+            setValue('district', '');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading district:', error);
+      }
+    };
+    if (selectedProvince) {
+      fetchDistricts();
+    }
+  }, [selectedProvince, setValue, watchedState]);
+
+  // Khi chọn huyện → tính phí vận chuyển
+  useEffect(() => {
+    if (selectedProvince && selectedDistrict) {
+      let province = provinces.find((province) => province.value == selectedProvince);
+      let district = districts.find((district) => district.value == selectedDistrict);
+
+      if (province && district) {
+        const customerLocation = `${district.label}, ${province.label}, Việt Nam`;
+        const storeLocation = '175 Tây Sơn, Trung Liệt, Đống Đa, Hà Nội, Việt Nam';
+
+        // Tính khoảng cách giữa hai địa điểm
+        dispatch(calculateDistance({ storeLocation, customerLocation }));
+      }
+    }
+  }, [selectedDistrict, dispatch]);
 
   // Reset order state khi unmount component
   useEffect(() => {
@@ -150,8 +208,8 @@ const CheckoutPage = () => {
   // Xử lý khi submit form
   const onSubmit = (data) => {
     // 1. Tìm tên tỉnh/thành và quận/huyện từ mã
-    const provinceObj = provinceOptions.find((p) => p.value == data.province) || {};
-    const districtObj = districtOptions.find((d) => d.value == data.district) || {};
+    const provinceObj = provinces.find((p) => p.value == data.province) || {};
+    const districtObj = districts.find((d) => d.value == data.district) || {};
     const provinceName = provinceObj.label || data.province;
     const districtName = districtObj.label || data.district;
 
@@ -245,11 +303,25 @@ const CheckoutPage = () => {
   }
 
   return (
-    <div className='mt-20 min-h-screen w-full bg-white'>
-      <div className='flex min-h-[50px] items-center justify-center gap-4 bg-[#FAFAFA] text-xl md:min-h-[70px] lg:min-h-[120px]'>
-        THANH TOÁN
+    <div className='px-5 pt-[60px] lg:pt-[80px]'>
+      <div className='my-5'>
+        <Breadcrumb
+          items={[
+            {
+              label: 'Cửa hàng',
+              path: '/shop'
+            },
+            {
+              label: 'Thanh toán',
+              path: '/checkout'
+            }
+          ]}
+        />
       </div>
-      <div className='mx-auto max-w-[1230px] py-10'>
+      <div className='my-8 rounded-sm bg-white p-8'>
+        <Headline text1={'đừng bỏ lỡ ưu đãi, hãy tiến hành thanh toán'} text2={'THANH TOÁN'} />
+      </div>
+      <div className=''>
         <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
           <div className='grid grid-cols-1 gap-6 lg:grid-cols-5'>
             {/* Thông tin đặt hàng - Left Column */}
@@ -258,10 +330,11 @@ const CheckoutPage = () => {
               <ShippingForm
                 control={control}
                 errors={errors}
-                watch={watch}
-                setValue={setValue}
-                onProvincesLoaded={handleProvincesLoaded}
-                onDistrictsLoaded={handleDistrictsLoaded}
+                provinces={provinces}
+                setSelectedProvince={setSelectedProvince}
+                setDistricts={setDistricts}
+                setSelectedDistrict={setSelectedDistrict}
+                watchedCity={watchedCity}
               />
 
               {/* Payment Methods */}

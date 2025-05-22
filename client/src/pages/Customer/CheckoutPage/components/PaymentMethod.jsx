@@ -56,7 +56,7 @@ const PaymentMethod = ({ register, errors, watch }) => {
   ];
 
   return (
-    <div className='rounded-sm border bg-white p-6'>
+    <div className='rounded-sm bg-white p-6'>
       <h2 className='mb-6 text-xl font-bold'>Phương thức thanh toán</h2>
 
       <div className='space-y-3'>
