@@ -30,13 +30,11 @@ export const addToCart = createAsyncThunk('cart/addToCart', async (cartItem, { r
 
 export const updateCartItem = createAsyncThunk(
   'cart/updateCartItem',
-  async ({ productId, variantId, quantity }, { rejectWithValue }) => {
+  async ({ itemId, quantity }, { rejectWithValue }) => {
+    console.log('itemId', itemId);
+    console.log('quantity', quantity);
     try {
-      const response = await updateCartItemService({
-        productId,
-        variantId,
-        quantity
-      });
+      const response = await updateCartItemService(itemId, quantity);
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to update cart');
@@ -111,6 +109,7 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(addToCart.fulfilled, (state, action) => {
+        console.log('accountSlice.js', action.payload);
         state.items = action.payload.data.items;
         state.totalCartItems = action.payload.data.totalCartItems;
         state.loading = false;
@@ -122,15 +121,14 @@ const cartSlice = createSlice({
 
       // Update Cart Item
       .addCase(updateCartItem.pending, (state, action) => {
+        console.log('action', action.meta.arg);
         state.loadingUpdate = true;
         state.error = null;
-        state.itemUpdate = state.items.find(
-          (item) => item.productId === action.meta.arg.productId && item.variantId === action.meta.arg.variantId
-        );
+        state.itemUpdate = state.items.find((item) => item._id === action.meta.arg.itemId);
       })
       .addCase(updateCartItem.fulfilled, (state, action) => {
         state.loadingUpdate = false;
-        state.items = action.payload.data.items;
+        // state.items = action.payload.data.items;
         state.totalCartItems = action.payload.data.totalCartItems;
         state.totalPrice = action.payload.data.totalPrice;
         state.itemUpdate = null;

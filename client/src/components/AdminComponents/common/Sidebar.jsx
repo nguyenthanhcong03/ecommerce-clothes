@@ -15,14 +15,14 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Link, NavLink } from 'react-router-dom';
 
 const SIDEBAR_ITEMS = [
-  { name: 'Overview', icon: BarChart2, color: '#333', href: '/admin' },
-  { name: 'Products', icon: ShoppingBag, color: '#333', href: '/admin/products' },
-  { name: 'Categories', icon: ChartBarStacked, color: '#333', href: '/admin/categories' },
-  { name: 'Coupons', icon: Tag, color: '#333', href: '/admin/coupons' },
-  { name: 'Users', icon: Users, color: '#333', href: '/admin/users' },
-  { name: 'Orders', icon: ShoppingCart, color: '#333', href: '/admin/orders' },
-  { name: 'Analytics', icon: TrendingUp, color: '#333', href: '/admin/analytics' }
-  // { name: 'Settings', icon: Settings, color: '#333', href: '/admin/settings' }
+  { name: 'Tổng quan', icon: BarChart2, color: '#333', href: '/admin' },
+  { name: 'Sản phẩm', icon: ShoppingBag, color: '#333', href: '/admin/products' },
+  { name: 'Danh mục', icon: ChartBarStacked, color: '#333', href: '/admin/categories' },
+  { name: 'Mã giảm giá', icon: Tag, color: '#333', href: '/admin/coupons' },
+  { name: 'Người dùng', icon: Users, color: '#333', href: '/admin/users' },
+  { name: 'Đơn hàng', icon: ShoppingCart, color: '#333', href: '/admin/orders' },
+  { name: 'Thống kê', icon: TrendingUp, color: '#333', href: '/admin/analytics' },
+  { name: 'Cài đặt', icon: Settings, color: '#333', href: '/admin/settings' }
 ];
 
 const Sidebar = () => {

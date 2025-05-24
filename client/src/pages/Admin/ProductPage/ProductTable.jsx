@@ -1,48 +1,33 @@
-import {
-  Button,
-  Image,
-  Input,
-  Popconfirm,
-  Space,
-  Table,
-  Tag,
-  Tooltip,
-  Select,
-  Pagination,
-  Slider,
-  Checkbox,
-  Empty
-} from 'antd';
-import { Filter, Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
-import React, { useMemo, useState, useEffect } from 'react';
-import './styles.css';
 import { formatCurrency } from '@/utils/format/formatCurrency';
+import { Button, Card, Image, Input, Popconfirm, Space, Table, Tag, Tooltip } from 'antd';
+import { Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
+import PropTypes from 'prop-types';
+import { useMemo } from 'react';
+import './styles.css';
 
-const { Option } = Select;
+// const { Option } = Select;
 
 const ProductTable = ({
   products,
   pagination,
-  onChange,
   onSearch,
+  onPageChange,
   searchText,
   loading,
   onRefresh,
   onDelete,
   onEdit,
-  onAdd,
-  filters
+  onAdd
 }) => {
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-
   const columns = useMemo(
     () => [
       {
         title: 'STT',
         dataIndex: 'index',
         key: 'index',
+        render: (_, __, index) => (pagination.page - 1) * pagination.limit + index + 1,
         align: 'center',
-        width: 60
+        width: 30
       },
       {
         title: 'Ảnh',
@@ -53,11 +38,7 @@ const ProductTable = ({
         render: (images) => (
           <Image.PreviewGroup>
             {images && images.length > 0 ? (
-              images
-                .slice(0, 2)
-                .map((img, index) => (
-                  <Image key={index} width={40} height={40} src={img} style={{ objectFit: 'cover', marginRight: 4 }} />
-                ))
+              <Image width={40} height={40} src={images[0]} style={{ objectFit: 'cover', marginRight: 4 }} />
             ) : (
               <div className='flex h-10 w-10 items-center justify-center rounded bg-gray-200 text-xs text-gray-500'>
                 No Image
@@ -72,7 +53,7 @@ const ProductTable = ({
         key: 'name',
         align: 'left',
         width: 200,
-        sorter: true, // Dùng API sorting
+        sorter: (a, b) => a.name.length - b.name.length,
         render: (name, record) => (
           <div className='flex flex-col'>
             <span className='font-medium'>{name}</span>
@@ -89,11 +70,12 @@ const ProductTable = ({
         dataIndex: 'categoryId',
         key: 'category',
         width: 150,
-        // filters: facets?.categories?.map((cat) => ({ text: cat.name, value: cat._id })),
-        render: (category) => category || 'Không xác định'
+        render: (category) => category.name || 'Không xác định'
       },
       {
         title: 'Giá',
+        dataIndex: 'price',
+        key: 'price',
         align: 'right',
         width: 150,
         render: (_, record) => {
@@ -106,7 +88,7 @@ const ProductTable = ({
           let maxPrice = 0;
 
           record.variants.forEach((variant) => {
-            const price = variant.discountPrice || variant.price;
+            const price = variant.price || variant.discountPrice;
             if (price < minPrice) minPrice = price;
             if (price > maxPrice) maxPrice = price;
           });
@@ -121,29 +103,25 @@ const ProductTable = ({
 
           // Hiển thị khoảng giá
           return `${formatCurrency(minPrice)} - ${formatCurrency(maxPrice)}`;
-        },
-        dataIndex: 'price',
-        key: 'price',
-        sorter: true // Dùng API sorting
+        }
       },
       {
         title: 'Thương hiệu',
         dataIndex: 'brand',
         key: 'brand',
         width: 150
-        // filters: facets?.brands?.map((brand) => ({ text: brand.name, value: brand.name }))
       },
       {
         title: 'Đánh giá',
         dataIndex: 'averageRating',
-        key: 'rating',
+        key: 'averageRating',
         width: 120,
-        sorter: true, // Dùng API sorting
-        render: (rating) => {
+        sorter: (a, b) => a.averageRating - b.averageRating,
+        render: (averageRating) => {
           return (
             <div className='flex items-center'>
-              <span className='mr-1'>{rating ? rating.toFixed(1) : 'N/A'}</span>
-              {rating > 0 && (
+              <span className='mr-1'>{averageRating ? averageRating.toFixed(1) : 'N/A'}</span>
+              {averageRating > 0 && (
                 <Tag color='blue'>
                   <span className='text-xs'>⭐</span>
                 </Tag>
@@ -157,7 +135,7 @@ const ProductTable = ({
         dataIndex: 'salesCount',
         key: 'salesCount',
         width: 120,
-        sorter: true, // Dùng API sorting
+        sorter: (a, b) => a.salesCount - b.salesCount,
         render: (salesCount) => salesCount || 0
       },
       {
@@ -187,6 +165,10 @@ const ProductTable = ({
           { text: 'Còn hàng', value: 'true' },
           { text: 'Hết hàng', value: 'false' }
         ],
+        onFilter: (value, record) => {
+          const hasInStock = record.variants && record.variants.some((v) => v.stock > 0);
+          return value === 'true' ? hasInStock : !hasInStock;
+        },
         render: (_, record) => {
           const hasInStock = record.variants && record.variants.some((v) => v.stock > 0);
           return hasInStock ? <Tag color='green'>Còn hàng</Tag> : <Tag color='red'>Hết hàng</Tag>;
@@ -197,13 +179,13 @@ const ProductTable = ({
         key: 'isActive',
         width: 120,
         filters: [
-          { text: 'Đang hoạt động', value: 'true' },
-          { text: 'Đã tắt', value: 'false' }
+          { text: 'Đang hoạt động', value: true },
+          { text: 'Đã tắt', value: false }
         ],
+        onFilter: (value, record) => record.isActive === value,
         render: (_, record) => {
           return record.isActive ? <Tag color='green'>Hoạt động</Tag> : <Tag color='gray'>Đã tắt</Tag>;
-        },
-        filteredValue: filters.isActive ? ['true'] : undefined
+        }
       },
       {
         title: 'Hành động',
@@ -247,20 +229,10 @@ const ProductTable = ({
         )
       }
     ],
-    [onEdit, onDelete, filters]
-  );
-
-  // Xử lý chọn row
-  const onSelectChange = (newSelectedRowKeys) => {
-    setSelectedRowKeys(newSelectedRowKeys);
-  };
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange
-  };
-
-  // Tạo danh sách màu sắc và kích thước duy nhất từ các biến thể sản phẩm
+    [onEdit, onDelete, pagination]
+  ); // Tạo danh sách màu sắc và kích thước duy nhất từ các biến thể sản phẩm
+  // Function này được giữ để sử dụng sau này nếu cần
+  /* 
   const getUniqueVariantValues = (field) => {
     if (loading || products.length === 0) return [];
 
@@ -269,15 +241,17 @@ const ProductTable = ({
     return [...new Set(allValues)];
   };
 
-  const uniqueColors = getUniqueVariantValues('color');
-  const uniqueSizes = getUniqueVariantValues('size');
+  // Có thể sử dụng để lọc theo màu sắc hoặc kích thước
+  // const uniqueColors = getUniqueVariantValues('color');
+  // const uniqueSizes = getUniqueVariantValues('size');
+  */
 
   return (
-    <div className='rounded-md bg-white p-4 shadow-sm'>
+    <Card className='bg-white shadow-sm'>
       <div className='mb-4 flex flex-wrap items-center justify-between gap-2'>
         <div className='flex items-center gap-2'>
           {/* Nút thêm sản phẩm mới */}
-          <Button type='primary' icon={<Plus size={16} />} onClick={onAdd} className='flex items-center'>
+          <Button type='primary' icon={<Plus size={16} />} onClick={() => onAdd()} className='flex items-center'>
             Thêm sản phẩm mới
           </Button>
           {/* Nút làm mới danh sách */}
@@ -289,46 +263,33 @@ const ProductTable = ({
         {/* Ô tìm kiếm sản phẩm */}
         <div className='flex flex-wrap items-center gap-2'>
           <Input
-            placeholder='Tìm kiếm danh mục...'
+            placeholder='Tìm kiếm sản phẩm...'
             prefix={<Search />}
             style={{ width: 250 }}
             value={searchText}
             onChange={onSearch}
             allowClear
           />
-
-          {/* Dropdown sắp xếp
-          <Select placeholder='Sắp xếp theo' value={sortType} onChange={onSortChange} style={{ width: 180 }}>
-            <Option value='latest'>Mới nhất</Option>
-            <Option value='popular'>Phổ biến</Option>
-            <Option value='top_sales'>Bán chạy</Option>
-            <Option value='price_asc'>Giá tăng dần</Option>
-            <Option value='price_desc'>Giá giảm dần</Option>
-            <Option value='rating'>Đánh giá</Option>
-          </Select> */}
         </div>
       </div>
 
       {/* Bảng danh sách sản phẩm */}
       <Table
-        bordered
         rowKey='_id'
-        className='product-table rounded-lg border bg-white'
-        rowSelection={rowSelection}
-        scroll={{ x: 'max-content' }}
         columns={columns}
+        scroll={{ x: 'max-content' }}
         dataSource={products}
         pagination={{
           current: pagination.page,
           pageSize: pagination.limit,
           total: pagination.total,
+          onChange: onPageChange,
           position: ['bottomCenter'],
           showSizeChanger: true,
-          // pageSizeOptions: ['5', '10', '20', '50'],
-          showTotal: (total) => `Tổng số ${total} danh mục`
+          pageSizeOptions: ['5', '10', '20', '50'],
+          showTotal: (total) => `Tổng số ${total} sản phẩm`
         }}
         loading={loading}
-        onChange={onChange}
         locale={{
           emptyText: loading
             ? 'Đang tải dữ liệu...'
@@ -339,12 +300,6 @@ const ProductTable = ({
         title={() => (
           <div className='flex items-center justify-between rounded-t-lg'>
             <h3 className='text-lg font-bold'>Danh sách sản phẩm</h3>
-            {selectedRowKeys.length > 0 && (
-              <div>
-                <span className='mr-2'>{selectedRowKeys.length} sản phẩm đã chọn</span>
-                <Button danger>Xóa sản phẩm đã chọn</Button>
-              </div>
-            )}
           </div>
         )}
       />
@@ -375,7 +330,7 @@ const ProductTable = ({
           />
         </div>
       </div> */}
-    </div>
+    </Card>
   );
 };
 

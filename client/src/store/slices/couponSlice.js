@@ -76,7 +76,7 @@ const initialState = {
   currentCoupon: null,
   pagination: {
     page: 1,
-    limit: 10,
+    limit: 5,
     total: 0
   },
   loading: false,

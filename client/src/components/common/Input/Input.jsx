@@ -20,7 +20,6 @@ const Input = forwardRef(
     },
     ref
   ) => {
-    // Size classes mapping
     const sizeClasses = {
       small: 'py-1 px-2 text-xs',
       middle: 'py-2 px-3 text-sm',

@@ -10,7 +10,6 @@ import CategoryForm from './CategoryForm';
 import CategoryTable from './CategoryTable';
 import useDebounce from '@/hooks/useDebounce';
 const CategoryPage = () => {
-  console.log('page');
   const dispatch = useDispatch();
   const { categories, loading, error, pagination, filters } = useSelector((state) => state.category);
   const [isOpenForm, setIsOpenForm] = useState(false);
@@ -143,27 +142,9 @@ const CategoryPage = () => {
 
   return (
     <div className='relative z-10 flex-1 overflow-auto'>
-      <Header title='Categories Management' />
+      <Header title='Quản lý danh mục' />
 
       <main className='mx-auto px-4 py-6 lg:px-8'>
-        {/* Phần hiển thị các thẻ thống kê */}
-        <motion.div
-          className='mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4'
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <StatCard name='Total Categories' icon={FolderTree} value={categoryStats.total} color='#6366F1' />
-          <StatCard name='New Today' icon={FolderPlus} value={categoryStats.newToday} color='#10B981' />
-          {/* <StatCard name='Active Categories' icon={FolderOpen} value={categoryStats.active} color='#F59E0B' /> */}
-          <StatCard name='Parent Categories' icon={Calendar} value={categoryStats.parentCategories} color='#8B5CF6' />
-        </motion.div>{' '}
-        <div className='mb-4 flex justify-between'>
-          <div></div>
-          <Button type='primary' icon={<FolderPlus size={16} />} onClick={handleOpenFormAddCategory}>
-            Thêm danh mục mới
-          </Button>
-        </div>
         {/* Phần bảng danh mục */}
         <motion.div
           className='flex flex-col gap-2'
@@ -179,6 +160,7 @@ const CategoryPage = () => {
             onChange={handleTableChange}
             onSearch={handleSearch}
             searchText={searchText}
+            onAdd={handleOpenFormAddCategory}
             onEdit={handleOpenFormEditCategory}
             onDelete={handleDeleteCategory}
             filters={filters}

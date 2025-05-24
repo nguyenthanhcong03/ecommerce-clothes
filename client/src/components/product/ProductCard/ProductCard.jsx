@@ -1,4 +1,5 @@
 import Button from '@/components/common/Button/Button';
+import useProductVariants from '@/hooks/useProductVariants';
 import { addToCart } from '@/store/slices/cartSlice';
 import { openProductDetailModal } from '@/store/slices/productSlice';
 import { COLOR_OPTIONS } from '@/utils/constants';
@@ -15,116 +16,7 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
   const [displayImage, setDisplayImage] = useState(item?.images[0]);
   const [hoverImage, setHoverImage] = useState(item?.images[1] || item?.images[0]);
 
-  // Tính toán available options
-  const variantOptions = useMemo(() => {
-    const colorMap = new Map();
-    const sizeMap = new Map();
-    const colorImageMap = new Map(); // Map để lưu trữ màu sắc và hình ảnh tương ứng
-
-    item?.variants.forEach((variant) => {
-      // Map color to images
-      if (!colorMap.has(variant.color)) {
-        colorMap.set(variant.color, new Set());
-        // Lưu trữ hình ảnh đầu tiên của mỗi màu
-        if (variant.images && variant.images.length > 0) {
-          colorImageMap.set(variant.color, variant.images);
-        }
-      }
-      colorMap.get(variant.color).add(variant.size);
-
-      // Map image to colors
-      if (!sizeMap.has(variant.images[0])) {
-        sizeMap.set(variant?.images[0], new Set());
-      }
-      sizeMap.get(variant?.images[0]).add(variant.size);
-    });
-
-    return {
-      images: Array.from(sizeMap.keys()),
-      colors: Array.from(colorMap.keys()),
-      sizeMap,
-      colorMap,
-      colorImageMap // Thêm colorImageMap vào kết quả
-    };
-  }, [item?.variants]);
-
-  const getAvailableColors = (size) => {
-    return Array.from(variantOptions.sizeMap.get(size) || []);
-  };
-
-  const getAvailableSizes = (color) => {
-    return Array.from(variantOptions.colorMap.get(color) || []);
-  };
-
-  const handleSizeSelect = (size) => {
-    // Nếu click vào size đang được chọn thì bỏ chọn
-    if (selectedSize === size) {
-      setSelectedSize('');
-      return;
-    }
-
-    setSelectedSize(size);
-    // Kiểm tra nếu color hiện tại không có trong size mới thì reset color
-    if (!variantOptions.sizeMap.get(size)?.has(selectedColor)) {
-      setSelectedColor('');
-    }
-  };
-
-  const handleColorSelect = (color) => {
-    // Nếu click vào color đang được chọn thì bỏ chọn
-    if (selectedColor === color) {
-      setSelectedColor('');
-      // Reset lại hình ảnh mặc định khi bỏ chọn màu
-      setDisplayImage(item?.images[0]);
-      setHoverImage(item?.images[1] || item?.images[0]);
-      return;
-    }
-
-    setSelectedColor(color);
-
-    // Cập nhật hình ảnh dựa trên màu sắc được chọn
-    const colorImages = variantOptions.colorImageMap.get(color);
-    if (colorImages && colorImages.length > 0) {
-      setDisplayImage(colorImages[0]);
-      setHoverImage(colorImages[1] || colorImages[0]);
-    }
-
-    // Kiểm tra nếu image hiện tại không có trong color mới thì reset image
-    if (!variantOptions.colorMap.get(color)?.has(selectedSize)) {
-      setSelectedSize('');
-    }
-  };
-
-  // Hàm lấy giá dựa trên size và color được chọn
-  const getSelectedPrice = () => {
-    if (selectedSize && selectedColor) {
-      const selectedVariant = item?.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
-      if (selectedVariant) {
-        return {
-          price: selectedVariant.price,
-          discountPrice: selectedVariant.discountPrice
-        };
-      }
-    }
-    // Giá mặc định (giá thấp nhất)
-    if (!item?.variants || item.variants.length === 0) {
-      return {
-        price: 0,
-        discountPrice: null
-      };
-    }
-
-    const defaultVariant = item.variants.reduce(
-      (min, variant) => (!min || variant.price < min.price ? variant : min),
-      null
-    );
-
-    return {
-      price: defaultVariant?.price || 0,
-      discountPrice: defaultVariant?.discountPrice
-    };
-  };
-
+  const { variantOptions, getSelectedPrice } = useProductVariants(item);
   // Hàm xử lý sự kiện khi nhấn nút "Mua ngay"
   const handleBuyNow = () => {
     dispatch(openProductDetailModal(item._id));
@@ -160,10 +52,6 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
               return (
                 <button
                   key={color}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleColorSelect(color);
-                  }}
                   className={`h-[25px] w-[25px] rounded-full border p-[2px] text-[10px] sm:text-xs ${
                     selectedColor === color && 'border-black text-black'
                   }`}

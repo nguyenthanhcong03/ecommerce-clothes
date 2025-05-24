@@ -20,7 +20,7 @@ import ContactPage from '@/pages/customer/ContactPage/ContactPage.jsx';
 import DetailProduct from '@/pages/customer/DetailProduct/DetailProduct.jsx';
 import HomePage from '@/pages/customer/HomePage/HomePage.jsx';
 import NewsPage from '@/pages/customer/NewsPage/NewsPage.jsx';
-import OurShopPage from '@/pages/customer/OurShopPage/OurShopPage.jsx';
+import OurShopPage from '@/pages/customer/OurShopPage/OurShopPage copy';
 import PaymentFailedPage from '@/pages/customer/PaymentFailedPage/PaymentFailedPage.jsx';
 import PaymentSuccessPage from '@/pages/customer/PaymentSuccessPage/PaymentSuccessPage.jsx';
 import WishlistPage from '@/pages/customer/WishlistPage/WishlistPage.jsx';
@@ -31,7 +31,6 @@ import CouponPage from '@/pages/admin/CouponPage/CouponPage.jsx';
 import OrdersPage from '@/pages/admin/OrdersPage/OrdersPage.jsx';
 import OverviewPage from '@/pages/admin/OverviewPage/OverviewPage.jsx';
 import ProductPage from '@/pages/admin/ProductPage/ProductPage.jsx';
-import SalesPage from '@/pages/admin/SalesPage/SalesPage.jsx';
 import SettingsPage from '@/pages/admin/SettingsPage/SettingsPage.jsx';
 import UserPage from '@/pages/admin/UserPage/UserPage.jsx';
 import ChangePasswordPage from '@/pages/customer/AccountPage/ChangePasswordPage.jsx';
@@ -185,7 +184,6 @@ const adminRoutes = [
   { path: 'products', element: <ProductPage /> },
   { path: 'categories', element: <CategoryPage /> },
   { path: 'users', element: <UserPage /> },
-  { path: 'sales', element: <SalesPage /> },
   { path: 'orders', element: <OrdersPage /> },
   { path: 'analytics', element: <AnalyticsPage /> },
   { path: 'settings', element: <SettingsPage /> },

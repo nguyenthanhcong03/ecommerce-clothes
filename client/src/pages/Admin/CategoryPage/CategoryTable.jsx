@@ -1,6 +1,6 @@
 import { buildTree } from '@/utils/helpers/buildTree';
-import { Image, Input, Popconfirm, Space, Table, Tooltip } from 'antd';
-import { Pencil, Search, Trash2 } from 'lucide-react';
+import { Button, Card, Image, Input, Popconfirm, Space, Table, Tooltip } from 'antd';
+import { Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { memo, useMemo } from 'react';
 
 const CategoryTable = ({
@@ -12,6 +12,7 @@ const CategoryTable = ({
   onRefresh,
   onDelete,
   onEdit,
+  onAdd,
   searchText,
   filters
 }) => {
@@ -122,17 +123,27 @@ const CategoryTable = ({
   const treeData = useMemo(() => buildTree(categories), [categories]);
 
   return (
-    <div className='rounded bg-white shadow'>
-      <div className='flex items-center justify-between border-b p-4'>
-        <h3 className='text-lg font-semibold'>Danh sách danh mục</h3>
-        <Input
-          placeholder='Tìm kiếm danh mục...'
-          prefix={<Search />}
-          style={{ width: 250 }}
-          value={searchText}
-          onChange={onSearch}
-          allowClear
-        />
+    <Card className='bg-white shadow'>
+      <div className='mb-4 flex flex-wrap items-center justify-between gap-2'>
+        <div className='flex items-center gap-2'>
+          <Button type='primary' icon={<Plus size={16} />} onClick={() => onAdd()} className='flex items-center'>
+            Thêm danh mục mới
+          </Button>
+          <Button icon={<RefreshCw size={16} />} onClick={onRefresh} className='flex items-center'>
+            Làm mới
+          </Button>
+        </div>
+
+        <div className='flex flex-wrap items-center gap-2'>
+          <Input
+            placeholder='Tìm kiếm danh mục...'
+            prefix={<Search />}
+            style={{ width: 250 }}
+            value={searchText}
+            onChange={onSearch}
+            allowClear
+          />
+        </div>
       </div>
 
       {/* Bảng danh sách danh mục */}
@@ -167,9 +178,8 @@ const CategoryTable = ({
           defaultExpandAllRows: false // Mặc định không mở rộng tất cả
         }}
         onChange={onChange}
-        // scroll={{ x: 1000 }}
       />
-    </div>
+    </Card>
   );
 };
 

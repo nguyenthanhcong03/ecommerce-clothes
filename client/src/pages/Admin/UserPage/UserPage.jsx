@@ -122,6 +122,21 @@ const UserPage = () => {
     // Làm mới danh sách người dùng sau khi đóng modal
     // fetchUsers();
   };
+  const handleRefresh = () => {
+    setSearchText('');
+    setSortInfo({ field: 'createdAt', order: 'descend' });
+    setSelectedUser(null);
+    setIsModalVisible(false);
+    fetchUsers({
+      page: 1,
+      limit: pagination.limit,
+      search: '',
+      role: null,
+      isBlocked: null,
+      sortBy: 'createdAt',
+      sortOrder: 'descend'
+    });
+  };
 
   const handleDeleteUser = async (userId) => {
     try {
@@ -183,29 +198,9 @@ const UserPage = () => {
 
   return (
     <div className='relative z-10 flex-1 overflow-auto'>
-      <Header title='User Management' />
+      <Header title='Quản lý người dùng' />
 
       <main className='mx-auto px-4 py-6 lg:px-8'>
-        {/* Statistics Cards */}
-        <motion.div
-          className='mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4'
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <StatCard name='Tổng người dùng' icon={Users} value={userStats.totalUsers} color='#6366F1' />
-          <StatCard name='Người dùng hoạt động' icon={CheckCircle} value={userStats.activeUsers} color='#10B981' />
-          <StatCard name='Admin' icon={UserPlus} value={userStats.adminUsers} color='#F59E0B' />
-          <StatCard name='Bị chặn' icon={AlertTriangle} value={userStats.bannedUsers} color='#EF4444' />
-        </motion.div>
-
-        <div className='mb-4 flex justify-between'>
-          <div></div>
-          <Button type='primary' icon={<UserPlus size={16} />} onClick={handleAddUser}>
-            Thêm người dùng mới
-          </Button>
-        </div>
-
         {/* User Table */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -221,6 +216,8 @@ const UserPage = () => {
             searchText={searchText}
             onEdit={handleEditUser}
             onDelete={handleDeleteUser}
+            onAdd={handleAddUser}
+            onRefresh={handleRefresh}
             onBan={handleBanUser}
             onUnban={handleUnbanUser}
             filters={filters}

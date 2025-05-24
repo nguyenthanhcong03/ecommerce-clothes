@@ -2,11 +2,6 @@ const Product = require("../models/product");
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 
-/**
- * Tạo sản phẩm mới
- * @param {Object} productData Dữ liệu sản phẩm
- * @returns {Promise<Object>} Sản phẩm đã tạo
- */
 const createProduct = async (productData) => {
   try {
     // Tạo slug từ tên sản phẩm
@@ -34,12 +29,6 @@ const createProduct = async (productData) => {
   }
 };
 
-/**
- * Cập nhật sản phẩm
- * @param {String} productId ID sản phẩm
- * @param {Object} updateData Dữ liệu cập nhật
- * @returns {Promise<Object>} Sản phẩm đã cập nhật
- */
 const updateProduct = async (productId, updateData) => {
   try {
     // Tạo slug mới nếu tên thay đổi và không cung cấp slug

@@ -62,6 +62,8 @@ const CartTable = () => {
   };
 
   const handleQuantityChange = (item, newQuantity) => {
+    if (!newQuantity) return;
+    console.log('quantity', newQuantity);
     dispatch(
       updateCartItem({
         productId: item.productId,
@@ -72,13 +74,6 @@ const CartTable = () => {
       .unwrap()
       .then(() => toast.success('Cập nhật số lượng thành công'))
       .catch((err) => toast.error('Cập nhật số lượng thất bại: ' + err));
-  };
-
-  const handleRemoveItem = (itemId) => {
-    dispatch(removeCartItem(itemId))
-      .unwrap()
-      .then(() => toast.success('Xóa sản phẩm thành công'))
-      .catch((err) => toast.error('Xóa sản phẩm thất bại: ' + err));
   };
 
   const handleRemoveMultipleItems = (itemIds) => {
@@ -133,8 +128,6 @@ const CartTable = () => {
               <CartItem
                 key={item._id}
                 item={item}
-                onQuantityChange={handleQuantityChange}
-                onRemove={handleRemoveItem}
                 onSelect={handleSelectItem}
                 isSelected={selectedItems.includes(item._id)}
               />

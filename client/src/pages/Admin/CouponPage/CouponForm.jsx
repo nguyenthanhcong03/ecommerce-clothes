@@ -100,8 +100,11 @@ const CouponForm = ({ visible, onCancel, coupon, isEdit }) => {
           discountValue: 0,
           minOrderValue: 0,
           maxDiscount: 0,
-          startDate: moment(),
-          endDate: moment().add(30, 'days'),
+          // startDate: moment(),
+          // endDate: moment().add(30, 'days'),
+          startDate: '',
+          endDate: '',
+          // endDate: moment().add(30, 'days'),
           description: '',
           usageLimit: 0,
           isActive: true

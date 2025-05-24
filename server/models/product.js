@@ -26,11 +26,6 @@ const variantSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    images: [
-      {
-        type: String,
-      },
-    ],
   },
   { _id: true }
 );

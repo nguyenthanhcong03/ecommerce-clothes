@@ -52,7 +52,7 @@ export const getProductByIdAPI = (id) => {
 
 // Tạo sản phẩm mới
 export const createProductAPI = (product) => {
-  return axios.post('${BASE_API}', product).then((response) => {
+  return axios.post(`${BASE_API}`, product).then((response) => {
     return response.data;
   });
 };

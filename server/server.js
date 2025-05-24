@@ -12,13 +12,13 @@ const port = process.env.PORT || 8888;
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // domain FE của bạn
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );
+app.use(fileUpload());
 app.use(helmet());
 app.use(cookieParser());
-app.use(fileUpload());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

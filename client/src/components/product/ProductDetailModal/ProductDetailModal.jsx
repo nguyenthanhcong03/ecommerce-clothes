@@ -2,17 +2,18 @@ import Button from '@/components/common/Button/Button';
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
 import { addToCart } from '@/store/slices/cartSlice';
 import { closeProductDetailModal, fetchProductById } from '@/store/slices/productSlice';
+import { COLOR_OPTIONS } from '@/utils/constants';
 import { ShoppingCart, Star, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setOrderItems } from '../../../store/slices/orderSlice';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { setOrderItems } from '../../../store/slices/orderSlice';
 
 const ProductDetailModal = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isDetailModalOpen, modalProductId, currentProduct: product, status } = useSelector((state) => state.product);
+  const { isDetailModalOpen, modalProductId, currentProduct: product, loading } = useSelector((state) => state.product);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -66,6 +67,8 @@ const ProductDetailModal = () => {
       const combined = [...productImages, ...variantImages];
       setAllImages(combined);
       setColorImageIndexMap(indexMap);
+      console.log('ahha', indexMap);
+
       setCurrentImageIndex(0);
     }
   }, [product]);
@@ -74,7 +77,7 @@ const ProductDetailModal = () => {
     dispatch(closeProductDetailModal());
   };
 
-  // Calculate available options
+  // Tính toán size và color có sẵn dựa trên các biến thể của sản phẩm
   const variantOptions = React.useMemo(() => {
     if (!product?.variants)
       return { sizes: [], colors: [], sizeMap: new Map(), colorMap: new Map(), colorImageMap: new Map() };
@@ -139,7 +142,7 @@ const ProductDetailModal = () => {
   };
 
   const handleColorSelect = (color) => {
-    // If clicking on the already selected color, unselect it
+    // Nếu chọn màu đã được chọn, thì bỏ chọn
     if (selectedColor === color) {
       setSelectedColor('');
       setQuantity(1);
@@ -169,9 +172,9 @@ const ProductDetailModal = () => {
       const selectedVariant = product.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
       if (selectedVariant) {
         return {
-          price: selectedVariant.price,
-          discountPrice: selectedVariant.discountPrice,
-          stock: selectedVariant.stock,
+          price: selectedVariant?.price,
+          discountPrice: selectedVariant?.discountPrice,
+          stock: selectedVariant?.stock,
           selectedVariant
         };
       }
@@ -216,6 +219,7 @@ const ProductDetailModal = () => {
       toast.error('Thêm sản phẩm vào giỏ hàng thất bại');
       console.log(error);
     }
+    setShowValidation(false);
     handleCloseModal();
   };
 
@@ -254,7 +258,6 @@ const ProductDetailModal = () => {
   };
 
   const handleQuantityChange = (newQuantity) => {
-    if (newQuantity < 1) return;
     setQuantity(newQuantity);
   };
 
@@ -277,7 +280,7 @@ const ProductDetailModal = () => {
           onClick={handleCloseModal}
         />
 
-        {status === 'loading' ? (
+        {loading ? (
           <div className='flex h-64 items-center justify-center'>
             <div className='h-10 w-10 animate-spin rounded-full border-4 border-primaryColor border-t-transparent'></div>
           </div>
@@ -339,12 +342,15 @@ const ProductDetailModal = () => {
                   const { price, discountPrice } = getSelectedPrice();
                   return (
                     <>
-                      <span className='text-2xl font-medium'>
-                        {price?.toLocaleString('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND'
-                        })}
-                      </span>
+                      {price && (
+                        <span className='text-2xl font-medium'>
+                          {price?.toLocaleString('vi-VN', {
+                            style: 'currency',
+                            currency: 'VND'
+                          })}
+                          {console.log('hiaa')}
+                        </span>
+                      )}
                       {discountPrice && (
                         <span className='ml-2 text-sm text-gray-400 line-through'>
                           {discountPrice.toLocaleString('vi-VN', {
@@ -392,6 +398,9 @@ const ProductDetailModal = () => {
                   <div className='mt-2 flex flex-wrap gap-2'>
                     {variantOptions.colors.map((color) => {
                       const isAvailable = !selectedSize || getAvailableColors(selectedSize).includes(color);
+                      const colorObj = COLOR_OPTIONS.find((c) => c.name === color);
+                      const hex = colorObj?.hex || '#ccc';
+
                       return (
                         <button
                           key={color}
@@ -405,19 +414,7 @@ const ProductDetailModal = () => {
                                 : 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400 opacity-50'
                           }`}
                         >
-                          {color === 'Đỏ' && <div className='h-full w-full rounded-full border bg-red-500'></div>}
-                          {color === 'Xanh' && <div className='h-full w-full rounded-full border bg-blue-500'></div>}
-                          {color === 'Vàng' && <div className='h-full w-full rounded-full border bg-yellow-500'></div>}
-                          {color === 'Trắng' && <div className='h-full w-full rounded-full border bg-white'></div>}
-                          {color === 'Đen' && <div className='h-full w-full rounded-full border bg-black'></div>}
-                          {color === 'Xám' && <div className='h-full w-full rounded-full border bg-gray-500'></div>}
-                          {color === 'Xanh lá' && (
-                            <div className='h-full w-full rounded-full border bg-green-500'></div>
-                          )}
-                          {color === 'Hồng' && <div className='h-full w-full rounded-full border bg-pink-500'></div>}
-                          {color === 'Tím' && <div className='h-full w-full rounded-full border bg-purple-500'></div>}
-                          {color === 'Cam' && <div className='h-full w-full rounded-full border bg-orange-500'></div>}
-                          {color === 'Nâu' && <div className='h-full w-full rounded-full border bg-amber-950'></div>}
+                          <div className='h-full w-full rounded-full' style={{ backgroundColor: hex }} title={color} />
                         </button>
                       );
                     })}
@@ -432,12 +429,12 @@ const ProductDetailModal = () => {
                       return (
                         <>
                           <QuantityInput
-                            size='small'
                             value={quantity}
-                            onChange={handleQuantityChange}
-                            disabled={!selectedSize || !selectedColor}
                             min={1}
                             max={stock}
+                            onChange={handleQuantityChange}
+                            disabled={!selectedSize || !selectedColor}
+                            size='small'
                           />
                           {selectedSize && selectedColor && (
                             <span className='text-sm text-gray-500'>Còn {stock} sản phẩm</span>

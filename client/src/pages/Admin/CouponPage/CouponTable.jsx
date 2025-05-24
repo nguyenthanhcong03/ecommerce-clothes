@@ -5,7 +5,7 @@ import {
   MoreOutlined,
   ReloadOutlined
 } from '@ant-design/icons';
-import { Button, Dropdown, Menu, Modal, Switch, Table, Tag, Tooltip, Typography, message } from 'antd';
+import { Button, Card, Dropdown, Input, Menu, Modal, Switch, Table, Tag, Tooltip, Typography, message } from 'antd';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { useDispatch } from 'react-redux';
@@ -13,11 +13,12 @@ import { useDispatch } from 'react-redux';
 import { deleteCoupon, toggleCouponStatus } from '@/store/slices/couponSlice';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import { formatDate } from '@/utils/format/formatDate';
+import { Plus, RefreshCw } from 'lucide-react';
 
 const { Text } = Typography;
 const { confirm } = Modal;
 
-const CouponTable = ({ coupons, pagination, onEdit, loading, onRefresh }) => {
+const CouponTable = ({ coupons, pagination, onEdit, loading, onPageChange, onRefresh, onAdd }) => {
   const dispatch = useDispatch();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -182,6 +183,7 @@ const CouponTable = ({ coupons, pagination, onEdit, loading, onRefresh }) => {
       title: 'Thao tác',
       key: 'action',
       align: 'center',
+      fixed: 'right',
       render: (_, record) => {
         const menu = (
           <Menu>
@@ -203,27 +205,56 @@ const CouponTable = ({ coupons, pagination, onEdit, loading, onRefresh }) => {
     }
   ];
 
-  const tableTitle = () => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <span>Danh sách mã giảm giá</span>
-      <Button icon={<ReloadOutlined />} onClick={onRefresh} disabled={loading}>
-        Làm mới
-      </Button>
-    </div>
-  );
-
   return (
     <>
-      {contextHolder}
-      <Table
-        columns={columns}
-        dataSource={coupons}
-        rowKey='_id'
-        pagination={pagination}
-        loading={loading}
-        title={tableTitle}
-        locale={{ emptyText: loading ? 'Đang tải dữ liệu...' : 'Không có mã giảm giá nào' }}
-      />
+      <Card className='mb-4'>
+        {contextHolder}
+        <div className='mb-4 flex flex-wrap items-center justify-between gap-2'>
+          <div className='flex items-center gap-2'>
+            <Button type='primary' icon={<Plus size={16} />} onClick={() => onAdd()} className='flex items-center'>
+              Thêm mã giảm giá mới
+            </Button>
+            <Button icon={<RefreshCw size={16} />} onClick={onRefresh} className='flex items-center'>
+              Làm mới
+            </Button>
+          </div>
+
+          {/* Ô tìm kiếm sản phẩm */}
+          {/* <div className='flex flex-wrap items-center gap-2'>
+            <Input
+              placeholder='Tìm kiếm danh mục...'
+              prefix={<Search />}
+              style={{ width: 250 }}
+              value={searchText}
+              onChange={onSearch}
+              allowClear
+            />
+          </div> */}
+        </div>
+        <Table
+          columns={columns}
+          dataSource={coupons}
+          rowKey='_id'
+          pagination={{
+            current: pagination.page,
+            pageSize: pagination.limit,
+            total: pagination.total,
+            onChange: onPageChange,
+            position: ['bottomCenter'],
+            showSizeChanger: true,
+            pageSizeOptions: ['5', '10', '20', '50'],
+            showTotal: (total) => `Tổng ${total} mã giảm giá`
+          }}
+          loading={loading}
+          locale={{ emptyText: loading ? 'Đang tải dữ liệu...' : 'Không có mã giảm giá nào' }}
+          scroll={{ x: 'max-content' }} // Cho phép cuộn ngang
+          title={() => (
+            <div className='flex items-center justify-between rounded-t-lg'>
+              <h3 className='text-lg font-bold'>Danh sách mã giảm giá</h3>
+            </div>
+          )}
+        />
+      </Card>
     </>
   );
 };

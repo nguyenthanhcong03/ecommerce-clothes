@@ -2,6 +2,7 @@ import CartItem from '@/components/cart/CartItem/CartItem';
 import Button from '@/components/common/Button/Button';
 import MenuItem from '@/components/common/MenuItem/MenuItem';
 import { getCart } from '@/store/slices/cartSlice';
+import { setOrderItems } from '@/store/slices/orderSlice';
 import { toggleSidebar } from '@/store/slices/sidebarSlice';
 import { ShoppingCart } from 'lucide-react';
 import React, { useEffect } from 'react';
@@ -16,6 +17,17 @@ function SideBarCart() {
   useEffect(() => {
     dispatch(getCart());
   }, [dispatch]);
+
+  const handleProceedToCheckout = () => {
+    // Lưu các sản phẩm đã chọn vào localStorage
+    localStorage.setItem('orderItems', JSON.stringify(items));
+
+    // Đặt các sản phẩm đã chọn vào trạng thái đơn hàng
+    dispatch(setOrderItems(items));
+
+    // Chuyển hướng đến trang thanh toán
+    navigate('/checkout');
+  };
 
   return (
     <div className='flex h-full w-[300px] flex-col items-center justify-between gap-4 px-8 py-5 md:w-[400px]'>
@@ -32,14 +44,7 @@ function SideBarCart() {
         </div>
         <div>
           {items?.map((item) => (
-            <CartItem
-              key={item._id}
-              item={item}
-              onQuantityChange={handleQuantityChange}
-              onRemove={handleRemoveItem}
-              onSelect={handleSelectItem}
-              isSelected={selectedItems.includes(item._id)}
-            />
+            <CartItem key={item._id} item={item} />
           ))}
         </div>
       </div>
@@ -62,7 +67,7 @@ function SideBarCart() {
             variant='secondary'
             onClick={() => {
               dispatch(toggleSidebar());
-              navigate('/checkout');
+              handleProceedToCheckout();
             }}
           >
             ĐẶT HÀNG

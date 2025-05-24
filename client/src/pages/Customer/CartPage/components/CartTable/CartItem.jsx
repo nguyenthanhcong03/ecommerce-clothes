@@ -1,23 +1,51 @@
-import { Trash2 } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import { formatCurrency } from '@/utils/format/formatCurrency';
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
+import { removeCartItem, updateCartItem } from '@/store/slices/cartSlice';
+import { formatCurrency } from '@/utils/format/formatCurrency';
+import { Trash2 } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 
-const CartItem = ({ item, onQuantityChange, onRemove, onSelect, isSelected }) => {
+const CartItem = ({ item, onSelect, isSelected }) => {
   const { loadingUpdate, itemUpdate } = useSelector((state) => state.cart);
   const isUpdating = loadingUpdate && itemUpdate?._id === item._id;
+  const dispatch = useDispatch();
+
+  const [quantity, setQuantity] = useState(item.quantity);
+
+  const handleQuantityChange = useCallback(
+    (newQuantity) => {
+      if (newQuantity !== item.quantity) {
+        dispatch(updateCartItem({ itemId: item._id, quantity: newQuantity }))
+          .unwrap()
+          .then(() => toast.success('Cập nhật số lượng thành công'))
+          .catch((err) => toast.error('Cập nhật số lượng thất bại: ' + err));
+      }
+    },
+    [item, dispatch]
+  );
+
+  const handleRemoveItem = (itemId) => {
+    dispatch(removeCartItem(itemId))
+      .unwrap()
+      .then(() => toast.success('Xóa sản phẩm thành công'))
+      .catch((err) => toast.error('Xóa sản phẩm thất bại: ' + err));
+  };
+
   return (
     <div className='flex flex-col gap-4 border-b px-2 py-4'>
       {/* Mobile view - cart item */}
       <div className='flex items-center justify-start gap-2 md:hidden'>
-        <div className='flex items-center'>
-          <input
-            type='checkbox'
-            checked={isSelected}
-            onChange={() => onSelect(item._id)}
-            className='h-4 w-4 rounded border-gray-300 accent-primaryColor'
-          />
-        </div>
+        {isSelected && (
+          <div className='flex items-center'>
+            <input
+              type='checkbox'
+              checked={isSelected}
+              onChange={() => onSelect(item._id)}
+              className='h-4 w-4 rounded border-gray-300 accent-primaryColor'
+            />
+          </div>
+        )}
         <div className='flex flex-1 items-center justify-between'>
           <div className='flex items-center gap-3'>
             <img src={item.snapshot.image} alt={item.snapshot.name} className='h-24 w-20 object-cover' />
@@ -31,16 +59,15 @@ const CartItem = ({ item, onQuantityChange, onRemove, onSelect, isSelected }) =>
           </div>
           <div className='flex h-[96px] flex-col justify-between'>
             <div className='flex items-center justify-end gap-2 hover:opacity-80'>
-              <Trash2 strokeWidth={1.5} cursor={'pointer'} width={20} onClick={() => onRemove(item._id)} />
+              <Trash2 strokeWidth={1.5} cursor={'pointer'} width={20} onClick={() => handleRemoveItem(item._id)} />
             </div>
 
             <div className={`${isUpdating ? 'opacity-50' : ''}`}>
               <QuantityInput
-                size='small'
                 value={item.quantity}
-                onChange={(qty) => onQuantityChange(item, qty)}
                 min={1}
-                max={10}
+                max={item.snapshot.stock}
+                onChange={(newQuantity) => handleQuantityChange(newQuantity)}
               />
             </div>
           </div>
@@ -65,12 +92,10 @@ const CartItem = ({ item, onQuantityChange, onRemove, onSelect, isSelected }) =>
         <div className='col-span-2 text-right text-gray-600'>{formatCurrency(item.snapshot.price)}</div>
         <div className={`col-span-2 flex items-center justify-center ${isUpdating ? 'opacity-50' : ''}`}>
           <QuantityInput
-            size='small'
             value={item.quantity}
-            onChange={(qty) => onQuantityChange(item, qty)}
-            disabled={isUpdating}
             min={1}
-            max={10}
+            max={item.snapshot.stock}
+            onChange={(newQuantity) => handleQuantityChange(newQuantity)}
           />
         </div>
         <div className={`col-span-2 text-right text-sm font-medium ${isUpdating ? 'opacity-50' : ''}`}>

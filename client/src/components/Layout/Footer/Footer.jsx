@@ -61,10 +61,10 @@ function Footer() {
         <Collapse title={'KẾT NỐI'} isShow={true} isFooter={true}>
           <div className='flex flex-col gap-2'>
             <div className='flex gap-2'>
-              <a href=''>
+              <a target='_blank' href='https://www.facebook.com/nguyenthanhcong03'>
                 <Facebook />
               </a>
-              <a href=''>
+              <a target='_blank' href='https://www.instagram.com/nguyenthanhcong03/'>
                 <Instagram />
               </a>
             </div>

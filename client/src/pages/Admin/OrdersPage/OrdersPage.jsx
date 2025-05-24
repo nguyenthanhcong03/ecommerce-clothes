@@ -327,6 +327,7 @@ const OrdersPage = () => {
     {
       title: 'Thao tác',
       key: 'action',
+      fixed: 'right',
       render: (_, record) => (
         <Space size='small'>
           <Tooltip title='Xem chi tiết'>
@@ -351,8 +352,7 @@ const OrdersPage = () => {
           </Tooltip>
         </Space>
       ),
-      width: 180,
-      fixed: 'right'
+      width: 180
     }
   ];
 
@@ -361,7 +361,7 @@ const OrdersPage = () => {
       <Header title='Quản lý đơn hàng' />
       <main className='mx-auto px-4 py-6 lg:px-8'>
         {/* Statistics Cards */}
-        <OrderStatistics />
+        {/* <OrderStatistics /> */}
 
         {/* Search and Filters */}
         <OrderFilters
@@ -408,7 +408,19 @@ const OrdersPage = () => {
             }}
             loading={loading}
             onChange={handleTableChange}
-            scroll={{ x: 1300 }}
+            scroll={{ x: 'max-content' }} // Cho phép cuộn ngang
+            locale={{
+              emptyText: loading
+                ? 'Đang tải dữ liệu...'
+                : searchText
+                  ? 'Không tìm thấy kết quả phù hợp'
+                  : 'Không có dữ liệu'
+            }}
+            title={() => (
+              <div className='flex items-center justify-between rounded-t-lg'>
+                <h3 className='text-lg font-bold'>Danh sách đơn hàng</h3>
+              </div>
+            )}
           />
         </Card>
 

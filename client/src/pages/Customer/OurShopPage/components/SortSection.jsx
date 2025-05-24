@@ -42,11 +42,11 @@ const SortSection = ({ currentCategory, viewMode, setViewMode, sortOptions, sear
             if (sortBy === 'price') return `price_${sortOrder}`;
             if (sortBy === 'name') return `name_${sortOrder}`;
             if (sortBy === 'rating') return 'rating_desc';
-            if (sortBy === 'popularity') return 'popular';
+            if (sortBy === 'popular') return 'popular';
             if (sortBy === 'createdAt' && sortOrder === 'desc') return 'newest';
             return 'default';
           })()}
-          onChange={onSortChange}
+          onChange={(e) => onSortChange(e.target.value)}
         />
       </div>
     </div>

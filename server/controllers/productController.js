@@ -26,48 +26,46 @@ const getAllProducts = async (req, res) => {
       sortOrder = "desc",
     } = req.query;
 
-    // Convert page and limit to integers
     const pageNumber = parseInt(page);
     const limitNumber = parseInt(limit);
 
-    // Calculate skip for pagination
     const skip = (pageNumber - 1) * limitNumber;
 
     // Xây dựng query động dựa trên các tham số lọc
     const query = {}; // Lọc theo danh mục (bao gồm cả danh mục con)
     if (category) {
-      // Hỗ trợ nhiều danh mục (dạng mảng)
-      if (Array.isArray(category)) {
-        // Tìm tất cả sản phẩm thuộc các danh mục được chỉ định và các danh mục con của chúng
-        const allCategoryIds = [];
+      // // Hỗ trợ nhiều danh mục (dạng mảng)
+      // if (Array.isArray(category)) {
+      //   // Tìm tất cả sản phẩm thuộc các danh mục được chỉ định và các danh mục con của chúng
+      //   const allCategoryIds = [];
 
-        // Duyệt qua từng danh mục được chỉ định
-        for (const catId of category) {
-          try {
-            // Lấy danh mục hiện tại và tất cả con cháu của nó
-            const childCategoryIds = await categoryService.getAllChildCategoryIds(catId);
-            allCategoryIds.push(...childCategoryIds);
-          } catch (error) {
-            // Nếu có lỗi (ví dụ: ID không hợp lệ), bỏ qua và tiếp tục
-            console.error(`Error getting child categories for ${catId}:`, error.message);
-          }
-        }
+      //   // Duyệt qua từng danh mục được chỉ định
+      //   for (const catId of category) {
+      //     try {
+      //       // Lấy danh mục hiện tại và tất cả con cháu của nó
+      //       const childCategoryIds = await categoryService.getAllChildCategoryIds(catId);
+      //       allCategoryIds.push(...childCategoryIds);
+      //     } catch (error) {
+      //       // Nếu có lỗi (ví dụ: ID không hợp lệ), bỏ qua và tiếp tục
+      //       console.error(`Error getting child categories for ${catId}:`, error.message);
+      //     }
+      //   }
 
-        // Loại bỏ các ID trùng lặp
-        const uniqueCategoryIds = [...new Set(allCategoryIds)];
-        query.categoryId = { $in: uniqueCategoryIds };
-      } else {
-        // Nếu chỉ có một danh mục
-        try {
-          // Lấy tất cả ID danh mục con
-          const allCategoryIds = await categoryService.getAllChildCategoryIds(category);
-          query.categoryId = { $in: allCategoryIds };
-        } catch (error) {
-          // Nếu có lỗi, chỉ sử dụng danh mục hiện tại
-          console.error(`Error getting child categories:`, error.message);
-          query.categoryId = category;
-        }
+      //   // Loại bỏ các ID trùng lặp
+      //   const uniqueCategoryIds = [...new Set(allCategoryIds)];
+      //   query.categoryId = { $in: uniqueCategoryIds };
+      // } else {
+      // Nếu chỉ có một danh mục
+      try {
+        // Lấy tất cả ID danh mục con
+        const allCategoryIds = await categoryService.getAllChildCategoryIds(category);
+        query.categoryId = { $in: allCategoryIds };
+      } catch (error) {
+        // Nếu có lỗi, chỉ sử dụng danh mục hiện tại
+        console.error(`Error getting child categories:`, error.message);
+        query.categoryId = category;
       }
+      // }
     }
 
     if (isActive !== "") {
@@ -161,16 +159,14 @@ const getAllProducts = async (req, res) => {
     // Handle special sorts
     if (sortBy === "price") {
       sort["variants.price"] = sortOrder === "asc" ? 1 : -1;
-    } else if (sortBy === "popularity") {
+    } else if (sortBy === "popular") {
       sort.salesCount = sortOrder === "asc" ? 1 : -1;
     } else if (sortBy === "rating") {
       sort.averageRating = sortOrder === "asc" ? 1 : -1;
     } else {
-      // Default sorting by any field
       sort[sortBy] = sortOrder === "asc" ? 1 : -1;
     }
 
-    // Execute query with pagination
     const products = await Product.find(query)
       .populate("categoryId", "name slug") // Populate category data
       .sort(sort)
@@ -178,10 +174,8 @@ const getAllProducts = async (req, res) => {
       .limit(limitNumber)
       .lean(); // Convert to plain JS objects for better performance
 
-    // Get total count for pagination
     const totalProducts = await Product.countDocuments(query);
 
-    // Calculate total pages
     const totalPages = Math.ceil(totalProducts / limitNumber);
 
     return res.status(200).json({
@@ -210,6 +204,7 @@ const getAllProducts = async (req, res) => {
 const createProduct = async (req, res) => {
   try {
     const productData = req.body;
+    console.log("productData", productData);
 
     if (!productData.images || !Array.isArray(productData.images) || productData.images.length === 0) {
       return res.status(400).json({

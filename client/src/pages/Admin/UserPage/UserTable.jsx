@@ -1,7 +1,7 @@
 import { formatDate } from '@/utils/format/formatDate';
 import { SearchOutlined, UserOutlined } from '@ant-design/icons';
-import { Input, Popconfirm, Space, Table, Tag, Tooltip } from 'antd';
-import { Lock, LockOpen, Pencil, Trash2 } from 'lucide-react';
+import { Button, Card, Input, Popconfirm, Space, Table, Tag, Tooltip } from 'antd';
+import { Lock, LockOpen, Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
 
 const UserTable = ({
@@ -10,6 +10,8 @@ const UserTable = ({
   pagination,
   onChange,
   onSearch,
+  onAdd,
+  onRefresh,
   searchText,
   onEdit,
   onDelete,
@@ -98,6 +100,7 @@ const UserTable = ({
       {
         title: 'Thao tác',
         key: 'action',
+        fixed: 'right',
         render: (_, record) => (
           <Space size='middle'>
             <Tooltip title='Chỉnh sửa'>
@@ -148,19 +151,28 @@ const UserTable = ({
   );
 
   return (
-    <div className='rounded bg-white shadow'>
-      <div className='flex items-center justify-between border-b p-4'>
-        <h3 className='text-lg font-semibold'>Danh sách người dùng</h3>
-        <Input
-          placeholder='Tìm kiếm người dùng...'
-          prefix={<SearchOutlined />}
-          style={{ width: 250 }}
-          value={searchText}
-          onChange={onSearch}
-          allowClear
-        />
-      </div>
+    <Card className='bg-white shadow'>
+      <div className='mb-4 flex flex-wrap items-center justify-between gap-2'>
+        <div className='flex items-center gap-2'>
+          <Button type='primary' icon={<Plus size={16} />} onClick={() => onAdd()} className='flex items-center'>
+            Thêm người dùng mới
+          </Button>
+          <Button icon={<RefreshCw size={16} />} onClick={onRefresh} className='flex items-center'>
+            Làm mới
+          </Button>
+        </div>
 
+        <div className='flex flex-wrap items-center gap-2'>
+          <Input
+            placeholder='Tìm kiếm người dùng...'
+            prefix={<Search />}
+            style={{ width: 250 }}
+            value={searchText}
+            onChange={onSearch}
+            allowClear
+          />
+        </div>
+      </div>
       <Table
         dataSource={users}
         columns={columns}
@@ -175,9 +187,21 @@ const UserTable = ({
           showTotal: (total) => `Tổng cộng ${total} người dùng`
         }}
         onChange={onChange}
-        scroll={{ x: 1000 }}
+        locale={{
+          emptyText: loading
+            ? 'Đang tải dữ liệu...'
+            : searchText
+              ? 'Không tìm thấy kết quả phù hợp'
+              : 'Không có dữ liệu'
+        }}
+        title={() => (
+          <div className='flex items-center justify-between rounded-t-lg'>
+            <h3 className='text-lg font-bold'>Danh sách tài khoản người dùng</h3>
+          </div>
+        )}
+        scroll={{ x: 'max-content' }}
       />
-    </div>
+    </Card>
   );
 };
 

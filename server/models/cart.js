@@ -30,8 +30,8 @@ const cartItemSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-  }
-  // { _id: true }
+  },
+  { _id: true }
 );
 
 const cartSchema = new mongoose.Schema(

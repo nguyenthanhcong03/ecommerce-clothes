@@ -60,8 +60,8 @@ const CouponPage = () => {
 
   const fetchCouponList = () => {
     const params = {
-      page: pagination.page,
-      limit: pagination.limit,
+      page: pagination.page || 1,
+      limit: pagination.limit || 5,
       ...filters
     };
 
@@ -113,22 +113,9 @@ const CouponPage = () => {
       {contextHolder}
 
       <div className='relative z-10 flex-1 overflow-auto'>
-        <Header title='Products' />
+        <Header title='Quản lý giảm giá' />
 
         <main className='mx-auto px-4 py-6 lg:px-8'>
-          {/* STATS */}
-          <motion.div
-            className='mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4'
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-          >
-            <StatCard name='Tổng số sản phẩm' icon={Package} value={0} color='#6366F1' />
-            <StatCard name='Sản phẩm mới hôm nay' icon={PackagePlus} value={0} color='#10B981' />
-            <StatCard name='Sản phẩm đang hoạt động' icon={TrendingUp} value={0} color='#F59E0B' />
-            <StatCard name='Sản phẩm nổi bật' icon={Star} value={0} color='#EF4444' />
-          </motion.div>
-
           <motion.div
             className='flex flex-col gap-2'
             initial={{ opacity: 0, y: 20 }}
@@ -137,40 +124,26 @@ const CouponPage = () => {
           >
             <div className='site-card-border-less-wrapper'>
               <Card bordered={false} className='card-shadow'>
-                <Row justify='space-between' align='middle' style={{ marginBottom: 16 }}>
-                  <Col>
-                    <Button type='primary' icon={<PlusOutlined />} onClick={() => handleOpenForm()}>
-                      Thêm mã giảm giá
-                    </Button>
-                  </Col>
-                </Row>
-
                 <CouponFilter
                   filters={filters}
                   onFilterChange={handleFilterChange}
                   onResetFilters={handleResetFilters}
                 />
               </Card>
-
-              <CouponForm visible={isFormOpen} onCancel={handleCloseForm} coupon={editCoupon} isEdit={!!editCoupon} />
             </div>
+
             <CouponTable
               coupons={coupons}
-              pagination={{
-                current: pagination.page,
-                pageSize: pagination.limit,
-                total: pagination.total,
-                onChange: handlePageChange,
-                showSizeChanger: true,
-                pageSizeOptions: [5, 10, 20, 50],
-                showTotal: (total) => `Tổng ${total} mã giảm giá`
-              }}
+              onPageChange={handlePageChange}
+              onAdd={handleOpenForm}
               onEdit={handleOpenForm}
               loading={loading}
               onRefresh={handleRefresh}
+              pagination={pagination}
             />
           </motion.div>
         </main>
+        <CouponForm visible={isFormOpen} onCancel={handleCloseForm} coupon={editCoupon} isEdit={!!editCoupon} />
       </div>
     </>
   );

@@ -1,4 +1,4 @@
-import { uploadMultipleFiles } from '@/services/fileService';
+import { deleteMultipleFiles, uploadMultipleFiles } from '@/services/fileService';
 import { fetchCategories } from '@/store/slices/categorySlice';
 import { createProduct, updateProductById } from '@/store/slices/productSlice';
 import { COLOR_OPTIONS, SIZE_OPTIONS } from '@/utils/constants';
@@ -6,6 +6,7 @@ import { buildTree } from '@/utils/helpers/buildTree';
 import { UploadOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Card, Form, Input, message, Modal, Select, Switch, TreeSelect, Upload } from 'antd';
+import { fi } from 'date-fns/locale';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
@@ -21,7 +22,6 @@ const variantSchema = yup.object({
   price: yup.number().required('Giá là bắt buộc').min(0, 'Giá phải lớn hơn hoặc bằng 0'),
   discountPrice: yup.number().nullable().min(0, 'Giá giảm phải lớn hơn hoặc bằng 0'),
   stock: yup.number().required('Số lượng là bắt buộc').min(0, 'Số lượng phải lớn hơn hoặc bằng 0')
-  // images: yup.array().of(yup.mixed()).min(1, 'Phải chọn ít nhất một ảnh')
 });
 
 const productSchema = yup.object({
@@ -105,13 +105,12 @@ const ImageUpload = memo(({ value = [], onChange, disabled }) => {
   );
 });
 
-const ProductForm = ({ loading, selectedProduct, onClose }) => {
+const ProductForm = ({ selectedProduct, onClose }) => {
   const dispatch = useDispatch();
   const { categories } = useSelector((state) => state.category); // Lấy danh sách danh mục
-  const { loading: productLoading } = useSelector((state) => state.product); // Trạng thái loading từ Redux
+  const { loading } = useSelector((state) => state.product); // Trạng thái loading từ Redux
   const [uploading, setUploading] = useState(false); // Trạng thái đang tải file
   const [localFiles, setLocalFiles] = useState([]); // Lưu trữ danh sách file mới cho ảnh sản phẩm
-  const [variantLocalFiles, setVariantLocalFiles] = useState([]); // Lưu trữ danh sách file mới cho ảnh biến thể
 
   // Chuyển đổi danh mục đã lọc thành cấu trúc cây cho TreeSelect - sử dụng useMemo
   const categoriesArray = useMemo(() => {
@@ -134,8 +133,7 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
     control,
     handleSubmit,
     formState: { errors, isDirty },
-    reset,
-    watch
+    reset
   } = useForm({
     resolver: yupResolver(productSchema),
     defaultValues: {
@@ -143,7 +141,7 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
       description: '',
       categoryId: '',
       brand: '',
-      variants: [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0, images: [] }],
+      variants: [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0 }],
       images: [],
       tags: [],
       isActive: true
@@ -172,7 +170,7 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
         variants:
           selectedProduct.variants && selectedProduct.variants.length > 0
             ? selectedProduct.variants.map((v) => ({ ...v }))
-            : [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0, images: [] }],
+            : [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0 }],
         images: selectedProduct.images ? selectedProduct.images.map((url) => ({ url })) : [],
         tags: selectedProduct.tags || [],
         isActive: selectedProduct.isActive ?? true
@@ -184,7 +182,7 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
         description: '',
         categoryId: '',
         brand: '',
-        variants: [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0, images: [] }],
+        variants: [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0 }],
         images: [],
         tags: [],
         isActive: true
@@ -192,28 +190,16 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
     }
     // Làm mới localFiles khi đóng/mở form
     setLocalFiles([]);
-    setVariantLocalFiles([]);
-  }, [selectedProduct, reset]);
+  }, [selectedProduct, reset, dispatch]);
 
   // Xử lý khi có thay đổi trong input files
-  const handleFilesChange = useCallback((files, isVariant = false, variantIndex = null) => {
+  const handleFilesChange = useCallback((files) => {
     // Lọc ra các file mới (có thuộc tính originFileObj)
     const newFiles = files.filter((file) => file.originFileObj);
+    console.log('first newFiles', newFiles);
 
-    if (isVariant && variantIndex !== null) {
-      // Cập nhật danh sách file cho biến thể cụ thể
-      setVariantLocalFiles((prev) => {
-        const updated = [...prev];
-        if (!updated[variantIndex]) {
-          updated[variantIndex] = [];
-        }
-        updated[variantIndex] = newFiles;
-        return updated;
-      });
-    } else {
-      // Cập nhật danh sách file chung cho sản phẩm
-      setLocalFiles(newFiles);
-    }
+    // Cập nhật danh sách file chung cho sản phẩm
+    setLocalFiles(newFiles);
   }, []);
 
   // Tải file lên Cloudinary
@@ -222,9 +208,8 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
 
     setUploading(true);
     try {
-      // Chỉ tải lên các file mới (có thuộc tính originFileObj)
       const filesToUpload = files.filter((file) => file.originFileObj).map((file) => file.originFileObj);
-
+      console.log('filesToUpload', filesToUpload);
       if (filesToUpload.length === 0) {
         return files; // Nếu không có file mới nào cần tải lên
       }
@@ -244,9 +229,7 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
         public_id: file.public_id
       }));
 
-      // Kết hợp file đã tải lên với file hiện có
-      const existingFiles = files.filter((file) => !file.originFileObj);
-      return [...existingFiles, ...uploadedFiles];
+      return [...uploadedFiles];
     } catch (error) {
       console.error('Error uploading files:', error);
       message.error('Tải lên ảnh thất bại: ' + error.message);
@@ -257,16 +240,15 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
   }, []); // Không có dependencies vì không phụ thuộc vào state
 
   // Thêm sản phẩm mới
+
   const handleAddProduct = useCallback(
-    async (formData) => {
-      const resultAction = await dispatch(createProduct(formData));
-      if (createProduct.fulfilled.match(resultAction)) {
-        message.success('Thêm sản phẩm thành công!');
-      } else if (createProduct.rejected.match(resultAction)) {
-        message.error(resultAction.payload || 'Có lỗi xảy ra khi thêm sản phẩm');
-      }
+    (formData) => {
+      dispatch(createProduct(formData))
+        .unwrap()
+        .then(() => message.success('Thêm sản phẩm thành công!'))
+        .catch((err) => message.error('Có lỗi xảy ra khi thêm sản phẩm: ' + err));
     },
-    [dispatch] // dispatch là ổn định
+    [dispatch]
   );
 
   // Cập nhật sản phẩm hiện có
@@ -288,110 +270,71 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
   const onSubmit = useCallback(
     async (data) => {
       console.log('Submitting data:', data);
-      // try {
-      //   setUploading(true);
+      try {
+        setUploading(true);
 
-      //   // Xử lý hình ảnh sản phẩm chính - tải lên cái mới, giữ lại cái cũ
-      //   let processedImages = [...data.images];
-      //   if (localFiles.length > 0) {
-      //     // Kết hợp hình ảnh cũ (không có originFileObj) với hình ảnh mới (có originFileObj)
-      //     const combinedFiles = [...data.images.filter((img) => !img.originFileObj), ...localFiles];
-      //     processedImages = await uploadFiles(combinedFiles);
-      //   }
+        // Lọc ra các ảnh đã tải lên từ trước
+        let processedImages = [...data.images.filter((img) => !img.originFileObj)];
 
-      //   // Xử lý biến thể và hình ảnh của chúng
-      //   const processedVariants = await Promise.all(
-      //     data.variants.map(async (variant, index) => {
-      //       let variantImages = variant.images || [];
+        if (localFiles.length > 0) {
+          // Tải lên cloud các file mới
+          const uploadImages = await uploadFiles(localFiles);
+          // Thêm các file đã tải lên vào danh sách ảnh
+          if (uploadImages.length > 0) {
+            processedImages = [...processedImages, ...uploadImages];
+          }
+        }
 
-      //       // Nếu có file ảnh mới cho biến thể này
-      //       if (variantLocalFiles[index] && variantLocalFiles[index].length > 0) {
-      //         const variantCombinedFiles = [
-      //           ...(variant.images || []).filter((img) => !img.originFileObj),
-      //           ...variantLocalFiles[index]
-      //         ];
-      //         variantImages = await uploadFiles(variantCombinedFiles);
-      //       }
+        // Chuẩn bị dữ liệu để gửi
+        const formData = {
+          name: data.name,
+          description: data.description || '',
+          categoryId: data.categoryId,
+          brand: data.brand,
+          variants: data.variants,
+          isActive: data.isActive,
+          images: processedImages.map((file) => (typeof file === 'string' ? file : file.url)),
+          tags: data.tags || []
+        };
 
-      //       return {
-      //         ...variant,
-      //         images: variantImages.map((file) => (typeof file === 'string' ? file : file.url))
-      //       };
-      //     })
-      //   );
+        console.log('formData', formData);
 
-      //   // Chuẩn bị dữ liệu để gửi
-      //   const formData = {
-      //     name: data.name,
-      //     description: data.description || '',
-      //     categoryId: data.categoryId,
-      //     brand: data.brand,
-      //     variants: processedVariants,
-      //     isActive: data.isActive,
-      //     images: processedImages.map((file) => (typeof file === 'string' ? file : file.url)),
-      //     tags: data.tags || []
-      //   };
+        // Xử lý xóa hình ảnh khi cập nhật
+        if (selectedProduct) {
+          // Xóa ảnh sản phẩm chính không còn được sử dụng
+          const oldImages = selectedProduct.images || [];
+          const currentImageUrls = processedImages.map((img) => (typeof img === 'string' ? img : img.url));
+          const deletedImages = oldImages.filter((img) => !currentImageUrls.includes(img));
 
-      //   console.log('formData', formData);
+          if (deletedImages.length > 0) {
+            try {
+              await deleteMultipleFiles(deletedImages.map((img) => img.public_id || img));
+            } catch (deleteErr) {
+              console.error('Lỗi khi xóa ảnh:', deleteErr);
+            }
+          }
 
-      //   // Xử lý xóa hình ảnh khi cập nhật
-      //   if (selectedProduct) {
-      //     // Xóa ảnh sản phẩm chính không còn được sử dụng
-      //     const oldImages = selectedProduct.images || [];
-      //     const currentImageUrls = processedImages.map((img) => (typeof img === 'string' ? img : img.url));
-      //     const deletedImages = oldImages.filter((img) => !currentImageUrls.includes(img));
+          await handleUpdateProduct(formData);
+        } else {
+          await handleAddProduct(formData);
+        }
 
-      //     // Xóa ảnh biến thể không còn được sử dụng
-      //     const oldVariantImages =
-      //       selectedProduct.variants?.reduce((acc, variant) => {
-      //         if (variant.images && variant.images.length > 0) {
-      //           acc.push(...variant.images);
-      //         }
-      //         return acc;
-      //       }, []) || [];
-
-      //     const currentVariantImageUrls = processedVariants.reduce((acc, variant) => {
-      //       if (variant.images && variant.images.length > 0) {
-      //         acc.push(...variant.images);
-      //       }
-      //       return acc;
-      //     }, []);
-
-      //     const deletedVariantImages = oldVariantImages.filter((img) => !currentVariantImageUrls.includes(img));
-
-      //     // Tổng hợp tất cả ảnh cần xóa
-      //     const allDeletedImages = [...deletedImages, ...deletedVariantImages];
-
-      //     if (allDeletedImages.length > 0) {
-      //       try {
-      //         await deleteMultipleFiles(allDeletedImages.map((img) => img.public_id || img));
-      //       } catch (deleteErr) {
-      //         console.error('Lỗi khi xóa ảnh:', deleteErr);
-      //       }
-      //     }
-
-      //     await handleUpdateProduct(formData);
-      //   } else {
-      //     await handleAddProduct(formData);
-      //   }
-
-      //   // Đặt lại local files sau khi gửi thành công
-      //   setLocalFiles([]);
-      //   setVariantLocalFiles([]);
-      //   onClose(); // Đóng form sau khi hoàn tất
-      // } catch (error) {
-      //   console.error('Error:', error);
-      //   message.error('Có lỗi xảy ra khi xử lý sản phẩm.');
-      // } finally {
-      //   setUploading(false);
-      // }
+        // Đặt lại local files sau khi gửi thành công
+        setLocalFiles([]);
+        onClose(); // Đóng form sau khi hoàn tất
+      } catch (error) {
+        console.error('Error:', error);
+        message.error('Có lỗi xảy ra khi xử lý sản phẩm.');
+      } finally {
+        setUploading(false);
+      }
     },
-    [localFiles, variantLocalFiles, selectedProduct, handleUpdateProduct, handleAddProduct, uploadFiles, onClose]
+    [localFiles, selectedProduct, handleUpdateProduct, handleAddProduct, uploadFiles, onClose]
   );
 
   // Xử lý hủy form
   const handleCancel = useCallback(() => {
-    if (isDirty || localFiles.length > 0 || variantLocalFiles.some((files) => files && files.length > 0)) {
+    if (isDirty || localFiles.length > 0) {
       // Hiện dialog xác nhận nếu có thay đổi chưa lưu
       Modal.confirm({
         title: 'Xác nhận hủy',
@@ -401,15 +344,13 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
         onOk: () => {
           onClose(); // Đóng form
           setLocalFiles([]);
-          setVariantLocalFiles([]);
         }
       });
     } else {
-      onClose(); // Đóng form mà không cần xác nhận
+      onClose();
       setLocalFiles([]);
-      setVariantLocalFiles([]);
     }
-  }, [isDirty, localFiles.length, variantLocalFiles, onClose]);
+  }, [isDirty, localFiles.length, onClose]);
 
   return (
     <Modal
@@ -421,8 +362,8 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
       okButtonProps={{
         autoFocus: true,
         htmlType: 'submit',
-        loading: uploading || loading || productLoading,
-        disabled: !isDirty && !localFiles.length && !variantLocalFiles.some((files) => files && files.length > 0)
+        loading: uploading || loading,
+        disabled: !isDirty && !localFiles.length
       }}
       onCancel={handleCancel}
       destroyOnClose
@@ -647,23 +588,6 @@ const ProductForm = ({ loading, selectedProduct, onClose }) => {
                   />
                 </Form.Item>
               </div>
-
-              <Form.Item label='Ảnh biến thể'>
-                <Controller
-                  name={`variants[${index}].images`}
-                  control={control}
-                  render={({ field }) => (
-                    <ImageUpload
-                      value={field.value || []}
-                      onChange={(fileList) => {
-                        field.onChange(fileList);
-                        handleFilesChange(fileList, true, index);
-                      }}
-                      disabled={uploading || loading}
-                    />
-                  )}
-                />
-              </Form.Item>
 
               {variantFields.length > 1 && (
                 <Button type='primary' danger onClick={() => removeVariant(index)} disabled={uploading || loading}>

@@ -25,7 +25,6 @@ export const fetchProducts = createAsyncThunk('product/fetchProducts', async (pa
 export const fetchProductById = createAsyncThunk('product/fetchProductById', async (id, { rejectWithValue }) => {
   try {
     const response = await getProductByIdAPI(id);
-    console.log('response', response);
     return response;
   } catch (error) {
     return rejectWithValue(error.response?.data || { message: error.message });
@@ -184,6 +183,21 @@ const productSlice = createSlice({
         featured: false,
         isActive: true
       };
+    },
+
+    //admin
+    setPage: (state, action) => {
+      state.pagination.page = action.payload;
+    },
+    setLimit: (state, action) => {
+      state.pagination.limit = action.payload;
+      state.pagination.page = 1; // Reset về trang 1 khi thay đổi số lượng hiển thị
+    },
+    setFilter: (state, action) => {
+      state.filters = {
+        ...state.filters,
+        ...action.payload
+      };
     }
   },
   extraReducers: (builder) => {
@@ -323,6 +337,14 @@ const productSlice = createSlice({
   }
 });
 
-export const { openProductDetailModal, closeProductDetailModal, setFilters } = productSlice.actions;
+export const {
+  openProductDetailModal,
+  closeProductDetailModal,
+  setFilters,
+  setPage,
+  setLimit,
+  setFilter,
+  resetFilters
+} = productSlice.actions;
 
 export default productSlice.reducer;

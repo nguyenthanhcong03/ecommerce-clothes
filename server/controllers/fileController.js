@@ -48,7 +48,7 @@ const uploadFile = async (req, res) => {
 const uploadMultipleFiles = async (req, res) => {
   try {
     // Kiểm tra nếu có files đã được upload
-    if (!req.files || Object.keys(req.files).length === 0) {
+    if (!req.files || !req.files.files) {
       return res.status(400).json({
         success: false,
         message: "Không có files nào được tải lên",

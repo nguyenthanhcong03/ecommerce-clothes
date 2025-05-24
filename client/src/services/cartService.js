@@ -14,9 +14,9 @@ export const getCartService = async () => {
   return res;
 };
 
-export const updateCartItemService = async (data) => {
+export const updateCartItemService = async (itemId, quantity) => {
   let url = BASE_API;
-  const res = await axios.patch(`${url}/update`, data);
+  const res = await axios.patch(`${url}/${itemId}`, { quantity });
   return res;
 };
 

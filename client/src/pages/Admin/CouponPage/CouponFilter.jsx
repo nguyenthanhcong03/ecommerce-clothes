@@ -21,23 +21,22 @@ const CouponFilter = ({ filters, onFilterChange, onResetFilters }) => {
   // Đồng bộ form values khi filters từ props thay đổi
   useEffect(() => {
     // Cập nhật giá trị từ filters vào form
-    setValue('code', filters.code || '');
-    setValue('isActive', filters.isActive || '');
-
-    // Xử lý các giá trị ngày tháng
-    if (filters.startDate) {
-      setValue('startDate', moment(filters.startDate));
-    } else {
-      setValue('startDate', null);
-    }
-
-    if (filters.endDate) {
-      setValue('endDate', moment(filters.endDate));
-    } else {
-      setValue('endDate', null);
-    }
+    // setValue('code', filters.code || '');
+    // setValue('isActive', filters.isActive || '');
+    // // Xử lý các giá trị ngày tháng
+    // if (filters.startDate) {
+    //   setValue('startDate', moment(filters.startDate));
+    // } else {
+    //   setValue('startDate', null);
+    // }
+    // if (filters.endDate) {
+    //   setValue('endDate', moment(filters.endDate));
+    // } else {
+    //   setValue('endDate', null);
+    // }
   }, [filters, setValue]);
   const handleFormSubmit = (data) => {
+    console.log('data', data);
     // Xử lý và chuẩn hóa dữ liệu trước khi gửi đi
     const cleanValues = {};
 
@@ -63,7 +62,7 @@ const CouponFilter = ({ filters, onFilterChange, onResetFilters }) => {
         : moment(data.endDate).format('YYYY-MM-DD');
     }
 
-    onFilterChange(cleanValues);
+    onFilterChange(data);
   };
   const handleReset = () => {
     // Đặt lại tất cả các giá trị form về mặc định
@@ -132,6 +131,7 @@ const CouponFilter = ({ filters, onFilterChange, onResetFilters }) => {
                         // Đảm bảo xử lý giá trị khi clear
                         field.onChange(value === undefined ? '' : value);
                       }}
+                      value={field.value || undefined}
                     >
                       <Select.Option value='true'>Đang kích hoạt</Select.Option>
                       <Select.Option value='false'>Đã vô hiệu hóa</Select.Option>

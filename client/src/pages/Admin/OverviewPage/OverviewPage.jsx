@@ -9,7 +9,7 @@ import SalesChannelChart from '@/components/AdminComponents/overview/SalesChanne
 const OverviewPage = () => {
   return (
     <div className='relative z-10 flex-1 overflow-auto'>
-      <Header title='Overview' />
+      <Header title='Tổng quan' />
 
       <main className='mx-auto px-4 py-6 lg:px-8'>
         {/* STATS */}
