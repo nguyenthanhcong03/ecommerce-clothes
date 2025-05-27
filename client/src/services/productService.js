@@ -37,7 +37,6 @@ export const getAllProductsAPI = (params) => {
   if (inStock) queryParams.inStock = inStock;
   if (minPrice) queryParams.minPrice = minPrice;
   if (maxPrice) queryParams.maxPrice = maxPrice;
-  console.log('queryParams', queryParams);
 
   // Sửa lỗi cú pháp khi gọi axios
   return axios.get(`${BASE_API}`, { params: queryParams });

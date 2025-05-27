@@ -19,7 +19,6 @@ import ContactPage from '@/pages/customer/ContactPage/ContactPage.jsx';
 import ProductDetail from '@/pages/customer/ProductDetail/ProductDetail.jsx';
 import HomePage from '@/pages/customer/HomePage/HomePage.jsx';
 import NewsPage from '@/pages/customer/NewsPage/NewsPage.jsx';
-import OurShopPage from '@/pages/customer/OurShopPage/OurShopPage';
 import PaymentFailedPage from '@/pages/customer/PaymentStatusPage/PaymentFailedPage.jsx';
 import PaymentSuccessPage from '@/pages/customer/PaymentStatusPage/PaymentSuccessPage.jsx';
 import WishlistPage from '@/pages/customer/WishlistPage/WishlistPage.jsx';
@@ -42,12 +41,12 @@ import ProfilePage from '@/pages/customer/AccountPage/ProfilePage.jsx';
 import VoucherPage from '@/pages/customer/AccountPage/VoucherPage.jsx';
 import Example from '../components/examples/Example';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
+import MyShopPage from '@/pages/customer/MyShopPage/MyShopPage';
 
 const publicRoutes = [
   { index: true, element: <HomePage /> },
   { path: 'about', element: <AboutPage /> },
-  { path: 'shop', element: <OurShopPage /> },
-  { path: 'shop/:slug/:catId', element: <OurShopPage /> },
+  { path: 'shop', element: <MyShopPage /> },
   { path: 'news', element: <NewsPage /> },
   { path: 'contact', element: <ContactPage /> },
   { path: 'product/:id', element: <ProductDetail /> },

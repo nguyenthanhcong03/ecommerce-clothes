@@ -34,7 +34,6 @@ function SideBarSearch() {
       });
       setSearchResults(response.data.products);
     } catch (error) {
-      console.error('Error searching products:', error);
       setSearchResults([]);
     } finally {
       setLoading(false);
@@ -50,9 +49,9 @@ function SideBarSearch() {
     const params = new URLSearchParams();
     if (searchQuery) {
       params.set('search', searchQuery);
+      dispatch(toggleSidebar());
+      navigate(`/shop?${params.toString()}`);
     }
-    dispatch(toggleSidebar());
-    navigate(`/shop?${params.toString()}`);
   };
 
   return (

@@ -307,13 +307,15 @@ function OurShopPage() {
             </h1>
           )}
           {/* Tiêu đề kết quả tìm kiếm */}
-          {filters.search && (
-            <div className='mb-4 text-center'>
-              <h2 className='text-xl font-medium text-gray-600'>
-                Kết quả tìm kiếm cho "{filters.search}" - {pagination?.total || 0} sản phẩm
-              </h2>
-            </div>
-          )}
+          {filters.search &&
+            (console.log('filters.search', filters.search),
+            (
+              <div className='mb-4 text-center'>
+                <h2 className='text-xl font-medium text-gray-600'>
+                  Kết quả tìm kiếm cho "{filters.search}" - {pagination?.total || 0} sản phẩm
+                </h2>
+              </div>
+            ))}
           {!filters.search && (
             <div className='mb-4 h-[280px] w-full'>
               <CountDownBanner backgroundImage={countdownBanner2} />

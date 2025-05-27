@@ -41,22 +41,24 @@ function SearchModal() {
     }
   }, []);
 
-  // Effect để xử lý tìm kiếm khi query thay đổi
   useEffect(() => {
+    if (!isOpen) return;
     handleSearch(debouncedSearchQuery);
-  }, [debouncedSearchQuery, handleSearch]);
+  }, [debouncedSearchQuery, isOpen, handleSearch]);
 
   const handleToggleSearchModal = () => {
     dispatch(toggleSearch());
+    setSearchQuery('');
+    setSearchResults([]);
   };
 
   const handleSubmitSearch = () => {
     const params = new URLSearchParams();
     if (searchQuery) {
       params.set('search', searchQuery);
+      handleToggleSearchModal();
+      navigate(`/shop?${params.toString()}`);
     }
-    dispatch(toggleSearch());
-    navigate(`/shop?${params.toString()}`);
   };
 
   return (
