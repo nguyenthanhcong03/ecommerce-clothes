@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useParams, useNavigate } from 'react-router-dom';
+import Button from '@/components/common/Button';
 import { fetchOrderDetail, reviewOrder } from '@/store/slices/userOrderSlice';
-import { ArrowLeft, Star, Loader2, Package, AlertCircle, Send } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Loader2, Send, Star } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 const StarRating = ({ rating, setRating, readOnly = false }) => {
@@ -38,13 +39,13 @@ const OrderReviewPage = () => {
 
   // Khởi tạo mảng đánh giá sản phẩm khi có dữ liệu đơn hàng
   useEffect(() => {
-    if (orderDetail && orderDetail.items) {
+    if (orderDetail && orderDetail.products) {
       setProductReviews(
-        orderDetail.items.map((item) => ({
-          productId: item.product._id,
-          productName: item.product.name,
-          productImage: item.product.images[0],
-          variant: item.variant || '',
+        orderDetail.products.map((item) => ({
+          productId: item?.productId,
+          productName: item?.snapshot?.name,
+          productImage: item?.snapshot?.image,
+          variant: item?.variantId || '',
           rating: 5,
           comment: ''
         }))
@@ -79,7 +80,7 @@ const OrderReviewPage = () => {
     dispatch(reviewOrder({ orderId, reviewData }))
       .unwrap()
       .then(() => {
-        navigate(`/account/order/detail/${orderId}`);
+        navigate(`/user/orders/detail/${orderId}`);
       })
       .catch((error) => {
         toast.error('Có lỗi xảy ra khi đánh giá. Vui lòng thử lại!');
@@ -95,20 +96,21 @@ const OrderReviewPage = () => {
   }
 
   // Kiểm tra xem đơn hàng đã được đánh giá hay chưa
-  if (orderDetail.isReviewed) {
+  if (orderDetail?.isReviewed) {
     return (
       <div className='container mx-auto p-4'>
-        <div className='flex items-center justify-center rounded-lg bg-yellow-50 p-6'>
+        <div className='flex items-center justify-center rounded-sm bg-yellow-50 p-6'>
           <AlertCircle className='mr-2 h-6 w-6 text-yellow-500' />
           <p className='text-yellow-700'>Đơn hàng này đã được đánh giá.</p>
         </div>
-        <button
-          onClick={() => navigate(`/account/order/detail/${orderId}`)}
-          className='mt-4 flex items-center text-orange-500 hover:text-orange-600'
+        <Button
+          variant='ghost'
+          onClick={() => navigate(`/user/orders/detail/${orderId}`)}
+          className='mt-4 flex items-center text-neutral-600 hover:text-neutral-900'
         >
           <ArrowLeft className='mr-1 h-5 w-5' />
           Quay lại chi tiết đơn hàng
-        </button>
+        </Button>
       </div>
     );
   }
@@ -117,7 +119,7 @@ const OrderReviewPage = () => {
     <div className='container mx-auto p-4'>
       <div className='mb-6 flex items-center'>
         <button
-          onClick={() => navigate(`/account/order/detail/${orderId}`)}
+          onClick={() => navigate(`/user/orders/detail/${orderId}`)}
           className='mr-4 flex items-center text-gray-600 hover:text-orange-500'
         >
           <ArrowLeft className='mr-1 h-5 w-5' />
@@ -128,7 +130,7 @@ const OrderReviewPage = () => {
 
       <form onSubmit={handleSubmitReview} className='space-y-8'>
         {/* Đánh giá tổng thể */}
-        <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+        <div className='rounded-sm border border-gray-200 bg-white p-6 shadow-sm'>
           <h2 className='mb-4 text-lg font-medium'>Đánh giá tổng thể</h2>
 
           <div className='flex flex-col items-center justify-center'>
@@ -137,14 +139,14 @@ const OrderReviewPage = () => {
             <textarea
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
-              className='mt-4 h-24 w-full rounded-md border p-3'
+              className='mt-4 h-24 w-full rounded-sm border p-3'
               placeholder='Chia sẻ trải nghiệm của bạn (không bắt buộc)...'
             ></textarea>
           </div>
         </div>
 
         {/* Đánh giá sản phẩm */}
-        <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+        <div className='rounded-sm border border-gray-200 bg-white p-6 shadow-sm'>
           <h2 className='mb-4 text-lg font-medium'>Đánh giá sản phẩm</h2>
 
           <div className='space-y-6'>
@@ -155,7 +157,7 @@ const OrderReviewPage = () => {
                     <img
                       src={review.productImage}
                       alt={review.productName}
-                      className='h-full w-full rounded-md object-cover'
+                      className='h-full w-full rounded-sm object-cover'
                     />
                   </div>
                   <div className='ml-4'>
@@ -174,7 +176,7 @@ const OrderReviewPage = () => {
                       <textarea
                         value={review.comment}
                         onChange={(e) => handleProductCommentChange(index, e.target.value)}
-                        className='h-20 w-full rounded-md border p-2 text-sm'
+                        className='h-20 w-full rounded-sm border p-2 text-sm'
                         placeholder='Nhập đánh giá về sản phẩm (không bắt buộc)...'
                       ></textarea>
                     </div>
@@ -186,22 +188,14 @@ const OrderReviewPage = () => {
         </div>
 
         {/* Nút gửi đánh giá */}
-        <div className='flex justify-end'>
-          <button
-            type='button'
-            onClick={() => navigate(`/account/order/detail/${orderId}`)}
-            className='mr-3 rounded-md border border-gray-300 px-6 py-2 hover:bg-gray-50'
-          >
+        <div className='flex justify-end gap-4'>
+          <Button variant='secondary' onClick={() => navigate(`/user/orders/detail/${orderId}`)} className='w-20'>
             Hủy
-          </button>
-          <button
-            type='submit'
-            className='inline-flex items-center rounded-md bg-orange-500 px-6 py-2 text-white hover:bg-orange-600'
-            disabled={loading}
-          >
+          </Button>
+          <Button type='submit' disabled={loading}>
             {loading ? <Loader2 className='mr-2 h-4 w-4 animate-spin' /> : <Send className='mr-2 h-4 w-4' />}
             Gửi đánh giá
-          </button>
+          </Button>
         </div>
       </form>
     </div>

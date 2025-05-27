@@ -5,6 +5,23 @@ const jwt = require("jsonwebtoken");
 const { sendEmail } = require("./emailService");
 const { generateAccessToken, generateRefreshToken } = require("../utils/jwt");
 
+/**
+ * Kiểm tra username đã tồn tại hay chưa
+ */
+const checkUsernameExists = async (username) => {
+  const user = await User.findOne({ username });
+  console.log("Checking username:", username, "Exists:", !!user);
+  return !!user; // Trả về true nếu username đã tồn tại, false nếu chưa
+};
+
+/**
+ * Kiểm tra email đã tồn tại hay chưa
+ */
+const checkEmailExists = async (email) => {
+  const user = await User.findOne({ email });
+  return !!user; // Trả về true nếu email đã tồn tại, false nếu chưa
+};
+
 const registerUser = async (userData) => {
   const { username, password, email, firstName, lastName } = userData;
 
@@ -77,10 +94,10 @@ const loginUser = async (credentials) => {
     throw new Error("Thông tin đăng nhập không hợp lệ");
   }
 
-  // Kiểm tra email đã xác thực chưa
-  if (user.verificationStatus !== "verified") {
-    throw new Error("Vui lòng xác thực email trước khi đăng nhập");
-  }
+  // // Kiểm tra email đã xác thực chưa
+  // if (user.verificationStatus !== "verified") {
+  //   throw new Error("Vui lòng xác thực email trước khi đăng nhập");
+  // }
 
   // Tạo tokens
   const accessToken = generateAccessToken(user);
@@ -165,6 +182,7 @@ const changeUserPassword = async (userId, oldPassword, newPassword) => {
   if (!isMatch) {
     throw new Error("Mật khẩu cũ không đúng");
   }
+  console.log("đúng");
 
   // Mã hóa mật khẩu mới
   const salt = await bcrypt.genSalt(10);
@@ -217,4 +235,6 @@ module.exports = {
   changeUserPassword,
   refreshUserToken,
   getCurrentUserById,
+  checkUsernameExists,
+  checkEmailExists,
 };

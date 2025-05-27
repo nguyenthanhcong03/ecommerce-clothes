@@ -10,7 +10,9 @@ import {
   ChevronRight,
   FileEdit,
   Search,
-  Loader2
+  Loader2,
+  UserRound,
+  ClipboardList
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatCurrency } from '@/utils/format/formatCurrency';
@@ -117,19 +119,17 @@ const OrderItem = ({ order, onCancel }) => {
           </div>
           <div className='flex items-center gap-2'>
             {canBeCancelled && (
-              <Button onClick={() => setShowCancelModal(true)} variant='secondary' className='rounded-md'>
+              <Button onClick={() => setShowCancelModal(true)} variant='secondary'>
                 Hủy đơn hàng
               </Button>
             )}
             {canBeReviewed && (
               <Link to={`/user/orders/review/${order._id}`}>
-                <Button leftIcon={<FileEdit className='h-4 w-4' />} className='rounded-md'>
-                  Đánh giá
-                </Button>
+                <Button leftIcon={<FileEdit className='h-4 w-4' />}>Đánh giá</Button>
               </Link>
             )}
             <Link to={`/user/orders/detail/${order._id}`}>
-              <Button variant='ghost' rightIcon={<ChevronRight className='h-4 w-4' />} className='rounded-md'>
+              <Button variant='ghost' rightIcon={<ChevronRight className='h-4 w-4' />}>
                 Xem chi tiết
               </Button>
             </Link>
@@ -215,14 +215,24 @@ const OrderPage = () => {
   // Xử lý tìm kiếm
   const handleSearch = (e) => {
     e.preventDefault();
-    // Implement tìm kiếm đơn hàng
-    console.log('Searching for:', searchKeyword);
-    // Có thể gọi một action riêng để tìm kiếm đơn hàng
+    console.log('Tìm kiếm:', searchKeyword);
   };
 
   return (
     <div className='container mx-auto p-4'>
-      <h1 className='mb-6 text-2xl font-medium'>Đơn hàng của tôi</h1>
+      <div className='mb-8'>
+        <div className='mb-4 flex items-center space-x-4'>
+          <div className='rounded-lg bg-blue-100 p-2'>
+            <ClipboardList className='h-6 w-6 text-blue-600' />
+          </div>
+          <div>
+            <h1 className='text-2xl font-bold text-gray-900'>Đơn hàng của tôi</h1>
+            <p className='hidden text-base text-gray-600 md:block'>
+              Xem chi tiết đơn hàng, tình trạng giao hàng và quản lý các đơn mua trước đó một cách dễ dàng.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Tabs */}
       <div className='no-scrollbar mb-6 flex justify-evenly overflow-x-auto rounded-sm border border-gray-200 bg-white shadow-sm'>

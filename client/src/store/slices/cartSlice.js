@@ -37,6 +37,7 @@ export const updateCartItem = createAsyncThunk(
       const response = await updateCartItemService(itemId, quantity);
       return response;
     } catch (error) {
+      console.log('cartSlice.js error', error);
       return rejectWithValue(error.response?.data || 'Failed to update cart');
     }
   }

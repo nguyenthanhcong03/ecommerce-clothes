@@ -1,10 +1,13 @@
 import Button from '@/components/common/Button/Button';
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
+import ColorSelector from '@/components/product/ColorSelector/ColorSelector';
+import ShareButtons from '@/components/product/ShareButtons/ShareButtons';
+import SizeSelector from '@/components/product/SizeSelector/SizeSelector';
+import useProductVariants from '@/hooks/useProductVariants';
 import { addToCart } from '@/store/slices/cartSlice';
 import { closeProductDetailModal, fetchProductById } from '@/store/slices/productSlice';
-import { COLOR_OPTIONS } from '@/utils/constants';
-import { ShoppingCart, Star, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { Heart, ShoppingCart, Star, X } from 'lucide-react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -14,13 +17,6 @@ const ProductDetailModal = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isDetailModalOpen, modalProductId, currentProduct: product, loading } = useSelector((state) => state.product);
-  const [selectedSize, setSelectedSize] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
-  const [quantity, setQuantity] = useState(1);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showValidation, setShowValidation] = useState(false);
-  const [allImages, setAllImages] = useState([]);
-  const [colorImageIndexMap, setColorImageIndexMap] = useState({});
 
   useEffect(() => {
     if (isDetailModalOpen && modalProductId) {
@@ -28,166 +24,38 @@ const ProductDetailModal = () => {
     }
   }, [dispatch, isDetailModalOpen, modalProductId]);
 
+  const {
+    selectedSize,
+    selectedColor,
+    quantity,
+    setQuantity,
+    showValidation,
+    setShowValidation,
+    currentImageIndex,
+    setCurrentImageIndex,
+    allImages,
+    setAllImages,
+    colorImageIndexMap,
+    variantOptions,
+    getAvailableColors,
+    getAvailableSizes,
+    handleSizeSelect,
+    handleColorSelect,
+    getSelectedPrice
+  } = useProductVariants(product);
+
+  const { price, discountPrice, stock } = getSelectedPrice();
+
   useEffect(() => {
-    // Reset state when modal opens
     if (isDetailModalOpen) {
-      setSelectedSize('');
-      setSelectedColor('');
       setQuantity(1);
       setCurrentImageIndex(0);
       setShowValidation(false);
     }
   }, [isDetailModalOpen]);
 
-  useEffect(() => {
-    // Khởi tạo mảng hình ảnh khi sản phẩm được tải
-    if (product) {
-      // Tạo mảng chứa tất cả hình ảnh từ product và variants
-      const productImages = product.images || [];
-      const variantImages = [];
-      const indexMap = {};
-
-      // Thêm tất cả hình ảnh từ variants vào mảng
-      if (product.variants) {
-        product.variants.forEach((variant) => {
-          if (variant.images && variant.images.length > 0) {
-            // Lưu vị trí bắt đầu của hình ảnh variant trong mảng allImages
-            indexMap[variant.color] = productImages.length + variantImages.length;
-            variant.images.forEach((img) => {
-              // Chỉ thêm hình ảnh nếu nó không trùng lặp
-              if (!productImages.includes(img) && !variantImages.includes(img)) {
-                variantImages.push(img);
-              }
-            });
-          }
-        });
-      }
-
-      // Kết hợp hình ảnh sản phẩm và variant
-      const combined = [...productImages, ...variantImages];
-      setAllImages(combined);
-      setColorImageIndexMap(indexMap);
-      console.log('ahha', indexMap);
-
-      setCurrentImageIndex(0);
-    }
-  }, [product]);
-
   const handleCloseModal = () => {
     dispatch(closeProductDetailModal());
-  };
-
-  // Tính toán size và color có sẵn dựa trên các biến thể của sản phẩm
-  const variantOptions = React.useMemo(() => {
-    if (!product?.variants)
-      return { sizes: [], colors: [], sizeMap: new Map(), colorMap: new Map(), colorImageMap: new Map() };
-
-    const sizeMap = new Map();
-    const colorMap = new Map();
-    const colorImageMap = new Map();
-
-    product.variants.forEach((variant) => {
-      // Map size to colors
-      if (!sizeMap.has(variant.size)) {
-        sizeMap.set(variant.size, new Set());
-      }
-      sizeMap.get(variant.size).add(variant.color);
-
-      // Map color to sizes
-      if (!colorMap.has(variant.color)) {
-        colorMap.set(variant.color, new Set());
-      }
-      colorMap.get(variant.color).add(variant.size);
-
-      // Map color to images
-      if (variant.images && variant.images.length > 0) {
-        colorImageMap.set(variant.color, variant.images);
-      }
-    });
-
-    return {
-      sizes: Array.from(sizeMap.keys()),
-      colors: Array.from(colorMap.keys()),
-      sizeMap,
-      colorMap,
-      colorImageMap
-    };
-  }, [product?.variants]);
-
-  const getAvailableColors = (size) => {
-    return Array.from(variantOptions.sizeMap.get(size) || []);
-  };
-
-  const getAvailableSizes = (color) => {
-    return Array.from(variantOptions.colorMap.get(color) || []);
-  };
-
-  const handleSizeSelect = (size) => {
-    // If clicking on the already selected size, unselect it
-    if (selectedSize === size) {
-      setSelectedSize('');
-      setQuantity(1);
-      setShowValidation(false);
-      return;
-    }
-
-    setSelectedSize(size);
-    setQuantity(1);
-
-    // Check if the current color is available for the new size, if not reset color
-    if (selectedColor && !variantOptions.sizeMap.get(size)?.has(selectedColor)) {
-      setSelectedColor('');
-      setQuantity(1);
-    }
-  };
-
-  const handleColorSelect = (color) => {
-    // Nếu chọn màu đã được chọn, thì bỏ chọn
-    if (selectedColor === color) {
-      setSelectedColor('');
-      setQuantity(1);
-      setShowValidation(false);
-      setCurrentImageIndex(0); // Reset về ảnh chính đầu tiên khi bỏ chọn màu
-      return;
-    }
-
-    setSelectedColor(color);
-    setQuantity(1);
-
-    // Hiển thị hình ảnh của màu được chọn bằng cách cập nhật currentImageIndex
-    if (colorImageIndexMap[color] !== undefined) {
-      setCurrentImageIndex(colorImageIndexMap[color]);
-    }
-
-    // Check if the current size is available for the new color, if not reset size
-    if (selectedSize && !variantOptions.colorMap.get(color)?.has(selectedSize)) {
-      setSelectedSize('');
-      setQuantity(1);
-    }
-  };
-
-  // Lấy giá và thông tin của sản phẩm đã chọn
-  const getSelectedPrice = () => {
-    if (selectedSize && selectedColor && product?.variants) {
-      const selectedVariant = product.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
-      if (selectedVariant) {
-        return {
-          price: selectedVariant?.price,
-          discountPrice: selectedVariant?.discountPrice,
-          stock: selectedVariant?.stock,
-          selectedVariant
-        };
-      }
-    }
-    // Giá mặc định (giá thấp nhất)
-    const defaultVariant = product?.variants?.reduce((min, variant) =>
-      !min || variant.price < min.price ? variant : min
-    );
-    return {
-      price: defaultVariant?.price || 0,
-      discountPrice: defaultVariant?.discountPrice || 0,
-      stock: defaultVariant?.stock || 0
-    };
   };
 
   const handleAddToCart = async () => {
@@ -291,35 +159,108 @@ const ProductDetailModal = () => {
         ) : (
           <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
             {/* Left Column - Product Images */}
-            <div className='flex flex-col gap-3'>
-              <div className='aspect-w-1 aspect-h-1 w-full'>
-                <img
-                  src={allImages[currentImageIndex] || product.images[0]}
-                  alt={product.name}
-                  className='h-64 w-full object-cover md:h-80'
-                />
-              </div>
-              <div className='grid grid-cols-5 gap-2 overflow-x-auto'>
-                {allImages.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`h-fit w-fit border-2 ${currentImageIndex === index ? 'border-black' : 'border-transparent'}`}
-                  >
-                    <img src={image} alt={`${product.name} ${index + 1}`} className='h-14 w-14 object-cover' />
-                  </button>
-                ))}
+            <div className='w-full p-3'>
+              <div className='flex flex-col gap-4'>
+                {/* Image Container */}
+                <div className='group relative aspect-square w-full overflow-hidden rounded-sm border border-gray-200 bg-white'>
+                  <img
+                    src={allImages[currentImageIndex] || (product.images && product.images[0])}
+                    alt={product.name}
+                    className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-110'
+                  />
+
+                  {/* Button mũi tên */}
+                  {allImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={() =>
+                          setCurrentImageIndex(currentImageIndex === 0 ? allImages.length - 1 : currentImageIndex - 1)
+                        }
+                        className='absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-md transition-all hover:bg-white hover:shadow-lg'
+                      >
+                        <svg className='h-4 w-4 text-gray-700' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() =>
+                          setCurrentImageIndex(currentImageIndex === allImages.length - 1 ? 0 : currentImageIndex + 1)
+                        }
+                        className='absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-md transition-all hover:bg-white hover:shadow-lg'
+                      >
+                        <svg className='h-4 w-4 text-gray-700' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+
+                  {/* Image Counter */}
+                  <div className='absolute bottom-3 right-3 rounded-full bg-black/60 px-3 py-1 text-xs text-white'>
+                    {currentImageIndex + 1} / {allImages.length}
+                  </div>
+
+                  {/* Zoom Icon */}
+                  <div className='absolute right-3 top-3 rounded-full bg-white/80 p-2 opacity-0 transition-opacity group-hover:opacity-100'>
+                    <svg className='h-4 w-4 text-gray-700' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7'
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Các ảnh nhỏ */}
+                <div className='relative'>
+                  <div className='grid grid-cols-4 gap-2 sm:grid-cols-5'>
+                    {allImages.map((image, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={`group relative aspect-square overflow-hidden rounded-sm border-2 transition-all duration-200 ${
+                          currentImageIndex === index
+                            ? 'border-[#333] ring-2 ring-[#333]/20'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <img
+                          src={image}
+                          alt={`${product.name} ${index + 1}`}
+                          className='h-full w-full object-cover transition-transform duration-200 group-hover:scale-105'
+                        />
+                        {currentImageIndex === index && <div className='absolute inset-0 bg-[#333]/10'></div>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Chấm tròn */}
+                {allImages.length > 1 && (
+                  <div className='flex justify-center gap-1'>
+                    {allImages.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={`h-2 w-2 rounded-full transition-all ${
+                          currentImageIndex === index ? 'bg-[#333]' : 'bg-gray-300 hover:bg-gray-400'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Hiển thị thông tin về ảnh hiện tại */}
-              <div className='text-xs text-gray-500'>
-                {selectedColor &&
-                Object.keys(colorImageIndexMap).includes(selectedColor) &&
-                currentImageIndex >= colorImageIndexMap[selectedColor] ? (
-                  <p>Hình ảnh màu: {selectedColor}</p>
-                ) : (
-                  <p>Hình ảnh sản phẩm</p>
-                )}
+              {/* Mạng xã hội */}
+              <div className='mt-6 flex items-center justify-between border-t border-gray-100 pt-4'>
+                <ShareButtons product={product} />
+
+                <button className='flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-all hover:border-red-300 hover:bg-red-50 hover:text-red-600'>
+                  <Heart strokeWidth={1.5} className='h-4 w-4' />
+                  <span className='hidden sm:inline'>Yêu thích</span>
+                </button>
               </div>
             </div>
 
@@ -338,30 +279,20 @@ const ProductDetailModal = () => {
               </div>
 
               <div className='my-4 flex items-center gap-4 bg-[#F9F9F9] p-3'>
-                {(() => {
-                  const { price, discountPrice } = getSelectedPrice();
-                  return (
-                    <>
-                      {price && (
-                        <span className='text-2xl font-medium'>
-                          {price?.toLocaleString('vi-VN', {
-                            style: 'currency',
-                            currency: 'VND'
-                          })}
-                          {console.log('hiaa')}
-                        </span>
-                      )}
-                      {discountPrice && (
-                        <span className='ml-2 text-sm text-gray-400 line-through'>
-                          {discountPrice.toLocaleString('vi-VN', {
-                            style: 'currency',
-                            currency: 'VND'
-                          })}
-                        </span>
-                      )}
-                    </>
-                  );
-                })()}
+                <span className='text-xl font-medium sm:text-3xl'>
+                  {price.toLocaleString('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                  })}
+                </span>
+                {discountPrice && (
+                  <span className='ml-1 text-sm text-gray-400 line-through sm:ml-2 sm:text-lg'>
+                    {discountPrice.toLocaleString('vi-VN', {
+                      style: 'currency',
+                      currency: 'VND'
+                    })}
+                  </span>
+                )}
               </div>
 
               {/* Size và color */}
@@ -370,78 +301,43 @@ const ProductDetailModal = () => {
               >
                 <div>
                   <h3 className='text-sm font-medium'>Size</h3>
-                  <div className='mt-2 flex flex-wrap gap-2'>
-                    {variantOptions.sizes.map((size) => {
-                      const isAvailable = !selectedColor || getAvailableSizes(selectedColor).includes(size);
-                      return (
-                        <button
-                          key={size}
-                          onClick={() => handleSizeSelect(size)}
-                          disabled={!isAvailable}
-                          className={`h-[30px] min-w-[30px] border text-xs text-primaryColor ${
-                            selectedSize === size
-                              ? 'border-black'
-                              : isAvailable
-                                ? 'border-gray-300 bg-white text-gray-600 hover:bg-gray-100'
-                                : 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400 opacity-50'
-                          }`}
-                        >
-                          {size}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <SizeSelector
+                    sizes={variantOptions?.sizes}
+                    selectedSize={selectedSize}
+                    selectedColor={selectedColor}
+                    getAvailableSizes={getAvailableSizes}
+                    onSizeSelect={handleSizeSelect}
+                  />
                 </div>
 
                 <div>
                   <h3 className='text-sm font-medium'>Màu sắc: {selectedColor}</h3>
-                  <div className='mt-2 flex flex-wrap gap-2'>
-                    {variantOptions.colors.map((color) => {
-                      const isAvailable = !selectedSize || getAvailableColors(selectedSize).includes(color);
-                      const colorObj = COLOR_OPTIONS.find((c) => c.name === color);
-                      const hex = colorObj?.hex || '#ccc';
-
-                      return (
-                        <button
-                          key={color}
-                          onClick={() => handleColorSelect(color)}
-                          disabled={!isAvailable}
-                          className={`h-[25px] w-[25px] rounded-full border p-[2px] text-[10px] sm:text-xs ${
-                            selectedColor === color
-                              ? 'border-black'
-                              : isAvailable
-                                ? 'border-gray-300 bg-white text-gray-600 hover:bg-gray-100'
-                                : 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400 opacity-50'
-                          }`}
-                        >
-                          <div className='h-full w-full rounded-full' style={{ backgroundColor: hex }} title={color} />
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <ColorSelector
+                    colors={variantOptions?.colors}
+                    selectedColor={selectedColor}
+                    selectedSize={selectedSize}
+                    getAvailableColors={getAvailableColors}
+                    onColorSelect={handleColorSelect}
+                  />
                 </div>
 
                 <div>
                   <h3 className='text-sm font-medium'>Số lượng</h3>
                   <div className='mt-2 flex items-center space-x-2'>
-                    {(() => {
-                      const { stock } = getSelectedPrice();
-                      return (
-                        <>
-                          <QuantityInput
-                            value={quantity}
-                            min={1}
-                            max={stock}
-                            onChange={handleQuantityChange}
-                            disabled={!selectedSize || !selectedColor}
-                            size='small'
-                          />
-                          {selectedSize && selectedColor && (
-                            <span className='text-sm text-gray-500'>Còn {stock} sản phẩm</span>
-                          )}
-                        </>
-                      );
-                    })()}
+                    <QuantityInput
+                      value={quantity}
+                      min={1}
+                      max={stock}
+                      onChange={(newQuantity) => handleQuantityChange(newQuantity)}
+                    />
+
+                    {selectedSize && selectedColor && stock ? (
+                      <span className='text-xs text-gray-500 sm:text-sm'>{stock} sản phẩm có sẵn</span>
+                    ) : (
+                      <span className='text-xs text-gray-500 sm:text-sm'>
+                        {product.variants.reduce((sum, variant) => sum + variant.stock, 0)} sản phẩm có sẵn
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

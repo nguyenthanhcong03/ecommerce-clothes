@@ -1,5 +1,6 @@
+import { Truck, MessageCircle, RefreshCcw, CreditCard } from 'lucide-react';
 export const SHOP_NAME = 'Outfitory';
-export const SHOP_ADDRESS = '175 Tây Sơn, Trung Liệt, Đống Đa, Hà Nội, Việt Nam';
+export const SHOP_ADDRESS = '175 Tây Sơn, Trung Liệt, Đống Đa, Hà Nội';
 export const SHOP_PHONE = '0373702309';
 export const SHOP_EMAIL = 'nguyenthanhcong03@hotmail.com';
 export const COLOR_OPTIONS = [
@@ -22,4 +23,27 @@ export const SIZE_OPTIONS = [
   { name: 'L', value: 'L' },
   { name: 'XL', value: 'XL' },
   { name: 'XXL', value: 'XXL' }
+];
+
+export const POLICIES = [
+  {
+    icon: Truck,
+    title: 'Miễn phí vận chuyển',
+    subtitle: 'Đơn hàng từ 99.000đ'
+  },
+  {
+    icon: RefreshCcw,
+    title: 'Hoàn trả hàng',
+    subtitle: 'Trong 14 ngày'
+  },
+  {
+    icon: CreditCard,
+    title: 'Thanh toán 100% an toàn',
+    subtitle: 'Mua sắm an tâm'
+  },
+  {
+    icon: MessageCircle,
+    title: 'Hỗ trợ trực tuyến 24/7',
+    subtitle: 'Giao hàng tận nhà'
+  }
 ];

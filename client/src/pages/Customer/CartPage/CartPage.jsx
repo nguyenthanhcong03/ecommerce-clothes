@@ -3,7 +3,7 @@ import { Skeleton } from 'antd';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import CartTable from './components/CartTable/CartTable';
+import CartTable from './components/CartTable';
 import EmptyCart from './components/EmptyCart';
 import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import Headline from '@/components/common/Headline/Headline';
@@ -55,6 +55,7 @@ const CartSkeleton = () => (
 );
 
 function CartPage() {
+  console.log('vao cart');
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { items, loading } = useSelector((state) => state.cart);

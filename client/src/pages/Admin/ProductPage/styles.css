@@ -1,5 +1,5 @@
 .ant-table-wrapper {
-  @apply rounded-lg border bg-white;
+  @apply overflow-hidden rounded-sm border bg-white;
 }
 .ant-table-thead {
   @apply px-4 py-2 text-center font-bold text-white;
@@ -23,12 +23,6 @@
 .ant-pagination-item-active a {
   color: #fff !important;
 }
-
-/* .ant-pagination-prev,
-.ant-pagination-next {
-  border: 1px solid #000 !important;
-  color: #000;
-} */
 
 .ant-pagination-prev:hover,
 .ant-pagination-next:hover {

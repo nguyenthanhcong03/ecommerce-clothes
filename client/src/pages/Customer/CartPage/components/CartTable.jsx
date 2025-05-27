@@ -1,14 +1,12 @@
-import { removeCartItem, updateCartItem } from '@/store/slices/cartSlice';
+import { removeMultipleCartItems, updateCartItem } from '@/store/slices/cartSlice';
 import { setOrderItems } from '@/store/slices/orderSlice';
-import React, { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Skeleton } from 'antd';
-import PaymentMethods from '../PaymentMethods';
 import CartItem from './CartItem';
 import CartSummary from './CartSummary';
-import { removeMultipleCartItems } from '../../../../../store/slices/cartSlice';
+import PaymentMethods from './PaymentMethods';
 
 const CartTable = () => {
   const navigate = useNavigate();

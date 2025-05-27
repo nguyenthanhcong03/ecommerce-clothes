@@ -98,7 +98,7 @@ const addToCart = async (req, res) => {
           discountPrice: variant.discountPrice,
           color: variant.color,
           size: variant.size,
-          image: variant.images[0],
+          image: product.images[0],
         },
         isAvailable: variant.stock > 0,
       });

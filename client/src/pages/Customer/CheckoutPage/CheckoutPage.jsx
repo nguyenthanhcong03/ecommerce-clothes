@@ -1,12 +1,11 @@
 import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import Headline from '@/components/common/Headline/Headline';
-import { getDistrictsAPI, getProvincesAPI } from '@/services/mapService';
+import { getDistrictsAPI, getProvincesAPI, getWardsAPI } from '@/services/mapService';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { message } from 'antd';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 import { calculateDiscount, validateCoupon } from '../../../services/couponService';
@@ -29,7 +28,6 @@ import ShippingForm from './components/ShippingForm';
 import { checkoutSchema } from './validationSchema';
 
 const CheckoutPage = () => {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const [couponCode, setCouponCode] = useState('');
@@ -38,8 +36,7 @@ const CheckoutPage = () => {
 
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
-  const [selectedProvince, setSelectedProvince] = useState('');
-  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [wards, setWards] = useState([]);
 
   // Selectors từ Redux
   const orderSuccess = useSelector((state) => state.order.orderSuccess);
@@ -57,7 +54,8 @@ const CheckoutPage = () => {
     formState: { errors },
     control,
     setValue,
-    watch
+    watch,
+    resetField
   } = useForm({
     resolver: yupResolver(checkoutSchema),
     defaultValues: {
@@ -73,18 +71,11 @@ const CheckoutPage = () => {
     mode: 'onChange'
   });
 
-  // Watch city to update districts
-  const watchedCity = watch('province');
-  const watchedState = watch('district');
+  const selectedProvince = watch('province');
+  const selectedDistrict = watch('district');
 
   // Load danh sách tỉnh
   useEffect(() => {
-    if (watchedCity && !selectedProvince) {
-      setSelectedProvince(watchedCity);
-    }
-    if (watchedState && !selectedDistrict) {
-      setSelectedDistrict(watchedState);
-    }
     const fetchProvinces = async () => {
       try {
         const response = await getProvincesAPI();
@@ -95,7 +86,7 @@ const CheckoutPage = () => {
     };
 
     fetchProvinces();
-  }, [selectedProvince, selectedDistrict]);
+  }, []);
 
   // Khi chọn tỉnh → load huyện
   useEffect(() => {
@@ -103,16 +94,8 @@ const CheckoutPage = () => {
       try {
         const response = await getDistrictsAPI(selectedProvince);
         setDistricts(response);
-
-        const currentState = watchedState;
-        if (!currentState) {
-          setValue('district', '');
-        } else {
-          const stateExists = response.some((district) => district.value == currentState);
-          if (!stateExists) {
-            setValue('district', '');
-          }
-        }
+        setValue('district', '');
+        setWards([]);
       } catch (error) {
         console.error('Error loading district:', error);
       }
@@ -120,23 +103,36 @@ const CheckoutPage = () => {
     if (selectedProvince) {
       fetchDistricts();
     }
-  }, [selectedProvince, setValue, watchedState]);
+  }, [selectedProvince, setValue]);
 
-  // Khi chọn huyện → tính phí vận chuyển
+  // Khi chọn quận => load phường/xã
   useEffect(() => {
-    if (selectedProvince && selectedDistrict) {
-      let province = provinces.find((province) => province.value == selectedProvince);
-      let district = districts.find((district) => district.value == selectedDistrict);
+    const fetchWards = async () => {
+      try {
+        const response = await getWardsAPI(selectedDistrict);
+        setWards(response);
+        setValue('ward', '');
+      } catch (error) {
+        console.error('Error loading ward:', error);
+      }
+    };
+    if (selectedDistrict) {
+      fetchWards();
+      // Tính phí vận chuyển khi đã chọn quận/huyện
+      if (selectedProvince && selectedDistrict) {
+        const provinceName = provinces.find((p) => p.value === selectedProvince)?.label;
+        const districtName = districts.find((d) => d.value === selectedDistrict)?.label;
 
-      if (province && district) {
-        const customerLocation = `${district.label}, ${province.label}, Việt Nam`;
-        const storeLocation = '175 Tây Sơn, Trung Liệt, Đống Đa, Hà Nội, Việt Nam';
+        if (districtName && provinceName) {
+          const customerLocation = `${districtName}, ${provinceName}, Việt Nam`;
+          const storeLocation = '175 Tây Sơn, Trung Liệt, Đống Đa, Hà Nội, Việt Nam';
 
-        // Tính khoảng cách giữa hai địa điểm
-        dispatch(calculateDistance({ storeLocation, customerLocation }));
+          // Tính khoảng cách giữa hai địa điểm
+          dispatch(calculateDistance({ storeLocation, customerLocation }));
+        }
       }
     }
-  }, [selectedDistrict, dispatch]);
+  }, [selectedDistrict, setValue]);
 
   // Reset order state khi unmount component
   useEffect(() => {
@@ -208,10 +204,9 @@ const CheckoutPage = () => {
   // Xử lý khi submit form
   const onSubmit = (data) => {
     // 1. Tìm tên tỉnh/thành và quận/huyện từ mã
-    const provinceObj = provinces.find((p) => p.value == data.province) || {};
-    const districtObj = districts.find((d) => d.value == data.district) || {};
-    const provinceName = provinceObj.label || data.province;
-    const districtName = districtObj.label || data.district;
+    const provinceName = provinces.find((p) => p.value === +data.province)?.label;
+    const districtName = districts.find((d) => d.value === +data.district)?.label;
+    const wardName = wards.find((w) => w.code === +data.ward)?.label;
 
     // Lưu thông tin giao hàng
     const shippingData = {
@@ -221,7 +216,7 @@ const CheckoutPage = () => {
       street: data.street,
       province: data.province,
       district: data.district,
-      country: data.country
+      ward: data.ward
     };
     dispatch(saveShippingInfo(shippingData));
     dispatch(setPaymentMethod(data.paymentMethod));
@@ -235,6 +230,7 @@ const CheckoutPage = () => {
         street: data.street,
         province: provinceName,
         district: districtName,
+        ward: wardName,
         phoneNumber: data.phoneNumber,
         email: data.email
       },
@@ -331,10 +327,10 @@ const CheckoutPage = () => {
                 control={control}
                 errors={errors}
                 provinces={provinces}
-                setSelectedProvince={setSelectedProvince}
-                setDistricts={setDistricts}
-                setSelectedDistrict={setSelectedDistrict}
-                watchedCity={watchedCity}
+                districts={districts}
+                wards={wards}
+                selectedProvince={selectedProvince}
+                selectedDistrict={selectedDistrict}
               />
 
               {/* Payment Methods */}

@@ -5,10 +5,12 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
-import { loginUser, clearError } from '@/store/slices/accountSlice';
+import { loginUser, clearError, fetchCurrentUser } from '@/store/slices/accountSlice';
 import { toast } from 'react-toastify';
+import Headline from '@/components/common/Headline/Headline';
+import Logo from '@/assets/images/outfitory-logo.png';
 
 // Định nghĩa schema validation với yup
 const loginSchema = yup.object().shape({
@@ -41,24 +43,14 @@ function LoginPage() {
     }
   });
 
-  // Hiệu ứng điều hướng sau khi đăng nhập thành công
-  useEffect(() => {
-    if (isAuthenticated) {
-      // Chuyển hướng đến trang trước đó hoặc trang chủ
-      const returnPath = location.state?.from || '/';
-      navigate(returnPath, { replace: true });
-      toast.success('Đăng nhập thành công!');
-    }
-  }, [isAuthenticated, navigate, location]);
-
-  // // Hiệu ứng hiển thị lỗi nếu có
+  // // Hiệu ứng điều hướng sau khi đăng nhập thành công
   // useEffect(() => {
-  //   if (error) {
-  //     toast.error(error);
-  //     // Xóa lỗi sau khi đã hiển thị
-  //     dispatch(clearError());
+  //   if (isAuthenticated) {
+  //     // Chuyển hướng đến trang trước đó hoặc trang chủ
+  //     const returnPath = location.state?.from || '/';
+  //     navigate(returnPath, { replace: true });
   //   }
-  // }, [error, dispatch]);
+  // }, [isAuthenticated, navigate, location]);
 
   // Xử lý khi submit form
   const onSubmit = async (data) => {
@@ -66,81 +58,129 @@ function LoginPage() {
 
     try {
       // Dispatch action đăng nhập với cấu trúc object đúng và thông tin remember me
-      dispatch(loginUser({ username, password, rememberMe }));
+      dispatch(loginUser({ username, password, rememberMe }))
+        .unwrap()
+        .then(() => {
+          toast.success('Đăng nhập thành công!');
+          const returnPath = location.state?.from || '/';
+          navigate(returnPath, { replace: true });
+        })
+        .catch((err) => {
+          toast.error(err);
+          console.error('Lỗi đăng nhập:', err);
+        });
     } catch (error) {
+      toast.error('Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin đăng nhập.');
       console.error('Lỗi đăng nhập:', error);
     }
   };
 
   return (
-    <div className='w-full pt-[60px] lg:pt-[80px]'>
-      <div className='flex h-[50px] max-h-[100px] w-full items-center justify-center bg-[#FAFAFA] sm:h-[60px] md:h-[80px] lg:h-[90px] xl:h-[100px]'>
-        <h1 className='text-[24px] font-medium'>ĐĂNG NHẬP</h1>
-      </div>
+    <div className='px-4 pt-24 sm:px-6 lg:px-8'>
+      <div className='flex min-h-full items-center justify-center'>
+        <div className='w-full max-w-md'>
+          {' '}
+          <div className='text-center'>
+            <div className='relative mx-auto mb-8'>
+              {/* Logo/Brand Mark */}
+              <div>{/* <img src={Logo} alt='' /> */}</div>
+            </div>
 
-      <div className='flex items-center justify-center bg-gray-100 py-8'>
-        <div className='w-full max-w-md rounded-lg bg-white p-8 shadow-md'>
-          <h2 className='mb-6 text-center text-2xl font-bold text-gray-800'>Đăng nhập tài khoản</h2>
+            <div className='space-y-4'>
+              <h1 className='relative text-5xl font-black tracking-tight text-black'>
+                <span className='bg-gradient-to-r from-black via-gray-800 to-black bg-clip-text text-transparent'>
+                  OUTFITORY
+                </span>
+                <span className='ml-2 font-light text-gray-600'>FASHION</span>
+              </h1>
 
-          <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
-            <Controller
-              control={control}
-              name='username'
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  label='Tên đăng nhập'
-                  placeholder='Nhập tên đăng nhập'
-                  prefix={<UserOutlined className='text-gray-400' />}
-                  required
-                  error={errors.username?.message}
-                />
-              )}
-            />
-
-            <Controller
-              control={control}
-              name='password'
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  type='password'
-                  label='Mật khẩu'
-                  placeholder='Nhập mật khẩu'
-                  prefix={<LockOutlined className='text-gray-400' />}
-                  required
-                  error={errors.password?.message}
-                />
-              )}
-            />
-
-            <div className='flex justify-between text-sm'>
-              <div className='flex items-center'>
-                <input
-                  type='checkbox'
-                  id='remember'
-                  className='mr-2 h-4 w-4'
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                />
-                <label htmlFor='remember'>Nhớ mật khẩu</label>
+              <div className='relative'>
+                <h2 className='relative text-2xl font-light italic text-gray-700'>
+                  &ldquo;Khám phá phong cách của riêng bạn cùng chúng tôi&rdquo;
+                </h2>
+                <div className='absolute -left-4 -right-4 top-1/2 h-px -translate-y-1/2 transform bg-gradient-to-r from-transparent via-gray-300 to-transparent opacity-50'></div>
               </div>
-              <a href='/forgot-password' className='text-primaryColor hover:underline'>
-                Quên mật khẩu?
-              </a>
-            </div>
 
-            <Button type='submit' variant='primary' width='full' isLoading={isSubmitting}>
-              Đăng nhập
-            </Button>
+              {/* <div className='mx-auto max-w-md'>
+                <p className='text-base font-light leading-relaxed text-gray-600'>
+                  Khám phá bộ sưu tập thời trang độc đáo, thể hiện cá tính riêng của bạn với những thiết kế tinh tế và
+                  chất lượng cao.
+                </p>
+              </div> */}
 
-            <div className='text-center text-sm'>
-              Chưa có tài khoản?{' '}
-              <a href='/auth/register' className='text-primaryColor hover:underline'>
-                Đăng ký ngay
-              </a>
+              {/* Decorative elements */}
+              <div className='mt-6 flex items-center justify-center space-x-4'>
+                <div className='h-px w-8 bg-gradient-to-r from-transparent to-black'></div>
+                <div className='h-2 w-2 rounded-full bg-black'></div>
+                <div className='h-px w-8 bg-gradient-to-l from-transparent to-black'></div>
+              </div>
             </div>
-          </form>
+          </div>
+          <div className='flex items-center justify-center py-8'>
+            <div className='w-full max-w-md rounded-lg bg-white p-8 shadow-sm'>
+              <h2 className='mb-6 text-center text-2xl font-bold text-gray-800'>Đăng nhập tài khoản</h2>
+
+              <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
+                <Controller
+                  control={control}
+                  name='username'
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      label='Tên đăng nhập'
+                      placeholder='Nhập tên đăng nhập'
+                      prefix={<UserOutlined className='text-gray-400' />}
+                      required
+                      error={errors.username?.message}
+                    />
+                  )}
+                />
+
+                <Controller
+                  control={control}
+                  name='password'
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      type='password'
+                      label='Mật khẩu'
+                      placeholder='Nhập mật khẩu'
+                      prefix={<LockOutlined className='text-gray-400' />}
+                      required
+                      error={errors.password?.message}
+                    />
+                  )}
+                />
+
+                <div className='flex justify-between text-sm'>
+                  <div className='flex items-center'>
+                    <input
+                      type='checkbox'
+                      id='remember'
+                      className='mr-2 h-4 w-4'
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                    />
+                    <label htmlFor='remember'>Nhớ mật khẩu</label>
+                  </div>
+                  <a href='/forgot-password' className='text-primaryColor hover:underline'>
+                    Quên mật khẩu?
+                  </a>
+                </div>
+
+                <Button type='submit' variant='primary' width='full' isLoading={isSubmitting}>
+                  Đăng nhập
+                </Button>
+
+                <div className='text-center text-sm'>
+                  Chưa có tài khoản?{' '}
+                  <Link to='/register' className='text-primaryColor hover:underline'>
+                    Đăng ký ngay
+                  </Link>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </div>

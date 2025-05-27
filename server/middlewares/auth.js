@@ -28,7 +28,6 @@ const verifyToken = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Get user from database (without password)
     const currentUser = await User.findById(decoded._id).select("-password");
 
     if (!currentUser) {
@@ -38,7 +37,6 @@ const verifyToken = async (req, res, next) => {
       });
     }
 
-    // Check if user is active
     if (currentUser.isBlocked === true) {
       return res.status(403).json({
         success: false,
@@ -53,14 +51,14 @@ const verifyToken = async (req, res, next) => {
     if (error.name === "TokenExpiredError") {
       return res.status(401).json({
         success: false,
-        message: "Access token đã hết hạn",
+        message: "Access token expired",
         expired: true,
       });
     }
     if (error.name === "JsonWebTokenError") {
       return res.status(401).json({
         success: false,
-        message: "Token không hợp lệ",
+        message: "Token invalid",
       });
     }
     res.status(500).json({

@@ -1,7 +1,8 @@
 import { buildTree } from '@/utils/helpers/buildTree';
 import { Button, Card, Image, Input, Popconfirm, Space, Table, Tooltip } from 'antd';
-import { Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
+import { MinusSquare, Pencil, Plus, PlusSquare, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { memo, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 
 const CategoryTable = ({
   categories,
@@ -18,28 +19,30 @@ const CategoryTable = ({
 }) => {
   const columns = useMemo(
     () => [
-      {
-        title: 'Ảnh',
-        dataIndex: 'images',
-        key: 'images',
-        align: 'center',
-        width: 120,
-        render: (images) => (
-          <Image.PreviewGroup>
-            {images && images.length > 0 ? (
-              images
-                .slice(0, 2)
-                .map((img, index) => (
-                  <Image key={index} width={40} height={40} src={img} style={{ objectFit: 'cover', marginRight: 4 }} />
-                ))
-            ) : (
-              <div className='flex h-10 w-10 items-center justify-center rounded bg-gray-200 text-xs text-gray-500'>
-                No Image
-              </div>
-            )}
-          </Image.PreviewGroup>
-        )
-      },
+      // {
+      //   title: 'Ảnh',
+      //   dataIndex: 'images',
+      //   key: 'images',
+      //   align: 'left',
+
+      //   // width: ,
+
+      //   render: (images) => (
+      //     <Image.PreviewGroup>
+      //       {images && images.length > 0 ? (
+      //         images
+      //           .slice(0, 2)
+      //           .map((img, index) => (
+      //             <Image key={index} width={40} height={40} src={img} style={{ objectFit: 'cover' }} />
+      //           ))
+      //       ) : (
+      //         <div className='flex h-10 w-10 items-center justify-center rounded bg-gray-200 text-xs text-gray-500'>
+      //           No Image
+      //         </div>
+      //       )}
+      //     </Image.PreviewGroup>
+      //   )
+      // },
       {
         title: 'Tên danh mục',
         dataIndex: 'name',
@@ -118,9 +121,11 @@ const CategoryTable = ({
     ],
     [onEdit, onDelete, filters]
   );
+  const { categoriesTree, error } = useSelector((state) => state.category);
 
-  // Memoize dữ liệu cây danh mục để tránh tính toán lại
-  const treeData = useMemo(() => buildTree(categories), [categories]);
+  // // Memoize dữ liệu cây danh mục để tránh tính toán lại
+  // const treeData = useMemo(() => buildTree(categories), [categories]);
+  // console.log('treeData', treeData);
 
   return (
     <Card className='bg-white shadow'>
@@ -151,17 +156,18 @@ const CategoryTable = ({
         scroll={{ x: 'max-content' }} // Cho phép cuộn ngang
         rowKey='_id'
         columns={columns}
-        dataSource={treeData}
+        dataSource={categoriesTree}
         loading={loading}
-        pagination={{
-          current: pagination.page,
-          pageSize: pagination.limit,
-          total: pagination.total,
-          position: ['bottomCenter'],
-          showSizeChanger: true,
-          // pageSizeOptions: ['5', '10', '20', '50'],
-          showTotal: (total) => `Tổng số ${total} danh mục`
-        }}
+        pagination={false}
+        // pagination={{
+        //   current: pagination.page,
+        //   pageSize: pagination.limit,
+        //   total: pagination.total,
+        //   position: ['bottomCenter'],
+        //   showSizeChanger: true,
+        //   // pageSizeOptions: ['5', '10', '20', '50'],
+        //   showTotal: (total) => `Tổng số ${total} danh mục`
+        // }}
         locale={{
           emptyText: loading
             ? 'Đang tải dữ liệu...'
@@ -175,7 +181,27 @@ const CategoryTable = ({
           </div>
         )}
         expandable={{
-          defaultExpandAllRows: false // Mặc định không mở rộng tất cả
+          defaultExpandAllRows: false, // Mặc định không mở rộng tất cả
+          fixed: true,
+          indentSize: 25, // Kích thước lề cho các danh mục con
+          expandedRowClassName: 'expanded-row', // Thêm class cho hàng mở rộng
+          expandIcon: ({ expanded, onExpand, record }) => {
+            // Chỉ hiển thị nút expand khi có danh mục con
+            if (!record.children || record.children.length === 0) {
+              return <span className='ml-2' />;
+            }
+            return (
+              <Button
+                type='text'
+                className=''
+                icon={expanded ? <MinusSquare size={16} /> : <PlusSquare size={16} />}
+                onClick={(e) => {
+                  e.stopPropagation(); // Ngăn chặn sự kiện click lan truyền
+                  onExpand(record, e);
+                }}
+              />
+            );
+          }
         }}
         onChange={onChange}
       />

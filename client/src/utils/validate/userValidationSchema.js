@@ -73,14 +73,12 @@ export const addressSchema = yup.object({
 
   street: yup.string().required('Địa chỉ đường là bắt buộc').min(3, 'Địa chỉ đường phải có ít nhất 3 ký tự'),
 
-  city: yup.string().required('Thành phố là bắt buộc'),
+  province: yup.string().required('Thành phố là bắt buộc'),
 
-  state: yup
+  district: yup
     .string()
     .nullable()
     .transform((value) => (value === '' ? null : value)),
-
-  country: yup.string().required('Quốc gia là bắt buộc'),
 
   isDefault: yup.boolean().default(false)
 });

@@ -3,6 +3,7 @@ import useProductVariants from '@/hooks/useProductVariants';
 import { addToCart } from '@/store/slices/cartSlice';
 import { openProductDetailModal } from '@/store/slices/productSlice';
 import { COLOR_OPTIONS } from '@/utils/constants';
+import { formatCurrency } from '@/utils/format/formatCurrency';
 import { Eye, Heart, ShoppingCart, Star } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -30,11 +31,13 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
   return (
     <div className='flex h-full w-full flex-col items-start justify-start overflow-hidden rounded-sm border bg-white hover:opacity-95 hover:shadow-xl'>
       <div className='group relative max-h-[340px] w-full cursor-pointer'>
-        <img className='max-h-[340px] w-full object-cover' src={displayImage} alt={item?.name} />
-        <img
-          className='absolute bottom-0 left-0 right-0 top-0 max-h-[340px] w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:transition-opacity group-hover:duration-300'
-          src={hoverImage}
-        />
+        <div onClick={handleNavigateToDetail}>
+          <img className='max-h-[340px] w-full object-cover' src={displayImage} alt={item?.name} />
+          <img
+            className='absolute bottom-0 left-0 right-0 top-0 max-h-[340px] w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:transition-opacity group-hover:duration-300'
+            src={hoverImage}
+          />
+        </div>
 
         {isShowActionButtons && (
           <div className='absolute right-3 top-3 flex flex-col gap-2 bg-transparent transition-all duration-300 group-hover:right-3 group-hover:opacity-100 group-hover:transition-all group-hover:duration-300 lg:right-0 lg:opacity-0'>
@@ -81,9 +84,9 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
               const { price, discountPrice } = getSelectedPrice();
               return (
                 <>
-                  <span className='font-medium'>${price.toLocaleString()}</span>
+                  <span className='font-medium'>{formatCurrency(price || 0)}</span>
                   {discountPrice && (
-                    <span className='ml-2 text-gray-400 line-through'>${discountPrice.toLocaleString()}</span>
+                    <span className='ml-2 text-gray-400 line-through'>{formatCurrency(discountPrice || 0)}</span>
                   )}
                 </>
               );

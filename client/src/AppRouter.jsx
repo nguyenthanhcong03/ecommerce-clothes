@@ -1,24 +1,21 @@
 import { fetchCurrentUser } from '@/store/slices/accountSlice.js';
-import { getCart } from '@/store/slices/cartSlice.js';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RouterProvider } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import './App.scss';
 import router from './routes/routes.jsx';
+import { getCart } from '@/store/slices/cartSlice.js';
 
-function App() {
+function AppRouter() {
+  const { isLoading, isAuthenticated, error, user } = useSelector((state) => state.account);
   const dispatch = useDispatch();
-  const { isLoading, isAuthenticated, user } = useSelector((state) => state.account);
+  // const navigate = useNavigate();
+  // setNavigate(navigate);
 
   useEffect(() => {
-    if (user) {
-      dispatch(fetchCurrentUser());
-    }
+    dispatch(fetchCurrentUser());
   }, [dispatch]);
 
-  // Sau khi đã xác thực người dùng thành công, tải giỏ hàng
+  // get cart
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(getCart());
@@ -36,19 +33,8 @@ function App() {
   return (
     <>
       <RouterProvider router={router} />
-      <ToastContainer
-        position='top-right'
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
     </>
   );
 }
 
-export default App;
+export default AppRouter;

@@ -4,7 +4,6 @@ const Cart = require("../models/cart");
 const Coupon = require("../models/coupon");
 const orderService = require("../services/orderService");
 
-// Create a new order
 const createOrder = async (req, res) => {
   try {
     const { products, shippingAddress, paymentMethod, couponCode, distance, note } = req.body;
@@ -21,7 +20,7 @@ const createOrder = async (req, res) => {
 
     // Calculate total price
     let subtotal = products.reduce(
-      (sum, item) => sum + (item.snapshot.discountPrice || item.snapshot.price) * item.quantity,
+      (sum, item) => sum + (item.snapshot.price || item.snapshot.discountAmount) * item.quantity,
       0
     );
 
@@ -74,7 +73,7 @@ const createOrder = async (req, res) => {
       shippingAddress,
       payment: {
         method: paymentMethod,
-        isPaid: paymentMethod !== "COD", // Mark as paid for non-COD methods
+        isPaid: paymentMethod !== "COD",
         paidAt: paymentMethod !== "COD" ? new Date() : null,
       },
       trackingNumber,
@@ -114,7 +113,6 @@ const createOrder = async (req, res) => {
   }
 };
 
-// Get all orders (admin)
 const getAllOrders = async (req, res) => {
   try {
     const {
@@ -252,7 +250,6 @@ const getAllOrders = async (req, res) => {
   }
 };
 
-// Get user orders
 const getUserOrders = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -283,7 +280,6 @@ const getUserOrders = async (req, res) => {
   }
 };
 
-// Get order by ID
 const getOrderById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -319,7 +315,6 @@ const getOrderById = async (req, res) => {
   }
 };
 
-// Update order status
 const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -363,7 +358,6 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
-// Update payment status
 const updatePaymentStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -400,7 +394,6 @@ const updatePaymentStatus = async (req, res) => {
   }
 };
 
-// Get order statistics for admin dashboard
 const getOrderStatistics = async (req, res) => {
   try {
     const statistics = await orderService.getOrderStatistics();
@@ -417,7 +410,6 @@ const getOrderStatistics = async (req, res) => {
   }
 };
 
-// Cancel order (user can only cancel their own orders in Pending or Processing state)
 const cancelOrder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -476,7 +468,6 @@ const cancelOrder = async (req, res) => {
   }
 };
 
-// Search orders by keyword (order ID, product name, phone number, etc.)
 const searchOrders = async (req, res) => {
   try {
     const { keyword } = req.query;
@@ -536,14 +527,13 @@ const searchOrders = async (req, res) => {
   }
 };
 
-// Review an order after delivery
 const reviewOrder = async (req, res) => {
   try {
     const { id } = req.params;
     const { orderRating, comment, productReviews } = req.body;
     const userId = req.user._id;
 
-    // Validate input
+    // Validate
     if (!orderRating || orderRating < 1 || orderRating > 5) {
       return res.status(400).json({
         success: false,

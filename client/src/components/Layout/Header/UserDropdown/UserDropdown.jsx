@@ -47,10 +47,11 @@ const UserDropdown = ({ handleLogout }) => {
         </ul>
         <hr className='my-2' />
         <ul>
-          <li className='cursor-pointer rounded-md px-[10px] py-[10px] text-sm text-[#666] hover:bg-[#f7f7f7] hover:text-primaryColor'>
-            <button className='text-[#666] hover:text-primaryColor' onClick={handleLogout}>
-              Đăng xuất
-            </button>
+          <li
+            onClick={handleLogout}
+            className='cursor-pointer rounded-md px-[10px] py-[10px] text-sm text-[#666] hover:bg-[#f7f7f7] hover:text-primaryColor'
+          >
+            <button className='text-[#666] hover:text-primaryColor'>Đăng xuất</button>
           </li>
         </ul>
       </ul>

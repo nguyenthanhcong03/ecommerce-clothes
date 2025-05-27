@@ -6,21 +6,13 @@ import { getDistrictsAPI, getProvincesAPI } from '@/services/mapService';
 import { useDispatch, useSelector } from 'react-redux';
 import { calculateDistance } from '../../../../store/slices/orderSlice';
 
-const ShippingForm = ({
-  control,
-  errors,
-  provinces,
-  setSelectedProvince,
-  districts,
-  setSelectedDistrict,
-  watchedCity
-}) => {
+const ShippingForm = ({ control, errors, provinces, districts, wards, selectedProvince, selectedDistrict }) => {
   return (
     <div className='rounded-sm bg-white p-6'>
       <h2 className='mb-6 text-xl font-bold'>Thông tin giao hàng</h2>
 
       <div className='space-y-6'>
-        <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
+        <div>
           {/* Họ tên */}
           <Controller
             control={control}
@@ -32,6 +24,24 @@ const ShippingForm = ({
                 placeholder='Nhập họ và tên'
                 required={true}
                 error={errors.fullName?.message}
+              />
+            )}
+          />
+        </div>
+
+        <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
+          {/* Email */}
+          <Controller
+            control={control}
+            name='email'
+            render={({ field }) => (
+              <Input
+                {...field}
+                type='email'
+                label='Email'
+                placeholder='Nhập địa chỉ email'
+                required
+                error={errors.email?.message}
               />
             )}
           />
@@ -53,22 +63,6 @@ const ShippingForm = ({
           />
         </div>
 
-        {/* Email */}
-        <Controller
-          control={control}
-          name='email'
-          render={({ field }) => (
-            <Input
-              {...field}
-              type='email'
-              label='Email'
-              placeholder='Nhập địa chỉ email'
-              required
-              error={errors.email?.message}
-            />
-          )}
-        />
-
         <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
           {/* Thành phố */}
           <Controller
@@ -82,10 +76,6 @@ const ShippingForm = ({
                 options={provinces}
                 error={errors.province?.message}
                 required
-                onChange={(e) => {
-                  field.onChange(e);
-                  setSelectedProvince(e.target.value);
-                }}
               />
             )}
           />
@@ -102,30 +92,44 @@ const ShippingForm = ({
                 options={districts}
                 error={errors.district?.message}
                 required
-                disabled={!watchedCity}
-                onChange={(e) => {
-                  field.onChange(e);
-                  setSelectedDistrict(e.target.value);
-                }}
+                disabled={!selectedProvince}
+              />
+            )}
+          />
+          {/* Phường/Xã */}
+          <Controller
+            control={control}
+            name='ward'
+            render={({ field }) => (
+              <Select
+                {...field}
+                label='Phường/Xã'
+                placeholder='-- Chọn Phường/Xã --'
+                options={wards}
+                error={errors.ward?.message}
+                required
+                disabled={!selectedDistrict}
               />
             )}
           />
         </div>
 
-        {/* Địa chỉ chi tiết */}
-        <Controller
-          control={control}
-          name='street'
-          render={({ field }) => (
-            <Input
-              {...field}
-              label='Địa chỉ chi tiết'
-              placeholder='Nhập địa chỉ giao hàng'
-              required
-              error={errors.street?.message}
-            />
-          )}
-        />
+        <div>
+          {/* Địa chỉ chi tiết */}
+          <Controller
+            control={control}
+            name='street'
+            render={({ field }) => (
+              <Input
+                {...field}
+                label='Địa chỉ chi tiết'
+                placeholder='Nhập địa chỉ giao hàng'
+                required
+                error={errors.street?.message}
+              />
+            )}
+          />
+        </div>
 
         <div className='mb-6'>
           <label className='text-sm font-medium'>Ghi chú</label>

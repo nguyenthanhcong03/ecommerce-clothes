@@ -49,6 +49,9 @@ export const callLogout = async () => {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
 
+  // Chuyển về trang đăng nhập
+  window.location.href = '/login';
+
   return response;
 };
 
@@ -116,4 +119,39 @@ export const verifyEmail = async (token) => {
     params: { token }
   });
   return response;
+};
+
+/**
+ * Kiểm tra username đã tồn tại hay chưa
+ */
+export const checkUsernameExists = async (username) => {
+  try {
+    const response = await axios.get(`${BASE_API}/check-username/${encodeURIComponent(username)}`);
+    console.log('resetUsernameExists response', response);
+    return response;
+  } catch {
+    // Nếu có lỗi, trả về object mặc định
+    return {
+      success: false,
+      exists: false,
+      message: 'Không thể kiểm tra username'
+    };
+  }
+};
+
+/**
+ * Kiểm tra email đã tồn tại hay chưa
+ */
+export const checkEmailExists = async (email) => {
+  try {
+    const response = await axios.get(`${BASE_API}/check-email/${encodeURIComponent(email)}`);
+    return response;
+  } catch {
+    // Nếu có lỗi, trả về object mặc định
+    return {
+      success: false,
+      exists: false,
+      message: 'Không thể kiểm tra email'
+    };
+  }
 };

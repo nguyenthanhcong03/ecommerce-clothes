@@ -6,7 +6,6 @@ import { formatCurrency } from '../../../utils/format/formatCurrency';
 const { Title } = Typography;
 
 const statusColors = {
-  Pending: 'gold',
   Processing: 'blue',
   Shipping: 'cyan',
   Delivered: 'green',

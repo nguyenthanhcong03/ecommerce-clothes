@@ -2,14 +2,14 @@ import countdownBanner1 from '@/assets/images/countdownBanner1.jpeg';
 import Button from '@/components/common/Button/Button';
 import CountDownBanner from '@/components/common/CountDownBanner/CountDownBanner';
 import PopularProduct from '@/components/product/PopularProduct/PopularProduct';
-import Banner from '@/pages/customer/HomePage/components/Banner/Banner';
-import Info from '@/pages/customer/HomePage/components/Info/Info';
-import SaleHomePage from '@/pages/customer/HomePage/components/SaleHomePage/SaleHomePage';
+import Banner from '@/pages/customer/HomePage/components/Banner';
+import Info from '@/pages/customer/HomePage/components/Info';
+import SaleHomePage from '@/pages/customer/HomePage/components/SaleHomePage';
 import { fetchProducts } from '@/store/slices/productSlice';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Headline from '@/components/common/Headline/Headline';
-import CategorySection from '@/pages/customer/HomePage/components/CategorySection/CategorySection';
+import CategorySection from '@/pages/customer/HomePage/components/CategorySection';
 
 function HomePage() {
   const dispatch = useDispatch();
@@ -19,9 +19,7 @@ function HomePage() {
   }, [dispatch]);
   return (
     <div>
-      <div className='px-5'>
-        <Info />
-      </div>
+      <Info />
       <div className='my-8 flex flex-col gap-4 rounded-md bg-white p-8'>
         <Headline text1='khám phá ngay' text2='DANH MỤC SẢN PHẨM' />
         <CategorySection />

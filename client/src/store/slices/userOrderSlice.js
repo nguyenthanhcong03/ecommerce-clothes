@@ -100,6 +100,7 @@ const userOrderSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchOrderDetail.fulfilled, (state, action) => {
+        console.log('action.payload', action.payload);
         state.loading = false;
         state.orderDetail = action.payload;
       })

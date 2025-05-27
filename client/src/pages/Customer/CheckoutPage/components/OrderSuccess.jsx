@@ -250,7 +250,7 @@ const OrderSuccess = () => {
                   <p className='mt-2 text-sm text-gray-500'>
                     {shippingInfo?.street || 'N/A'}
                     <br />
-                    {shippingInfo?.district}, {shippingInfo?.province}, {shippingInfo?.country}
+                    {shippingInfo?.ward}, {shippingInfo?.district}, {shippingInfo?.province}
                   </p>
                   <p className='mt-2 text-sm text-gray-500'>
                     <span className='font-medium'>Điện thoại:</span> {shippingInfo?.phoneNumber || 'N/A'}

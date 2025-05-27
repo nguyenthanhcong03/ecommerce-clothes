@@ -1,58 +1,47 @@
+import Button from '@/components/common/Button/Button';
+import Input from '@/components/common/Input';
+import InputNumber from '@/components/common/InputNumber/InputNumber';
+import useDebounce from '@/hooks/useDebounce';
 import { COLOR_OPTIONS, SIZE_OPTIONS } from '@/utils/constants';
-import { CloseOutlined, StarFilled } from '@ant-design/icons';
-import PropTypes from 'prop-types';
+import { CloseOutlined, FilterOutlined, StarFilled } from '@ant-design/icons';
+import { useEffect, useState } from 'react';
+import { NumberFormatBase } from 'react-number-format';
 
 export function FilterSidebar({
   isFilterOpen,
   setIsFilterOpen,
-  searchTerm,
-  setSearchTerm,
-  priceRange,
-  setPriceRange,
-  selectedColors,
-  setSelectedColors,
-  selectedSizes,
-  setSelectedSizes,
-  selectedRating,
-  setSelectedRating,
+  filters,
   onFilterChange,
-  onResetFilter
+  onResetFilter,
+  onApplyFilter
 }) {
   const handlePriceChange = (value, type) => {
-    const newPriceRange = { ...priceRange, [type]: value };
-    setPriceRange(newPriceRange);
-
-    // Only update filters if both values are valid
-    if (!newPriceRange.min || !newPriceRange.max || parseInt(newPriceRange.min) <= parseInt(newPriceRange.max)) {
-      onFilterChange({ minPrice: newPriceRange.min, maxPrice: newPriceRange.max });
-    }
+    console.log('type', type, value);
+    onFilterChange({ ...filters, [type]: value });
   };
 
   const handleToggleColor = (color) => {
-    const newColors = selectedColors.includes(color)
-      ? selectedColors.filter((c) => c !== color)
-      : [...selectedColors, color];
-    setSelectedColors(newColors);
-    onFilterChange({ colors: newColors });
+    const newColors = filters.color.includes(color)
+      ? filters.color.filter((c) => c !== color)
+      : [...filters.color, color];
+    onFilterChange({ ...filters, color: newColors });
   };
 
   const handleToggleSize = (size) => {
-    const newSizes = selectedSizes.includes(size) ? selectedSizes.filter((s) => s !== size) : [...selectedSizes, size];
-    setSelectedSizes(newSizes);
-    onFilterChange({ sizes: newSizes });
+    const newSizes = filters.size.includes(size) ? filters.size.filter((s) => s !== size) : [...filters.size, size];
+    onFilterChange({ ...filters, size: newSizes });
   };
 
   const handleRatingChange = (rating) => {
-    const newRating = selectedRating === rating ? 0 : rating;
-    setSelectedRating(newRating);
-    onFilterChange({ rating: newRating.toString() });
+    const newRating = filters.rating === rating ? 0 : rating;
+    onFilterChange({ ...filters, rating: newRating });
   };
 
   const renderStars = () => {
     return Array.from({ length: 5 }).map((_, index) => (
       <button
         key={index}
-        className={`cursor-pointer ${index < selectedRating ? 'text-yellow-400' : 'text-gray-300'}`}
+        className={`cursor-pointer ${index < filters.rating ? 'text-yellow-400' : 'text-gray-300'}`}
         onClick={() => handleRatingChange(index + 1)}
       >
         <StarFilled />
@@ -77,55 +66,55 @@ export function FilterSidebar({
 
       {/* Price range */}
       <div className='mb-6'>
-        <h3 className='text-md mb-2 font-medium'>Khoảng giá</h3>
-        <div className='flex items-center gap-2'>
-          <div className='w-full'>
-            <label htmlFor='min-price' className='sr-only'>
-              Giá thấp nhất
-            </label>
-            <input
-              id='min-price'
+        <div className='flex items-center justify-between'>
+          <h3 className='text-md mb-2 font-medium'>Khoảng giá</h3>
+          {(filters.minPrice || filters.maxPrice) && (
+            <button
+              className='text-xs text-gray-600 hover:text-primaryColor'
+              onClick={() => {
+                onFilterChange({ ...filters, minPrice: '', maxPrice: '' });
+              }}
+            >
+              Bỏ chọn
+            </button>
+          )}
+        </div>
+        <div className='flex flex-col items-start'>
+          <div className='flex items-center gap-2'>
+            <InputNumber
               type='number'
-              value={priceRange.min}
-              onChange={(e) => handlePriceChange(e.target.value, 'min')}
+              suffix={'đ'}
+              value={filters.minPrice}
+              onChange={(e) => handlePriceChange(e.target.value, 'minPrice')}
               placeholder='Từ'
               min='0'
-              aria-label='Giá thấp nhất'
-              className='focus:ring-primary-300 focus:border-primary-400 w-full rounded-md border border-gray-300 p-2 focus:ring-2'
             />
-          </div>
-          <span className='text-gray-500'>-</span>
-          <div className='w-full'>
-            <label htmlFor='max-price' className='sr-only'>
-              Giá cao nhất
-            </label>
-            <input
-              id='max-price'
+
+            <span className='text-gray-500'>-</span>
+            <InputNumber
               type='number'
-              value={priceRange.max}
-              onChange={(e) => handlePriceChange(e.target.value, 'max')}
+              suffix={'đ'}
+              value={filters.maxPrice}
+              onChange={(e) => handlePriceChange(e.target.value, 'maxPrice')}
               placeholder='Đến'
               min='0'
-              aria-label='Giá cao nhất'
-              className='focus:ring-primary-300 focus:border-primary-400 w-full rounded-md border border-gray-300 p-2 focus:ring-2'
             />
           </div>
+          {filters.minPrice && filters.maxPrice && filters.minPrice > filters.maxPrice && (
+            <p className='mt-1 text-xs text-red-500'>Giá thấp nhất không được lớn hơn giá cao nhất</p>
+          )}
         </div>
-        {priceRange.min && priceRange.max && parseInt(priceRange.min) > parseInt(priceRange.max) && (
-          <p className='mt-1 text-sm text-red-500'>Giá thấp nhất không thể lớn hơn giá cao nhất</p>
-        )}
       </div>
 
       {/* Colors */}
       <div className='mb-6'>
         <div className='flex items-center justify-between'>
           <h3 className='text-md mb-2 font-medium'>Màu sắc</h3>
-          {selectedColors.length > 0 && (
+          {filters.color.length > 0 && (
             <button
               className='text-xs text-gray-600 hover:text-primaryColor'
               onClick={() => {
-                setSelectedColors([]);
-                onFilterChange({ colors: [] });
+                onFilterChange({ ...filters, color: [] });
               }}
             >
               Bỏ chọn
@@ -138,11 +127,11 @@ export function FilterSidebar({
               <button
                 onClick={() => handleToggleColor(color.name)}
                 className={`h-6 w-6 transform rounded-full border transition hover:scale-125 ${
-                  selectedColors.includes(color.name) ? 'scale-125 border-[#333]' : 'border-gray-200'
+                  filters.color.includes(color.name) ? 'scale-125 border-[#333]' : 'border-gray-200'
                 }`}
                 style={{ backgroundColor: color.hex }}
                 aria-label={color.name}
-                aria-pressed={selectedColors.includes(color.name)}
+                aria-pressed={filters.color.includes(color.name)}
               />
               <div className='pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 -translate-y-1 transform rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100'>
                 {color.name}
@@ -156,12 +145,11 @@ export function FilterSidebar({
       <div className='mb-6'>
         <div className='flex items-center justify-between'>
           <h3 className='text-md mb-2 font-medium'>Kích thước</h3>
-          {selectedSizes.length > 0 && (
+          {filters.size.length > 0 && (
             <button
               className='text-xs text-gray-600 hover:text-primaryColor'
               onClick={() => {
-                setSelectedSizes([]);
-                onFilterChange({ sizes: [] });
+                onFilterChange({ ...filters, size: [] });
               }}
             >
               Bỏ chọn
@@ -173,12 +161,12 @@ export function FilterSidebar({
             <button
               key={size.value}
               onClick={() => handleToggleSize(size.value)}
-              className={`flex h-8 w-8 items-center justify-center rounded-md border text-xs transition ${
-                selectedSizes.includes(size.value)
+              className={`flex h-8 w-8 items-center justify-center rounded-sm border text-xs transition ${
+                filters.size.includes(size.value)
                   ? 'border-[#333] font-medium'
                   : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
               }`}
-              aria-pressed={selectedSizes.includes(size.value)}
+              aria-pressed={filters.size.includes(size.value)}
             >
               {size.name}
             </button>
@@ -190,12 +178,11 @@ export function FilterSidebar({
       <div className='mb-6'>
         <div className='flex items-center justify-between'>
           <h3 className='text-md mb-2 font-medium'>Đánh giá</h3>
-          {selectedRating > 0 && (
+          {filters.rating > 0 && (
             <button
               className='text-xs text-gray-600 hover:text-primaryColor'
               onClick={() => {
-                setSelectedRating(0);
-                onFilterChange({ rating: 0 });
+                onFilterChange({ ...filters, rating: '' });
               }}
             >
               Bỏ chọn
@@ -206,35 +193,18 @@ export function FilterSidebar({
       </div>
 
       {/* Filter actions */}
-      <div className='mt-6 flex gap-2'>
-        <button
-          onClick={onResetFilter}
-          className='flex flex-1 items-center justify-center rounded bg-gray-100 px-4 py-2 text-gray-700 transition hover:bg-gray-200'
-          aria-label='Đặt lại tất cả bộ lọc'
+      <div className='mt-6 grid grid-cols-2 gap-4'>
+        <Button onClick={onResetFilter} variant='secondary' aria-label='Đặt lại tất cả bộ lọc'>
+          <CloseOutlined className='mr-1' /> Xóa tất cả
+        </Button>
+        <Button
+          onClick={onApplyFilter}
+          className='hover:bg-primary-700 flex flex-1 items-center justify-center rounded border bg-primaryColor px-4 py-2 text-white transition'
+          aria-label='Áp dụng bộ lọc'
         >
-          <CloseOutlined className='mr-1' /> Đặt lại tất cả
-        </button>
+          <FilterOutlined className='mr-1' /> Áp dụng
+        </Button>
       </div>
     </div>
   );
 }
-
-FilterSidebar.propTypes = {
-  isFilterOpen: PropTypes.bool.isRequired,
-  setIsFilterOpen: PropTypes.func.isRequired,
-  searchTerm: PropTypes.string,
-  setSearchTerm: PropTypes.func.isRequired,
-  priceRange: PropTypes.shape({
-    min: PropTypes.string,
-    max: PropTypes.string
-  }).isRequired,
-  setPriceRange: PropTypes.func.isRequired,
-  selectedColors: PropTypes.arrayOf(PropTypes.string).isRequired,
-  setSelectedColors: PropTypes.func.isRequired,
-  selectedSizes: PropTypes.arrayOf(PropTypes.string).isRequired,
-  setSelectedSizes: PropTypes.func.isRequired,
-  selectedRating: PropTypes.number.isRequired,
-  setSelectedRating: PropTypes.func.isRequired,
-  onFilterChange: PropTypes.func.isRequired,
-  onResetFilter: PropTypes.func.isRequired
-};

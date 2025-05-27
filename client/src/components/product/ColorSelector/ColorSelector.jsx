@@ -1,15 +1,7 @@
 import { COLOR_OPTIONS } from '@/utils/constants';
 import React from 'react';
 
-const ColorSelector = ({
-  colors = [],
-  selectedColor,
-  selectedSize,
-  colorImageIndexMap,
-  setCurrentImageIndex,
-  getAvailableColors,
-  onColorSelect
-}) => {
+const ColorSelector = ({ colors = [], selectedColor, selectedSize, getAvailableColors, onColorSelect }) => {
   return (
     <div className='mt-1 flex flex-wrap gap-1 sm:mt-2 sm:gap-2'>
       {colors &&
@@ -26,8 +18,6 @@ const ColorSelector = ({
                 e.stopPropagation();
                 onColorSelect(color);
               }}
-              onMouseEnter={() => setCurrentImageIndex(colorImageIndexMap[color])}
-              onMouseLeave={() => setCurrentImageIndex(0)}
               disabled={!isAvailable}
               className={`h-[25px] w-[25px] rounded-full border p-[2px] text-[10px] sm:text-xs ${
                 selectedColor === color

@@ -7,14 +7,14 @@ import locale from 'antd/es/date-picker/locale/vi_VN';
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
-const OrderFilters = ({ onSearch, onFilterChange, onClear, searchText, filters = {}, loading }) => {
+const OrderFilters = ({ onSearch, onFilterChange, onClear, searchText, loading }) => {
   const [localFilters, setLocalFilters] = useState({
-    status: filters.status || undefined,
-    paymentStatus: filters.paymentStatus || undefined,
-    dateRange: filters.dateRange || undefined,
-    paymentMethod: filters.paymentMethod || undefined,
-    minAmount: filters.minAmount || undefined,
-    maxAmount: filters.maxAmount || undefined
+    status: undefined,
+    paymentStatus: undefined,
+    dateRange: undefined,
+    paymentMethod: undefined,
+    minAmount: undefined,
+    maxAmount: undefined
   });
 
   // Xử lý thay đổi text tìm kiếm
@@ -27,6 +27,7 @@ const OrderFilters = ({ onSearch, onFilterChange, onClear, searchText, filters =
     const newFilters = { ...localFilters, [name]: value };
     setLocalFilters(newFilters);
   };
+
   // Áp dụng các filter
   const applyFilters = () => {
     // Chuyển đổi giá trị dates thành dạng param cho API

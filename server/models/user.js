@@ -3,20 +3,14 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto-js");
 
 const addressSchema = new mongoose.Schema({
-  type: { type: String, enum: ["home", "work", "billing", "shipping"], required: true },
-  fullName: { type: String, required: true },
-  phoneNumber: { type: String, required: true },
   street: { type: String, required: true },
-  // ward: { type: String, required: true },
+  ward: { type: String, required: true },
   district: { type: String, required: true },
   province: { type: String, required: true },
-  note: { type: String },
-  isDefault: { type: Boolean, default: false },
 });
 
 const userSchema = new mongoose.Schema(
   {
-    // Account information
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -39,17 +33,14 @@ const userSchema = new mongoose.Schema(
       minlength: [3, "Username should be at least 3 characters long"],
     },
 
-    // Personal information
     firstName: { type: String, required: [true, "First name is required"], trim: true },
     lastName: { type: String, required: [true, "Last name is required"], trim: true },
     phone: {
       type: String,
-      unique: true,
-      sparse: true, // Allows multiple null values
       match: [/^(\+\d{1,3}[- ]?)?\d{10}$/, "Please enter a valid phone number"],
     },
     avatar: { type: String },
-    gender: { enum: ["male", "female", "other", null] },
+    gender: { enum: ["male", "female", "other"] },
     dateOfBirth: { type: String },
     address: [addressSchema],
 

@@ -98,7 +98,7 @@ function Header() {
             <div>
               {isAuthenticated && user ? (
                 <div
-                  className={`after:content[""] relative`}
+                  className='relative'
                   onMouseEnter={() => setIsShowUserDropdown(true)}
                   onMouseLeave={() => setIsShowUserDropdown(false)}
                 >
@@ -113,12 +113,10 @@ function Header() {
                   {isShowUserDropdown && <UserDropdown handleLogout={handleLogout} />}
                 </div>
               ) : (
-                <div className='flex items-center gap-2'>
+                <Link to={'/login'} className='flex items-center gap-2'>
                   <CircleUserRound />
-                  <Link to={'/login'}>
-                    <button>Đăng nhập</button>
-                  </Link>
-                </div>
+                  <button>Đăng nhập</button>
+                </Link>
               )}
             </div>
           </div>
@@ -140,21 +138,11 @@ function Header() {
 
           {/* Navbar */}
           <div className='hidden lg:flex lg:gap-10'>
-            {/* <Link to={'/'}> */}
             <MenuItem text={'TRANG CHỦ'} href={'/'} />
-            {/* </Link> */}
-            {/* <Link to={'/shop'}> */}
             <MenuItem text={'SẢN PHẨM'} isMenuDropDown={true} href={'/shop'} />
-            {/* </Link> */}
-            {/* <Link to={'/about'}> */}
             <MenuItem text={'VỀ CHÚNG TÔI'} href={'/about'} />
-            {/* </Link> */}
-            {/* <Link to={'/news'}> */}
             <MenuItem text={'TIN TỨC'} href={'/news'} />
-            {/* </Link> */}
-            {/* <Link to={'/contact'}> */}
             <MenuItem text={'LIÊN HỆ'} href={'/contact'} />
-            {/* </Link> */}
           </div>
 
           {/* Function icon */}

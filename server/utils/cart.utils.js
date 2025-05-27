@@ -22,7 +22,7 @@ const syncCartItemSnapshots = async (cart) => {
     item.snapshot.name = product.name;
     item.snapshot.price = variant.price;
     item.snapshot.discountPrice = variant.discountPrice || null;
-    item.snapshot.image = variant.images?.[0] || product.images?.[0];
+    item.snapshot.image = product.images?.[0];
     item.snapshot.color = variant.color;
     item.snapshot.size = variant.size;
     item.snapshot.stock = variant.stock;

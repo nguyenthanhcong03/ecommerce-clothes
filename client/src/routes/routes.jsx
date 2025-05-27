@@ -1,13 +1,12 @@
-import { Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 // Layouts
-import AdminLayout from '@/layouts/AdminLayout.jsx';
-import MainLayout from '@/layouts/MainLayout.jsx';
+import AdminLayout from '@/routes/layouts/AdminLayout.jsx';
+import MainLayout from '@/routes/layouts/MainLayout.jsx';
 
 // Components
 import NotFound from '@/components/auth/NotFound/NotFound.jsx';
-import ProtectedRoute from '@/components/auth/ProtectedRoute/ProtectedRoute.jsx';
+import ProtectedRoute from '@/routes/guards/ProtectedRoute.jsx';
 
 // Pages
 import Unauthorized from '@/components/auth/Unauthorized/Unauthorized.jsx';
@@ -17,14 +16,15 @@ import AboutPage from '@/pages/customer/AboutPage/AboutPage.jsx';
 import CartPage from '@/pages/customer/CartPage/CartPage.jsx';
 import CheckoutPage from '@/pages/customer/CheckoutPage/CheckoutPage.jsx';
 import ContactPage from '@/pages/customer/ContactPage/ContactPage.jsx';
-import DetailProduct from '@/pages/customer/DetailProduct/DetailProduct.jsx';
+import ProductDetail from '@/pages/customer/ProductDetail/ProductDetail.jsx';
 import HomePage from '@/pages/customer/HomePage/HomePage.jsx';
 import NewsPage from '@/pages/customer/NewsPage/NewsPage.jsx';
-import OurShopPage from '@/pages/customer/OurShopPage/OurShopPage copy';
-import PaymentFailedPage from '@/pages/customer/PaymentFailedPage/PaymentFailedPage.jsx';
-import PaymentSuccessPage from '@/pages/customer/PaymentSuccessPage/PaymentSuccessPage.jsx';
+import OurShopPage from '@/pages/customer/OurShopPage/OurShopPage';
+import PaymentFailedPage from '@/pages/customer/PaymentStatusPage/PaymentFailedPage.jsx';
+import PaymentSuccessPage from '@/pages/customer/PaymentStatusPage/PaymentSuccessPage.jsx';
 import WishlistPage from '@/pages/customer/WishlistPage/WishlistPage.jsx';
 
+import AccountLayout from '@/components/layout/AccountLayout';
 import AnalyticsPage from '@/pages/admin/AnalyticsPage/AnalyticsPage.jsx';
 import CategoryPage from '@/pages/admin/CategoryPage/CategoryPage.jsx';
 import CouponPage from '@/pages/admin/CouponPage/CouponPage.jsx';
@@ -41,33 +41,8 @@ import PrivacyPage from '@/pages/customer/AccountPage/PrivacyPage.jsx';
 import ProfilePage from '@/pages/customer/AccountPage/ProfilePage.jsx';
 import VoucherPage from '@/pages/customer/AccountPage/VoucherPage.jsx';
 import Example from '../components/examples/Example';
-import AccountLayout from '@/layouts/AccountLayout';
+import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 
-// Fake delay function
-// const lazyWithDelay = (importFunc, delay = 1000) => {
-//   return React.lazy(() =>
-//     Promise.all([
-//       importFunc(),
-//       new Promise((resolve) => setTimeout(resolve, delay)) // fake delay
-//     ]).then(([moduleExports]) => moduleExports)
-//   );
-// };
-
-// Loading fallback for all lazy-loaded components
-const LoadingFallback = () => (
-  <div className='flex h-screen w-full items-center justify-center bg-white'>
-    <div className='h-12 w-12 animate-spin rounded-full border-t-4 border-solid border-primaryColor'></div>
-  </div>
-);
-
-// Helper function for wrapping components with Suspense
-const withSuspense = (Component) => (
-  <Suspense fallback={<LoadingFallback />}>
-    <Component />
-  </Suspense>
-);
-
-// Public routes accessible to all users
 const publicRoutes = [
   { index: true, element: <HomePage /> },
   { path: 'about', element: <AboutPage /> },
@@ -75,8 +50,8 @@ const publicRoutes = [
   { path: 'shop/:slug/:catId', element: <OurShopPage /> },
   { path: 'news', element: <NewsPage /> },
   { path: 'contact', element: <ContactPage /> },
-  { path: 'product/:id', element: <DetailProduct /> },
-  { path: 'vouchers', element: <VoucherPage /> },
+  { path: 'product/:id', element: <ProductDetail /> },
+  { path: 'checkout', element: <CheckoutPage /> },
   { path: 'payment-success', element: <PaymentSuccessPage /> },
   { path: 'payment-failed', element: <PaymentFailedPage /> },
   { path: 'example', element: <Example /> }
@@ -101,6 +76,14 @@ const authRoutes = [
     )
   },
   {
+    path: 'forgot-password',
+    element: (
+      <ProtectedRoute requireAuth={false}>
+        <ForgotPasswordPage />
+      </ProtectedRoute>
+    )
+  },
+  {
     path: 'unauthorized',
     element: <Unauthorized />
   }
@@ -121,14 +104,6 @@ const customerProtectedRoutes = [
     element: (
       <ProtectedRoute>
         <WishlistPage />
-      </ProtectedRoute>
-    )
-  },
-  {
-    path: 'checkout',
-    element: (
-      <ProtectedRoute>
-        <CheckoutPage />
       </ProtectedRoute>
     )
   },
@@ -194,7 +169,7 @@ const adminRoutes = [
 const Router = [
   {
     path: '/',
-    element: withSuspense(MainLayout),
+    element: <MainLayout />,
     errorElement: <NotFound />,
     children: [...publicRoutes, ...authRoutes, ...customerProtectedRoutes]
   },

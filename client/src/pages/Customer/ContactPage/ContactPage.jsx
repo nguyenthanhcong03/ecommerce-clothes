@@ -1,7 +1,7 @@
 import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
-import ContactForm from '@/pages/customer/ContactPage/components/ContactForm/ContactForm';
-import ContactInfo from '@/pages/customer/ContactPage/components/ContactInfo/ContactInfo';
-import ContactMap from '@/pages/customer/ContactPage/components/ContactMap/ContactMap';
+import ContactForm from '@/pages/customer/ContactPage/components/ContactForm';
+import ContactInfo from '@/pages/customer/ContactPage/components/ContactInfo';
+import ContactMap from '@/pages/customer/ContactPage/components/ContactMap';
 import React from 'react';
 
 function ContactPage() {

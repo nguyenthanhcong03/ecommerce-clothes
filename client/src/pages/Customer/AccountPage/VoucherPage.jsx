@@ -13,6 +13,7 @@ import {
   ShoppingOutlined,
   ExclamationCircleOutlined
 } from '@ant-design/icons';
+import { Ticket } from 'lucide-react';
 
 const VoucherPage = () => {
   const dispatch = useDispatch();
@@ -105,10 +106,17 @@ const VoucherPage = () => {
   return (
     <div className='mx-auto max-w-7xl bg-white p-4'>
       <div className='mb-8'>
-        <h1 className='text-2xl font-bold text-gray-900'>Mã giảm giá của bạn</h1>
-        <p className='mt-2 text-sm text-gray-600'>
-          Sử dụng các mã giảm giá dưới đây cho đơn hàng của bạn để nhận nhiều ưu đãi hấp dẫn.
-        </p>
+        <div className='mb-4 flex items-center space-x-4'>
+          <div className='rounded-lg bg-blue-100 p-2'>
+            <Ticket className='h-6 w-6 text-blue-600' />
+          </div>
+          <div>
+            <h1 className='text-2xl font-bold text-gray-900'>Mã giảm giá của bạn</h1>
+            <p className='hidden text-base text-gray-600 md:block'>
+              Sử dụng các mã giảm giá dưới đây cho đơn hàng của bạn để nhận nhiều ưu đãi hấp dẫn.
+            </p>
+          </div>
+        </div>
       </div>
 
       {coupons && coupons.length > 0 ? (

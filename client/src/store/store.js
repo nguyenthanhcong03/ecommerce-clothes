@@ -13,10 +13,10 @@ import adminOrderReducer from './slices/adminOrderSlice';
 
 export const store = configureStore({
   reducer: {
+    account: accountReducer,
     sidebar: sidebarReducer,
     search: searchReducer,
     cart: cartReducer,
-    account: accountReducer,
     product: productReducer,
     user: userReducer,
     category: categoryReducer,

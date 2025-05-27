@@ -1,4 +1,11 @@
-import { login, callLogout, callFetchAccount, refreshAccessToken, changePassword } from '@/services/authService';
+import {
+  login,
+  register,
+  callLogout,
+  callFetchAccount,
+  refreshAccessToken,
+  changePassword
+} from '@/services/authService';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 // Thunk actions
@@ -11,6 +18,19 @@ export const loginUser = createAsyncThunk(
     } catch (err) {
       console.log('first', err);
       return rejectWithValue(err.response?.data?.message || 'Đăng nhập thất bại');
+    }
+  }
+);
+
+export const registerUser = createAsyncThunk(
+  'auth/registerUser',
+  async ({ firstName, lastName, username, email, phone, password }, { rejectWithValue }) => {
+    try {
+      const data = await register({ firstName, lastName, username, email, phone, password });
+      return data;
+    } catch (err) {
+      console.log('register error', err);
+      return rejectWithValue(err.response?.data?.message || 'Đăng ký thất bại');
     }
   }
 );
@@ -45,10 +65,12 @@ export const refreshToken = createAsyncThunk('auth/refreshToken', async (_, { re
 export const updateUserPassword = createAsyncThunk(
   'auth/updatePassword',
   async ({ oldPassword, newPassword }, { rejectWithValue }) => {
+    console.log('first', oldPassword, newPassword);
     try {
       const data = await changePassword(oldPassword, newPassword);
       return data;
     } catch (err) {
+      console.log('err', err);
       return rejectWithValue(err.response?.data?.message || 'Thay đổi mật khẩu thất bại');
     }
   }
@@ -91,22 +113,6 @@ export const accountSlice = createSlice({
     },
 
     doLogoutAction: (state) => {
-      // CASE 1: For httpOnly cookies
-      // Server will clear cookies on logout response
-
-      // CASE 2: For non-httpOnly cookies
-      // Clear cookies on the client side
-      // Note: Need to import Cookies from 'js-cookie' in this file if this is uncommented
-      /* 
-      Cookies.remove('accessToken');
-      Cookies.remove('refreshToken');
-      */
-
-      // CASE 3: For localStorage fallback
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-
-      // Reset authentication state
       state.isAuthenticated = false;
       state.isLoading = false;
       state.error = null;
@@ -117,21 +123,18 @@ export const accountSlice = createSlice({
         firstName: '',
         lastName: '',
         role: '',
-        avatar: '',
-        accessToken: ''
+        avatar: ''
       };
     }
   },
   extraReducers: (builder) => {
-    builder
-      // Login cases
+    builder // Login cases
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
-        state.user.accessToken = action.payload.accessToken;
         state.isAuthenticated = true;
         state.isLoading = false;
         state.error = null;
@@ -139,6 +142,23 @@ export const accountSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.error = action.payload || 'Đăng nhập thất bại';
         state.isAuthenticated = false;
+        state.user = null;
+        state.isLoading = false;
+      })
+
+      // Register cases
+      .addCase(registerUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.successMessage = null;
+      })
+      .addCase(registerUser.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = null;
+        state.successMessage = 'Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản.';
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.error = action.payload || 'Đăng ký thất bại';
         state.isLoading = false;
       })
 
@@ -160,18 +180,19 @@ export const accountSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Fetch current user cases
       .addCase(fetchCurrentUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
+        console.log('first', action.payload);
         state.user = action.payload.data;
         state.isAuthenticated = true;
         state.isLoading = false;
       })
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.error = action.payload;
+        state.user = null;
         state.isLoading = false;
         state.isAuthenticated = false;
       })

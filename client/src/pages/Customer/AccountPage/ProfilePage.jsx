@@ -11,6 +11,7 @@ import Input from '@/components/common/Input/Input';
 import Select from '@/components/common/Select/Select';
 import { uploadFile } from '@/services/fileService';
 import Button from '@/components/common/Button/Button';
+import { FileUser, Shield, UserRound } from 'lucide-react';
 
 // Schema xác thực cho form cập nhật thông tin cá nhân
 const profileSchema = yup.object({
@@ -39,7 +40,7 @@ const profileSchema = yup.object({
   gender: yup
     .string()
     .nullable()
-    .oneOf(['male', 'female', 'other', null], 'Giới tính phải là male, female hoặc other')
+    .oneOf(['male', 'female', 'other'], 'Giới tính phải là male, female hoặc other')
     .transform((value) => (value === '' ? null : value)),
   dateOfBirth: yup
     .string()
@@ -54,17 +55,6 @@ const profileSchema = yup.object({
       if (!value) return true;
       const date = new Date(value);
       return date <= new Date();
-    })
-    .test('is-adult', 'Bạn phải đủ 13 tuổi trở lên', function (value) {
-      if (!value) return true;
-      const date = new Date(value);
-      const today = new Date();
-      const age = today.getFullYear() - date.getFullYear();
-      const monthDiff = today.getMonth() - date.getMonth();
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
-        return age - 1 >= 13;
-      }
-      return age >= 13;
     })
 });
 
@@ -274,9 +264,21 @@ const ProfilePage = () => {
 
   return (
     <div className='mx-auto max-w-7xl bg-white p-4'>
-      <h1 className='mb-6 text-2xl font-bold text-primaryColor'>Hồ sơ của tôi</h1>
+      <div className='mb-8'>
+        <div className='mb-4 flex items-center space-x-4'>
+          <div className='rounded-lg bg-blue-100 p-2'>
+            <UserRound className='h-6 w-6 text-blue-600' />
+          </div>
+          <div>
+            <h1 className='text-2xl font-bold text-gray-900'>Hồ sơ của tôi</h1>
+            <p className='hidden text-base text-gray-600 md:block'>
+              Cập nhật tên, email và các thông tin liên hệ để giữ hồ sơ của bạn luôn chính xác và đầy đủ.
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className='animate-fadeIn'>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className='animate-fadeIn'>
         {/* Phần avatar */}
         <div className='mb-8'>
           <div className='flex flex-col items-center space-y-4 sm:flex-row sm:items-start sm:space-x-6 sm:space-y-0'>

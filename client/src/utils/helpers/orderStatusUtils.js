@@ -11,14 +11,14 @@ export const statusColors = {
   Cancelled: 'red'
 };
 
-// Chuyển đổi tiếng Anh sang tiếng Việt
-export const statusTranslations = {
-  Pending: 'Đang chờ xử lý',
-  Processing: 'Đang xử lý',
-  Shipping: 'Đang giao hàng',
-  Delivered: 'Đã giao hàng',
-  Cancelled: 'Đã hủy'
-};
+// // Chuyển đổi tiếng Anh sang tiếng Việt
+// export const statusTranslations = {
+//   Pending: 'Đang chờ xử lý',
+//   Processing: 'Đang xử lý',
+//   Shipping: 'Đang giao hàng',
+//   Delivered: 'Đã giao hàng',
+//   Cancelled: 'Đã hủy'
+// };
 
 // Danh sách các trạng thái đơn hàng
 export const orderStatuses = [
@@ -69,7 +69,7 @@ export const getValidStatusTransitions = (currentStatus) => {
 
 export default {
   statusColors,
-  statusTranslations,
+  // statusTranslations,
   orderStatuses,
   canChangeStatus,
   getValidStatusTransitions

@@ -7,49 +7,29 @@ const useProductVariants = (product) => {
   const [showValidation, setShowValidation] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [allImages, setAllImages] = useState([]);
-  const [colorImageIndexMap, setColorImageIndexMap] = useState({});
-
   useEffect(() => {
+    // Reset state
+    setSelectedSize('');
+    setSelectedColor('');
+    setQuantity(1);
+    setShowValidation(false);
+    setCurrentImageIndex(0);
+    setAllImages([]);
+
     // Khởi tạo mảng hình ảnh khi sản phẩm được tải
-    if (product) {
-      // Tạo mảng chứa tất cả hình ảnh từ product và variants
+    if (product && product.images) {
+      // Chỉ sử dụng hình ảnh từ product level
       const productImages = product.images || [];
-      const variantImages = [];
-      const indexMap = {};
-
-      // Thêm tất cả hình ảnh từ variants vào mảng
-      if (product.variants) {
-        product.variants.forEach((variant) => {
-          if (variant.images && variant.images.length > 0) {
-            // Lưu vị trí bắt đầu của hình ảnh variant trong mảng allImages
-            indexMap[variant.color] = productImages.length + variantImages.length;
-            variant.images.forEach((img) => {
-              // Chỉ thêm hình ảnh nếu nó không trùng lặp
-              // if (!productImages.includes(img) && !variantImages.includes(img)) {
-              variantImages.push(img);
-              // }
-            });
-          }
-        });
-      }
-
-      // Kết hợp hình ảnh sản phẩm và variant
-      const combined = [...productImages, ...variantImages];
-      setAllImages(combined);
-      setColorImageIndexMap(indexMap);
-      console.log('ahha', indexMap);
+      setAllImages(productImages);
       setCurrentImageIndex(0);
     }
   }, [product]);
-
   // Tính toán size và color có sẵn dựa trên các biến thể của sản phẩm
   const variantOptions = useMemo(() => {
-    if (!product?.variants)
-      return { sizes: [], colors: [], sizeMap: new Map(), colorMap: new Map(), colorImageMap: new Map() };
+    if (!product?.variants) return { sizes: [], colors: [], sizeMap: new Map(), colorMap: new Map() };
 
     const sizeMap = new Map();
     const colorMap = new Map();
-    const colorImageMap = new Map();
 
     product.variants.forEach((variant) => {
       // Map size to colors
@@ -63,20 +43,13 @@ const useProductVariants = (product) => {
         colorMap.set(variant.color, new Set());
       }
       colorMap.get(variant.color).add(variant.size);
-
-      // Map color to images
-      if (variant.images && variant.images.length > 0) {
-        colorImageMap.set(variant.color, variant.images);
-      }
     });
-    console.log('colorMap', colorMap);
 
     return {
       sizes: Array.from(sizeMap.keys()),
       colors: Array.from(colorMap.keys()),
       sizeMap,
-      colorMap,
-      colorImageMap
+      colorMap
     };
   }, [product?.variants]);
 
@@ -106,24 +79,17 @@ const useProductVariants = (product) => {
       setQuantity(1);
     }
   };
-
   const handleColorSelect = (color) => {
     // Kiểm tra xem color đã được chọn hay chưa
     if (selectedColor === color) {
       setSelectedColor('');
       setQuantity(1);
       setShowValidation(false);
-      setCurrentImageIndex(0); // Reset về ảnh chính đầu tiên khi bỏ chọn màu
       return;
     }
 
     setSelectedColor(color);
     setQuantity(1);
-
-    // Hiển thị hình ảnh của màu được chọn bằng cách cập nhật currentImageIndex
-    if (colorImageIndexMap[color] !== undefined) {
-      setCurrentImageIndex(colorImageIndexMap[color]);
-    }
 
     // Kiểm tra xem kích thước hiện tại có khả dụng cho màu mới không, nếu không đặt lại kích thước
     if (selectedSize && !variantOptions.colorMap.get(color)?.has(selectedSize)) {
@@ -163,13 +129,11 @@ const useProductVariants = (product) => {
     showValidation,
     currentImageIndex,
     allImages,
-    colorImageIndexMap,
     variantOptions,
     setQuantity,
     setShowValidation,
     setCurrentImageIndex,
     setAllImages,
-    setColorImageIndexMap,
     getAvailableColors,
     getAvailableSizes,
     handleSizeSelect,

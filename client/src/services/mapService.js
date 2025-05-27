@@ -26,10 +26,12 @@ export const getProvincesAPI = async () => {
 export const getDistrictsAPI = async (provinceCode) => {
   try {
     const response = await axios.get(`${PROVINCE_API}p/${provinceCode}?depth=2`);
+    console.log('response', response);
     return response.data.districts.map((district) => ({
       label: district.name,
       value: district.code
     }));
+    // return response.data.districts;
   } catch (error) {
     console.error('Error fetching districts:', error);
     return [];

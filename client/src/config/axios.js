@@ -1,109 +1,119 @@
 import axios from 'axios';
-import Cookies from 'js-cookie';
-import { refreshAccessToken } from '../services/authService';
 const API_URL = import.meta.env.VITE_API_URL;
+import Cookies from 'js-cookie';
+import { toast } from 'react-toastify';
 
-const api = axios.create({
-  baseURL: API_URL,
-  withCredentials: true
-  // timeout: 10000 // 10 giây
+let hasShownSessionExpiredMessage = false;
+let isRefreshing = false;
+
+const axiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
+  timeout: 10000,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json'
+  }
 });
 
-let isRefreshing = false;
-let failedQueue = [];
+const axiosInstanceWithCredentials = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
+  timeout: 10000,
+  withCredentials: true
+});
 
-const processQueue = (error, token = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-
-  failedQueue = [];
-};
-
-api.interceptors.request.use(
+// Request interceptor - KHÔNG CẦN THÊM TOKEN VÀO HEADER
+axiosInstance.interceptors.request.use(
   (config) => {
-    const token = Cookies.get('accessToken');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
+    // Cookie sẽ tự động được gửi với withCredentials: true
     return config;
   },
-  (error) => Promise.reject(error)
-);
-
-api.interceptors.response.use(
-  (response) => (response && response.data ? response.data : response),
-  async (error) => {
-    const originalRequest = error.config;
-
-    // Nếu lỗi là do hết hạn accessToken
-    if (error.response && error.response.status === 401 && !originalRequest._retry) {
-      if (originalRequest.url.includes('/auth/refresh-token')) {
-        console.log('1S');
-        Cookies.remove('accessToken');
-        Cookies.remove('refreshToken');
-        // window.location.href = '/login';
-        // return Promise.reject(error);
-      }
-
-      if (isRefreshing) {
-        console.log('first');
-        return new Promise(function (resolve, reject) {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers['Authorization'] = 'Bearer ' + token;
-            return api(originalRequest);
-          })
-          .catch((err) => {
-            return Promise.reject(err);
-          });
-      }
-
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      try {
-        // const refreshToken = Cookies.get('refreshToken');
-        // // Nếu không có refreshToken trong cookies thì nên logout luôn, tránh gọi API không cần thiết
-        // if (!refreshToken) {
-        //   Cookies.remove('accessToken');
-        //   Cookies.remove('refreshToken');
-        //   // window.location.href = '/login';
-        //   // return Promise.reject(error);
-        // }
-
-        const response = await refreshAccessToken();
-        console.log('response', response);
-
-        const { accessToken } = response;
-        // const { accessToken, refreshToken: newRefreshToken } = response.data;
-        // Cookies.set('accessToken', accessToken);
-        // Cookies.set('refreshToken', newRefreshToken);
-
-        api.defaults.headers.common['Authorization'] = 'Bearer ' + accessToken;
-        originalRequest.headers['Authorization'] = 'Bearer ' + accessToken;
-
-        processQueue(null, accessToken);
-        return api(originalRequest);
-      } catch (err) {
-        processQueue(err, null);
-        Cookies.remove('accessToken');
-        Cookies.remove('refreshToken');
-        window.location.href = '/login';
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
-      }
-    }
-
-    // Nếu lỗi khác 401 hoặc không có response (lỗi mạng)
+  (error) => {
     return Promise.reject(error);
   }
 );
 
-export default api;
+// Response interceptor cho httpOnly cookies
+axiosInstance.interceptors.response.use(
+  (response) => {
+    // Reset flag khi có response thành công
+    hasShownSessionExpiredMessage = false;
+    return response?.data || response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Xử lý 401 với httpOnly cookies
+    if (error.response?.status === 401 && !originalRequest._retry && !isRefreshing) {
+      originalRequest._retry = true;
+
+      // Kiểm tra xem có phải lỗi do access token hết hạn không
+      const errorMessage = error.response?.data?.message || '';
+      console.log('error.response', error.response);
+      console.log('errorMessage', errorMessage);
+      if (errorMessage.includes('expired') || errorMessage.includes('invalid')) {
+        isRefreshing = true;
+
+        try {
+          console.log('first');
+          // Thử refresh token (cookie sẽ tự động được gửi)
+          await axiosInstanceWithCredentials.post(`${API_URL}/api/auth/refresh-token`);
+          console.log('firs2t');
+          // Refresh thành công, retry request gốc
+          isRefreshing = false;
+          hasShownSessionExpiredMessage = false;
+          return axiosInstance(originalRequest);
+        } catch (refreshError) {
+          // Refresh thất bại - session thực sự hết hạn
+          isRefreshing = false;
+          handleSessionExpired();
+          return Promise.reject(refreshError);
+        }
+      } else {
+        // 401 nhưng không phải do token hết hạn (user chưa đăng nhập)
+        redirectToLoginIfNeeded();
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+// Xử lý session hết hạn
+const handleSessionExpired = () => {
+  if (!hasShownSessionExpiredMessage) {
+    hasShownSessionExpiredMessage = true;
+
+    toast.error('Phiên đăng nhập của bạn đã hết hạn, vui lòng đăng nhập lại.', {
+      position: 'top-right',
+      autoClose: 3000,
+      toastId: 'session-expired',
+      onClose: () => {
+        // Có thể gọi logout API để xóa cookie ở server
+        logoutAndRedirect();
+      }
+    });
+  }
+};
+
+const logoutAndRedirect = async () => {
+  try {
+    // Gọi logout API để xóa httpOnly cookies
+    await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {}, { withCredentials: true });
+  } catch (error) {
+    console.error('Logout error:', error);
+  } finally {
+    window.location.href = '/login';
+  }
+};
+
+const redirectToLoginIfNeeded = () => {
+  const currentPath = window.location.pathname;
+  const publicPaths = ['/login', '/register', '/forgot-password', '/'];
+
+  if (!publicPaths.includes(currentPath)) {
+    // window.location.href = '/login';
+  }
+};
+
+export default axiosInstance;

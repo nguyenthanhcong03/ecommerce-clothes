@@ -21,6 +21,7 @@ import { formatCurrency } from '@/utils/format/formatCurrency';
 import { formatDate } from '@/utils/format/formatDate';
 import { toast } from 'react-toastify';
 import Modal from '@/components/common/Modal/Modal2';
+import Button from '@/components/common/Button';
 
 // Component hiển thị trạng thái đơn hàng
 const OrderStatusBadge = ({ status }) => {
@@ -95,7 +96,7 @@ const OrderDetailPage = () => {
   if (loading) {
     return (
       <div className='flex min-h-[400px] items-center justify-center'>
-        <Loader2 className='h-8 w-8 animate-spin text-orange-500' />
+        <Loader2 className='h-8 w-8 animate-spin text-primaryColor' />
       </div>
     );
   }
@@ -103,14 +104,15 @@ const OrderDetailPage = () => {
   if (error) {
     return (
       <div className='container mx-auto p-4'>
-        <div className='rounded-md bg-red-50 p-4 text-red-600'>{error}</div>
-        <button
-          onClick={() => navigate('/account/orders')}
-          className='mt-4 flex items-center text-orange-500 hover:text-orange-600'
+        <div className='rounded-sm bg-red-50 p-4 text-red-600'>{error}</div>
+        <Button
+          variant='ghost'
+          onClick={() => navigate('/user/orders')}
+          className='mt-4 flex items-center text-neutral-600 hover:text-neutral-900'
         >
           <ArrowLeft className='mr-1 h-5 w-5' />
           Quay lại danh sách đơn hàng
-        </button>
+        </Button>
       </div>
     );
   }
@@ -123,14 +125,15 @@ const OrderDetailPage = () => {
     <div className='container mx-auto p-4'>
       {/* Header */}
       <div className='mb-6 flex items-center justify-between'>
-        <div className='flex items-center'>
-          <button
-            onClick={() => navigate('/account/orders')}
-            className='mr-4 flex items-center text-gray-600 hover:text-orange-500'
+        <div className='flex items-center gap-2'>
+          <Button
+            variant='ghost'
+            onClick={() => navigate('/user/orders')}
+            className='text-neutral-600 hover:text-neutral-900'
           >
             <ArrowLeft className='mr-1 h-5 w-5' />
             Quay lại
-          </button>
+          </Button>
           <h1 className='text-2xl font-medium'>Chi tiết đơn hàng</h1>
         </div>
         <OrderStatusBadge status={orderDetail.status} />
@@ -139,10 +142,10 @@ const OrderDetailPage = () => {
       <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
         <div className='lg:col-span-2'>
           {/* Thông tin đơn hàng */}
-          <div className='mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+          <div className='mb-6 rounded-sm border border-gray-200 bg-white p-6 shadow-sm'>
             <div className='mb-4 flex items-center justify-between'>
               <h2 className='flex items-center text-lg font-medium'>
-                <Package className='mr-2 h-5 w-5 text-orange-500' />
+                <Package className='mr-2 h-5 w-5 text-blue-500' />
                 Đơn hàng #{orderDetail._id.substring(0, 8)}
               </h2>
               <div className='flex items-center text-sm text-gray-500'>
@@ -155,21 +158,23 @@ const OrderDetailPage = () => {
               {/* Sản phẩm */}
               <div className='border-b border-gray-200 pb-4'>
                 <h3 className='mb-2 text-sm font-medium text-gray-600'>Sản phẩm</h3>
-                {orderDetail.items.map((item, index) => (
+                {orderDetail?.products.map((item, index) => (
                   <div key={index} className='flex items-center py-2 last:pb-0'>
                     <div className='h-16 w-16 flex-shrink-0'>
                       <img
-                        src={item.product.images[0]}
-                        alt={item.product.name}
-                        className='h-full w-full rounded-md object-cover'
+                        src={item?.snapshot?.image}
+                        alt={item?.snapshot?.name}
+                        className='h-full w-full rounded-sm object-cover'
                       />
                     </div>
                     <div className='ml-4 flex-grow'>
-                      <h4 className='text-sm font-medium'>{item.product.name}</h4>
-                      <div className='mt-1 text-xs text-gray-500'>{item.variant && `Phân loại: ${item.variant}`}</div>
-                      <div className='mt-1 text-xs text-gray-500'>x{item.quantity}</div>
+                      <h4 className='text-sm font-medium'>{item?.snapshot?.name}</h4>
+                      <div className='mt-1 text-xs text-gray-500'>
+                        {item?.snapshot && `Phân loại: ${item?.snapshot?.color}, ${item?.snapshot?.size}`}
+                      </div>
+                      <div className='mt-1 text-xs text-gray-500'>x{item?.quantity}</div>
                     </div>
-                    <div className='font-medium text-orange-500'>{formatCurrency(item.price)}</div>
+                    <div className='font-medium'>{formatCurrency(item?.snapshot?.price)}</div>
                   </div>
                 ))}
               </div>
@@ -177,10 +182,10 @@ const OrderDetailPage = () => {
               {/* Thông tin thanh toán */}
               <div>
                 <h3 className='mb-2 text-sm font-medium text-gray-600'>Chi tiết thanh toán</h3>
-                <div className='rounded-md bg-gray-50 p-4'>
+                <div className='rounded-sm bg-gray-50 p-4'>
                   <div className='flex justify-between py-1'>
                     <span className='text-gray-600'>Tạm tính:</span>
-                    <span>{formatCurrency(orderDetail.subtotal || 0)}</span>
+                    <span>{formatCurrency(orderDetail?.totalPrice + orderDetail?.discountAmount || 0)}</span>
                   </div>
                   <div className='flex justify-between py-1'>
                     <span className='text-gray-600'>Phí vận chuyển:</span>
@@ -194,9 +199,7 @@ const OrderDetailPage = () => {
                   )}
                   <div className='mt-1 flex justify-between border-t border-gray-200 py-1 pt-2'>
                     <span className='font-medium'>Tổng thanh toán:</span>
-                    <span className='text-lg font-medium text-orange-600'>
-                      {formatCurrency(orderDetail.totalAmount)}
-                    </span>
+                    <span className='text-lg font-medium text-red-600'>{formatCurrency(orderDetail.totalPrice)}</span>
                   </div>
                 </div>
               </div>
@@ -204,9 +207,9 @@ const OrderDetailPage = () => {
           </div>
 
           {/* Trạng thái đơn hàng */}
-          <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+          <div className='rounded-sm border border-gray-200 bg-white p-6 shadow-sm'>
             <h2 className='mb-4 flex items-center text-lg font-medium'>
-              <Clock className='mr-2 h-5 w-5 text-orange-500' />
+              <Clock className='mr-2 h-5 w-5 text-gray-500' />
               Trạng thái đơn hàng
             </h2>
 
@@ -217,12 +220,12 @@ const OrderDetailPage = () => {
               <div className='space-y-6'>
                 {/* Đặt hàng */}
                 <div className='relative pl-10'>
-                  <div className='absolute left-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-orange-500 bg-white'>
-                    <div className='h-2 w-2 rounded-full bg-orange-500' />
+                  <div className='absolute left-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#333] bg-white'>
+                    <div className='h-2 w-2 rounded-full bg-[#333]' />
                   </div>
                   <div>
                     <p className='font-medium'>Đơn hàng đã được đặt</p>
-                    <p className='text-sm text-gray-500'>{formatDate(orderDetail.createdAt)}</p>
+                    <p className='text-sm text-gray-500'>{formatDate(orderDetail?.createdAt)}</p>
                   </div>
                 </div>
 
@@ -230,27 +233,27 @@ const OrderDetailPage = () => {
                 <div className='relative pl-10'>
                   <div
                     className={`absolute left-0 h-6 w-6 rounded-full border-2 ${
-                      ['Processing', 'Shipping', 'Delivered'].includes(orderDetail.status)
-                        ? 'border-orange-500 bg-white'
+                      ['Processing', 'Shipping', 'Delivered'].includes(orderDetail?.status)
+                        ? 'border-[#333] bg-white'
                         : 'border-gray-300 bg-white'
                     } flex items-center justify-center`}
                   >
-                    {['Processing', 'Shipping', 'Delivered'].includes(orderDetail.status) && (
-                      <div className='h-2 w-2 rounded-full bg-orange-500' />
+                    {['Processing', 'Shipping', 'Delivered'].includes(orderDetail?.status) && (
+                      <div className='h-2 w-2 rounded-full bg-[#333]' />
                     )}
                   </div>
                   <div>
                     <p
                       className={
-                        ['Processing', 'Shipping', 'Delivered'].includes(orderDetail.status)
+                        ['Processing', 'Shipping', 'Delivered'].includes(orderDetail?.status)
                           ? 'font-medium'
                           : 'text-gray-500'
                       }
                     >
                       Đơn hàng đang được xử lý
                     </p>
-                    {orderDetail.statusUpdates?.processing && (
-                      <p className='text-sm text-gray-500'>{formatDate(orderDetail.statusUpdates.processing)}</p>
+                    {orderDetail?.statusUpdates?.processing && (
+                      <p className='text-sm text-gray-500'>{formatDate(orderDetail?.statusUpdates?.processing)}</p>
                     )}
                   </div>
                 </div>
@@ -259,25 +262,25 @@ const OrderDetailPage = () => {
                 <div className='relative pl-10'>
                   <div
                     className={`absolute left-0 h-6 w-6 rounded-full border-2 ${
-                      ['Shipping', 'Delivered'].includes(orderDetail.status)
-                        ? 'border-orange-500 bg-white'
+                      ['Shipping', 'Delivered'].includes(orderDetail?.status)
+                        ? 'border-[#333] bg-white'
                         : 'border-gray-300 bg-white'
                     } flex items-center justify-center`}
                   >
-                    {['Shipping', 'Delivered'].includes(orderDetail.status) && (
-                      <div className='h-2 w-2 rounded-full bg-orange-500' />
+                    {['Shipping', 'Delivered'].includes(orderDetail?.status) && (
+                      <div className='h-2 w-2 rounded-full bg-[#333]' />
                     )}
                   </div>
                   <div>
                     <p
                       className={
-                        ['Shipping', 'Delivered'].includes(orderDetail.status) ? 'font-medium' : 'text-gray-500'
+                        ['Shipping', 'Delivered'].includes(orderDetail?.status) ? 'font-medium' : 'text-gray-500'
                       }
                     >
                       Đơn hàng đang được giao
                     </p>
                     {orderDetail.statusUpdates?.shipping && (
-                      <p className='text-sm text-gray-500'>{formatDate(orderDetail.statusUpdates.shipping)}</p>
+                      <p className='text-sm text-gray-500'>{formatDate(orderDetail?.statusUpdates?.shipping)}</p>
                     )}
                   </div>
                 </div>
@@ -286,34 +289,34 @@ const OrderDetailPage = () => {
                 <div className='relative pl-10'>
                   <div
                     className={`absolute left-0 h-6 w-6 rounded-full border-2 ${
-                      orderDetail.status === 'Delivered' ? 'border-orange-500 bg-white' : 'border-gray-300 bg-white'
+                      orderDetail?.status === 'Delivered' ? 'border-[#333] bg-white' : 'border-gray-300 bg-white'
                     } flex items-center justify-center`}
                   >
-                    {orderDetail.status === 'Delivered' && <div className='h-2 w-2 rounded-full bg-orange-500' />}
+                    {orderDetail?.status === 'Delivered' && <div className='h-2 w-2 rounded-full bg-[#333]' />}
                   </div>
                   <div>
-                    <p className={orderDetail.status === 'Delivered' ? 'font-medium' : 'text-gray-500'}>
+                    <p className={orderDetail?.status === 'Delivered' ? 'font-medium' : 'text-gray-500'}>
                       Đơn hàng đã được giao
                     </p>
-                    {orderDetail.statusUpdates?.delivered && (
+                    {orderDetail?.statusUpdates?.delivered && (
                       <p className='text-sm text-gray-500'>{formatDate(orderDetail.statusUpdates.delivered)}</p>
                     )}
                   </div>
                 </div>
 
                 {/* Đã hủy (nếu có) */}
-                {orderDetail.status === 'Cancelled' && (
+                {orderDetail?.status === 'Cancelled' && (
                   <div className='relative pl-10'>
                     <div className='absolute left-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-red-500 bg-white'>
                       <div className='h-2 w-2 rounded-full bg-red-500' />
                     </div>
                     <div>
                       <p className='font-medium text-red-600'>Đơn hàng đã bị hủy</p>
-                      {orderDetail.cancelTime && (
-                        <p className='text-sm text-gray-500'>{formatDate(orderDetail.cancelTime)}</p>
+                      {orderDetail?.cancelTime && (
+                        <p className='text-sm text-gray-500'>{formatDate(orderDetail?.cancelTime)}</p>
                       )}
-                      {orderDetail.cancelReason && (
-                        <p className='mt-1 text-sm text-gray-500'>Lý do: {orderDetail.cancelReason}</p>
+                      {orderDetail?.cancelReason && (
+                        <p className='mt-1 text-sm text-gray-500'>Lý do: {orderDetail?.cancelReason}</p>
                       )}
                     </div>
                   </div>
@@ -326,9 +329,9 @@ const OrderDetailPage = () => {
         {/* Sidebar */}
         <div className='lg:col-span-1'>
           {/* Thông tin giao hàng */}
-          <div className='mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+          <div className='mb-6 rounded-sm border border-gray-200 bg-white p-6 shadow-sm'>
             <h2 className='mb-4 flex items-center text-lg font-medium'>
-              <MapPin className='mr-2 h-5 w-5 text-orange-500' />
+              <MapPin className='mr-2 h-5 w-5 text-blue-500' />
               Địa chỉ giao hàng
             </h2>
 
@@ -336,90 +339,85 @@ const OrderDetailPage = () => {
               <div className='flex items-start'>
                 <User className='mr-2 mt-0.5 h-5 w-5 flex-shrink-0 text-gray-400' />
                 <div>
-                  <p className='font-medium'>{orderDetail.shippingAddress?.fullName}</p>
+                  <p className='font-medium'>{orderDetail?.shippingAddress?.fullName}</p>
                 </div>
               </div>
 
               <div className='flex items-start'>
                 <Phone className='mr-2 mt-0.5 h-5 w-5 flex-shrink-0 text-gray-400' />
-                <p>{orderDetail.shippingAddress?.phoneNumber}</p>
+                <p>{orderDetail?.shippingAddress?.phoneNumber}</p>
               </div>
 
               <div className='flex items-start'>
                 <MapPin className='mr-2 mt-0.5 h-5 w-5 flex-shrink-0 text-gray-400' />
                 <p>
-                  {orderDetail.shippingAddress?.address}, {orderDetail.shippingAddress?.ward},{' '}
-                  {orderDetail.shippingAddress?.district}, {orderDetail.shippingAddress?.province}
+                  {orderDetail?.shippingAddress?.street}, {orderDetail?.shippingAddress?.ward},{' '}
+                  {orderDetail?.shippingAddress?.district}, {orderDetail?.shippingAddress?.province}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Thông tin thanh toán */}
-          <div className='mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
-            <h2 className='mb-4 flex items-center text-lg font-medium'>
-              <CreditCard className='mr-2 h-5 w-5 text-orange-500' />
+          <div className='mb-6 rounded-sm border border-gray-200 bg-white p-6 shadow-sm'>
+            <h2 className='mb-4 flex items-center text-base font-medium'>
+              <CreditCard className='mr-2 h-5 w-5 text-blue-500' />
               Phương thức thanh toán
             </h2>
 
             <div className='space-y-2'>
               <p>
-                {orderDetail.paymentMethod === 'COD'
+                {orderDetail?.payment?.method === 'COD'
                   ? 'Thanh toán khi nhận hàng (COD)'
-                  : orderDetail.paymentMethod === 'BANKING'
-                    ? 'Chuyển khoản ngân hàng'
-                    : orderDetail.paymentMethod === 'STRIPE'
-                      ? 'Thẻ tín dụng/Ghi nợ'
-                      : orderDetail.paymentMethod}
+                  : orderDetail?.payment?.method === 'Momo'
+                    ? 'Thanh toán qua Momo'
+                    : orderDetail?.payment?.method === 'VNPay'
+                      ? 'Thanh toán qua VNPay'
+                      : ''}
               </p>
 
               <div className='mt-2 flex items-center'>
                 <span
                   className={`mr-2 inline-block h-3 w-3 rounded-full ${
-                    orderDetail.isPaid ? 'bg-green-500' : 'bg-amber-500'
+                    orderDetail?.payment?.isPaid ? 'bg-green-500' : 'bg-amber-500'
                   }`}
                 />
-                <span className={orderDetail.isPaid ? 'text-green-700' : 'text-amber-700'}>
-                  {orderDetail.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                <span className={orderDetail?.payment?.isPaid ? 'text-green-700' : 'text-amber-700'}>
+                  {orderDetail?.payment?.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
                 </span>
               </div>
 
-              {orderDetail.isPaid && orderDetail.paidAt && (
-                <p className='text-sm text-gray-500'>Thanh toán lúc: {formatDate(orderDetail.paidAt)}</p>
+              {orderDetail?.payment?.isPaid && orderDetail?.payment?.paidAt && (
+                <p className='text-sm text-gray-500'>Thanh toán lúc: {formatDate(orderDetail?.payment?.paidAt)}</p>
               )}
             </div>
           </div>
 
           {/* Các hành động */}
-          <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+          <div className='rounded-sm border border-gray-200 bg-white p-6 shadow-sm'>
             <h2 className='mb-4 text-lg font-medium'>Hành động</h2>
 
-            <div className='space-y-3'>
+            <div className='flex flex-col space-y-3'>
               {canBeCancelled && (
-                <button
-                  onClick={() => setShowCancelModal(true)}
-                  className='w-full rounded-md border border-red-500 px-4 py-2 text-red-500 transition duration-150 hover:bg-red-50'
-                >
+                <Button variant='danger' onClick={() => setShowCancelModal(true)}>
                   Hủy đơn hàng
-                </button>
+                </Button>
               )}
 
               {canBeReviewed && (
-                <Link
-                  to={`/account/order/review/${orderDetail._id}`}
-                  className='inline-flex w-full items-center justify-center rounded-md bg-orange-500 px-4 py-2 text-white transition duration-150 hover:bg-orange-600'
-                >
-                  <FileEdit className='mr-2 h-4 w-4' />
-                  Đánh giá đơn hàng
+                <Link to={`/user/orders/review/${orderDetail._id}`}>
+                  <Button className='w-full'>
+                    <FileEdit className='mr-2 h-4 w-4' />
+                    Đánh giá đơn hàng
+                  </Button>
                 </Link>
               )}
 
-              <Link
-                to='/account/orders'
-                className='inline-flex w-full items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-gray-700 transition duration-150 hover:bg-gray-200'
-              >
-                <ArrowLeft className='mr-2 h-4 w-4' />
-                Quay lại danh sách
+              <Link to='/user/orders'>
+                <Button variant='secondary' className='w-full'>
+                  <ArrowLeft className='mr-2 h-4 w-4' />
+                  Quay lại
+                </Button>
               </Link>
             </div>
           </div>
@@ -433,19 +431,19 @@ const OrderDetailPage = () => {
           <textarea
             value={cancelReason}
             onChange={(e) => setCancelReason(e.target.value)}
-            className='h-24 w-full rounded-md border p-2 text-sm'
+            className='h-24 w-full rounded-sm border p-2 text-sm'
             placeholder='Nhập lý do hủy đơn hàng...'
           ></textarea>
           <div className='mt-4 flex justify-end space-x-2'>
             <button
               onClick={() => setShowCancelModal(false)}
-              className='rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50'
+              className='rounded-sm border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50'
             >
               Hủy
             </button>
             <button
               onClick={handleCancelOrder}
-              className='rounded-md bg-red-500 px-4 py-2 text-sm text-white hover:bg-red-600'
+              className='rounded-sm bg-red-500 px-4 py-2 text-sm text-white hover:bg-red-600'
             >
               Xác nhận hủy đơn hàng
             </button>
@@ -458,17 +456,18 @@ const OrderDetailPage = () => {
 
 export default OrderDetailPage;
 
-function g({ error, navigate }) {
-  return (
-    <div className='container mx-auto p-4'>
-      <div className='rounded-md bg-red-50 p-4 text-red-600'>{error}</div>
-      <button
-        onClick={() => navigate('/account/orders')}
-        className='mt-4 flex items-center text-orange-500 hover:text-orange-600'
-      >
-        <ArrowLeft className='mr-1 h-5 w-5' />
-        Quay lại danh sách đơn hàng
-      </button>
-    </div>
-  );
-}
+// function g({ error, navigate }) {
+//   return (
+//     <div className='container mx-auto p-4'>
+//       <div className='rounded-sm bg-red-50 p-4 text-red-600'>{error}</div>
+//       <Button
+//         variant='ghost'
+//         onClick={() => navigate('/user/orders')}
+//         className='mt-4 text-neutral-600 hover:text-neutral-900'
+//       >
+//         <ArrowLeft className='mr-1 h-5 w-5' />
+//         Quay lại danh sách đơn hàng
+//       </Button>
+//     </div>
+//   );
+// }

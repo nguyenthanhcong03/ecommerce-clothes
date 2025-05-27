@@ -54,24 +54,24 @@ const OrderSummary = ({
   // Khôi phục orderItems từ localStorage khi trang được tải lại
   useEffect(() => {
     if (!orderItems || orderItems.length === 0) {
-      const savedItems = localStorage.getItem('orderItems');
-      if (savedItems) {
+      const itemsInLocalStorage = localStorage.getItem('orderItems');
+      if (itemsInLocalStorage) {
         try {
-          const parsedItems = JSON.parse(savedItems);
+          const parsedItems = JSON.parse(itemsInLocalStorage);
           if (Array.isArray(parsedItems) && parsedItems.length > 0) {
             dispatch(setOrderItems(parsedItems));
           } else {
-            navigate('/cart');
+            navigate('/shop');
           }
         } catch (error) {
           console.error('Lỗi khi phân tích orderItems từ localStorage:', error);
-          navigate('/cart');
+          navigate('/shop');
         }
       } else {
-        navigate('/cart');
+        navigate('/shop');
       }
     }
-  }, [dispatch, orderItems]);
+  }, [dispatch, orderItems, navigate]);
 
   const handleRemoveOrderItem = (itemId) => {
     const updatedOrderItems = orderItems.filter((item) => item._id !== itemId);

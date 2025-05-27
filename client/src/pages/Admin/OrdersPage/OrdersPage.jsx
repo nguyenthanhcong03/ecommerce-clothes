@@ -10,7 +10,7 @@ import OrderFilters from './OrderFilters';
 import OrderStatistics from './OrderStatistics';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import { formatDate } from '@/utils/format/formatDate';
-import { statusColors } from '@/utils/helpers/orderStatusUtils';
+import { orderStatuses, statusColors } from '@/utils/helpers/orderStatusUtils';
 import useDebounce from '@/hooks/useDebounce';
 import Header from '@/components/AdminComponents/common/Header';
 import { updateOrderStatus } from '../../../store/slices/adminOrderSlice';
@@ -158,7 +158,7 @@ const OrdersPage = () => {
     try {
       await dispatch(updateOrderStatus({ orderId: selectedOrder._id, status: newStatus })).unwrap();
       message.success(`Trạng thái đơn hàng đã cập nhật thành ${newStatus}`);
-      fetchAllOrders();
+      // fetchAllOrders();
       setStatusModalVisible(false);
     } catch (error) {
       message.error(`Lỗi khi cập nhật trạng thái đơn hàng: ${error.message}`);
@@ -172,7 +172,7 @@ const OrdersPage = () => {
     try {
       await dispatch(updateOrderStatus({ orderId, status: newStatus })).unwrap();
       message.success(`Trạng thái đơn hàng đã cập nhật thành ${newStatus}`);
-      fetchAllOrders();
+      // fetchAllOrders();
     } catch (error) {
       message.error(`Lỗi khi cập nhật trạng thái đơn hàng: ${error.message}`);
     } finally {
@@ -182,7 +182,6 @@ const OrdersPage = () => {
   };
 
   const handlePaymentStatusChange = async (orderId, isPaid) => {
-    console.log('isPaid', isPaid);
     try {
       await updatePaymentStatusAPI(orderId, isPaid);
       message.success(`Trạng thái thanh toán đã được cập nhật`);
@@ -199,8 +198,6 @@ const OrdersPage = () => {
     setStatusModalVisible(true);
   };
 
-  // No longer needed as we're using OrderStatistics component
-
   // Table columns
   const columns = [
     {
@@ -215,7 +212,6 @@ const OrdersPage = () => {
       dataIndex: 'userId',
       key: 'userId',
       render: (user) =>
-        console.log('userId', user) || // Log the userId for debugging
         user ? (
           <div>
             <div>{user.username}</div>
@@ -303,7 +299,8 @@ const OrdersPage = () => {
             loading={isUpdating}
             disabled={isUpdating}
             onChange={(value) => handleOrderStatusChange(record._id, value)}
-            options={getValidStatusTransitions(status)}
+            // options={getValidStatusTransitions(status)}
+            options={orderStatuses}
             bordered={true}
             listItemHeight={30}
             dropdownStyle={{
@@ -372,11 +369,6 @@ const OrdersPage = () => {
               ...filters,
               page: 1
             };
-
-            // Xóa dateRange vì API không cần, thay vào đó dùng startDate và endDate
-            if (params.dateRange) {
-              delete params.dateRange;
-            }
 
             fetchAllOrders(params);
           }}

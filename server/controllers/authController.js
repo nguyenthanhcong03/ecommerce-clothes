@@ -11,20 +11,21 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    console.log("hi");
-
     const { user, accessToken, refreshToken } = await authService.loginUser(req.body);
-    console.log("hi");
     // Lưu accessToken vào cookie
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      maxAge: process.env.ACCESS_TOKEN_COOKIE_EXPIRES,
+      // secure: true,
+      // sameSite: "Strict",
+      // maxAge: process.env.ACCESS_TOKEN_COOKIE_EXPIRES,
     });
 
     // Lưu refreshToken vào cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      maxAge: process.env.REFRESH_TOKEN_COOKIE_EXPIRES,
+      // secure: true,
+      // sameSite: "Strict",
+      // maxAge: process.env.REFRESH_TOKEN_COOKIE_EXPIRES,
     });
 
     res.status(200).json({
@@ -35,10 +36,10 @@ const login = async (req, res) => {
       refreshToken,
     });
   } catch (error) {
-    if (error.message === "Vui lòng xác thực email trước khi đăng nhập") {
-      return res.status(403).json({ success: false, message: error.message });
-    }
-    console.log("error", error);
+    // if (error.message === "Vui lòng xác thực email trước khi đăng nhập") {
+    //   return res.status(403).json({ success: false, message: error.message });
+    // }
+    // console.log("error", error);
     res.status(400).json({ success: false, message: error.message });
   }
 };
@@ -127,11 +128,13 @@ const refreshToken = async (req, res) => {
 
   try {
     const newAccessToken = await authService.refreshUserToken(refreshToken);
-
+    // console.log("newAccessToken", newAccessToken);
     // Lưu accessToken vào cookie
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
-      maxAge: process.env.ACCESS_TOKEN_COOKIE_EXPIRES,
+      // maxAge: process.env.ACCESS_TOKEN_COOKIE_EXPIRES,
+      // sameSite: "Strict", // Quan trọng nếu frontend/backend khác domain
+      // secure: true, // Bắt buộc nếu dùng sameSite: "None"
     });
 
     res.status(200).json({ success: true, accessToken: newAccessToken });
@@ -140,6 +143,73 @@ const refreshToken = async (req, res) => {
       return res.status(400).json({ success: false, message: error.message });
     }
     res.status(401).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * Kiểm tra username đã tồn tại hay chưa
+ */
+const checkUsernameExists = async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    if (!username) {
+      return res.status(400).json({
+        success: false,
+        message: "Username là bắt buộc",
+      });
+    }
+    console.log("Username:", username);
+    const exists = await authService.checkUsernameExists(username);
+
+    res.status(200).json({
+      success: true,
+      exists,
+      message: exists ? "Username đã tồn tại" : "Username có thể sử dụng",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server khi kiểm tra username",
+    });
+  }
+};
+
+/**
+ * Kiểm tra email đã tồn tại hay chưa
+ */
+const checkEmailExists = async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email là bắt buộc",
+      });
+    }
+
+    // Kiểm tra định dạng email cơ bản
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Định dạng email không hợp lệ",
+      });
+    }
+
+    const exists = await authService.checkEmailExists(email);
+
+    res.status(200).json({
+      success: true,
+      exists,
+      message: exists ? "Email đã tồn tại" : "Email có thể sử dụng",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server khi kiểm tra email",
+    });
   }
 };
 
@@ -153,4 +223,6 @@ module.exports = {
   logout,
   refreshToken,
   getCurrentUser,
+  checkUsernameExists,
+  checkEmailExists,
 };

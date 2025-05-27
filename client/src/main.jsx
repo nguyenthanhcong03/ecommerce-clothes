@@ -4,10 +4,14 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import 'react-toastify/dist/ReactToastify.css';
-import App from './App';
+import App from './AppRouter';
 import './i18n';
 import './index.scss';
 import { store } from '@/store/store';
+import { BrowserRouter } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import AppRouter from './AppRouter';
+import 'react-toastify/dist/ReactToastify.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   // <React.StrictMode>
@@ -95,7 +99,18 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         }
       }}
     >
-      <App />
+      <ToastContainer
+        position='bottom-right'
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+      <AppRouter />
     </ConfigProvider>
   </Provider>
   // {/* </React.StrictMode> */}

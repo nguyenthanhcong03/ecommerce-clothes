@@ -121,6 +121,7 @@ const ProductPage = () => {
     dispatch(setPage(1));
     dispatch(setFilter(newFilters));
   };
+
   const handleResetFilters = () => {
     dispatch(setPage(1));
     dispatch(resetFilters());

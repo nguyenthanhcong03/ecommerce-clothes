@@ -6,16 +6,16 @@ function MenuItem({ href, text, isMenuDropDown = false, onClick }) {
   const navigate = useNavigate();
 
   return (
-    <NavLink
-      to={href}
-      onClick={onClick}
-      className={({ isActive }) =>
-        isActive
-          ? 'group after:block after:h-[3px] after:origin-right after:bg-primaryColor after:duration-300 after:content-[""]'
-          : 'group after:block after:h-[3px] after:origin-right after:scale-0 after:bg-primaryColor after:opacity-0 after:duration-300 after:content-[""] hover:after:scale-100 hover:after:opacity-100'
-      }
-    >
-      <div className='relative'>
+    <div className='group'>
+      <NavLink
+        to={href}
+        onClick={onClick}
+        className={({ isActive }) =>
+          isActive
+            ? 'after:block after:h-[3px] after:origin-right after:bg-primaryColor after:duration-300 after:content-[""]'
+            : 'after:block after:h-[3px] after:origin-right after:scale-0 after:bg-primaryColor after:opacity-0 after:duration-300 after:content-[""] hover:after:scale-100 hover:after:opacity-100'
+        }
+      >
         <div className='flex cursor-pointer items-center justify-center gap-2 pt-[2px] after:absolute after:top-full after:hidden after:h-[20px] after:w-full after:bg-transparent after:content-[""] after:group-hover:block'>
           <span>{text}</span>
           {isMenuDropDown && (
@@ -30,13 +30,16 @@ function MenuItem({ href, text, isMenuDropDown = false, onClick }) {
             </svg>
           )}
         </div>
+      </NavLink>
+      <div className='relative'>
         {isMenuDropDown && (
-          <ul className='absolute top-[40px] hidden w-[200px] flex-col overflow-hidden rounded bg-white text-sm text-primaryColor shadow-md group-hover:flex'>
+          <ul className='absolute left-0 top-2 z-[100] hidden h-fit min-w-[220px] flex-col rounded bg-white py-2 shadow-xl transition-all duration-300 ease-in after:absolute after:left-6 after:top-[-18px] after:w-3 after:border-b-[15px] after:border-l-[40px] after:border-r-[40px] after:border-t-[10px] after:border-transparent after:border-b-white group-hover:flex'>
+            {/* <ul className='absolute top-[2px] hidden w-[200px] cursor-pointer flex-col overflow-hidden rounded bg-white text-sm text-primaryColor shadow-md group-hover:flex'> */}
             {!treeLoading &&
               categoriesTree.map((category) => (
                 <div
                   key={category._id}
-                  className={`p-3 hover:bg-[#F1F1F1] hover:text-secondaryColor`}
+                  className={`cursor-pointer p-3 hover:bg-[#F1F1F1] hover:text-secondaryColor`}
                   onClick={() => navigate(`/shop/${category.slug}/${category._id}`)}
                 >
                   {category.name}
@@ -45,7 +48,7 @@ function MenuItem({ href, text, isMenuDropDown = false, onClick }) {
           </ul>
         )}
       </div>
-    </NavLink>
+    </div>
   );
 }
 
