@@ -13,9 +13,6 @@ const ShareButtons = ({ product }) => {
 
   // Nếu bạn muốn thêm path cụ thể cho sản phẩm
   const productUrl = `${window.location.origin}/product/${product._id}`;
-  console.log('productUrl:', productUrl);
-  console.log('product.description:', product.description);
-
   // Hoặc sử dụng URL hiện tại nếu đang ở trang sản phẩm
   const shareUrl = currentUrl;
 

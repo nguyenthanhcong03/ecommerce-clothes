@@ -16,7 +16,12 @@ import { setOrderItems } from '../../../store/slices/orderSlice';
 const ProductDetailModal = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isDetailModalOpen, modalProductId, currentProduct: product, loading } = useSelector((state) => state.product);
+  const {
+    isDetailModalOpen,
+    modalProductId,
+    currentProduct: product,
+    loadingFetchProductById
+  } = useSelector((state) => state.product);
 
   useEffect(() => {
     if (isDetailModalOpen && modalProductId) {
@@ -148,7 +153,7 @@ const ProductDetailModal = () => {
           onClick={handleCloseModal}
         />
 
-        {loading ? (
+        {loadingFetchProductById ? (
           <div className='flex h-64 items-center justify-center'>
             <div className='h-10 w-10 animate-spin rounded-full border-4 border-primaryColor border-t-transparent'></div>
           </div>

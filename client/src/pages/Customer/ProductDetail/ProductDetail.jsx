@@ -26,7 +26,7 @@ const DetailProduct = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { id } = useParams();
-  const { currentProduct: product, loading, error } = useSelector((state) => state.product);
+  const { currentProduct: product, loadingFetchProductById, error } = useSelector((state) => state.product);
   const { categoriesTree } = useSelector((state) => state.category);
 
   const {
@@ -148,7 +148,7 @@ const DetailProduct = () => {
     setQuantity(newQuantity);
   };
 
-  if (loading) {
+  if (loadingFetchProductById) {
     return (
       <div className='flex h-screen items-center justify-center'>
         <div className='h-12 w-12 animate-spin rounded-full border-4 border-primaryColor border-t-transparent'></div>

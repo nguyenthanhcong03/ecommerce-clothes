@@ -133,6 +133,7 @@ const productSlice = createSlice({
     isDetailModalOpen: false,
     modalProductId: null,
     loading: false,
+    loadingFetchProductById: false,
     error: null
   },
   reducers: {
@@ -247,15 +248,15 @@ const productSlice = createSlice({
 
       // GET PRODUCT BY ID
       .addCase(fetchProductById.pending, (state) => {
-        state.loading = true;
+        state.loadingFetchProductById = true;
         state.error = null;
       })
       .addCase(fetchProductById.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loadingFetchProductById = false;
         state.currentProduct = action.payload;
       })
       .addCase(fetchProductById.rejected, (state, action) => {
-        state.loading = false;
+        state.loadingFetchProductById = false;
         state.error = action.payload?.message || action.error.message;
       })
 
