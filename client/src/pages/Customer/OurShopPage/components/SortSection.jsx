@@ -3,7 +3,7 @@ import React from 'react';
 import { AppstoreOutlined, BarsOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 
-const SortSection = ({ currentCategory, viewMode, setViewMode, sortOptions, searchParams, onSortChange }) => {
+const SortSection = ({ currentCategory, viewMode, setViewMode, sortOptions, params, onSortChange }) => {
   const { products, pagination } = useSelector((state) => state.product);
   return (
     <div className='mb-4 flex flex-col items-start justify-between gap-4 rounded-md bg-white p-4 sm:flex-row sm:items-center'>
@@ -36,8 +36,8 @@ const SortSection = ({ currentCategory, viewMode, setViewMode, sortOptions, sear
           placeholder='Sắp xếp theo'
           className='w-[200px]'
           value={(() => {
-            const sortBy = searchParams.get('sortBy');
-            const sortOrder = searchParams.get('sortOrder');
+            const sortBy = params?.get('sortBy');
+            const sortOrder = params?.get('sortOrder');
             if (!sortBy) return 'default';
             if (sortBy === 'price') return `price_${sortOrder}`;
             if (sortBy === 'name') return `name_${sortOrder}`;

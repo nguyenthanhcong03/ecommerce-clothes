@@ -57,7 +57,7 @@ const ProductTable = ({
         render: (name, record) => (
           <div className='flex flex-col'>
             <span className='font-medium'>{name}</span>
-            {record.featured && (
+            {record?.featured && (
               <Tag color='gold' className='mt-1 w-fit'>
                 Nổi bật
               </Tag>
@@ -70,7 +70,7 @@ const ProductTable = ({
         dataIndex: 'categoryId',
         key: 'category',
         width: 150,
-        render: (category) => category.name || 'Không xác định'
+        render: (category) => category?.name || 'Không xác định'
       },
       {
         title: 'Giá',
@@ -79,7 +79,7 @@ const ProductTable = ({
         align: 'right',
         width: 150,
         render: (_, record) => {
-          if (!record.variants || record.variants.length === 0) {
+          if (!record?.variants || record?.variants.length === 0) {
             return 'N/A';
           }
 
@@ -166,11 +166,11 @@ const ProductTable = ({
           { text: 'Hết hàng', value: 'false' }
         ],
         onFilter: (value, record) => {
-          const hasInStock = record.variants && record.variants.some((v) => v.stock > 0);
+          const hasInStock = record?.variants && record?.variants.some((v) => v.stock > 0);
           return value === 'true' ? hasInStock : !hasInStock;
         },
         render: (_, record) => {
-          const hasInStock = record.variants && record.variants.some((v) => v.stock > 0);
+          const hasInStock = record?.variants && record?.variants.some((v) => v.stock > 0);
           return hasInStock ? <Tag color='green'>Còn hàng</Tag> : <Tag color='red'>Hết hàng</Tag>;
         }
       },
@@ -182,9 +182,9 @@ const ProductTable = ({
           { text: 'Đang hoạt động', value: true },
           { text: 'Đã tắt', value: false }
         ],
-        onFilter: (value, record) => record.isActive === value,
+        onFilter: (value, record) => record?.isActive === value,
         render: (_, record) => {
-          return record.isActive ? <Tag color='green'>Hoạt động</Tag> : <Tag color='gray'>Đã tắt</Tag>;
+          return record?.isActive ? <Tag color='green'>Hoạt động</Tag> : <Tag color='gray'>Đã tắt</Tag>;
         }
       },
       {

@@ -1,11 +1,26 @@
 import { deleteMultipleFiles, uploadMultipleFiles } from '@/services/fileService';
 import { fetchCategories } from '@/store/slices/categorySlice';
-import { createProduct, updateProductById } from '@/store/slices/productSlice';
+import { createProduct, fetchProducts, updateProductById } from '@/store/slices/productSlice';
 import { COLOR_OPTIONS, SIZE_OPTIONS } from '@/utils/constants';
+import removeVietnameseTones from '@/utils/format/removeVietnameseTones';
 import { buildTree } from '@/utils/helpers/buildTree';
 import { UploadOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, Card, Form, Input, message, Modal, Select, Switch, TreeSelect, Upload } from 'antd';
+import {
+  Button,
+  Card,
+  Checkbox,
+  Form,
+  Input,
+  message,
+  Modal,
+  Radio,
+  Select,
+  Switch,
+  Table,
+  TreeSelect,
+  Upload
+} from 'antd';
 import { fi } from 'date-fns/locale';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
@@ -111,6 +126,10 @@ const ProductForm = ({ selectedProduct, onClose }) => {
   const { loading } = useSelector((state) => state.product); // Trạng thái loading từ Redux
   const [uploading, setUploading] = useState(false); // Trạng thái đang tải file
   const [localFiles, setLocalFiles] = useState([]); // Lưu trữ danh sách file mới cho ảnh sản phẩm
+  const [productType, setProductType] = useState('áo'); // Mặc định là áo
+  const [selectedSizes, setSelectedSizes] = useState([]); // Lưu trữ các size được chọn
+  const [selectedColors, setSelectedColors] = useState([]); // Lưu trữ các color được chọn
+  // Removed showVariantTable state as we'll only use automatic variant generation
 
   // Chuyển đổi danh mục đã lọc thành cấu trúc cây cho TreeSelect - sử dụng useMemo
   const categoriesArray = useMemo(() => {
@@ -129,9 +148,37 @@ const ProductForm = ({ selectedProduct, onClose }) => {
     }));
   }, [categories]);
 
+  // Size options based on product type
+  const SIZES_BY_TYPE = useMemo(
+    () => ({
+      áo: [
+        { label: 'S', value: 'S' },
+        { label: 'M', value: 'M' },
+        { label: 'L', value: 'L' },
+        { label: 'XL', value: 'XL' },
+        { label: 'XXL', value: 'XXL' }
+      ],
+      quần: [
+        { label: '28', value: '28' },
+        { label: '29', value: '29' },
+        { label: '30', value: '30' },
+        { label: '31', value: '31' },
+        { label: '32', value: '32' },
+        { label: '33', value: '33' },
+        { label: '34', value: '34' },
+        { label: '35', value: '35' },
+        { label: '36', value: '36' }
+      ]
+    }),
+    []
+  );
+
+  // Lấy danh sách size dựa trên loại sản phẩm hiện tại
+  const currentSizeOptions = useMemo(() => SIZES_BY_TYPE[productType] || [], [SIZES_BY_TYPE, productType]);
   const {
     control,
     handleSubmit,
+    getValues,
     formState: { errors, isDirty },
     reset
   } = useForm({
@@ -147,16 +194,15 @@ const ProductForm = ({ selectedProduct, onClose }) => {
       isActive: true
     }
   });
-
   const {
     fields: variantFields,
     append: appendVariant,
-    remove: removeVariant
+    remove: removeVariant,
+    replace: replaceVariant
   } = useFieldArray({
     control,
     name: 'variants'
   });
-
   // Khởi tạo giá trị form khi chỉnh sửa hoặc thêm mới
   useEffect(() => {
     dispatch(fetchCategories({}));
@@ -170,11 +216,28 @@ const ProductForm = ({ selectedProduct, onClose }) => {
         variants:
           selectedProduct.variants && selectedProduct.variants.length > 0
             ? selectedProduct.variants.map((v) => ({ ...v }))
-            : [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0 }],
+            : [],
         images: selectedProduct.images ? selectedProduct.images.map((url) => ({ url })) : [],
         tags: selectedProduct.tags || [],
         isActive: selectedProduct.isActive ?? true
       });
+
+      // Nếu có biến thể, xác định loại sản phẩm (áo hoặc quần)
+      if (selectedProduct.variants && selectedProduct.variants.length > 0) {
+        const firstVariant = selectedProduct.variants[0];
+        // Kiểm tra size để xác định loại sản phẩm
+        // Nếu size là số -> quần, nếu là chữ -> áo
+        const size = firstVariant.size;
+        const isNumeric = /^\d+$/.test(size);
+        setProductType(isNumeric ? 'quần' : 'áo');
+        // Lấy tất cả size và color từ các biến thể
+        const sizes = [...new Set(selectedProduct.variants.map((v) => v.size))];
+        const colors = [...new Set(selectedProduct.variants.map((v) => v.color))];
+
+        setSelectedSizes(sizes);
+        setSelectedColors(colors);
+        // We no longer need to set showVariantTable since we only use auto-generated variants
+      }
     } else {
       // Khởi tạo form trống khi thêm mới sản phẩm
       reset({
@@ -182,7 +245,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
         description: '',
         categoryId: '',
         brand: '',
-        variants: [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0 }],
+        variants: [], // Khởi tạo variants là mảng rỗng thay vì có một biến thể mặc định
         images: [],
         tags: [],
         isActive: true
@@ -294,7 +357,8 @@ const ProductForm = ({ selectedProduct, onClose }) => {
           variants: data.variants,
           isActive: data.isActive,
           images: processedImages.map((file) => (typeof file === 'string' ? file : file.url)),
-          tags: data.tags || []
+          tags: data.tags || [],
+          productType: productType // Thêm thông tin loại sản phẩm
         };
 
         console.log('formData', formData);
@@ -318,18 +382,18 @@ const ProductForm = ({ selectedProduct, onClose }) => {
         } else {
           await handleAddProduct(formData);
         }
-
-        // Đặt lại local files sau khi gửi thành công
-        setLocalFiles([]);
-        onClose(); // Đóng form sau khi hoàn tất
       } catch (error) {
         console.error('Error:', error);
         message.error('Có lỗi xảy ra khi xử lý sản phẩm.');
       } finally {
         setUploading(false);
+        // Đặt lại local files sau khi gửi thành công
+        setLocalFiles([]);
+        onClose(); // Đóng form sau khi hoàn tất
+        dispatch(fetchProducts({ page: 1, limit: 5 }));
       }
     },
-    [localFiles, selectedProduct, handleUpdateProduct, handleAddProduct, uploadFiles, onClose]
+    [localFiles, selectedProduct, handleUpdateProduct, handleAddProduct, uploadFiles, onClose, productType]
   );
 
   // Xử lý hủy form
@@ -351,6 +415,79 @@ const ProductForm = ({ selectedProduct, onClose }) => {
       setLocalFiles([]);
     }
   }, [isDirty, localFiles.length, onClose]);
+
+  // Hàm tạo biến thể từ các size và color đã chọn
+  const generateVariants = useCallback(() => {
+    if (selectedSizes.length === 0 || selectedColors.length === 0) {
+      message.warning('Vui lòng chọn ít nhất một kích thước và một màu sắc');
+      return;
+    }
+    try {
+      // Lấy giá trị hiện tại từ form
+      const formValues = getValues();
+      const productName = formValues.name || '';
+      const brand = formValues.brand || '';
+
+      // Kiểm tra thông tin cần thiết
+      if (!productName) {
+        message.warning('Vui lòng nhập tên sản phẩm trước khi tạo biến thể');
+        return;
+      }
+
+      if (!brand) {
+        message.warning('Vui lòng nhập thương hiệu trước khi tạo biến thể');
+        return;
+      }
+
+      // Tạo mảng biến thể mới từ kết hợp size và color
+      const newVariants = [];
+      const addedSKUs = new Set(); // Theo dõi các SKU đã thêm để tránh trùng lặp
+
+      // Tạo các biến thể mới từ kết hợp size và color
+      selectedColors.forEach((color) => {
+        selectedSizes.forEach((size) => {
+          // Tạo SKU tự động
+          const cleanString = (str, len) => removeVietnameseTones(str).replace(/\s+/g, '').slice(0, len).toUpperCase();
+
+          const nameCode = cleanString(productName, 3);
+          const brandCode = cleanString(brand, 2);
+          const colorCode = cleanString(color, 5);
+          const randomString = Math.random().toString(36).substring(2, 6).toUpperCase(); // Lấy 4 ký tự ngẫu nhiên
+          const typeCode = cleanString(productType, 2); // AO hoặc QU
+
+          // BRAND-TYPE-NAME-SIZE-COLOR-RANDOM
+          const sku = `${brandCode}-${typeCode}-${nameCode}-${size}-${colorCode}-${randomString}`.toUpperCase();
+
+          // Kiểm tra nếu đã thêm SKU này rồi thì bỏ qua
+          if (addedSKUs.has(sku)) {
+            return;
+          }
+          // Tạo biến thể mới với giá trị mặc định
+          newVariants.push({
+            sku,
+            color,
+            size,
+            price: 0,
+            discountPrice: null,
+            stock: 0
+          });
+          // }
+
+          // Đánh dấu SKU đã được thêm
+          addedSKUs.add(sku);
+        });
+      });
+
+      // Thay thế các biến thể hiện tại bằng các biến thể mới
+      replaceVariant(newVariants);
+
+      // Hiển thị thông báo thành công
+      message.success(`Đã cập nhật ${newVariants.length} biến thể`);
+    } catch (error) {
+      console.error('Lỗi khi tạo biến thể:', error);
+      message.error('Có lỗi xảy ra khi tạo biến thể. Vui lòng thử lại.');
+    }
+  }, [selectedSizes, selectedColors, replaceVariant, productType, getValues]);
 
   return (
     <Modal
@@ -384,7 +521,6 @@ const ProductForm = ({ selectedProduct, onClose }) => {
             render={({ field }) => <Input {...field} placeholder='Nhập tên sản phẩm' disabled={uploading || loading} />}
           />
         </Form.Item>
-
         {/* Trường chọn danh mục */}
         <Form.Item
           label='Danh mục'
@@ -440,7 +576,6 @@ const ProductForm = ({ selectedProduct, onClose }) => {
             )}
           />
         </Form.Item> */}
-
         {/* Trường thương hiệu */}
         <Form.Item
           label='Thương hiệu'
@@ -453,8 +588,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
             control={control}
             render={({ field }) => <Input {...field} placeholder='Nhập thương hiệu' disabled={uploading || loading} />}
           />
-        </Form.Item>
-
+        </Form.Item>{' '}
         {/* Trường nhập mô tả */}
         <Form.Item label='Mô tả' help={errors.description?.message} validateStatus={errors.description ? 'error' : ''}>
           <Controller
@@ -465,7 +599,6 @@ const ProductForm = ({ selectedProduct, onClose }) => {
             )}
           />
         </Form.Item>
-
         {/* Trường tải lên hình ảnh */}
         <Form.Item
           label='Ảnh sản phẩm'
@@ -488,7 +621,20 @@ const ProductForm = ({ selectedProduct, onClose }) => {
             )}
           />
         </Form.Item>
-
+        {/* Loại sản phẩm: Áo hoặc Quần */}
+        <Form.Item label='Loại sản phẩm'>
+          <Radio.Group
+            value={productType}
+            onChange={(e) => setProductType(e.target.value)}
+            disabled={uploading || loading}
+          >
+            <Radio.Button value='áo'>Áo</Radio.Button>
+            <Radio.Button value='quần'>Quần</Radio.Button>
+          </Radio.Group>
+          <div className='mt-1 text-xs text-gray-500'>
+            {productType === 'áo' ? 'Size áo: S, M, L, XL, XXL' : 'Size quần: 28, 29, 30, 31, 32,...'}
+          </div>
+        </Form.Item>{' '}
         {/* Biến thể sản phẩm */}
         <Form.Item
           label='Biến thể sản phẩm'
@@ -496,127 +642,139 @@ const ProductForm = ({ selectedProduct, onClose }) => {
           validateStatus={errors.variants ? 'error' : ''}
           required
         >
-          {variantFields.map((field, index) => (
-            <Card key={field.id} style={{ marginBottom: 16 }} title={`Biến thể ${index + 1}`}>
-              <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-                <Form.Item label='SKU' help={errors.variants?.[index]?.sku?.message}>
-                  <Controller
-                    name={`variants[${index}].sku`}
-                    control={control}
-                    render={({ field }) => <Input {...field} placeholder='Nhập SKU' disabled={uploading || loading} />}
-                  />
-                </Form.Item>
-
-                <Form.Item label='Kích thước' help={errors.variants?.[index]?.size?.message}>
-                  <Controller
-                    name={`variants[${index}].size`}
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        {...field}
-                        value={field.value || undefined}
-                        options={SIZE_OPTIONS}
-                        placeholder='Chọn size'
-                        disabled={uploading || loading}
-                      />
-                    )}
-                  />
-                </Form.Item>
+          {/* Chọn kích thước */}
+          <div className='mb-4'>
+            <div className='mb-2 font-medium'>Chọn kích thước:</div>
+            <Checkbox.Group
+              options={currentSizeOptions}
+              value={selectedSizes}
+              onChange={setSelectedSizes}
+              className='mb-4'
+              disabled={uploading || loading}
+            />
+          </div>
+          {/* Chọn màu sắc */}
+          <div className='mb-4'>
+            <div className='mb-2 font-medium'>Chọn màu sắc:</div>
+            <Checkbox.Group
+              disabled={uploading || loading}
+              value={selectedColors}
+              onChange={setSelectedColors}
+              className='mb-4'
+            >
+              {COLOR_OPTIONS.map((color) => (
+                <Checkbox value={color.name} key={color.name}>
+                  <div className='flex items-center'>
+                    <span
+                      className='mr-2 inline-block h-4 w-4 rounded-full border border-gray-300'
+                      style={{ backgroundColor: color.hex }}
+                    ></span>
+                    {color.name}
+                  </div>
+                </Checkbox>
+              ))}
+            </Checkbox.Group>
+          </div>
+          {/* Hiển thị bảng biến thể */}
+          {variantFields.length > 0 ? (
+            <div className='mb-4'>
+              <div className='mb-2 font-medium'>Bảng biến thể đã tạo:</div>
+              <Table
+                dataSource={variantFields.map((field, index) => ({
+                  key: field.id,
+                  index,
+                  sku: field.sku,
+                  color: field.color,
+                  size: field.size,
+                  price: field.price,
+                  discountPrice: field.discountPrice,
+                  stock: field.stock
+                }))}
+                columns={[
+                  { title: 'SKU', dataIndex: 'sku' },
+                  { title: 'Màu sắc', dataIndex: 'color' },
+                  { title: 'Kích thước', dataIndex: 'size' },
+                  {
+                    title: 'Giá',
+                    dataIndex: 'index',
+                    render: (index) => (
+                      <Form.Item noStyle help={errors.variants?.[index]?.price?.message}>
+                        <Controller
+                          name={`variants[${index}].price`}
+                          control={control}
+                          render={({ field }) => <Input type='number' {...field} disabled={uploading || loading} />}
+                        />
+                      </Form.Item>
+                    )
+                  },
+                  {
+                    title: 'Giá KM',
+                    dataIndex: 'index',
+                    render: (index) => (
+                      <Form.Item noStyle help={errors.variants?.[index]?.discountPrice?.message}>
+                        <Controller
+                          name={`variants[${index}].discountPrice`}
+                          control={control}
+                          render={({ field }) => <Input type='number' {...field} disabled={uploading || loading} />}
+                        />
+                      </Form.Item>
+                    )
+                  },
+                  {
+                    title: 'Tồn kho',
+                    dataIndex: 'index',
+                    render: (index) => (
+                      <Form.Item noStyle help={errors.variants?.[index]?.stock?.message}>
+                        <Controller
+                          name={`variants[${index}].stock`}
+                          control={control}
+                          render={({ field }) => <Input type='number' {...field} disabled={uploading || loading} />}
+                        />
+                      </Form.Item>
+                    )
+                  },
+                  {
+                    title: 'Hành động',
+                    dataIndex: 'index',
+                    render: (index) => (
+                      <Button type='text' danger onClick={() => removeVariant(index)} disabled={uploading || loading}>
+                        Xóa
+                      </Button>
+                    )
+                  }
+                ]}
+                pagination={false}
+                size='small'
+                bordered
+              />{' '}
+              <Button
+                type='dashed'
+                onClick={generateVariants}
+                className='mt-4'
+                disabled={selectedSizes.length === 0 || selectedColors.length === 0 || uploading || loading}
+              >
+                Cập nhật biến thể
+              </Button>
+              <div className='mt-2 text-xs text-gray-500'>
+                SKU sẽ được tạo theo định dạng: DANH-MỤC-THƯƠNG-HIỆU-TÊN-SIZE-COLOR-RANDOM để đảm bảo tính duy nhất.
               </div>
-
-              <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-                <Form.Item label='Màu sắc' help={errors.variants?.[index]?.color?.message}>
-                  <Controller
-                    name={`variants[${index}].color`}
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        {...field}
-                        value={field.value || undefined}
-                        placeholder='Chọn màu sắc'
-                        disabled={uploading || loading}
-                      >
-                        {COLOR_OPTIONS.map((color) => (
-                          <Option key={color.hex} value={color.name}>
-                            {color.name}
-                          </Option>
-                        ))}
-                      </Select>
-                    )}
-                  />
-                </Form.Item>
-
-                <Form.Item label='Giá' help={errors.variants?.[index]?.price?.message}>
-                  <Controller
-                    name={`variants[${index}].price`}
-                    control={control}
-                    render={({ field }) => (
-                      <Input type='number' {...field} placeholder='Nhập giá' disabled={uploading || loading} />
-                    )}
-                  />
-                </Form.Item>
-              </div>
-
-              <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-                <Form.Item label='Giá khuyến mãi' help={errors.variants?.[index]?.discountPrice?.message}>
-                  <Controller
-                    name={`variants[${index}].discountPrice`}
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        type='number'
-                        {...field}
-                        placeholder='Nhập giá khuyến mãi (nếu có)'
-                        disabled={uploading || loading}
-                      />
-                    )}
-                  />
-                </Form.Item>
-
-                <Form.Item label='Số lượng' help={errors.variants?.[index]?.stock?.message}>
-                  <Controller
-                    name={`variants[${index}].stock`}
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        type='number'
-                        {...field}
-                        placeholder='Nhập số lượng trong kho'
-                        disabled={uploading || loading}
-                      />
-                    )}
-                  />
-                </Form.Item>
-              </div>
-
-              {variantFields.length > 1 && (
-                <Button type='primary' danger onClick={() => removeVariant(index)} disabled={uploading || loading}>
-                  Xóa biến thể
-                </Button>
-              )}
-            </Card>
-          ))}
-
-          <Button
-            type='dashed'
-            onClick={() =>
-              appendVariant({
-                sku: '',
-                size: '',
-                color: '',
-                price: 0,
-                discountPrice: null,
-                stock: 0,
-                images: []
-              })
-            }
-            disabled={uploading || loading}
-            style={{ width: '100%' }}
-          >
-            + Thêm biến thể
-          </Button>
+            </div>
+          ) : (
+            <div className='rounded border border-dashed border-gray-300 bg-gray-50 p-4 text-center'>
+              <p className='mb-4 text-gray-500'>
+                Chưa có biến thể nào. Vui lòng chọn kích thước và màu sắc, sau đó nhấn "Tạo biến thể"
+              </p>{' '}
+              <Button
+                type='primary'
+                onClick={generateVariants}
+                disabled={selectedSizes.length === 0 || selectedColors.length === 0 || uploading || loading}
+              >
+                Tạo biến thể
+              </Button>
+            </div>
+          )}{' '}
+          {/* Variant section cleaned up to only support automatic generation */}
         </Form.Item>
-
         {/* Trường tags */}
         <Form.Item label='Tags'>
           <Controller
@@ -632,7 +790,6 @@ const ProductForm = ({ selectedProduct, onClose }) => {
             )}
           />
         </Form.Item>
-
         {/* Trạng thái hoạt động */}
         <Form.Item label='Trạng thái hoạt động'>
           <Controller

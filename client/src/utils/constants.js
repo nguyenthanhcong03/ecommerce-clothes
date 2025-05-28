@@ -17,12 +17,46 @@ export const COLOR_OPTIONS = [
   { name: 'Cam', hex: '#fd7e14' },
   { name: 'Tím', hex: '#6f42c1' }
 ];
-export const SIZE_OPTIONS = [
+// Size options for clothing (áo)
+export const CLOTHING_SIZE_OPTIONS = [
   { name: 'S', value: 'S' },
   { name: 'M', value: 'M' },
   { name: 'L', value: 'L' },
   { name: 'XL', value: 'XL' },
   { name: 'XXL', value: 'XXL' }
+];
+
+// Size options for pants (quần)
+export const PANTS_SIZE_OPTIONS = [
+  { name: '28', value: '28' },
+  { name: '29', value: '29' },
+  { name: '30', value: '30' },
+  { name: '31', value: '31' },
+  { name: '32', value: '32' },
+  { name: '33', value: '33' },
+  { name: '34', value: '34' },
+  { name: '35', value: '35' },
+  { name: '36', value: '36' },
+  { name: '38', value: '38' },
+  { name: '40', value: '40' }
+];
+
+// Product type options
+export const PRODUCT_TYPE_OPTIONS = [
+  { name: 'Áo', value: 'clothing' },
+  { name: 'Quần', value: 'pants' }
+];
+
+// Backward compatibility
+export const SIZE_OPTIONS = CLOTHING_SIZE_OPTIONS;
+
+export const PRICE_RANGES = [
+  { label: 'Dưới 100.000đ', min: 0, max: 100000 },
+  { label: '100.000đ - 300.000đ', min: 100000, max: 300000 },
+  { label: '300.000đ - 500.000đ', min: 300000, max: 500000 },
+  { label: '500.000đ - 1.000.000đ', min: 500000, max: 1000000 },
+  { label: '1.000.000đ - 2.000.000đ', min: 1000000, max: 2000000 },
+  { label: 'Trên 2.000.000đ', min: 2000000, max: null }
 ];
 
 export const POLICIES = [

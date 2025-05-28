@@ -1,15 +1,12 @@
-import countdownBanner1 from '@/assets/images/countdownBanner1.jpeg';
 import Button from '@/components/common/Button/Button';
 import CountDownBanner from '@/components/common/CountDownBanner/CountDownBanner';
+import Headline from '@/components/common/Headline/Headline';
 import PopularProduct from '@/components/product/PopularProduct/PopularProduct';
-import Banner from '@/pages/customer/HomePage/components/Banner';
+import CategorySection from '@/pages/customer/HomePage/components/CategorySection';
 import Info from '@/pages/customer/HomePage/components/Info';
-import SaleHomePage from '@/pages/customer/HomePage/components/SaleHomePage';
 import { fetchProducts } from '@/store/slices/productSlice';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Headline from '@/components/common/Headline/Headline';
-import CategorySection from '@/pages/customer/HomePage/components/CategorySection';
 
 function HomePage() {
   const dispatch = useDispatch();
@@ -29,7 +26,7 @@ function HomePage() {
       </div>
       <div className='container mx-auto grid max-w-[1280px] grid-cols-2 justify-items-center gap-5 lg:grid-cols-4'>
         <div className='col-span-2 h-full w-full'>
-          <CountDownBanner backgroundImage={countdownBanner1} />
+          <CountDownBanner />
         </div>
         <PopularProduct data={products.slice(0, 10)} />
         <div className='col-span-full my-10'>

@@ -114,4 +114,8 @@ productSchema.index({ isActive: 1, createdAt: -1 });
 productSchema.index({ featured: 1 });
 // Hỗ trợ query sản phẩm nổi bật
 
+// // 7. Index cho productType
+// productSchema.index({ productType: 1 });
+// // Hỗ trợ filter theo loại sản phẩm (áo/quần)
+
 module.exports = mongoose.model("Product", productSchema);

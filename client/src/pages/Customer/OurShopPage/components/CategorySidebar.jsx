@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-const CategoryItem = ({ category, level = 0, selectedCategoryId, setSearchParams }) => {
+const CategoryItem = ({ category, level = 0, selectedCategoryId }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const hasChildren = category.children && category.children.length > 0;
   const isSelected = category._id === selectedCategoryId;
@@ -69,19 +69,6 @@ const CategoryItem = ({ category, level = 0, selectedCategoryId, setSearchParams
   );
 };
 
-CategoryItem.propTypes = {
-  category: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    slug: PropTypes.string.isRequired,
-    children: PropTypes.arrayOf(PropTypes.object),
-    productsCount: PropTypes.number
-  }).isRequired,
-  level: PropTypes.number,
-  selectedCategoryId: PropTypes.string,
-  setSearchParams: PropTypes.func.isRequired
-};
-
 // Helper function to find selected category and its children
 const findSelectedCategoryBranch = (categories, categoryId) => {
   if (!categories || !categoryId) return null;
@@ -106,7 +93,6 @@ const findSelectedInChildren = (children, selectedId) => {
 
 export function CategorySidebar() {
   const dispatch = useDispatch();
-  const [searchParams, setSearchParams] = useSearchParams();
   const { categoriesTree, treeLoading } = useSelector((state) => state.category);
   const { catId } = useParams();
 
@@ -143,7 +129,7 @@ export function CategorySidebar() {
           <div className=''>
             {categoriesToShow.map((category) => (
               <div className='border-t' key={category._id}>
-                <CategoryItem category={category} selectedCategoryId={catId} setSearchParams={setSearchParams} />
+                <CategoryItem category={category} selectedCategoryId={catId} />
               </div>
             ))}
           </div>

@@ -135,33 +135,33 @@ const ProductPage = () => {
     fetchAllProducts();
   }, [fetchAllProducts]);
 
-  // Tính toán các thống kê về sản phẩm
-  const productStats = useMemo(() => {
-    if (!products || products.length === 0) {
-      return {
-        totalProducts: pagination?.totalProducts || 0,
-        active: 0,
-        newToday: 0,
-        featured: 0
-      };
-    }
+  // // Tính toán các thống kê về sản phẩm
+  // const productStats = useMemo(() => {
+  //   if (!products || products.length === 0) {
+  //     return {
+  //       totalProducts: pagination?.totalProducts || 0,
+  //       active: 0,
+  //       newToday: 0,
+  //       featured: 0
+  //     };
+  //   }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  //   const today = new Date();
+  //   today.setHours(0, 0, 0, 0);
 
-    return {
-      totalProducts: pagination?.totalProducts || 0, // Lấy tổng số từ pagination
-      active: products.filter((product) => product?.isActive).length,
-      // Đếm số sản phẩm được tạo hôm nay
-      newToday: products.filter((product) => {
-        const createdAt = new Date(product.createdAt);
-        createdAt.setHours(0, 0, 0, 0);
-        return createdAt.getTime() === today.getTime();
-      }).length,
-      // Đếm số sản phẩm nổi bật
-      featured: products.filter((product) => product.featured).length
-    };
-  }, [products, pagination]);
+  //   return {
+  //     totalProducts: pagination?.totalProducts || 0, // Lấy tổng số từ pagination
+  //     active: products.filter((product) => product?.isActive).length,
+  //     // Đếm số sản phẩm được tạo hôm nay
+  //     newToday: products.filter((product) => {
+  //       const createdAt = new Date(product?.createdAt);
+  //       createdAt.setHours(0, 0, 0, 0);
+  //       return createdAt.getTime() === today.getTime();
+  //     }).length,
+  //     // Đếm số sản phẩm nổi bật
+  //     featured: products.filter((product) => product.featured).length
+  //   };
+  // }, [products, pagination]);
 
   // Xử lý xóa sản phẩm
   const handleDeleteProduct = useCallback(

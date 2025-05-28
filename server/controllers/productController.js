@@ -67,7 +67,6 @@ const getAllProducts = async (req, res) => {
       }
       // }
     }
-
     if (isActive !== "") {
       query.isActive = isActive === "true";
     }

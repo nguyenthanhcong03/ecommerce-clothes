@@ -3,20 +3,22 @@ import Input from '@/components/common/Input';
 import ProductCard from '@/components/product/ProductCard/ProductCard';
 import useDebounce from '@/hooks/useDebounce';
 import { getAllProductsAPI } from '@/services/productService';
-import { toggleSearch } from '@/store/slices/searchSlice';
-import { X } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { toggleSearchModal } from '@/store/slices/searchSlice';
+import { CircleX, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 function SearchModal() {
   const isOpen = useSelector((state) => state.search.isOpen);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const searchInputRef = useRef(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [params, setParams] = useSearchParams();
 
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
@@ -43,22 +45,24 @@ function SearchModal() {
 
   useEffect(() => {
     if (!isOpen) return;
+    searchInputRef.current?.focus();
     handleSearch(debouncedSearchQuery);
   }, [debouncedSearchQuery, isOpen, handleSearch]);
 
   const handleToggleSearchModal = () => {
-    dispatch(toggleSearch());
-    setSearchQuery('');
-    setSearchResults([]);
+    dispatch(toggleSearchModal());
   };
 
   const handleSubmitSearch = () => {
-    const params = new URLSearchParams();
     if (searchQuery) {
       params.set('search', searchQuery);
-      handleToggleSearchModal();
       navigate(`/shop?${params.toString()}`);
+    } else {
+      console.log('vaoday');
+      params.delete('search');
+      setParams(params);
     }
+    handleToggleSearchModal();
   };
 
   return (
@@ -70,7 +74,7 @@ function SearchModal() {
         onClick={handleToggleSearchModal}
       ></div>
       <div
-        className={`fixed left-0 right-0 top-0 z-[9999] h-[600px] w-full -translate-y-full overflow-auto bg-white pb-8 shadow-lg transition-transform duration-300 ease-in ${isOpen ? '!translate-y-0' : ''}`}
+        className={`fixed left-0 right-0 top-0 z-[9999] h-[650px] w-full -translate-y-full overflow-auto bg-white pb-8 shadow-lg transition-transform duration-300 ease-in ${isOpen ? '!translate-y-0' : ''}`}
       >
         <X
           width={40}
@@ -86,6 +90,8 @@ function SearchModal() {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder='Tìm kiếm sản phẩm..'
               className='h-[38px]'
+              suffix={searchQuery && <CircleX width={16} cursor={'pointer'} onClick={() => setSearchQuery('')} />}
+              ref={searchInputRef}
             />
             <Button onClick={handleSubmitSearch} className='w-32'>
               Tìm kiếm
@@ -97,7 +103,7 @@ function SearchModal() {
           ) : searchResults.length > 0 ? (
             <div className='grid w-full max-w-[1280px] grid-cols-2 gap-6 px-4 sm:grid-cols-3 lg:grid-cols-4'>
               {searchResults.map((product) => (
-                <ProductCard key={product._id} item={product} />
+                <ProductCard key={product._id} item={product} isShowButton={false} />
               ))}
             </div>
           ) : searchQuery ? (

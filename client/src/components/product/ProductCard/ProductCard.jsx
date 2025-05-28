@@ -1,11 +1,11 @@
 import Button from '@/components/common/Button/Button';
 import useProductVariants from '@/hooks/useProductVariants';
-import { addToCart } from '@/store/slices/cartSlice';
 import { openProductDetailModal } from '@/store/slices/productSlice';
+import { closeSearchModal } from '@/store/slices/searchSlice';
 import { COLOR_OPTIONS } from '@/utils/constants';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import { Eye, Heart, ShoppingCart, Star } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,6 +26,7 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
   // Hàm navigate đến trang chi tiết sản phẩm
   const handleNavigateToDetail = () => {
     navigate(`/product/${item._id}`);
+    dispatch(closeSearchModal());
   };
 
   return (

@@ -8,13 +8,19 @@ export const searchSlice = createSlice({
   name: 'search',
   initialState,
   reducers: {
-    toggleSearch: (state) => {
+    toggleSearchModal: (state) => {
       state.isOpen = !state.isOpen;
+    },
+    openSearchModal: (state) => {
+      state.isOpen = true;
+    },
+    closeSearchModal: (state) => {
+      state.isOpen = false;
     }
   }
 });
 
 // Action creators are generated for each case reducer function
-export const { toggleSearch } = searchSlice.actions;
+export const { toggleSearchModal, openSearchModal, closeSearchModal } = searchSlice.actions;
 
 export default searchSlice.reducer;

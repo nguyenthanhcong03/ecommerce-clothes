@@ -6,13 +6,12 @@ import UserDropdown from '@/components/layout/Header/UserDropdown/UserDropdown';
 import useScrollHandling from '@/hooks/useScrollHandling';
 import { callLogout } from '@/services/authService';
 import { doLogoutAction } from '@/store/slices/accountSlice';
-import { toggleSearch } from '@/store/slices/searchSlice';
+import { toggleSearchModal } from '@/store/slices/searchSlice';
 import { setType, toggleSidebar } from '@/store/slices/sidebarSlice';
 import { SHOP_EMAIL } from '@/utils/constants';
 import { Tooltip } from 'antd';
 import { CircleUserRound, Facebook, Heart, Instagram, Menu, Search, ShoppingCart } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -39,7 +38,7 @@ function Header() {
   };
 
   const handleToggleSearchModal = () => {
-    dispatch(toggleSearch());
+    dispatch(toggleSearchModal());
   };
 
   const navigate = useNavigate();

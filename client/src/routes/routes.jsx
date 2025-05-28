@@ -16,11 +16,11 @@ import AboutPage from '@/pages/customer/AboutPage/AboutPage.jsx';
 import CartPage from '@/pages/customer/CartPage/CartPage.jsx';
 import CheckoutPage from '@/pages/customer/CheckoutPage/CheckoutPage.jsx';
 import ContactPage from '@/pages/customer/ContactPage/ContactPage.jsx';
-import ProductDetail from '@/pages/customer/ProductDetail/ProductDetail.jsx';
 import HomePage from '@/pages/customer/HomePage/HomePage.jsx';
 import NewsPage from '@/pages/customer/NewsPage/NewsPage.jsx';
 import PaymentFailedPage from '@/pages/customer/PaymentStatusPage/PaymentFailedPage.jsx';
 import PaymentSuccessPage from '@/pages/customer/PaymentStatusPage/PaymentSuccessPage.jsx';
+import ProductDetail from '@/pages/customer/ProductDetail/ProductDetail.jsx';
 import WishlistPage from '@/pages/customer/WishlistPage/WishlistPage.jsx';
 
 import AccountLayout from '@/components/layout/AccountLayout';
@@ -32,6 +32,7 @@ import OverviewPage from '@/pages/admin/OverviewPage/OverviewPage.jsx';
 import ProductPage from '@/pages/admin/ProductPage/ProductPage.jsx';
 import SettingsPage from '@/pages/admin/SettingsPage/SettingsPage.jsx';
 import UserPage from '@/pages/admin/UserPage/UserPage.jsx';
+import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import ChangePasswordPage from '@/pages/customer/AccountPage/ChangePasswordPage.jsx';
 import OrderDetailPage from '@/pages/customer/AccountPage/OrderDetailPage.jsx';
 import OrderPage from '@/pages/customer/AccountPage/OrderPage.jsx';
@@ -39,14 +40,14 @@ import OrderReviewPage from '@/pages/customer/AccountPage/OrderReviewPage.jsx';
 import PrivacyPage from '@/pages/customer/AccountPage/PrivacyPage.jsx';
 import ProfilePage from '@/pages/customer/AccountPage/ProfilePage.jsx';
 import VoucherPage from '@/pages/customer/AccountPage/VoucherPage.jsx';
+import OurShopPage from '@/pages/customer/OurShopPage/OurShopPage';
 import Example from '../components/examples/Example';
-import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
-import MyShopPage from '@/pages/customer/MyShopPage/MyShopPage';
 
 const publicRoutes = [
   { index: true, element: <HomePage /> },
   { path: 'about', element: <AboutPage /> },
-  { path: 'shop', element: <MyShopPage /> },
+  { path: 'shop', element: <OurShopPage /> },
+  { path: 'shop/:slug/:catId', element: <OurShopPage /> },
   { path: 'news', element: <NewsPage /> },
   { path: 'contact', element: <ContactPage /> },
   { path: 'product/:id', element: <ProductDetail /> },
