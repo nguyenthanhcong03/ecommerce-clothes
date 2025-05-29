@@ -212,34 +212,6 @@ const productSlice = createSlice({
         state.loading = false;
         state.products = action.payload.products || [];
         state.pagination = action.payload.pagination;
-
-        // Lưu các filter đã áp dụng (nếu có)
-        if (action.payload.filters) {
-          // Chỉ cập nhật các filter đã được sử dụng trong API
-          const apiFilters = action.payload.filters;
-
-          // Chuyển đổi giá trị string từ API sang kiểu dữ liệu phù hợp
-          if (apiFilters.search) state.filters.search = apiFilters.search;
-          if (apiFilters.category) state.filters.category = apiFilters.category;
-
-          if (apiFilters.size) {
-            state.filters.size = apiFilters.size.includes(',') ? apiFilters.size.split(',') : [apiFilters.size];
-          }
-
-          if (apiFilters.color) {
-            state.filters.color = apiFilters.color.includes(',') ? apiFilters.color.split(',') : [apiFilters.color];
-          }
-
-          if (apiFilters.tags) {
-            state.filters.tags = apiFilters.tags.includes(',') ? apiFilters.tags.split(',') : [apiFilters.tags];
-          }
-
-          if (apiFilters.minPrice) state.filters.minPrice = parseFloat(apiFilters.minPrice);
-          if (apiFilters.maxPrice) state.filters.maxPrice = parseFloat(apiFilters.maxPrice);
-          if (apiFilters.rating) state.filters.rating = parseFloat(apiFilters.rating);
-          if (apiFilters.featured !== null) state.filters.featured = apiFilters.featured === 'true';
-          if (apiFilters.inStock !== null) state.filters.inStock = apiFilters.inStock === 'true';
-        }
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
@@ -260,20 +232,20 @@ const productSlice = createSlice({
         state.error = action.payload?.message || action.error.message;
       })
 
-      // FEATURED PRODUCTS
-      .addCase(fetchFeaturedProducts.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchFeaturedProducts.fulfilled, (state, action) => {
-        state.loading = false;
-        // Không cập nhật state.products để tránh ảnh hưởng đến trang danh sách sản phẩm chính
-        // Bạn có thể thêm một thuộc tính riêng nếu cần: state.featuredProducts = action.payload.data;
-      })
-      .addCase(fetchFeaturedProducts.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload?.message || action.error.message;
-      })
+      // // FEATURED PRODUCTS
+      // .addCase(fetchFeaturedProducts.pending, (state) => {
+      //   state.loading = true;
+      //   state.error = null;
+      // })
+      // .addCase(fetchFeaturedProducts.fulfilled, (state, action) => {
+      //   state.loading = false;
+      //   // Không cập nhật state.products để tránh ảnh hưởng đến trang danh sách sản phẩm chính
+      //   // Bạn có thể thêm một thuộc tính riêng nếu cần: state.featuredProducts = action.payload.data;
+      // })
+      // .addCase(fetchFeaturedProducts.rejected, (state, action) => {
+      //   state.loading = false;
+      //   state.error = action.payload?.message || action.error.message;
+      // })
 
       // CREATE PRODUCT
       .addCase(createProduct.pending, (state) => {
@@ -282,7 +254,8 @@ const productSlice = createSlice({
       })
       .addCase(createProduct.fulfilled, (state, action) => {
         state.loading = false;
-        state.products.unshift(action.payload.data);
+        console.log('action.payload', action.payload);
+        state.products.unshift(action.payload);
       })
       .addCase(createProduct.rejected, (state, action) => {
         state.loading = false;

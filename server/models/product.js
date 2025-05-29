@@ -5,7 +5,7 @@ const variantSchema = new mongoose.Schema(
     sku: {
       type: String,
       required: true,
-      // unique: true,
+      // Loại bỏ unique: true vì chúng ta sẽ đảm bảo tính duy nhất thông qua logic
     },
     size: {
       type: String,

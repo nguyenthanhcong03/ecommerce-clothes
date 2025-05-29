@@ -2,25 +2,11 @@ import { deleteMultipleFiles, uploadMultipleFiles } from '@/services/fileService
 import { fetchCategories } from '@/store/slices/categorySlice';
 import { createProduct, fetchProducts, updateProductById } from '@/store/slices/productSlice';
 import { COLOR_OPTIONS, SIZE_OPTIONS } from '@/utils/constants';
-import removeVietnameseTones from '@/utils/format/removeVietnameseTones';
+import { formatTree } from '@/utils/format/formatTree';
 import { buildTree } from '@/utils/helpers/buildTree';
-import { UploadOutlined } from '@ant-design/icons';
+import { UploadOutlined, PlusOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  Button,
-  Card,
-  Checkbox,
-  Form,
-  Input,
-  message,
-  Modal,
-  Radio,
-  Select,
-  Switch,
-  Table,
-  TreeSelect,
-  Upload
-} from 'antd';
+import { Button, Card, Form, Input, message, Modal, Radio, Select, Switch, Table, TreeSelect, Upload } from 'antd';
 import { fi } from 'date-fns/locale';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
@@ -29,9 +15,8 @@ import * as yup from 'yup';
 
 const { Option } = Select;
 
-// Schema validation với Yup
+// Schema validation với Yup - SKU sẽ được tạo tự động ở backend
 const variantSchema = yup.object({
-  sku: yup.string().required('SKU là bắt buộc'),
   size: yup.string().required('Kích thước là bắt buộc'),
   color: yup.string().required('Màu sắc là bắt buộc'),
   price: yup.number().required('Giá là bắt buộc').min(0, 'Giá phải lớn hơn hoặc bằng 0'),
@@ -122,31 +107,18 @@ const ImageUpload = memo(({ value = [], onChange, disabled }) => {
 
 const ProductForm = ({ selectedProduct, onClose }) => {
   const dispatch = useDispatch();
-  const { categories } = useSelector((state) => state.category); // Lấy danh sách danh mục
+  const { categoriesTree } = useSelector((state) => state.category); // Lấy danh sách danh mục
   const { loading } = useSelector((state) => state.product); // Trạng thái loading từ Redux
   const [uploading, setUploading] = useState(false); // Trạng thái đang tải file
   const [localFiles, setLocalFiles] = useState([]); // Lưu trữ danh sách file mới cho ảnh sản phẩm
   const [productType, setProductType] = useState('áo'); // Mặc định là áo
-  const [selectedSizes, setSelectedSizes] = useState([]); // Lưu trữ các size được chọn
-  const [selectedColors, setSelectedColors] = useState([]); // Lưu trữ các color được chọn
-  // Removed showVariantTable state as we'll only use automatic variant generation
 
-  // Chuyển đổi danh mục đã lọc thành cấu trúc cây cho TreeSelect - sử dụng useMemo
-  const categoriesArray = useMemo(() => {
-    const treeData = buildTree(categories);
-    return treeData.map((item) => ({
-      title: item.name,
-      value: item._id,
-      children: item?.children?.map((child) => ({
-        title: child.name,
-        value: child._id,
-        children: child?.children?.map((grandchild) => ({
-          title: grandchild.name,
-          value: grandchild._id
-        }))
-      }))
-    }));
-  }, [categories]);
+  // State cho modal thêm biến thể
+  const [variantModalVisible, setVariantModalVisible] = useState(false);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
+
+  const categoryTreeFormatted = formatTree(categoriesTree);
 
   // Size options based on product type
   const SIZES_BY_TYPE = useMemo(
@@ -188,7 +160,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
       description: '',
       categoryId: '',
       brand: '',
-      variants: [{ sku: '', size: '', color: '', price: 0, discountPrice: null, stock: 0 }],
+      variants: [{ size: '', color: '', price: 0, discountPrice: null, stock: 0 }],
       images: [],
       tags: [],
       isActive: true
@@ -202,8 +174,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
   } = useFieldArray({
     control,
     name: 'variants'
-  });
-  // Khởi tạo giá trị form khi chỉnh sửa hoặc thêm mới
+  }); // Khởi tạo giá trị form khi chỉnh sửa hoặc thêm mới
   useEffect(() => {
     dispatch(fetchCategories({}));
     if (selectedProduct) {
@@ -230,13 +201,6 @@ const ProductForm = ({ selectedProduct, onClose }) => {
         const size = firstVariant.size;
         const isNumeric = /^\d+$/.test(size);
         setProductType(isNumeric ? 'quần' : 'áo');
-        // Lấy tất cả size và color từ các biến thể
-        const sizes = [...new Set(selectedProduct.variants.map((v) => v.size))];
-        const colors = [...new Set(selectedProduct.variants.map((v) => v.color))];
-
-        setSelectedSizes(sizes);
-        setSelectedColors(colors);
-        // We no longer need to set showVariantTable since we only use auto-generated variants
       }
     } else {
       // Khởi tạo form trống khi thêm mới sản phẩm
@@ -245,7 +209,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
         description: '',
         categoryId: '',
         brand: '',
-        variants: [], // Khởi tạo variants là mảng rỗng thay vì có một biến thể mặc định
+        variants: [], // Khởi tạo variants là mảng rỗng
         images: [],
         tags: [],
         isActive: true
@@ -395,7 +359,6 @@ const ProductForm = ({ selectedProduct, onClose }) => {
     },
     [localFiles, selectedProduct, handleUpdateProduct, handleAddProduct, uploadFiles, onClose, productType]
   );
-
   // Xử lý hủy form
   const handleCancel = useCallback(() => {
     if (isDirty || localFiles.length > 0) {
@@ -415,79 +378,62 @@ const ProductForm = ({ selectedProduct, onClose }) => {
       setLocalFiles([]);
     }
   }, [isDirty, localFiles.length, onClose]);
+  // Tạo SKU tự động - xóa vì sẽ được xử lý ở backend
+  // const generateSKU = useCallback(...)
 
-  // Hàm tạo biến thể từ các size và color đã chọn
-  const generateVariants = useCallback(() => {
-    if (selectedSizes.length === 0 || selectedColors.length === 0) {
-      message.warning('Vui lòng chọn ít nhất một kích thước và một màu sắc');
+  // Kiểm tra xem biến thể đã tồn tại chưa true/false
+  const variantExists = useCallback(
+    (size, color) => {
+      return variantFields.some((variant) => variant.size === size && variant.color === color);
+    },
+    [variantFields]
+  );
+
+  // Thêm biến thể mới
+  const addVariant = useCallback(() => {
+    if (!selectedSize) {
+      message.warning('Vui lòng chọn kích thước');
       return;
     }
-    try {
-      // Lấy giá trị hiện tại từ form
-      const formValues = getValues();
-      const productName = formValues.name || '';
-      const brand = formValues.brand || '';
 
-      // Kiểm tra thông tin cần thiết
-      if (!productName) {
-        message.warning('Vui lòng nhập tên sản phẩm trước khi tạo biến thể');
-        return;
-      }
-
-      if (!brand) {
-        message.warning('Vui lòng nhập thương hiệu trước khi tạo biến thể');
-        return;
-      }
-
-      // Tạo mảng biến thể mới từ kết hợp size và color
-      const newVariants = [];
-      const addedSKUs = new Set(); // Theo dõi các SKU đã thêm để tránh trùng lặp
-
-      // Tạo các biến thể mới từ kết hợp size và color
-      selectedColors.forEach((color) => {
-        selectedSizes.forEach((size) => {
-          // Tạo SKU tự động
-          const cleanString = (str, len) => removeVietnameseTones(str).replace(/\s+/g, '').slice(0, len).toUpperCase();
-
-          const nameCode = cleanString(productName, 3);
-          const brandCode = cleanString(brand, 2);
-          const colorCode = cleanString(color, 5);
-          const randomString = Math.random().toString(36).substring(2, 6).toUpperCase(); // Lấy 4 ký tự ngẫu nhiên
-          const typeCode = cleanString(productType, 2); // AO hoặc QU
-
-          // BRAND-TYPE-NAME-SIZE-COLOR-RANDOM
-          const sku = `${brandCode}-${typeCode}-${nameCode}-${size}-${colorCode}-${randomString}`.toUpperCase();
-
-          // Kiểm tra nếu đã thêm SKU này rồi thì bỏ qua
-          if (addedSKUs.has(sku)) {
-            return;
-          }
-          // Tạo biến thể mới với giá trị mặc định
-          newVariants.push({
-            sku,
-            color,
-            size,
-            price: 0,
-            discountPrice: null,
-            stock: 0
-          });
-          // }
-
-          // Đánh dấu SKU đã được thêm
-          addedSKUs.add(sku);
-        });
-      });
-
-      // Thay thế các biến thể hiện tại bằng các biến thể mới
-      replaceVariant(newVariants);
-
-      // Hiển thị thông báo thành công
-      message.success(`Đã cập nhật ${newVariants.length} biến thể`);
-    } catch (error) {
-      console.error('Lỗi khi tạo biến thể:', error);
-      message.error('Có lỗi xảy ra khi tạo biến thể. Vui lòng thử lại.');
+    if (!selectedColor) {
+      message.warning('Vui lòng chọn màu sắc');
+      return;
     }
-  }, [selectedSizes, selectedColors, replaceVariant, productType, getValues]);
+
+    // Kiểm tra nếu biến thể đã tồn tại
+    if (variantExists(selectedSize, selectedColor)) {
+      message.error(`Biến thể với kích thước ${selectedSize} và màu ${selectedColor} đã tồn tại!`);
+      return;
+    }
+
+    // Tạo biến thể mới - SKU sẽ được tạo ở backend
+    const newVariant = {
+      color: selectedColor,
+      size: selectedSize,
+      price: 0,
+      discountPrice: null,
+      stock: 0
+    };
+
+    // Thêm biến thể mới vào danh sách
+    appendVariant(newVariant);
+
+    // Đóng modal và reset giá trị
+    setVariantModalVisible(false);
+    setSelectedSize('');
+    setSelectedColor('');
+
+    // Hiển thị thông báo thành công
+    message.success('Đã thêm biến thể mới!');
+  }, [selectedSize, selectedColor, appendVariant, variantExists]);
+
+  // Mở modal thêm biến thể
+  const openVariantModal = useCallback(() => {
+    setSelectedSize('');
+    setSelectedColor('');
+    setVariantModalVisible(true);
+  }, []);
 
   return (
     <Modal
@@ -536,9 +482,9 @@ const ProductForm = ({ selectedProduct, onClose }) => {
                 {...field}
                 style={{ width: '100%' }}
                 dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                treeData={categoriesArray}
+                treeData={categoryTreeFormatted}
                 placeholder='Chọn danh mục'
-                treeDefaultExpandAll
+                // treeDefaultExpandAll // Mặc định mở rộng tất cả danh mục
                 allowClear={true}
                 disabled={uploading || loading}
                 onChange={(value) => {
@@ -551,31 +497,6 @@ const ProductForm = ({ selectedProduct, onClose }) => {
             )}
           />
         </Form.Item>
-        {/* <Form.Item
-          label='Danh mục'
-          help={errors.categoryId?.message}
-          validateStatus={errors.categoryId ? 'error' : ''}
-          required
-        >
-          <Controller
-            name='categoryId'
-            control={control}
-            render={({ field }) => (
-              <Select
-                {...field}
-                placeholder='Chọn danh mục'
-                disabled={uploading || loading}
-                value={field.value || undefined}
-              >
-                {categoriesArray.map((cat) => (
-                  <Option key={cat._id} value={cat._id}>
-                    {cat.name}
-                  </Option>
-                ))}
-              </Select>
-            )}
-          />
-        </Form.Item> */}
         {/* Trường thương hiệu */}
         <Form.Item
           label='Thương hiệu'
@@ -642,48 +563,14 @@ const ProductForm = ({ selectedProduct, onClose }) => {
           validateStatus={errors.variants ? 'error' : ''}
           required
         >
-          {/* Chọn kích thước */}
-          <div className='mb-4'>
-            <div className='mb-2 font-medium'>Chọn kích thước:</div>
-            <Checkbox.Group
-              options={currentSizeOptions}
-              value={selectedSizes}
-              onChange={setSelectedSizes}
-              className='mb-4'
-              disabled={uploading || loading}
-            />
-          </div>
-          {/* Chọn màu sắc */}
-          <div className='mb-4'>
-            <div className='mb-2 font-medium'>Chọn màu sắc:</div>
-            <Checkbox.Group
-              disabled={uploading || loading}
-              value={selectedColors}
-              onChange={setSelectedColors}
-              className='mb-4'
-            >
-              {COLOR_OPTIONS.map((color) => (
-                <Checkbox value={color.name} key={color.name}>
-                  <div className='flex items-center'>
-                    <span
-                      className='mr-2 inline-block h-4 w-4 rounded-full border border-gray-300'
-                      style={{ backgroundColor: color.hex }}
-                    ></span>
-                    {color.name}
-                  </div>
-                </Checkbox>
-              ))}
-            </Checkbox.Group>
-          </div>
           {/* Hiển thị bảng biến thể */}
           {variantFields.length > 0 ? (
             <div className='mb-4'>
-              <div className='mb-2 font-medium'>Bảng biến thể đã tạo:</div>
+              <div className='mb-2 font-medium'>Bảng biến thể đã tạo:</div>{' '}
               <Table
                 dataSource={variantFields.map((field, index) => ({
                   key: field.id,
                   index,
-                  sku: field.sku,
                   color: field.color,
                   size: field.size,
                   price: field.price,
@@ -691,7 +578,6 @@ const ProductForm = ({ selectedProduct, onClose }) => {
                   stock: field.stock
                 }))}
                 columns={[
-                  { title: 'SKU', dataIndex: 'sku' },
                   { title: 'Màu sắc', dataIndex: 'color' },
                   { title: 'Kích thước', dataIndex: 'size' },
                   {
@@ -746,34 +632,28 @@ const ProductForm = ({ selectedProduct, onClose }) => {
                 pagination={false}
                 size='small'
                 bordered
-              />{' '}
+              />
               <Button
                 type='dashed'
-                onClick={generateVariants}
+                onClick={openVariantModal}
                 className='mt-4'
-                disabled={selectedSizes.length === 0 || selectedColors.length === 0 || uploading || loading}
+                icon={<PlusOutlined />}
+                disabled={uploading || loading}
               >
-                Cập nhật biến thể
-              </Button>
+                Thêm biến thể
+              </Button>{' '}
               <div className='mt-2 text-xs text-gray-500'>
-                SKU sẽ được tạo theo định dạng: DANH-MỤC-THƯƠNG-HIỆU-TÊN-SIZE-COLOR-RANDOM để đảm bảo tính duy nhất.
+                SKU sẽ được tạo tự động ở backend dựa trên loại sản phẩm, thương hiệu, tên, size và màu.
               </div>
             </div>
           ) : (
             <div className='rounded border border-dashed border-gray-300 bg-gray-50 p-4 text-center'>
-              <p className='mb-4 text-gray-500'>
-                Chưa có biến thể nào. Vui lòng chọn kích thước và màu sắc, sau đó nhấn "Tạo biến thể"
-              </p>{' '}
-              <Button
-                type='primary'
-                onClick={generateVariants}
-                disabled={selectedSizes.length === 0 || selectedColors.length === 0 || uploading || loading}
-              >
-                Tạo biến thể
+              <p className='mb-4 text-gray-500'>Chưa có biến thể nào. Nhấn "Thêm biến thể" để tạo một biến thể mới.</p>
+              <Button type='primary' onClick={openVariantModal} icon={<PlusOutlined />} disabled={uploading || loading}>
+                Thêm biến thể
               </Button>
             </div>
-          )}{' '}
-          {/* Variant section cleaned up to only support automatic generation */}
+          )}
         </Form.Item>
         {/* Trường tags */}
         <Form.Item label='Tags'>
@@ -799,8 +679,56 @@ const ProductForm = ({ selectedProduct, onClose }) => {
               <Switch checked={field.value} onChange={field.onChange} disabled={uploading || loading} />
             )}
           />
-        </Form.Item>
+        </Form.Item>{' '}
       </Form>
+
+      {/* Modal thêm biến thể */}
+      <Modal
+        title='Thêm biến thể mới'
+        open={variantModalVisible}
+        onOk={addVariant}
+        onCancel={() => setVariantModalVisible(false)}
+        okText='Thêm biến thể'
+        cancelText='Hủy'
+        okButtonProps={{ disabled: !selectedSize || !selectedColor }}
+      >
+        <Form layout='vertical'>
+          <Form.Item label='Chọn kích thước' required>
+            <Select
+              placeholder='Chọn kích thước'
+              value={selectedSize}
+              onChange={setSelectedSize}
+              style={{ width: '100%' }}
+            >
+              {currentSizeOptions.map((option) => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item label='Chọn màu sắc' required>
+            <Select
+              placeholder='Chọn màu sắc'
+              value={selectedColor}
+              onChange={setSelectedColor}
+              style={{ width: '100%' }}
+            >
+              {COLOR_OPTIONS.map((color) => (
+                <Option key={color.name} value={color.name}>
+                  <div className='flex items-center'>
+                    <span
+                      className='mr-2 inline-block h-4 w-4 rounded-full border border-gray-300'
+                      style={{ backgroundColor: color.hex }}
+                    ></span>
+                    {color.name}
+                  </div>
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
     </Modal>
   );
 };

@@ -1,6 +1,7 @@
 const Product = require("../models/product");
 const mongoose = require("mongoose");
 const slugify = require("slugify");
+const { generateSKU } = require("../utils/generateSKU");
 
 const createProduct = async (productData) => {
   try {
@@ -12,11 +13,18 @@ const createProduct = async (productData) => {
       });
     }
 
-    // Kiểm tra SKU cho tất cả các biến thể
+    // Xử lý SKU cho tất cả các biến thể
     if (productData.variants && productData.variants.length > 0) {
       for (const variant of productData.variants) {
+        // Tạo SKU tự động nếu chưa có
         if (!variant.sku) {
-          throw new Error("SKU is required for all variants");
+          variant.sku = generateSKU(
+            productData.productType || "sản phẩm",
+            productData.name,
+            productData.brand,
+            variant.size,
+            variant.color
+          );
         }
       }
     }
@@ -48,6 +56,18 @@ const updateProduct = async (productId, updateData) => {
     Object.keys(updateData).forEach((key) => {
       // Xử lý trường hợp đặc biệt: variants
       if (key === "variants" && Array.isArray(updateData.variants)) {
+        // Xử lý SKU cho các biến thể
+        updateData.variants.forEach((variant) => {
+          if (!variant.sku) {
+            variant.sku = generateSKU(
+              updateData.productType || product.productType || "sản phẩm",
+              updateData.name || product.name,
+              updateData.brand || product.brand,
+              variant.size,
+              variant.color
+            );
+          }
+        });
         // Nếu variants được cung cấp, thay thế hoàn toàn array hiện có
         product.variants = updateData.variants;
       } else {
