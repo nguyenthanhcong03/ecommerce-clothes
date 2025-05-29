@@ -95,7 +95,7 @@ const CategoryPage = () => {
       order: params.sortOrder
     });
 
-    fetchAllCategories(params);
+    // fetchAllCategories(params);
   };
 
   const handleSearch = (e) => {

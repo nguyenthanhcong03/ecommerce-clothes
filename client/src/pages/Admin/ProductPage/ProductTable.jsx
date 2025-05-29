@@ -174,19 +174,7 @@ const ProductTable = ({
           return hasInStock ? <Tag color='green'>Còn hàng</Tag> : <Tag color='red'>Hết hàng</Tag>;
         }
       },
-      {
-        title: 'Trạng thái',
-        key: 'isActive',
-        width: 120,
-        filters: [
-          { text: 'Đang hoạt động', value: true },
-          { text: 'Đã tắt', value: false }
-        ],
-        onFilter: (value, record) => record?.isActive === value,
-        render: (_, record) => {
-          return record?.isActive ? <Tag color='green'>Hoạt động</Tag> : <Tag color='gray'>Đã tắt</Tag>;
-        }
-      },
+
       {
         title: 'Hành động',
         align: 'center',

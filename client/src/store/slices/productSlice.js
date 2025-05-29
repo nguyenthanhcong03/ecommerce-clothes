@@ -14,7 +14,6 @@ import {
 export const fetchProducts = createAsyncThunk('product/fetchProducts', async (params, { rejectWithValue }) => {
   try {
     const response = await getAllProductsAPI(params);
-    console.log('API Response:', response.data);
     return response.data;
   } catch (error) {
     console.error('API error:', error);
@@ -57,7 +56,6 @@ export const updateProductById = createAsyncThunk(
   async ({ productId, payload }, { rejectWithValue }) => {
     try {
       const response = await updateProductByIdAPI(productId, payload);
-      console.log('response update', response);
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || { message: error.message });
@@ -113,15 +111,11 @@ const productSlice = createSlice({
     },
     filters: {
       search: '',
-      categories: [],
       minPrice: null,
       maxPrice: null,
       sizes: [],
       colors: [],
-      rating: null,
-      inStock: false,
-      featured: false,
-      isActive: true
+      rating: null
     },
     sort: {
       sortBy: 'createdAt',
@@ -174,15 +168,13 @@ const productSlice = createSlice({
     resetFilters: (state) => {
       state.filters = {
         search: '',
-        categories: [],
         minPrice: null,
         maxPrice: null,
         sizes: [],
         colors: [],
         rating: null,
         inStock: false,
-        featured: false,
-        isActive: true
+        featured: false
       };
     },
 

@@ -31,8 +31,7 @@ const productSchema = yup.object({
   brand: yup.string().required('Thương hiệu là bắt buộc'),
   variants: yup.array().of(variantSchema).min(1, 'Phải có ít nhất một biến thể'),
   images: yup.array().of(yup.mixed()).min(1, 'Phải chọn ít nhất một ảnh'),
-  tags: yup.array().of(yup.string()).optional(),
-  isActive: yup.boolean().default(true)
+  tags: yup.array().of(yup.string()).optional()
 });
 
 // Component tải lên hình ảnh có thể tái sử dụng
@@ -162,8 +161,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
       brand: '',
       variants: [{ size: '', color: '', price: 0, discountPrice: null, stock: 0 }],
       images: [],
-      tags: [],
-      isActive: true
+      tags: []
     }
   });
   const {
@@ -189,8 +187,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
             ? selectedProduct.variants.map((v) => ({ ...v }))
             : [],
         images: selectedProduct.images ? selectedProduct.images.map((url) => ({ url })) : [],
-        tags: selectedProduct.tags || [],
-        isActive: selectedProduct.isActive ?? true
+        tags: selectedProduct.tags || []
       });
 
       // Nếu có biến thể, xác định loại sản phẩm (áo hoặc quần)
@@ -211,8 +208,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
         brand: '',
         variants: [], // Khởi tạo variants là mảng rỗng
         images: [],
-        tags: [],
-        isActive: true
+        tags: []
       });
     }
     // Làm mới localFiles khi đóng/mở form
@@ -319,7 +315,6 @@ const ProductForm = ({ selectedProduct, onClose }) => {
           categoryId: data.categoryId,
           brand: data.brand,
           variants: data.variants,
-          isActive: data.isActive,
           images: processedImages.map((file) => (typeof file === 'string' ? file : file.url)),
           tags: data.tags || [],
           productType: productType // Thêm thông tin loại sản phẩm
@@ -670,16 +665,6 @@ const ProductForm = ({ selectedProduct, onClose }) => {
             )}
           />
         </Form.Item>
-        {/* Trạng thái hoạt động */}
-        <Form.Item label='Trạng thái hoạt động'>
-          <Controller
-            name='isActive'
-            control={control}
-            render={({ field }) => (
-              <Switch checked={field.value} onChange={field.onChange} disabled={uploading || loading} />
-            )}
-          />
-        </Form.Item>{' '}
       </Form>
 
       {/* Modal thêm biến thể */}

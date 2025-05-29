@@ -72,10 +72,6 @@ const productSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
     featured: {
       type: Boolean,
       default: false,
@@ -105,10 +101,6 @@ productSchema.index({ categoryId: 1 });
 // 4. Index cho brand
 productSchema.index({ brand: 1 });
 // Hỗ trợ filter theo thương hiệu
-
-// 5. Index compound (kết hợp nhiều field)
-productSchema.index({ isActive: 1, createdAt: -1 });
-// Hỗ trợ sort theo createdAt và filter isActive cùng lúc
 
 // 6. Index cho featured products
 productSchema.index({ featured: 1 });

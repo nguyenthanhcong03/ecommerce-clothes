@@ -21,62 +21,29 @@ const ProductFilter = ({ filters, onFilterChange, onResetFilters }) => {
   const { control, handleSubmit, reset, setValue } = useForm({
     defaultValues: {
       search: '',
-      categoryId: '',
+      category: '',
       minPrice: null,
-      maxPrice: null,
-      isActive: '',
-      inStock: ''
+      maxPrice: null
     }
   });
   // Đồng bộ form values khi filters từ props thay đổi
   useEffect(() => {
     // Cập nhật giá trị từ filters vào form
     setValue('search', filters.search || '');
-    setValue('categoryId', filters.categoryId || '');
+    setValue('category', filters.category || '');
     setValue('minPrice', filters.minPrice || undefined);
     setValue('maxPrice', filters.maxPrice || undefined);
-    setValue('isActive', filters.isActive !== undefined ? String(filters.isActive) : '');
-    setValue('inStock', filters.inStock !== undefined ? String(filters.inStock) : '');
   }, [filters, setValue]);
   const handleFormSubmit = (data) => {
-    // // Xử lý và chuẩn hóa dữ liệu trước khi gửi đi
-    // const cleanValues = {};
-
-    // // Xử lý search - chỉ thêm khi có giá trị
-    // if (data.search) cleanValues.search = data.search;
-
-    // // Xử lý categoryId
-    // if (data.categoryId) cleanValues.categoryId = data.categoryId;
-
-    // // Xử lý khoảng giá
-    // if (data.minPrice !== null && data.minPrice !== undefined) cleanValues.minPrice = data.minPrice;
-    // if (data.maxPrice !== null && data.maxPrice !== undefined) cleanValues.maxPrice = data.maxPrice;
-
-    // // Xử lý isActive - cần kiểm tra rõ ràng để bao gồm cả trường hợp false
-    // if (data.isActive !== undefined && data.isActive !== '') {
-    //   cleanValues.isActive = data.isActive;
-    // }
-
-    // // Xử lý inStock
-    // if (data.inStock !== undefined && data.inStock !== '') {
-    //   cleanValues.inStock = data.inStock;
-    // }
-
-    // // Xử lý sortBy và sortOrder
-    // if (data.sortBy) cleanValues.sortBy = data.sortBy;
-    // if (data.sortOrder) cleanValues.sortOrder = data.sortOrder;
-
     onFilterChange(data);
   };
   const handleReset = () => {
     // Đặt lại tất cả các giá trị form về mặc định
     reset({
       search: '',
-      categoryId: '',
+      category: '',
       minPrice: null,
-      maxPrice: null,
-      isActive: '',
-      inStock: ''
+      maxPrice: null
     });
 
     // Gọi callback để reset filters ở component cha
@@ -127,7 +94,7 @@ const ProductFilter = ({ filters, onFilterChange, onResetFilters }) => {
             <Col xs={24} sm={12} md={6}>
               <Form.Item label='Danh mục'>
                 <Controller
-                  name='categoryId'
+                  name='category'
                   control={control}
                   render={({ field }) => (
                     <TreeSelect
@@ -144,28 +111,6 @@ const ProductFilter = ({ filters, onFilterChange, onResetFilters }) => {
                       style={{ width: '100%' }}
                       dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                     />
-                  )}
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Form.Item label='Trạng thái'>
-                <Controller
-                  name='isActive'
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      placeholder='Tất cả'
-                      allowClear
-                      value={field.value || undefined}
-                      onChange={(value) => {
-                        field.onChange(value === undefined ? '' : value);
-                      }}
-                    >
-                      <Option value='true'>Đang kích hoạt</Option>
-                      <Option value='false'>Đã vô hiệu hóa</Option>
-                    </Select>
                   )}
                 />
               </Form.Item>
@@ -228,11 +173,9 @@ const ProductFilter = ({ filters, onFilterChange, onResetFilters }) => {
 ProductFilter.propTypes = {
   filters: PropTypes.shape({
     search: PropTypes.string,
-    categoryId: PropTypes.string,
+    category: PropTypes.string,
     minPrice: PropTypes.number,
-    maxPrice: PropTypes.number,
-    isActive: PropTypes.string,
-    inStock: PropTypes.string
+    maxPrice: PropTypes.number
   }),
   onFilterChange: PropTypes.func.isRequired,
   onResetFilters: PropTypes.func.isRequired

@@ -73,7 +73,6 @@ const initialState = {
   },
   filters: {
     search: ''
-    // isActive: null
   },
   loading: false,
   treeLoading: false, // Thêm trạng thái loading riêng cho cây danh mục

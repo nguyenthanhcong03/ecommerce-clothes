@@ -42,7 +42,6 @@ const categorySchema = new Schema(
 // Add index for better query performance
 categorySchema.index({ parentId: 1 }); // Index on parentId for efficient parent-child queries
 categorySchema.index({ priority: -1 }); // Index on priority for sorting categories
-categorySchema.index({ isActive: 1 }); // Index on isActive for filtering active categories
 
 // Tạo model từ schema
 const Category = mongoose.model("Category", categorySchema);

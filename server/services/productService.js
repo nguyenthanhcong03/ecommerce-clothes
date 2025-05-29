@@ -120,26 +120,6 @@ const getProductById = async (productId) => {
 };
 
 /**
- * Cập nhật trạng thái sản phẩm (active/inactive)
- * @param {String} productId ID sản phẩm
- * @param {Boolean} isActive Trạng thái active
- * @returns {Promise<Object>} Sản phẩm đã cập nhật
- */
-const updateProductStatus = async (productId, isActive) => {
-  try {
-    const product = await Product.findByIdAndUpdate(productId, { isActive }, { new: true });
-
-    if (!product) {
-      throw new Error("Product not found");
-    }
-
-    return product;
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
  * Lấy các sản phẩm nổi bật
  * @param {Number} limit Số lượng sản phẩm muốn lấy
  * @returns {Promise<Array>} Danh sách sản phẩm nổi bật
@@ -147,7 +127,6 @@ const updateProductStatus = async (productId, isActive) => {
 const getFeaturedProducts = async (limit = 8) => {
   try {
     const products = await Product.find({
-      isActive: true,
       featured: true,
     })
       .limit(Number(limit))
@@ -215,7 +194,6 @@ module.exports = {
   updateProduct,
   deleteProduct,
   getProductById,
-  updateProductStatus,
   getFeaturedProducts,
   addReview,
 };

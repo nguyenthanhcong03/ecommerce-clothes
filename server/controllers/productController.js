@@ -15,8 +15,6 @@ const getAllProducts = async (req, res) => {
       category,
       minPrice,
       maxPrice,
-      featured,
-      isActive = "true",
       tags,
       size,
       color,
@@ -34,41 +32,18 @@ const getAllProducts = async (req, res) => {
     // Xây dựng query động dựa trên các tham số lọc
     const query = {}; // Lọc theo danh mục (bao gồm cả danh mục con)
     if (category) {
-      // // Hỗ trợ nhiều danh mục (dạng mảng)
-      // if (Array.isArray(category)) {
-      //   // Tìm tất cả sản phẩm thuộc các danh mục được chỉ định và các danh mục con của chúng
-      //   const allCategoryIds = [];
-
-      //   // Duyệt qua từng danh mục được chỉ định
-      //   for (const catId of category) {
-      //     try {
-      //       // Lấy danh mục hiện tại và tất cả con cháu của nó
-      //       const childCategoryIds = await categoryService.getAllChildCategoryIds(catId);
-      //       allCategoryIds.push(...childCategoryIds);
-      //     } catch (error) {
-      //       // Nếu có lỗi (ví dụ: ID không hợp lệ), bỏ qua và tiếp tục
-      //       console.error(`Error getting child categories for ${catId}:`, error.message);
-      //     }
-      //   }
-
-      //   // Loại bỏ các ID trùng lặp
-      //   const uniqueCategoryIds = [...new Set(allCategoryIds)];
-      //   query.categoryId = { $in: uniqueCategoryIds };
-      // } else {
       // Nếu chỉ có một danh mục
       try {
         // Lấy tất cả ID danh mục con
         const allCategoryIds = await categoryService.getAllChildCategoryIds(category);
+        console.log("category", category);
+        console.log("allCategoryIds", allCategoryIds);
         query.categoryId = { $in: allCategoryIds };
       } catch (error) {
         // Nếu có lỗi, chỉ sử dụng danh mục hiện tại
         console.error(`Error getting child categories:`, error.message);
         query.categoryId = category;
       }
-      // }
-    }
-    if (isActive !== "") {
-      query.isActive = isActive === "true";
     }
 
     // if (featured !== "") {
@@ -123,15 +98,6 @@ const getAllProducts = async (req, res) => {
     // Rating filter - lọc sản phẩm có rating >= giá trị đã cho
     if (rating) {
       query.averageRating = { $gte: parseFloat(rating) };
-    }
-
-    // InStock filter - chỉ hiển thị sản phẩm còn hàng
-    if (inStock !== "") {
-      if (inStock === "true") {
-        query["variants.countInStock"] = { $gt: 0 };
-      } else if (inStock === "false") {
-        query["variants.countInStock"] = { $lte: 0 };
-      }
     }
 
     // Text search if provided
@@ -331,29 +297,18 @@ const getProductById = async (req, res) => {
       });
     }
 
-    try {
-      const product = await productService.getProductById(pid);
-
-      if (!product.isActive && (!req.user || req.user.role !== "admin")) {
-        return res.status(403).json({
-          success: false,
-          message: "Sản phẩm không khả dụng",
-        });
-      }
-
-      res.status(200).json({
-        success: true,
-        data: product,
+    const product = await productService.getProductById(pid);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy sản phẩm",
       });
-    } catch (err) {
-      if (err.message === "Product not found") {
-        return res.status(404).json({
-          success: false,
-          message: "Không tìm thấy sản phẩm",
-        });
-      }
-      throw err;
     }
+
+    res.status(200).json({
+      success: true,
+      data: product,
+    });
   } catch (error) {
     console.error("Get product error:", error);
     res.status(500).json({
@@ -372,7 +327,6 @@ const getProductsByCategory = async (req, res) => {
 
     const query = {
       categoryId,
-      isActive: true,
     };
 
     const options = {
@@ -442,45 +396,6 @@ const getFeaturedProducts = async (req, res) => {
       success: true,
       data: featuredProducts,
     });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Lỗi server",
-      error: error.message,
-    });
-  }
-};
-
-// Update product status
-const updateProductStatus = async (req, res) => {
-  try {
-    const { pid } = req.params;
-    const { isActive } = req.body;
-
-    if (isActive === undefined) {
-      return res.status(400).json({
-        success: false,
-        message: "Trạng thái sản phẩm không được cung cấp",
-      });
-    }
-
-    try {
-      const product = await productService.updateProductStatus(pid, isActive);
-
-      res.status(200).json({
-        success: true,
-        message: `Sản phẩm đã được ${isActive ? "kích hoạt" : "vô hiệu hóa"}`,
-        data: product,
-      });
-    } catch (err) {
-      if (err.message === "Product not found") {
-        return res.status(404).json({
-          success: false,
-          message: "Không tìm thấy sản phẩm",
-        });
-      }
-      throw err;
-    }
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -598,7 +513,6 @@ const getRelatedProducts = async (req, res) => {
     const relatedProducts = await Product.find({
       categoryId: product.categoryId,
       _id: { $ne: pid },
-      isActive: true,
     })
       .limit(Number(limit))
       .populate("categoryId", "name slug")
@@ -680,40 +594,6 @@ const getProductVariantById = async (req, res) => {
   }
 };
 
-// Get products by brand
-const getProductsByBrand = async (req, res) => {
-  try {
-    const { brand } = req.params;
-    const { page = 1, limit = 10, sortBy = "createdAt", order = "desc" } = req.query;
-
-    const query = {
-      brand: { $regex: brand, $options: "i" },
-      isActive: true,
-    };
-
-    const options = {
-      page,
-      limit,
-      sortBy,
-      order,
-    };
-
-    const result = await productService.getProducts(query, options);
-
-    res.status(200).json({
-      success: true,
-      data: result.products,
-      pagination: result.pagination,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Lỗi server",
-      error: error.message,
-    });
-  }
-};
-
 module.exports = {
   createProduct,
   updateProduct,
@@ -723,11 +603,9 @@ module.exports = {
   getProductsByCategory,
   searchProducts,
   getFeaturedProducts,
-  updateProductStatus,
   addProductReview,
   getProductReviews,
   getRelatedProducts,
   getProductVariants,
   getProductVariantById,
-  getProductsByBrand,
 };

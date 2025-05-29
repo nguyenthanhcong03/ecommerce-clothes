@@ -43,7 +43,7 @@ const ProductPage = () => {
 
     // Loại bỏ các tham số undefined
     Object.keys(queryParams).forEach((key) => {
-      if (queryParams[key] === undefined) {
+      if (queryParams[key] === undefined || queryParams[key] === null || queryParams[key] === '') {
         delete queryParams[key];
       }
     });
@@ -151,7 +151,6 @@ const ProductPage = () => {
 
   //   return {
   //     totalProducts: pagination?.totalProducts || 0, // Lấy tổng số từ pagination
-  //     active: products.filter((product) => product?.isActive).length,
   //     // Đếm số sản phẩm được tạo hôm nay
   //     newToday: products.filter((product) => {
   //       const createdAt = new Date(product?.createdAt);
