@@ -51,9 +51,7 @@ const publicRoutes = [
   { path: 'news', element: <NewsPage /> },
   { path: 'contact', element: <ContactPage /> },
   { path: 'product/:id', element: <ProductDetail /> },
-  { path: 'checkout', element: <CheckoutPage /> },
-  { path: 'payment-success', element: <PaymentSuccessPage /> },
-  { path: 'payment-failed', element: <PaymentFailedPage /> },
+
   { path: 'example', element: <Example /> }
 ];
 
@@ -94,7 +92,7 @@ const customerProtectedRoutes = [
   {
     path: 'cart',
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute roles={['customer']}>
         <CartPage />
       </ProtectedRoute>
     )
@@ -102,15 +100,39 @@ const customerProtectedRoutes = [
   {
     path: 'wishlist',
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute roles={['customer']}>
         <WishlistPage />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: 'checkout',
+    element: (
+      <ProtectedRoute roles={['customer']}>
+        <CheckoutPage />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: 'payment-success',
+    element: (
+      <ProtectedRoute roles={['customer']}>
+        <PaymentSuccessPage />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: 'payment-failed',
+    element: (
+      <ProtectedRoute roles={['customer']}>
+        <PaymentFailedPage />
       </ProtectedRoute>
     )
   },
   {
     path: 'user',
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute roles={['customer']}>
         <AccountLayout />
       </ProtectedRoute>
     ),
@@ -176,7 +198,7 @@ const Router = [
   {
     path: 'admin',
     element: (
-      <ProtectedRoute roles={['admin', 'manager']}>
+      <ProtectedRoute roles={['admin']}>
         <AdminLayout />
       </ProtectedRoute>
     ),

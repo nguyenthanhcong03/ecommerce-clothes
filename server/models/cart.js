@@ -20,7 +20,7 @@ const cartItemSchema = new mongoose.Schema(
     snapshot: {
       name: String,
       price: Number,
-      discountPrice: Number,
+      originalPrice: Number,
       color: String,
       size: String,
       image: String,

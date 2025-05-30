@@ -15,7 +15,10 @@ const initialState = {
   orderSuccess: false,
   orderError: null,
   currentOrder: null,
-  calculatingDistance: false // Trạng thái để theo dõi việc tính toán phí vận chuyển
+  calculatingDistance: false, // Trạng thái để theo dõi việc tính toán phí vận chuyển
+  changedPriceProducts: [], // Danh sách sản phẩm thay đổi giá
+  updatedProducts: [], // Sản phẩm đã cập nhật giá mới
+  showPriceChangeModal: false // Hiển thị modal thông báo thay đổi giá
 };
 
 export const calculateDistance = createAsyncThunk(
@@ -36,7 +39,7 @@ export const createNewOrder = createAsyncThunk('order/createNewOrder', async (or
     const response = await createOrderAPI(orderData);
     return response.data;
   } catch (error) {
-    return rejectWithValue(error.response?.data?.message || 'Không thể tạo đơn hàng');
+    return rejectWithValue(error.response?.data);
   }
 });
 
@@ -83,6 +86,25 @@ const orderSlice = createSlice({
     },
     setCalculatingDistance: (state) => {
       state.calculatingDistance = true;
+    },
+    // Lưu danh sách sản phẩm thay đổi giá
+    setChangedPriceProducts: (state, action) => {
+      state.changedPriceProducts = action.payload;
+    },
+    // Lưu danh sách sản phẩm đã cập nhật giá
+    setUpdatedProducts: (state, action) => {
+      state.updatedProducts = action.payload;
+    },
+    // Hiển thị modal thông báo thay đổi giá
+    setShowPriceChangeModal: (state, action) => {
+      state.showPriceChangeModal = action.payload;
+    },
+    // Xác nhận đồng ý với giá mới
+    confirmUpdatedPrices: (state) => {
+      state.orderItems = state.updatedProducts;
+      state.changedPriceProducts = [];
+      state.updatedProducts = [];
+      state.showPriceChangeModal = false;
     }
   },
   extraReducers: (builder) => {
@@ -115,7 +137,15 @@ const orderSlice = createSlice({
       .addCase(createNewOrder.rejected, (state, action) => {
         state.loading = false;
         state.orderSuccess = false;
-        state.orderError = action.payload;
+
+        // Nếu lỗi là do thay đổi giá (status 409)
+        if (action.payload?.changedProducts && action.payload?.updatedProducts) {
+          state.changedPriceProducts = action.payload.changedProducts;
+          state.updatedProducts = action.payload.updatedProducts;
+          state.showPriceChangeModal = true;
+        } else {
+          state.orderError = action.payload;
+        }
       });
   }
 });
@@ -129,7 +159,11 @@ export const {
   updateOrderNote,
   resetOrder,
   clearOrderError,
-  setCalculatingDistance
+  setCalculatingDistance,
+  setChangedPriceProducts,
+  setUpdatedProducts,
+  setShowPriceChangeModal,
+  confirmUpdatedPrices
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

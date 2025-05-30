@@ -1,13 +1,14 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import Button from '@/components/common/Button';
 
 const Unauthorized = () => {
   const location = useLocation();
   const from = location.state?.from || '/';
 
   return (
-    <div className='flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 text-center'>
+    <div className='flex min-h-screen flex-col items-center justify-center px-4 text-center'>
       <div className='w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-md'>
         <div className='mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-red-100 p-4'>
           <svg
@@ -25,23 +26,19 @@ const Unauthorized = () => {
             />
           </svg>
         </div>
-        <h1 className='mb-4 text-3xl font-bold text-gray-900'>Access Denied</h1>
+        <h1 className='mb-4 text-3xl font-bold text-gray-900'>Bạn không có quyền truy cập</h1>
         <p className='mb-8 text-gray-600'>
-          You don't have permission to access this page. Please contact your administrator if you believe this is an
-          error.
+          Bạn không có quyền truy cập trang này. Vui lòng liên hệ với quản trị viên của bạn nếu bạn tin rằng đây là một
+          lỗi.
         </p>
         <div className='flex flex-col space-y-4'>
-          <Link
-            to={from}
-            className='rounded-md bg-gray-200 px-6 py-3 text-center text-gray-800 transition-colors hover:bg-gray-300'
-          >
-            Go Back
+          <Link to={from}>
+            <Button variant='secondary' className='w-full'>
+              Quay lại
+            </Button>
           </Link>
-          <Link
-            to='/'
-            className='rounded-md bg-blue-600 px-6 py-3 text-center text-white transition-colors hover:bg-blue-700'
-          >
-            Return to Homepage
+          <Link to='/'>
+            <Button className='w-full'>Trở về trang chủ</Button>
           </Link>
         </div>
       </div>

@@ -29,7 +29,7 @@ const OrderSummary = ({
 
   // Tính toán tổng tiền
   const subtotal = orderItems.reduce((total, item) => {
-    const price = item.snapshot.discountPrice || item.snapshot.price;
+    const price = item.snapshot.price || item.snapshot.originalPrice;
     return total + price * item.quantity;
   }, 0);
 
@@ -106,7 +106,7 @@ const OrderSummary = ({
               </thead>
               <tbody className='divide-y divide-gray-200 bg-white'>
                 {orderItems.map((item) => {
-                  const price = item.snapshot.discountPrice || item.snapshot.price;
+                  const price = item.snapshot.price || item.snapshot.originalPrice;
                   return (
                     <tr key={item.variantId} className='hover:bg-gray-50'>
                       <td className='px-3 py-3'>

@@ -29,7 +29,7 @@ const getCart = async (req, res) => {
     const summary = cart.items.reduce(
       (acc, item) => {
         if (item.isAvailable) {
-          const price = item.snapshot.discountPrice ?? item.snapshot.price;
+          const price = item.snapshot.originalPrice ?? item.snapshot.price;
           acc.totalPrice += price * item.quantity;
         }
         return acc;
@@ -95,7 +95,7 @@ const addToCart = async (req, res) => {
         snapshot: {
           name: product.name,
           price: variant.price,
-          discountPrice: variant.discountPrice,
+          originalPrice: variant.originalPrice,
           color: variant.color,
           size: variant.size,
           image: product.images[0],
@@ -157,7 +157,7 @@ const updateCartItem = async (req, res) => {
     const summary = cart.items.reduce(
       (acc, item) => {
         if (item.isAvailable) {
-          const price = item.snapshot.discountPrice ?? item.snapshot.price;
+          const price = item.snapshot.originalPrice ?? item.snapshot.price;
           acc.totalPrice += price * item.quantity;
         }
         return acc;
@@ -228,7 +228,7 @@ const removeCartItem = async (req, res) => {
     const summary = cart.items.reduce(
       (acc, item) => {
         if (item.isAvailable) {
-          const price = item.snapshot.discountPrice ?? item.snapshot.price;
+          const price = item.snapshot.originalPrice ?? item.snapshot.price;
           acc.totalPrice += price * item.quantity;
         }
         return acc;
@@ -300,7 +300,7 @@ const removeMultipleCartItems = async (req, res) => {
     const summary = cart.items.reduce(
       (acc, item) => {
         if (item.isAvailable) {
-          const price = item.snapshot.discountPrice ?? item.snapshot.price;
+          const price = item.snapshot.originalPrice ?? item.snapshot.price;
           acc.totalPrice += price * item.quantity;
         }
         return acc;

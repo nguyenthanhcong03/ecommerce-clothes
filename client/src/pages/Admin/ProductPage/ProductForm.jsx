@@ -20,7 +20,7 @@ const variantSchema = yup.object({
   size: yup.string().required('Kích thước là bắt buộc'),
   color: yup.string().required('Màu sắc là bắt buộc'),
   price: yup.number().required('Giá là bắt buộc').min(0, 'Giá phải lớn hơn hoặc bằng 0'),
-  discountPrice: yup.number().nullable().min(0, 'Giá giảm phải lớn hơn hoặc bằng 0'),
+  originalPrice: yup.number().nullable().min(0, 'Giá giảm phải lớn hơn hoặc bằng 0'),
   stock: yup.number().required('Số lượng là bắt buộc').min(0, 'Số lượng phải lớn hơn hoặc bằng 0')
 });
 
@@ -159,7 +159,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
       description: '',
       categoryId: '',
       brand: '',
-      variants: [{ size: '', color: '', price: 0, discountPrice: null, stock: 0 }],
+      variants: [{ size: '', color: '', price: 0, originalPrice: null, stock: 0 }],
       images: [],
       tags: []
     }
@@ -407,7 +407,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
       color: selectedColor,
       size: selectedSize,
       price: 0,
-      discountPrice: null,
+      originalPrice: null,
       stock: 0
     };
 
@@ -569,7 +569,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
                   color: field.color,
                   size: field.size,
                   price: field.price,
-                  discountPrice: field.discountPrice,
+                  originalPrice: field.originalPrice,
                   stock: field.stock
                 }))}
                 columns={[
@@ -589,12 +589,12 @@ const ProductForm = ({ selectedProduct, onClose }) => {
                     )
                   },
                   {
-                    title: 'Giá KM',
+                    title: 'Giá niêm yết',
                     dataIndex: 'index',
                     render: (index) => (
-                      <Form.Item noStyle help={errors.variants?.[index]?.discountPrice?.message}>
+                      <Form.Item noStyle help={errors.variants?.[index]?.originalPrice?.message}>
                         <Controller
-                          name={`variants[${index}].discountPrice`}
+                          name={`variants[${index}].originalPrice`}
                           control={control}
                           render={({ field }) => <Input type='number' {...field} disabled={uploading || loading} />}
                         />

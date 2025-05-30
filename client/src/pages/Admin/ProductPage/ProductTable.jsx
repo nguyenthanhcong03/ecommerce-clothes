@@ -88,7 +88,7 @@ const ProductTable = ({
           let maxPrice = 0;
 
           record.variants.forEach((variant) => {
-            const price = variant.price || variant.discountPrice;
+            const price = variant.price || variant.originalPrice;
             if (price < minPrice) minPrice = price;
             if (price > maxPrice) maxPrice = price;
           });

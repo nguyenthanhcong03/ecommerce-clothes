@@ -2,6 +2,7 @@ const Order = require("../models/order");
 const User = require("../models/user");
 const Cart = require("../models/cart");
 const Coupon = require("../models/coupon");
+const Product = require("../models/product");
 const orderService = require("../services/orderService");
 
 const createOrder = async (req, res) => {
@@ -17,12 +18,83 @@ const createOrder = async (req, res) => {
         message: "Missing required order details",
       });
     }
+    // Kiểm tra giá sản phẩm hiện tại
+    const updatedProducts = [];
+    const changedProducts = [];
 
-    // Calculate total price
-    let subtotal = products.reduce(
+    for (const product of products) {
+      // Lấy thông tin sản phẩm mới nhất từ database
+      const currentProduct = await Product.findById(product.productId);
+
+      if (!currentProduct) {
+        return res.status(400).json({
+          success: false,
+          message: `Sản phẩm với ID ${product.productId} không tồn tại hoặc đã bị xóa`,
+        });
+      }
+
+      // Kiểm tra variant nếu có
+      let currentVariant = null;
+      if (product.variantId && currentProduct.variants && currentProduct.variants.length > 0) {
+        currentVariant = currentProduct.variants.find((v) => v._id.toString() === product.variantId);
+        if (!currentVariant) {
+          return res.status(400).json({
+            success: false,
+            message: `Biến thể với ID ${product.variantId} không tồn tại cho sản phẩm ${currentProduct.name}`,
+          });
+        }
+      }
+
+      // Lấy giá hiện tại
+      const currentPrice = currentVariant.price;
+
+      // Giá trong giỏ hàng
+      const cartPrice = product.snapshot.price;
+
+      // Cập nhật sản phẩm với giá mới nhất
+      const updatedProduct = {
+        ...product,
+        snapshot: {
+          ...product.snapshot,
+          price: currentVariant.price,
+          originalPrice: currentVariant.originalPrice,
+        },
+      };
+
+      updatedProducts.push(updatedProduct);
+
+      // Nếu giá đã thay đổi, thêm vào danh sách sản phẩm cần thông báo
+      if (currentPrice !== cartPrice) {
+        changedProducts.push({
+          name: currentProduct.name,
+          oldPrice: cartPrice,
+          newPrice: currentPrice,
+          variantName: currentVariant ? currentVariant.name : null,
+        });
+      }
+    }
+
+    // Nếu có sản phẩm thay đổi giá, thông báo cho người dùng
+    if (changedProducts.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: "Giá một số sản phẩm đã thay đổi kể từ khi bạn thêm vào giỏ hàng",
+        changedProducts: changedProducts,
+        updatedProducts: updatedProducts,
+      });
+    }
+
+    // Tính tổng giá với sản phẩm đã cập nhật
+    let subtotal = updatedProducts.reduce(
       (sum, item) => sum + (item.snapshot.price || item.snapshot.discountAmount) * item.quantity,
       0
     );
+
+    // // Calculate total price
+    // let subtotal = products.reduce(
+    //   (sum, item) => sum + (item.snapshot.price || item.snapshot.discountAmount) * item.quantity,
+    //   0
+    // );
 
     // Tính phí vận chuyển
     let shippingFee = 0;

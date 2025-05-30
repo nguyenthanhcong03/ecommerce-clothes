@@ -11,6 +11,7 @@ import { loginUser, clearError, fetchCurrentUser } from '@/store/slices/accountS
 import { toast } from 'react-toastify';
 import Headline from '@/components/common/Headline/Headline';
 import Logo from '@/assets/images/outfitory-logo.png';
+import { Eye, EyeOff } from 'lucide-react';
 
 // Định nghĩa schema validation với yup
 const loginSchema = yup.object().shape({
@@ -27,9 +28,10 @@ function LoginPage() {
   const location = useLocation();
   const dispatch = useDispatch();
   const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Lấy state từ Redux store
-  const { isLoading, error, isAuthenticated } = useSelector((state) => state.account);
+  const { isLoading, error, isAuthenticated, user } = useSelector((state) => state.account);
 
   const {
     control,
@@ -42,16 +44,6 @@ function LoginPage() {
       password: ''
     }
   });
-
-  // // Hiệu ứng điều hướng sau khi đăng nhập thành công
-  // useEffect(() => {
-  //   if (isAuthenticated) {
-  //     // Chuyển hướng đến trang trước đó hoặc trang chủ
-  //     const returnPath = location.state?.from || '/';
-  //     navigate(returnPath, { replace: true });
-  //   }
-  // }, [isAuthenticated, navigate, location]);
-
   // Xử lý khi submit form
   const onSubmit = async (data) => {
     const { username, password } = data;
@@ -60,10 +52,24 @@ function LoginPage() {
       // Dispatch action đăng nhập với cấu trúc object đúng và thông tin remember me
       dispatch(loginUser({ username, password, rememberMe }))
         .unwrap()
-        .then(() => {
+        .then((result) => {
           toast.success('Đăng nhập thành công!');
-          const returnPath = location.state?.from || '/';
-          navigate(returnPath, { replace: true });
+
+          // Lấy thông tin user từ kết quả đăng nhập
+          const userRole = result.user?.role || result.role;
+
+          // Xác định đường dẫn điều hướng
+          let redirectPath;
+
+          // Nếu có trang trước đó (từ state), ưu tiên điều hướng về đó
+          if (location.state?.from && location.state.from !== '/login') {
+            redirectPath = location.state.from;
+          } else {
+            // Nếu không có trang trước đó, điều hướng theo role
+            redirectPath = userRole === 'admin' ? '/admin' : '/';
+          }
+
+          navigate(redirectPath, { replace: true });
         })
         .catch((err) => {
           toast.error(err);
@@ -101,13 +107,6 @@ function LoginPage() {
                 <div className='absolute -left-4 -right-4 top-1/2 h-px -translate-y-1/2 transform bg-gradient-to-r from-transparent via-gray-300 to-transparent opacity-50'></div>
               </div>
 
-              {/* <div className='mx-auto max-w-md'>
-                <p className='text-base font-light leading-relaxed text-gray-600'>
-                  Khám phá bộ sưu tập thời trang độc đáo, thể hiện cá tính riêng của bạn với những thiết kế tinh tế và
-                  chất lượng cao.
-                </p>
-              </div> */}
-
               {/* Decorative elements */}
               <div className='mt-6 flex items-center justify-center space-x-4'>
                 <div className='h-px w-8 bg-gradient-to-r from-transparent to-black'></div>
@@ -142,10 +141,17 @@ function LoginPage() {
                   render={({ field }) => (
                     <Input
                       {...field}
-                      type='password'
+                      type={showPassword ? 'text' : 'password'}
                       label='Mật khẩu'
                       placeholder='Nhập mật khẩu'
                       prefix={<LockOutlined className='text-gray-400' />}
+                      suffix={
+                        showPassword ? (
+                          <EyeOff onClick={() => setShowPassword(false)} cursor={'pointer'} width={18} />
+                        ) : (
+                          <Eye onClick={() => setShowPassword(true)} cursor={'pointer'} width={18} />
+                        )
+                      }
                       required
                       error={errors.password?.message}
                     />

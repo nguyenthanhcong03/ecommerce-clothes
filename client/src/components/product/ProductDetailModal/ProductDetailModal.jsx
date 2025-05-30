@@ -16,6 +16,7 @@ import { setOrderItems } from '../../../store/slices/orderSlice';
 const ProductDetailModal = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useSelector((state) => state.account);
   const {
     isDetailModalOpen,
     modalProductId,
@@ -49,7 +50,7 @@ const ProductDetailModal = () => {
     getSelectedPrice
   } = useProductVariants(product);
 
-  const { price, discountPrice, stock } = getSelectedPrice();
+  const { price, originalPrice, stock } = getSelectedPrice();
 
   useEffect(() => {
     if (isDetailModalOpen) {
@@ -64,6 +65,12 @@ const ProductDetailModal = () => {
   };
 
   const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      toast.error('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
+      handleCloseModal();
+      navigate('/login');
+      return;
+    }
     try {
       if (!selectedSize || !selectedColor) {
         setShowValidation(true);
@@ -79,7 +86,7 @@ const ProductDetailModal = () => {
         snapshot: {
           name: product.name,
           price: selectedVariant.price,
-          discountPrice: selectedVariant.discountPrice,
+          originalPrice: selectedVariant.originalPrice,
           color: selectedVariant.color,
           size: selectedVariant.size,
           image:
@@ -97,6 +104,12 @@ const ProductDetailModal = () => {
   };
 
   const handleProceedToCheckout = () => {
+    if (!isAuthenticated) {
+      toast.error('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
+      handleCloseModal();
+      navigate('/login');
+      return;
+    }
     if (!selectedSize || !selectedColor) {
       setShowValidation(true);
       return;
@@ -111,7 +124,7 @@ const ProductDetailModal = () => {
         snapshot: {
           name: product.name,
           price: selectedVariant.price,
-          discountPrice: selectedVariant.discountPrice,
+          originalPrice: selectedVariant.originalPrice,
           color: selectedVariant.color,
           size: selectedVariant.size,
           image:
@@ -290,9 +303,9 @@ const ProductDetailModal = () => {
                     currency: 'VND'
                   })}
                 </span>
-                {discountPrice && (
+                {originalPrice && (
                   <span className='ml-1 text-sm text-gray-400 line-through sm:ml-2 sm:text-lg'>
-                    {discountPrice.toLocaleString('vi-VN', {
+                    {originalPrice.toLocaleString('vi-VN', {
                       style: 'currency',
                       currency: 'VND'
                     })}
@@ -357,21 +370,25 @@ const ProductDetailModal = () => {
                 </p>
               )}
 
-              <div className='mt-6 flex gap-4'>
-                <Button variant='secondary' onClick={handleAddToCart} className='flex-1'>
-                  <ShoppingCart strokeWidth={1} className='mr-2' />
-                  Thêm vào giỏ hàng
-                </Button>
-                <Button
-                  variant='primary'
-                  onClick={() => {
-                    handleProceedToCheckout();
-                  }}
-                  className='flex-1'
-                >
-                  Mua ngay
-                </Button>
-              </div>
+              {isAuthenticated && user?.role === 'admin' ? (
+                <></>
+              ) : (
+                <div className='mt-6 flex gap-4'>
+                  <Button variant='secondary' onClick={handleAddToCart} className='flex-1'>
+                    <ShoppingCart strokeWidth={1} className='mr-2' />
+                    Thêm vào giỏ hàng
+                  </Button>
+                  <Button
+                    variant='primary'
+                    onClick={() => {
+                      handleProceedToCheckout();
+                    }}
+                    className='flex-1'
+                  >
+                    Mua ngay
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         )}

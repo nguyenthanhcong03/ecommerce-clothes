@@ -44,25 +44,27 @@ function SearchModal() {
   }, []);
 
   useEffect(() => {
+    const initialSearch = params.get('search') || '';
+    setSearchQuery(initialSearch);
+  }, [params]);
+
+  useEffect(() => {
     if (!isOpen) return;
     searchInputRef.current?.focus();
     handleSearch(debouncedSearchQuery);
-  }, [debouncedSearchQuery, isOpen, handleSearch]);
+  }, [debouncedSearchQuery, params, isOpen, handleSearch]);
 
   const handleToggleSearchModal = () => {
     dispatch(toggleSearchModal());
   };
-
   const handleSubmitSearch = () => {
+    const newParams = new URLSearchParams();
     if (searchQuery) {
-      params.set('search', searchQuery);
-      navigate(`/shop?${params.toString()}`);
-    } else {
-      console.log('vaoday');
-      params.delete('search');
-      setParams(params);
+      newParams.set('search', searchQuery);
+      setParams(newParams);
+      navigate(`/shop?${newParams.toString()}`);
+      handleToggleSearchModal();
     }
-    handleToggleSearchModal();
   };
 
   return (

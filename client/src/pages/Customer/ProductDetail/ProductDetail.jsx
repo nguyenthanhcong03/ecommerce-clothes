@@ -28,6 +28,7 @@ const DetailProduct = () => {
   const { id } = useParams();
   const { currentProduct: product, loadingFetchProductById, error } = useSelector((state) => state.product);
   const { categoriesTree } = useSelector((state) => state.category);
+  const { isAuthenticated, user } = useSelector((state) => state.account);
 
   const {
     selectedSize,
@@ -48,7 +49,7 @@ const DetailProduct = () => {
     getSelectedPrice
   } = useProductVariants(product);
 
-  const { price, discountPrice, stock } = getSelectedPrice();
+  const { price, originalPrice, stock } = getSelectedPrice();
 
   useEffect(() => {
     if (id) {
@@ -81,6 +82,11 @@ const DetailProduct = () => {
   }, [product, categoriesTree]);
 
   const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      toast.error('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
+      navigate('/login', { state: { from: `/product/${id}` } });
+      return;
+    }
     try {
       if (!selectedSize || !selectedColor) {
         setShowValidation(true);
@@ -96,7 +102,7 @@ const DetailProduct = () => {
         snapshot: {
           name: product.name,
           price: selectedVariant.price,
-          discountPrice: selectedVariant.discountPrice,
+          originalPrice: selectedVariant.originalPrice,
           color: selectedVariant.color,
           size: selectedVariant.size,
           image:
@@ -114,6 +120,11 @@ const DetailProduct = () => {
 
   // Hàm xử lý sự kiện khi nhấn nút "Mua ngay"
   const handleBuyNow = () => {
+    if (!isAuthenticated) {
+      toast.error('Bạn cần đăng nhập để mua sản phẩm');
+      navigate('/login', { state: { from: `/product/${id}` } });
+      return;
+    }
     if (!selectedSize || !selectedColor) {
       setShowValidation(true);
       return;
@@ -130,7 +141,7 @@ const DetailProduct = () => {
         snapshot: {
           name: product.name,
           price: selectedVariant.price,
-          discountPrice: selectedVariant.discountPrice,
+          originalPrice: selectedVariant.originalPrice,
           color: selectedVariant.color,
           size: selectedVariant.size,
           image: imageUrl
@@ -319,9 +330,9 @@ const DetailProduct = () => {
                   currency: 'VND'
                 })}
               </span>
-              {discountPrice && (
+              {originalPrice && (
                 <span className='ml-1 text-sm text-gray-400 line-through sm:ml-2 sm:text-lg'>
-                  {discountPrice.toLocaleString('vi-VN', {
+                  {originalPrice.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND'
                   })}
@@ -399,15 +410,19 @@ const DetailProduct = () => {
               )}
             </div>
 
-            <div className='m-2 flex flex-col gap-3 sm:m-4 sm:gap-4 lg:flex-row'>
-              <Button variant='secondary' onClick={handleAddToCart} className='xs:flex-1 w-full'>
-                <ShoppingCart strokeWidth={1} className='mr-1 h-4 w-4 sm:mr-2 sm:h-5 sm:w-5' />
-                <span className='text-sm'>Thêm vào giỏ hàng</span>
-              </Button>
-              <Button variant='primary' onClick={handleBuyNow} className='xs:flex-1 w-full'>
-                <span className='text-sm'>Mua ngay với giá {price || 0}</span>
-              </Button>
-            </div>
+            {isAuthenticated && user?.role === 'admin' ? (
+              <></>
+            ) : (
+              <div className='m-2 flex flex-col gap-3 sm:m-4 sm:gap-4 lg:flex-row'>
+                <Button variant='secondary' onClick={handleAddToCart} className='xs:flex-1 w-full'>
+                  <ShoppingCart strokeWidth={1} className='mr-1 h-4 w-4 sm:mr-2 sm:h-5 sm:w-5' />
+                  <span className='text-sm'>Thêm vào giỏ hàng</span>
+                </Button>
+                <Button variant='primary' onClick={handleBuyNow} className='xs:flex-1 w-full'>
+                  <span className='text-sm'>Mua ngay với giá {price || 0}</span>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

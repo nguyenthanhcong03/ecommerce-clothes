@@ -163,35 +163,41 @@ function Header() {
 
             {/* Wishlist, Cart, Account  */}
             <div className='flex items-center gap-2'>
-              {/* Wishlist icon */}
-              <div className='hidden lg:block' onClick={() => handleToggleSideBar('wishlist')}>
-                <Heart fontSize={28} cursor={'pointer'} />
-              </div>
-              {/* Cart icon */}
-              <Tooltip
-                title={
-                  totalCartItems >= 1 ? (
-                    <span className='font-robotoMono'>Có {totalCartItems} sản phẩm trong giỏ hàng</span>
-                  ) : (
-                    <span className='font-robotoMono'>Không có sản phẩm nào trong giỏ hàng</span>
-                  )
-                }
-                placement='bottom'
-              >
-                <div
-                  className='relative cursor-pointer'
-                  onClick={() => {
-                    handleToggleSideBar('cart');
-                  }}
-                >
-                  <ShoppingCart />
-                  {totalCartItems >= 1 && (
-                    <div className='absolute bottom-3 left-3 h-5 w-5 rounded-full bg-primaryColor text-center text-xs leading-5 text-white'>
-                      {totalCartItems}
+              {isAuthenticated && user?.role === 'admin' ? (
+                <></>
+              ) : (
+                <>
+                  {/* Wishlist icon */}
+                  <div className='hidden lg:block' onClick={() => handleToggleSideBar('wishlist')}>
+                    <Heart fontSize={28} cursor={'pointer'} />
+                  </div>
+                  {/* Cart icon */}
+                  <Tooltip
+                    title={
+                      totalCartItems >= 1 ? (
+                        <span className='font-robotoMono'>Có {totalCartItems} sản phẩm trong giỏ hàng</span>
+                      ) : (
+                        <span className='font-robotoMono'>Không có sản phẩm nào trong giỏ hàng</span>
+                      )
+                    }
+                    placement='bottom'
+                  >
+                    <div
+                      className='relative cursor-pointer'
+                      onClick={() => {
+                        handleToggleSideBar('cart');
+                      }}
+                    >
+                      <ShoppingCart />
+                      {totalCartItems >= 1 && (
+                        <div className='absolute bottom-3 left-3 h-5 w-5 rounded-full bg-primaryColor text-center text-xs leading-5 text-white'>
+                          {totalCartItems}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </Tooltip>
+                  </Tooltip>
+                </>
+              )}
 
               <div className='lg:hidden' onClick={() => handleToggleSideBar('menu')}>
                 <Menu fontSize={26} cursor={'pointer'} />

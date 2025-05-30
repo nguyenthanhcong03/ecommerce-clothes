@@ -2,9 +2,10 @@ import Logo from '@/assets/images/outfitory-logo.png';
 import CollapseMenuSidebar from '@/components/common/CollapseMenuSidebar/CollapseMenuSidebar';
 import MenuItem from '@/components/common/MenuItem/MenuItem';
 import { CircleUserRound, Heart, ShoppingCart } from 'lucide-react';
+import { useSelector } from 'react-redux';
 
 function SideBarMenu() {
-  // const { isOpen, setIsOpen, type } = useContext(SideBarContext);
+  const { isAuthenticated, user } = useSelector((state) => state.account);
   const handleToggleSideBar = () => {
     // setIsOpen(!isOpen);
   };
@@ -14,28 +15,13 @@ function SideBarMenu() {
       <div className='mx-auto'>
         <img src={Logo} alt='' className='h-[50px] w-[150px]' />
       </div>
-      {/* <div className='flex justify-center items-center mx-auto gap-2 w-full border-[#e1e1e1] border-[1px]'>
-        <input
-          className='flex-1 py-[4px] h-[35px] outline-none text-sm px-[10px]'
-          type='text'
-          placeholder='Tìm kiếm sản phẩm...'
-        />
-        <FiSearch fontSize={18} cursor={'pointer'} className='mr-2' />
-      </div> */}
       <div className='flex flex-col gap-4'>
         <div className='w-fit text-sm text-secondaryColor'>
           <MenuItem text={'TRANG CHỦ'} href={'/'} onClick={handleToggleSideBar} />
         </div>
-        {/* <div className='w-fit text-sm text-secondaryColor'>
-          <MenuItem text={'SẢN PHẨM'} href={'/'} />
-        </div> */}
-        <CollapseMenuSidebar title={'SẢN PHẨM'}>
-          <div className='mt-2 flex flex-col gap-2 px-2'>
-            <p>Tất cả sản phẩm</p>
-            <p>Áo thun</p>
-            <p>Quần jeans</p>
-          </div>
-        </CollapseMenuSidebar>
+        <div className='w-fit text-sm text-secondaryColor'>
+          <MenuItem text={'SẢN PHẨM'} href={'/shop'} onClick={handleToggleSideBar} />
+        </div>
         <div className='w-fit text-sm text-secondaryColor'>
           <MenuItem text={'VỀ CHÚNG TÔI'} href={'/about'} onClick={handleToggleSideBar} />
         </div>
@@ -46,20 +32,24 @@ function SideBarMenu() {
           <MenuItem text={'LIÊN HỆ'} href={'/contact'} onClick={handleToggleSideBar} />
         </div>
       </div>
-      <div className='flex cursor-pointer flex-col gap-4 text-sm text-secondaryColor'>
-        <div className='flex items-center gap-2'>
-          <CircleUserRound fontSize={26} />
-          <p>Tài khoản</p>
+      {isAuthenticated && user?.role === 'admin' ? (
+        <></>
+      ) : (
+        <div className='flex cursor-pointer flex-col gap-4 text-sm text-secondaryColor'>
+          <div className='flex items-center gap-2'>
+            <CircleUserRound fontSize={26} />
+            <p>Tài khoản</p>
+          </div>
+          <div className='flex items-center gap-2'>
+            <ShoppingCart fontSize={26} />
+            <p>Giỏ hàng</p>
+          </div>
+          <div className='flex items-center gap-2'>
+            <Heart fontSize={26} />
+            <p>Yêu thích</p>
+          </div>
         </div>
-        <div className='flex items-center gap-2'>
-          <ShoppingCart fontSize={26} />
-          <p>Giỏ hàng</p>
-        </div>
-        <div className='flex items-center gap-2'>
-          <Heart fontSize={26} />
-          <p>Yêu thích</p>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

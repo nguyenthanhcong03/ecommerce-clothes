@@ -12,7 +12,7 @@ import truckIcon from '../../../../assets/icons/truckIcon.svg';
 
 // Component hiển thị thông tin từng sản phẩm trong đơn hàng
 const OrderProductItem = React.memo(({ product }) => {
-  const price = product.snapshot?.discountPrice || product.snapshot?.price || 0;
+  const price = product.snapshot?.originalPrice || product.snapshot?.price || 0;
 
   return (
     <div className='flex items-start space-x-4 border-b py-4 last:border-b-0'>

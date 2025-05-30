@@ -104,7 +104,7 @@ const useProductVariants = (product) => {
       if (selectedVariant) {
         return {
           price: selectedVariant?.price,
-          discountPrice: selectedVariant?.discountPrice,
+          originalPrice: selectedVariant?.originalPrice,
           stock: selectedVariant?.stock,
           selectedVariant
         };
@@ -117,7 +117,7 @@ const useProductVariants = (product) => {
 
     return {
       price: defaultVariant?.price || 0,
-      discountPrice: defaultVariant?.discountPrice || 0,
+      originalPrice: defaultVariant?.originalPrice || 0,
       stock: defaultVariant?.stock || 0
     };
   };

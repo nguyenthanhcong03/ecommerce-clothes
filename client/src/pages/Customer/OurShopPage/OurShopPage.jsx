@@ -35,7 +35,6 @@ function OurShopPage() {
   const [params, setParams] = useSearchParams();
 
   const search = params.get('search') || '';
-
   // Generate breadcrumb items
   const breadcrumbItems = useMemo(() => {
     const items = [
@@ -54,8 +53,16 @@ function OurShopPage() {
       items.push(...pathItems);
     }
 
+    // Add search keyword to breadcrumb if there's a search query
+    if (search) {
+      items.push({
+        label: `Tìm kiếm: "${search}"`,
+        path: null
+      });
+    }
+
     return items;
-  }, [catId, categoriesTree]);
+  }, [catId, categoriesTree, search]);
 
   // Lấy danh mục hiện tại dựa trên catId
   const currentCategory = useMemo(() => {
@@ -250,21 +257,18 @@ function OurShopPage() {
 
         {/* Main content */}
         <div className='lg:w-3/4'>
-          {!search && currentCategory ? (
+          {currentCategory ? (
             <h1 className='mb-4 rounded-md bg-white p-4 text-2xl font-bold'>{currentCategory.name}</h1>
+          ) : search ? (
+            <div className='mb-4 text-center'>
+              <h2 className='text-xl font-medium text-gray-600'>
+                Kết quả tìm kiếm cho &ldquo;{search}&rdquo; - {pagination?.total || 0} sản phẩm
+              </h2>
+            </div>
           ) : (
             <h1 className='mb-4 rounded-md bg-white p-4 text-2xl font-bold'>Tất cả sản phẩm</h1>
           )}
-          {/* Tiêu đề kết quả tìm kiếm */}
-          {search &&
-            (console.log('filters.search', search),
-            (
-              <div className='mb-4 text-center'>
-                <h2 className='text-xl font-medium text-gray-600'>
-                  Kết quả tìm kiếm cho &ldquo;{search}&rdquo; - {pagination?.total || 0} sản phẩm
-                </h2>
-              </div>
-            ))}
+
           {!search && (
             <div className='mb-4 h-[280px] w-full'>
               <CountDownBanner backgroundImage={countdownBanner2} />

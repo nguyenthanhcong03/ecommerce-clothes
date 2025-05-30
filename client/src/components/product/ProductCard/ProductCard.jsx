@@ -82,12 +82,12 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
           {/* Hiển thị giá */}
           <div className='my-1 text-[10px] font-normal text-secondaryColor sm:my-2 sm:text-sm'>
             {(() => {
-              const { price, discountPrice } = getSelectedPrice();
+              const { price, originalPrice } = getSelectedPrice();
               return (
                 <>
                   <span className='font-medium'>{formatCurrency(price || 0)}</span>
-                  {discountPrice && (
-                    <span className='ml-2 text-gray-400 line-through'>{formatCurrency(discountPrice || 0)}</span>
+                  {originalPrice && (
+                    <span className='ml-2 text-gray-400 line-through'>{formatCurrency(originalPrice || 0)}</span>
                   )}
                 </>
               );

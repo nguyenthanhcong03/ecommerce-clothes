@@ -5,18 +5,21 @@ import ProductCard from '@/components/product/ProductCard/ProductCard';
 import useDebounce from '@/hooks/useDebounce';
 import { getAllProductsAPI } from '@/services/productService';
 import { toggleSidebar } from '@/store/slices/sidebarSlice';
-import { Search } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import { CircleX, Search } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 function SideBarSearch() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const searchInputRef = useRef(null);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [params, setParams] = useSearchParams();
 
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
@@ -34,23 +37,30 @@ function SideBarSearch() {
       });
       setSearchResults(response.data.products);
     } catch (error) {
+      console.error('Error searching products:', error);
       setSearchResults([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Effect để xử lý tìm kiếm khi query thay đổi
   useEffect(() => {
+    const initialSearch = params.get('search') || '';
+    setSearchQuery(initialSearch);
+  }, [params]);
+
+  useEffect(() => {
+    searchInputRef.current?.focus();
     handleSearch(debouncedSearchQuery);
-  }, [debouncedSearchQuery, handleSearch]);
+  }, [debouncedSearchQuery, params, handleSearch]);
 
   const handleSubmitSearch = () => {
-    const params = new URLSearchParams();
+    const newParams = new URLSearchParams();
     if (searchQuery) {
-      params.set('search', searchQuery);
+      newParams.set('search', searchQuery);
+      setParams(newParams);
+      navigate(`/shop?${newParams.toString()}`);
       dispatch(toggleSidebar());
-      navigate(`/shop?${params.toString()}`);
     }
   };
 
@@ -66,6 +76,14 @@ function SideBarSearch() {
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder='Tìm kiếm sản phẩm..'
           className='h-[38px] flex-1'
+          suffix={
+            searchQuery ? (
+              <CircleX width={16} cursor={'pointer'} onClick={() => setSearchQuery('')} />
+            ) : (
+              <div className='w-4 text-transparent'></div>
+            )
+          }
+          ref={searchInputRef}
         />
         <Button onClick={handleSubmitSearch}>
           <Search width={20} />

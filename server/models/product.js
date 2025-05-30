@@ -19,7 +19,7 @@ const variantSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    discountPrice: {
+    originalPrice: {
       type: Number,
     },
     stock: {
