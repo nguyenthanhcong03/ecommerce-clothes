@@ -79,7 +79,7 @@ function SideBarCart() {
           </div>
         ) : (
           <div className='flex w-full flex-1 items-center justify-center'>
-            <div className='text-center'>Danh sách sản phẩm yêu thích trống.</div>
+            <div className='text-center'>Không có sản phẩm nào trong giỏ hàng.</div>
           </div>
         )
       ) : (

@@ -1,12 +1,14 @@
-import { getCart } from '@/store/slices/cartSlice';
+import { getCart, removeMultipleCartItems } from '@/store/slices/cartSlice';
 import { Skeleton } from 'antd';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import CartTable from './components/CartTable';
 import EmptyCart from './components/EmptyCart';
 import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import Headline from '@/components/common/Headline/Headline';
+import UnavailableItemsModal from '@/components/cart/UnavailableItemsModal/UnavailableItemsModal';
 
 // Cart skeleton loading component
 const CartSkeleton = () => (
@@ -55,15 +57,50 @@ const CartSkeleton = () => (
 );
 
 function CartPage() {
-  console.log('vao cart');
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { items, loading } = useSelector((state) => state.cart);
+  const [showUnavailableModal, setShowUnavailableModal] = useState(false);
+  const [unavailableItems, setUnavailableItems] = useState([]);
 
   useEffect(() => {
-    dispatch(getCart());
+    dispatch(getCart())
+      .unwrap()
+      .then((response) => {
+        // Kiểm tra các sản phẩm không khả dụng
+        const unavailable = response.data.items.filter((item) => item.isAvailable === false);
+        if (unavailable.length > 0) {
+          setUnavailableItems(unavailable);
+          setShowUnavailableModal(true);
+        }
+      })
+      .catch((error) => {
+        toast.error('Không thể tải giỏ hàng: ' + error);
+      });
   }, [dispatch]);
 
+  // Xử lý khi người dùng chọn xóa các sản phẩm không khả dụng
+  const handleRemoveUnavailableItems = () => {
+    // Lấy ID của các sản phẩm không khả dụng
+    const itemIds = unavailableItems.map((item) => item._id);
+
+    // Gọi API để xóa các sản phẩm
+    dispatch(removeMultipleCartItems(itemIds))
+      .unwrap()
+      .then(() => {
+        toast.success('Đã xóa các sản phẩm không khả dụng khỏi giỏ hàng');
+        setShowUnavailableModal(false);
+      })
+      .catch((error) => {
+        toast.error('Không thể xóa sản phẩm: ' + error);
+      });
+  };
+
+  // Xử lý khi người dùng chọn giữ lại các sản phẩm không khả dụng
+  const handleKeepUnavailableItems = () => {
+    setShowUnavailableModal(false);
+    toast.info('Bạn vẫn giữ các sản phẩm không khả dụng trong giỏ hàng');
+  };
   return (
     <div className='px-5 pt-[60px] lg:pt-[80px]'>
       <div className='my-5'>
@@ -86,6 +123,15 @@ function CartPage() {
       ) : (
         <EmptyCart onBackToShop={() => navigate('/shop')} />
       )}
+
+      {/* Modal hiển thị khi có sản phẩm không khả dụng */}
+      <UnavailableItemsModal
+        visible={showUnavailableModal}
+        unavailableItems={unavailableItems}
+        onRemoveItems={handleRemoveUnavailableItems}
+        onKeepItems={handleKeepUnavailableItems}
+        onCancel={handleKeepUnavailableItems}
+      />
     </div>
   );
 }

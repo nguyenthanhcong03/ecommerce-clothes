@@ -1,4 +1,4 @@
-import { removeMultipleCartItems, updateCartItem } from '@/store/slices/cartSlice';
+import { removeMultipleCartItems } from '@/store/slices/cartSlice';
 import { setOrderItems } from '@/store/slices/orderSlice';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,11 +11,13 @@ import PaymentMethods from './PaymentMethods';
 const CartTable = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { items, totalCartItems, totalPrice, loading } = useSelector((state) => state.cart);
-  const [selectedItems, setSelectedItems] = useState(items.map((item) => item._id));
+  const { items, loading } = useSelector((state) => state.cart);
+  const [selectedItems, setSelectedItems] = useState([]);
   const [showShadow, setShowShadow] = useState(false);
   const sentinelRef = useRef(null);
 
+  // Danh sách các sản phẩm khả dụng
+  const availableItems = items ? items.filter((item) => item.isAvailable !== false) : [];
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -25,13 +27,14 @@ const CartTable = () => {
       { threshold: 0 }
     );
 
-    if (sentinelRef.current) {
-      observer.observe(sentinelRef.current);
+    const currentRef = sentinelRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     return () => {
-      if (sentinelRef.current) {
-        observer.unobserve(sentinelRef.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, []);
@@ -46,10 +49,19 @@ const CartTable = () => {
   };
 
   const handleSelectAll = () => {
-    if (selectedItems.length === items.length) {
+    // Filter available items
+    const availableItemIds = availableItems.map((item) => item._id);
+
+    // Check if all available items are already selected
+    const allAvailableSelected =
+      availableItemIds.length > 0 && availableItemIds.every((id) => selectedItems.includes(id));
+
+    if (allAvailableSelected) {
+      // If all available items are selected, deselect all
       setSelectedItems([]);
     } else {
-      setSelectedItems(items.map((item) => item._id));
+      // Otherwise, select all available items
+      setSelectedItems(availableItemIds);
     }
   };
 
@@ -57,21 +69,6 @@ const CartTable = () => {
     return items
       .filter((item) => selectedItems.includes(item._id))
       .reduce((total, item) => total + item.snapshot.price * item.quantity, 0);
-  };
-
-  const handleQuantityChange = (item, newQuantity) => {
-    if (!newQuantity) return;
-    console.log('quantity', newQuantity);
-    dispatch(
-      updateCartItem({
-        productId: item.productId,
-        variantId: item.variantId,
-        quantity: newQuantity
-      })
-    )
-      .unwrap()
-      .then(() => toast.success('Cập nhật số lượng thành công'))
-      .catch((err) => toast.error('Cập nhật số lượng thất bại: ' + err));
   };
 
   const handleRemoveMultipleItems = (itemIds) => {
@@ -87,8 +84,14 @@ const CartTable = () => {
       return;
     }
 
-    // Lọc các sản phẩm đã được chọn
-    const selectedProducts = items.filter((item) => selectedItems.includes(item._id));
+    // Lọc các sản phẩm đã được chọn và khả dụng
+    const selectedProducts = items.filter((item) => selectedItems.includes(item._id) && item.isAvailable !== false);
+
+    // Kiểm tra nếu không có sản phẩm khả dụng nào được chọn
+    if (selectedProducts.length === 0) {
+      toast.error('Không thể thanh toán vì tất cả sản phẩm đã chọn đều không khả dụng');
+      return;
+    }
 
     // Lưu các sản phẩm đã chọn vào localStorage
     localStorage.setItem('orderItems', JSON.stringify(selectedProducts));
@@ -100,6 +103,10 @@ const CartTable = () => {
     navigate('/checkout');
   };
 
+  // Kiểm tra xem tất cả các sản phẩm khả dụng đã được chọn hay chưa
+  const isAllAvailableSelected =
+    availableItems.length > 0 && availableItems.every((item) => selectedItems.includes(item._id));
+
   return (
     <div>
       <div className='flex flex-col gap-8'>
@@ -108,7 +115,7 @@ const CartTable = () => {
             <div className='flex items-center justify-between px-2 py-4'>
               <input
                 type='checkbox'
-                checked={selectedItems.length === items?.length}
+                checked={isAllAvailableSelected}
                 onChange={handleSelectAll}
                 className='h-4 w-4 rounded border-gray-300 accent-primaryColor'
               />
@@ -142,7 +149,7 @@ const CartTable = () => {
             onNavigateToCheckout={handleProceedToCheckout}
             onSelectAll={handleSelectAll}
             onRemoveMultipleItems={handleRemoveMultipleItems}
-            isSelectedAll={selectedItems.length === items?.length}
+            isSelectedAll={isAllAvailableSelected}
             cartItems={items}
             selectedItems={selectedItems}
             loading={loading}
