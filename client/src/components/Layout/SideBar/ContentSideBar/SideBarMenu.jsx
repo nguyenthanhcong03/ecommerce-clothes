@@ -1,11 +1,11 @@
 import Logo from '@/assets/images/outfitory-logo.png';
-import CollapseMenuSidebar from '@/components/common/CollapseMenuSidebar/CollapseMenuSidebar';
 import MenuItem from '@/components/common/MenuItem/MenuItem';
 import { CircleUserRound, Heart, ShoppingCart } from 'lucide-react';
 import { useSelector } from 'react-redux';
 
 function SideBarMenu() {
   const { isAuthenticated, user } = useSelector((state) => state.account);
+  const isAdmin = isAuthenticated && user?.role === 'admin';
   const handleToggleSideBar = () => {
     // setIsOpen(!isOpen);
   };
@@ -32,7 +32,7 @@ function SideBarMenu() {
           <MenuItem text={'LIÊN HỆ'} href={'/contact'} onClick={handleToggleSideBar} />
         </div>
       </div>
-      {isAuthenticated && user?.role === 'admin' ? (
+      {isAdmin ? (
         <></>
       ) : (
         <div className='flex cursor-pointer flex-col gap-4 text-sm text-secondaryColor'>

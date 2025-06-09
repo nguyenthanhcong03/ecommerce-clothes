@@ -90,12 +90,6 @@ const createOrder = async (req, res) => {
       0
     );
 
-    // // Calculate total price
-    // let subtotal = products.reduce(
-    //   (sum, item) => sum + (item.snapshot.price || item.snapshot.discountAmount) * item.quantity,
-    //   0
-    // );
-
     // Tính phí vận chuyển
     let shippingFee = 0;
     if (distance) {
@@ -168,13 +162,12 @@ const createOrder = async (req, res) => {
               product.productId === item.productId.toString() && product.variantId === item.variantId.toString()
           )
       );
-      console.log("cart.items", cart.items);
       await cart.save();
     }
 
     return res.status(201).json({
       success: true,
-      message: "Order created successfully",
+      message: "Tạo đơn hàng thành công",
       data: savedOrder,
     });
   } catch (error) {

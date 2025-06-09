@@ -2,7 +2,21 @@ const authService = require("../services/authService");
 
 const register = async (req, res) => {
   try {
-    await authService.registerUser(req.body);
+    const { username, password, email, phone, firstName, lastName } = req.body;
+    if (!username || !password || !email || !phone || !firstName || !lastName) {
+      return res.status(400).json({
+        success: false,
+        message: "Tất cả các trường là bắt buộc",
+      });
+    }
+    await authService.registerUser({
+      username,
+      password,
+      email,
+      phone,
+      firstName,
+      lastName,
+    });
     res.status(201).json({ success: true, message: "Vui lòng kiểm tra email để xác nhận tài khoản." });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });

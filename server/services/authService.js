@@ -23,7 +23,7 @@ const checkEmailExists = async (email) => {
 };
 
 const registerUser = async (userData) => {
-  const { username, password, email, firstName, lastName } = userData;
+  const { username, password, email, phone, firstName, lastName } = userData;
 
   // Kiểm tra username đã tồn tại
   const existedUser = await User.findOne({ username });
@@ -42,6 +42,7 @@ const registerUser = async (userData) => {
   const newUser = await User.create({
     username,
     email,
+    phone,
     password: hashedPassword,
     firstName,
     lastName,

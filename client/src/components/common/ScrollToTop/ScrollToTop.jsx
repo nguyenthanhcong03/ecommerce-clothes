@@ -7,7 +7,7 @@ export default function ScrollToTop({ children }) {
   const { pathname } = useLocation();
   const [isVisible, setIsVisible] = useState(false);
 
-  // Scroll to top when route changes
+  // Scroll to top khi route thay đổi
   useEffect(() => {
     window.scrollTo({
       top: 0,
@@ -16,7 +16,6 @@ export default function ScrollToTop({ children }) {
     });
   }, [pathname]);
 
-  // Show button when page is scrolled up to given distance
   const toggleVisibility = () => {
     if (window.pageYOffset > 300) {
       setIsVisible(true);
@@ -25,7 +24,7 @@ export default function ScrollToTop({ children }) {
     }
   };
 
-  // Add scroll event listener
+  // Thêm sự kiện scroll để hiển thị nút khi cuộn xuống
   useEffect(() => {
     window.addEventListener('scroll', toggleVisibility);
     return () => {
@@ -33,7 +32,7 @@ export default function ScrollToTop({ children }) {
     };
   }, []);
 
-  // Scroll to top when button is clicked
+  // Scroll to top khi nhấn nút
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -43,11 +42,12 @@ export default function ScrollToTop({ children }) {
 
   return (
     <>
+      {/* Layout */}
       {children}
       {isVisible && (
         <button
           onClick={scrollToTop}
-          className='fixed bottom-8 right-8 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primaryColor text-white shadow-lg transition-all hover:bg-primaryColor/90'
+          className='fixed bottom-8 right-8 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primaryColor text-white shadow-lg transition-all hover:scale-105 hover:bg-primaryColor/90 active:scale-95'
           aria-label='Scroll to top'
         >
           <ArrowUp className='h-6 w-6' />

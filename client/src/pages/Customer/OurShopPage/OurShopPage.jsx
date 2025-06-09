@@ -80,6 +80,7 @@ function OurShopPage() {
       params.set('page', page);
     }
     setParams(params);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSortChange = (value) => {
@@ -177,6 +178,7 @@ function OurShopPage() {
 
   // Fetch products when filters change
   useEffect(() => {
+    console.log('catId', catId);
     const queryParams = {
       search: params.get('search') || '',
       minPrice: params.get('minPrice') || '',
@@ -186,9 +188,9 @@ function OurShopPage() {
       size: params.get('size')?.split(',') || '',
       color: params.get('color')?.split(',') || '',
       rating: params.get('rating') || '',
-      catId: catId || '',
+      category: catId || '',
       page: params.get('page') || 1,
-      limit: 3
+      limit: 9
     };
 
     // // Remove undefined/empty values

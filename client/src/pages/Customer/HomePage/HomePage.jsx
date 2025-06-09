@@ -7,6 +7,7 @@ import Info from '@/pages/customer/HomePage/components/Info';
 import { fetchProducts } from '@/store/slices/productSlice';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import countdownBanner1 from '@/assets/images/countdownBanner1.jpeg';
 
 function HomePage() {
   const dispatch = useDispatch();
@@ -26,7 +27,7 @@ function HomePage() {
       </div>
       <div className='container mx-auto grid max-w-[1280px] grid-cols-2 justify-items-center gap-5 lg:grid-cols-4'>
         <div className='col-span-2 h-full w-full'>
-          <CountDownBanner />
+          <CountDownBanner bannerImage={countdownBanner1} />
         </div>
         <PopularProduct data={products.slice(0, 10)} />
         <div className='col-span-full my-10'>

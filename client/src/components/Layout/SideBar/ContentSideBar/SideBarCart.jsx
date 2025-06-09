@@ -1,14 +1,11 @@
 import CartItem from '@/components/cart/CartItem/CartItem';
 import Button from '@/components/common/Button/Button';
 import MenuItem from '@/components/common/MenuItem/MenuItem';
-import { getCart } from '@/store/slices/cartSlice';
 import { setOrderItems } from '@/store/slices/orderSlice';
 import { toggleSidebar } from '@/store/slices/sidebarSlice';
-import { is } from 'date-fns/locale';
 import { ShoppingCart } from 'lucide-react';
-import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 function SideBarCart() {
   const { items } = useSelector((state) => state.cart);
@@ -16,9 +13,10 @@ function SideBarCart() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    dispatch(getCart());
-  }, [dispatch]);
+  const handleNavigateToShop = () => {
+    dispatch(toggleSidebar());
+    navigate('/shop');
+  };
 
   const handleProceedToCheckout = () => {
     // Lưu các sản phẩm đã chọn vào localStorage
@@ -78,8 +76,9 @@ function SideBarCart() {
             </div>
           </div>
         ) : (
-          <div className='flex w-full flex-1 items-center justify-center'>
+          <div className='flex w-full flex-1 flex-col items-center justify-center gap-2'>
             <div className='text-center'>Không có sản phẩm nào trong giỏ hàng.</div>
+            <Button onClick={handleNavigateToShop}>Mua sắm ngay</Button>
           </div>
         )
       ) : (

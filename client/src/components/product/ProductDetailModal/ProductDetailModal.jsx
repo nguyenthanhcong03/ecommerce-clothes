@@ -17,6 +17,7 @@ const ProductDetailModal = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useSelector((state) => state.account);
+  const isAdmin = isAuthenticated && user?.role === 'admin';
   const {
     isDetailModalOpen,
     modalProductId,
@@ -370,7 +371,7 @@ const ProductDetailModal = () => {
                 </p>
               )}
 
-              {isAuthenticated && user?.role === 'admin' ? (
+              {isAdmin ? (
                 <></>
               ) : (
                 <div className='mt-6 flex gap-4'>

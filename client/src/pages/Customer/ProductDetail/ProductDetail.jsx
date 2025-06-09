@@ -29,6 +29,7 @@ const DetailProduct = () => {
   const { currentProduct: product, loadingFetchProductById, error } = useSelector((state) => state.product);
   const { categoriesTree } = useSelector((state) => state.category);
   const { isAuthenticated, user } = useSelector((state) => state.account);
+  const isAdmin = isAuthenticated && user?.role === 'admin';
 
   const {
     selectedSize,
@@ -410,7 +411,7 @@ const DetailProduct = () => {
               )}
             </div>
 
-            {isAuthenticated && user?.role === 'admin' ? (
+            {isAdmin ? (
               <></>
             ) : (
               <div className='m-2 flex flex-col gap-3 sm:m-4 sm:gap-4 lg:flex-row'>

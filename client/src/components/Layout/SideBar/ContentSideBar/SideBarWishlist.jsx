@@ -16,6 +16,11 @@ function SideBarWishlist() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const handleNavigateToShop = () => {
+    dispatch(toggleSidebar());
+    navigate('/shop');
+  };
+
   useEffect(() => {
     dispatch(getCart());
   }, [dispatch]);
@@ -77,8 +82,9 @@ function SideBarWishlist() {
             </div>
           </div>
         ) : (
-          <div className='flex w-full flex-1 items-center justify-center'>
+          <div className='flex w-full flex-1 flex-col items-center justify-center gap-2'>
             <div className='text-center'>Danh sách sản phẩm yêu thích trống.</div>
+            <Button onClick={handleNavigateToShop}>Mua sắm ngay</Button>
           </div>
         )
       ) : (
