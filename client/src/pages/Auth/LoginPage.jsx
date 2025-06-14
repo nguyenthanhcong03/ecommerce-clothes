@@ -1,17 +1,15 @@
 import Button from '@/components/common/Button/Button';
 import Input from '@/components/common/Input';
+import { loginUser } from '@/store/slices/accountSlice';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import * as yup from 'yup';
-import { loginUser, clearError, fetchCurrentUser } from '@/store/slices/accountSlice';
-import { toast } from 'react-toastify';
-import Headline from '@/components/common/Headline/Headline';
-import Logo from '@/assets/images/outfitory-logo.png';
 import { Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { useDispatch } from 'react-redux';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import * as yup from 'yup';
 
 // Định nghĩa schema validation với yup
 const loginSchema = yup.object().shape({
@@ -30,9 +28,6 @@ function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Lấy state từ Redux store
-  const { isLoading, error, isAuthenticated, user } = useSelector((state) => state.account);
-
   const {
     control,
     handleSubmit,
@@ -49,8 +44,7 @@ function LoginPage() {
     const { username, password } = data;
 
     try {
-      // Dispatch action đăng nhập với cấu trúc object đúng và thông tin remember me
-      dispatch(loginUser({ username, password, rememberMe }))
+      await dispatch(loginUser({ username, password, rememberMe }))
         .unwrap()
         .then((result) => {
           toast.success('Đăng nhập thành công!');
@@ -85,7 +79,6 @@ function LoginPage() {
     <div className='px-4 pt-24 sm:px-6 lg:px-8'>
       <div className='flex min-h-full items-center justify-center'>
         <div className='w-full max-w-md'>
-          {' '}
           <div className='text-center'>
             <div className='relative mx-auto mb-8'>
               {/* Logo/Brand Mark */}

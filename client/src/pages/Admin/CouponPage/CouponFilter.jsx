@@ -36,7 +36,6 @@ const CouponFilter = ({ filters, onFilterChange, onResetFilters }) => {
     // }
   }, [filters, setValue]);
   const handleFormSubmit = (data) => {
-    console.log('data', data);
     // Xử lý và chuẩn hóa dữ liệu trước khi gửi đi
     const cleanValues = {};
 

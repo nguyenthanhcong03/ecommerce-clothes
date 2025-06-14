@@ -1,9 +1,7 @@
 import Header from '@/components/AdminComponents/common/Header';
-import StatCard from '@/components/AdminComponents/common/StatCard';
-import { PlusOutlined } from '@ant-design/icons';
-import { Button, Card, Col, message, Row, Typography } from 'antd';
+import { Card, message, Typography } from 'antd';
 import { motion } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import CouponFilter from './CouponFilter';
@@ -19,7 +17,6 @@ import {
   setLimit,
   setPage
 } from '@/store/slices/couponSlice';
-import { Package, PackagePlus, Star, TrendingUp } from 'lucide-react';
 
 const { Title } = Typography;
 

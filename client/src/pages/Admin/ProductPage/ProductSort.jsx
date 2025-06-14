@@ -5,7 +5,6 @@ const { Option } = Select;
 
 const ProductSort = ({ sort, onSortChange }) => {
   const handleSortChange = (value) => {
-    console.log('value', value);
     onSortChange(value);
   };
 

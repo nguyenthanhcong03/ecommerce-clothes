@@ -19,7 +19,6 @@ const getAllProducts = async (req, res) => {
       size,
       color,
       rating,
-      inStock,
       sortBy = "createdAt",
       sortOrder = "desc",
     } = req.query;
@@ -45,10 +44,6 @@ const getAllProducts = async (req, res) => {
         query.categoryId = category;
       }
     }
-
-    // if (featured !== "") {
-    //   query.featured = featured === "true";
-    // }
 
     // Lọc theo khoảng giá
     const priceFilter = {};

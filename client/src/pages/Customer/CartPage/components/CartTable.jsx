@@ -108,56 +108,53 @@ const CartTable = () => {
     availableItems.length > 0 && availableItems.every((item) => selectedItems.includes(item._id));
 
   return (
-    <div>
-      <div className='flex flex-col gap-8'>
-        <div className='rounded-sm bg-white px-4'>
-          <div className='grid-cols-12 items-center gap-2 border-b text-sm uppercase text-primaryColor md:grid'>
-            <div className='flex items-center justify-between px-2 py-4'>
-              <input
-                type='checkbox'
-                checked={isAllAvailableSelected}
-                onChange={handleSelectAll}
-                className='h-4 w-4 rounded border-gray-300 accent-primaryColor'
-              />
-              {/* <button className='md:hidden'>xóa all</button> */}
-            </div>
-            <div className='col-span-3 hidden justify-start md:flex'>Sản phẩm</div>
-            <div className='col-span-1 hidden justify-center md:flex'>Phân loại</div>
-            <div className='col-span-2 hidden justify-center text-center md:flex'>Đơn giá</div>
-            <div className='col-span-2 hidden justify-center text-center md:flex'>Số lượng</div>
-            <div className='col-span-2 hidden justify-center text-right md:flex'>Số tiền</div>
-            <div className='col-span-1 hidden justify-center text-center md:flex'>Thao tác</div>
+    <div className='flex flex-col gap-8'>
+      <div className='rounded-sm bg-white p-4'>
+        <div className='grid-cols-12 items-center gap-2 border-b text-sm uppercase text-primaryColor md:grid'>
+          <div className='flex items-center justify-between px-2 py-4'>
+            <input
+              type='checkbox'
+              checked={isAllAvailableSelected}
+              onChange={handleSelectAll}
+              className='h-4 w-4 rounded border-gray-300 accent-primaryColor'
+            />
+            {/* <button className='md:hidden'>xóa all</button> */}
           </div>
-          <div className='space-y-4 lg:space-y-0'>
-            {items?.map((item) => (
-              <CartItem
-                key={item._id}
-                item={item}
-                onSelect={handleSelectItem}
-                isSelected={selectedItems.includes(item._id)}
-              />
-            ))}
-          </div>
+          <div className='col-span-3 hidden justify-start md:flex'>Sản phẩm</div>
+          <div className='col-span-1 hidden justify-center md:flex'>Phân loại</div>
+          <div className='col-span-2 hidden justify-center text-center md:flex'>Đơn giá</div>
+          <div className='col-span-2 hidden justify-center text-center md:flex'>Số lượng</div>
+          <div className='col-span-2 hidden justify-center text-right md:flex'>Số tiền</div>
+          <div className='col-span-1 hidden justify-center text-center md:flex'>Thao tác</div>
         </div>
-        <div
-          className={`sticky bottom-0 transition-shadow ${showShadow ? 'shadow-[0_-10px_10px_-3px_rgba(0,0,0,0.1)]' : ''}`}
-        >
-          <CartSummary
-            subtotal={calculateSelectedTotal()}
-            total={calculateSelectedTotal()}
-            selectedCount={selectedItems.length}
-            onNavigateToCheckout={handleProceedToCheckout}
-            onSelectAll={handleSelectAll}
-            onRemoveMultipleItems={handleRemoveMultipleItems}
-            isSelectedAll={isAllAvailableSelected}
-            cartItems={items}
-            selectedItems={selectedItems}
-            loading={loading}
-          />
+        <div className='space-y-4 lg:space-y-0'>
+          {items?.map((item) => (
+            <CartItem
+              key={item._id}
+              item={item}
+              onSelect={handleSelectItem}
+              isSelected={selectedItems.includes(item._id)}
+            />
+          ))}
         </div>
-        <div ref={sentinelRef} className='sentinel h-1 w-full'></div>
       </div>
-      <PaymentMethods />
+      <div
+        className={`sticky bottom-0 transition-shadow ${showShadow ? 'shadow-[0_-10px_10px_-3px_rgba(0,0,0,0.1)]' : ''}`}
+      >
+        <CartSummary
+          subtotal={calculateSelectedTotal()}
+          total={calculateSelectedTotal()}
+          selectedCount={selectedItems.length}
+          onNavigateToCheckout={handleProceedToCheckout}
+          onSelectAll={handleSelectAll}
+          onRemoveMultipleItems={handleRemoveMultipleItems}
+          isSelectedAll={isAllAvailableSelected}
+          cartItems={items}
+          selectedItems={selectedItems}
+          loading={loading}
+        />
+      </div>
+      <div ref={sentinelRef} className='sentinel h-1 w-full'></div>
     </div>
   );
 };

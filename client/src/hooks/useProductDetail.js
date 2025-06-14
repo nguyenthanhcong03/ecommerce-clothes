@@ -11,7 +11,6 @@ const useProductDetail = (productId) => {
       try {
         setLoading(true);
         const response = await getProductByIdAPI(productId);
-        console.log('response', response);
         setProduct(response.data.product);
       } catch (error) {
         console.log('Failed to fetch product detail:', error);

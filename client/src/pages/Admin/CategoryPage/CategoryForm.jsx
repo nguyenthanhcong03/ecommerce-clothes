@@ -1,3 +1,4 @@
+import ImageUpload from '@/pages/admin/ProductPage/ImageUpload';
 import { deleteMultipleFiles, uploadMultipleFiles } from '@/services/fileService';
 import { createCategory, updateCategoryById } from '@/store/slices/categorySlice';
 import { buildTree } from '@/utils/helpers/buildTree';
@@ -18,61 +19,61 @@ const categorySchema = yup.object({
   priority: yup.number().default(0).min(0, 'Ưu tiên phải là số không âm')
 });
 
-// Component tải lên hình ảnh có thể tái sử dụng
-const ImageUpload = memo(({ value = [], onChange, disabled }) => {
-  const handleChange = ({ fileList }) => {
-    // Xử lý xem trước cho các file mới
-    const newFileList = fileList.map((file) => {
-      if (!file.url && !file.preview && file.originFileObj) {
-        file.preview = URL.createObjectURL(file.originFileObj);
-      }
-      return file;
-    });
+// // Component tải lên hình ảnh có thể tái sử dụng
+// const ImageUpload = memo(({ value = [], onChange, disabled }) => {
+//   const handleChange = ({ fileList }) => {
+//     // Xử lý xem trước cho các file mới
+//     const newFileList = fileList.map((file) => {
+//       if (!file.url && !file.preview && file.originFileObj) {
+//         file.preview = URL.createObjectURL(file.originFileObj);
+//       }
+//       return file;
+//     });
 
-    onChange(newFileList);
-  };
+//     onChange(newFileList);
+//   };
 
-  const onPreview = useCallback((file) => {
-    const src = file.url || file.preview;
-    const imgWindow = window.open(src);
-    imgWindow?.document.write(`<img src="${src}" />`);
-  }, []);
+//   const onPreview = useCallback((file) => {
+//     const src = file.url || file.preview;
+//     const imgWindow = window.open(src);
+//     imgWindow?.document.write(`<img src="${src}" />`);
+//   }, []);
 
-  // Xử lý danh sách file để hiển thị
-  const fileList = Array.isArray(value)
-    ? value.map((item) => {
-        if (typeof item === 'string') {
-          // Nếu item là một chuỗi URL
-          return {
-            uid: item,
-            name: item.split('/').pop(),
-            status: 'done',
-            url: item
-          };
-        }
-        return item;
-      })
-    : [];
+//   // Xử lý danh sách file để hiển thị
+//   const fileList = Array.isArray(value)
+//     ? value.map((item) => {
+//         if (typeof item === 'string') {
+//           // Nếu item là một chuỗi URL
+//           return {
+//             uid: item,
+//             name: item.split('/').pop(),
+//             status: 'done',
+//             url: item
+//           };
+//         }
+//         return item;
+//       })
+//     : [];
 
-  return (
-    <Upload
-      // multiple // Cho phép chọn nhiều file trong explorer
-      listType='picture-card'
-      beforeUpload={() => false} // Không tải lên ngay lập tức
-      fileList={fileList} // danh sách file hiện tại
-      onChange={handleChange}
-      onPreview={onPreview}
-      disabled={disabled}
-    >
-      {value?.length < 1 && !disabled && (
-        <div>
-          <UploadOutlined />
-          <div style={{ marginTop: 8 }}>Chọn ảnh</div>
-        </div>
-      )}
-    </Upload>
-  );
-});
+//   return (
+//     <Upload
+//       // multiple // Cho phép chọn nhiều file trong explorer
+//       listType='picture-card'
+//       beforeUpload={() => false} // Không tải lên ngay lập tức
+//       fileList={fileList} // danh sách file hiện tại
+//       onChange={handleChange}
+//       onPreview={onPreview}
+//       disabled={disabled}
+//     >
+//       {value?.length < 1 && !disabled && (
+//         <div>
+//           <UploadOutlined />
+//           <div style={{ marginTop: 8 }}>Chọn ảnh</div>
+//         </div>
+//       )}
+//     </Upload>
+//   );
+// });
 
 const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
   const dispatch = useDispatch();
@@ -175,7 +176,7 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
     if (hasChanges) {
       setLocalFiles(newLocalFiles);
     }
-  }, [images]); // Loại bỏ localFiles khỏi dependencies
+  }, [images, localFiles]); // Loại bỏ localFiles khỏi dependencies
 
   // Tải file lên Cloudinary
   const uploadFiles = useCallback(async (files) => {
@@ -269,7 +270,6 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
         const oldImages = selectedCategory.images;
         const currentImageUrls = processedImages.map((img) => (typeof img === 'string' ? img : img.url));
         const deletedImages = oldImages.filter((img) => !currentImageUrls.includes(img));
-        console.log('deletedImages', deletedImages);
 
         if (deletedImages.length > 0) {
           try {
@@ -278,7 +278,6 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
             console.error('Lỗi khi xóa ảnh:', deleteErr);
           }
         }
-        console.log('formData', formData);
 
         await handleUpdateCategory(formData);
       } else {
@@ -400,7 +399,12 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
             name='images'
             control={control}
             render={({ field }) => (
-              <ImageUpload value={field.value} onChange={field.onChange} disabled={uploading || loading} />
+              <ImageUpload
+                value={field.value}
+                onChange={field.onChange}
+                disabled={uploading || loading}
+                maxImages={1}
+              />
             )}
           />
         </Form.Item>

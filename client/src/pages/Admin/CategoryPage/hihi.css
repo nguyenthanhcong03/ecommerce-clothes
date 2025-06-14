@@ -1,0 +1,4 @@
+.fit-column {
+  display: flex;
+  align-items: center; /* căn giữa dọc */
+}

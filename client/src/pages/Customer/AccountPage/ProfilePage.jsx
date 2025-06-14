@@ -177,7 +177,6 @@ const ProfilePage = () => {
 
   // Xử lý cập nhật thông tin cá nhân
   const onSubmit = async (data) => {
-    console.log('data', data);
     if (!user || !user._id) {
       toast.error('Không tìm thấy thông tin người dùng');
       return;

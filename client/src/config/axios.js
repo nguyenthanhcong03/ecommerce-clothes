@@ -49,16 +49,12 @@ axiosInstance.interceptors.response.use(
 
       // Kiểm tra xem có phải lỗi do access token hết hạn không
       const errorMessage = error.response?.data?.message || '';
-      console.log('error.response', error.response);
-      console.log('errorMessage', errorMessage);
       if (errorMessage.includes('expired') || errorMessage.includes('invalid')) {
         isRefreshing = true;
 
         try {
-          console.log('first');
           // Thử refresh token (cookie sẽ tự động được gửi)
           await axiosInstanceWithCredentials.post(`${API_URL}/api/auth/refresh-token`);
-          console.log('firs2t');
           // Refresh thành công, retry request gốc
           isRefreshing = false;
           hasShownSessionExpiredMessage = false;

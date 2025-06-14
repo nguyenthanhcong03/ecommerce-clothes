@@ -11,7 +11,6 @@ const QuantityInput = ({
   inputClassName = ''
 }) => {
   const [inputValue, setInputValue] = useState(value);
-  console.log('inputValue1', inputValue);
 
   useEffect(() => {
     setInputValue(value);

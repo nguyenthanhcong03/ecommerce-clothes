@@ -151,6 +151,29 @@ const createOrder = async (req, res) => {
 
     const savedOrder = await newOrder.save();
 
+    // Cập nhật số lượng sản phẩm trong kho sau khi đặt hàng
+    for (const item of products) {
+      const product = await Product.findById(item.productId);
+
+      if (product) {
+        if (item.variantId) {
+          // Trừ số lượng cho variant cụ thể
+          const variantIndex = product.variants.findIndex((v) => v._id.toString() === item.variantId);
+          console.log("variantIndex khi tạo", variantIndex);
+
+          if (variantIndex !== -1) {
+            // Đảm bảo số lượng không âm
+            product.variants[variantIndex].stock = Math.max(0, product.variants[variantIndex].stock - item.quantity);
+          }
+        } else {
+          // Trừ số lượng cho sản phẩm không có variant
+          product.stock = Math.max(0, product.stock - item.quantity);
+        }
+
+        await product.save();
+      }
+    }
+
     // Nếu tạo đơn hàng thành công, xóa các sản phẩm giỏ hàng
     const cart = await Cart.findOne({ userId: userId });
 
@@ -406,6 +429,42 @@ const updateOrderStatus = async (req, res) => {
     // Update delivered timestamp if status is Delivered
     if (status === "Delivered") {
       order.deliveredAt = new Date();
+
+      // Cập nhật số lượng đã bán cho sản phẩm khi đơn hàng chuyển sang trạng thái đã giao
+      for (const item of order.products) {
+        const product = await Product.findById(item.productId);
+
+        if (product) {
+          // Tăng số lượng đã bán của sản phẩm
+          product.salesCount = (product.salesCount || 0) + item.quantity;
+
+          await product.save();
+        }
+      }
+    }
+
+    // Nếu đơn hàng chuyển từ trạng thái khác sang Cancelled, cập nhật lại số lượng trong kho
+    if (status === "Cancelled" && order.status !== "Cancelled") {
+      // Trả lại số lượng sản phẩm vào kho
+      for (const item of order.products) {
+        const product = await Product.findById(item.productId);
+
+        if (product) {
+          if (item.variantId) {
+            // Cập nhật số lượng cho variant cụ thể
+            const variantIndex = product.variants.findIndex((v) => v._id.toString() === item.variantId.toString());
+
+            if (variantIndex !== -1) {
+              product.variants[variantIndex].stock += item.quantity;
+            }
+          } else {
+            // Cập nhật số lượng cho sản phẩm không có variant
+            product.stock += item.quantity;
+          }
+
+          await product.save();
+        }
+      }
     }
 
     const updatedOrder = await order.save();
@@ -517,6 +576,27 @@ const cancelOrder = async (req, res) => {
     order.status = "Cancelled";
     order.cancelReason = reason;
     order.cancelTime = new Date();
+
+    // Trả lại số lượng sản phẩm vào kho
+    for (const item of order.products) {
+      const product = await Product.findById(item.productId);
+
+      if (product) {
+        if (item.variantId) {
+          // Cập nhật số lượng cho variant cụ thể
+          const variantIndex = product.variants.findIndex((v) => v._id.toString() === item.variantId.toString());
+          console.log("variantIndex khi hủy", variantIndex, item.variantId);
+          if (variantIndex !== -1) {
+            product.variants[variantIndex].stock += item.quantity;
+          }
+        } else {
+          // Cập nhật số lượng cho sản phẩm không có variant
+          product.stock += item.quantity;
+        }
+
+        await product.save();
+      }
+    }
 
     const updatedOrder = await order.save();
 

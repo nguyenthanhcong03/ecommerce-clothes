@@ -1,6 +1,7 @@
 import Header from '@/components/AdminComponents/common/Header';
-import StatCard from '@/components/AdminComponents/common/StatCard';
 import useDebounce from '@/hooks/useDebounce';
+import ProductFilter from '@/pages/admin/ProductPage/ProductFilter';
+import ProductSort from '@/pages/admin/ProductPage/ProductSort';
 import {
   deleteProductById,
   fetchProducts,
@@ -8,21 +9,17 @@ import {
   setFilter,
   setLimit,
   setPage
-} from '@/store/slices/productSlice';
+} from '@/store/slices/adminProductSlice';
 import { Card, message } from 'antd';
 import { motion } from 'framer-motion';
-import { Package, PackagePlus, Star, TrendingUp } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ProductForm from './ProductForm';
 import ProductTable from './ProductTable';
-import ProductFilter from '@/pages/admin/ProductPage/ProductFilter';
-import ProductSort from '@/pages/admin/ProductPage/ProductSort';
-import { set } from 'date-fns';
 
 const ProductPage = () => {
   const dispatch = useDispatch();
-  const { products, loading, pagination, filters, error } = useSelector((state) => state.product);
+  const { products, loading, pagination, filters, error } = useSelector((state) => state.adminProduct);
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchText, setSearchText] = useState('');
@@ -47,10 +44,9 @@ const ProductPage = () => {
         delete queryParams[key];
       }
     });
-    console.log('quaryParams', queryParams);
 
     dispatch(fetchProducts(queryParams));
-  }, [pagination.page, pagination.limit, filters, debouncedSearchText, sortOption]);
+  }, [pagination.page, pagination.limit, filters, debouncedSearchText, sortOption, dispatch]);
 
   useEffect(() => {
     fetchAllProducts();

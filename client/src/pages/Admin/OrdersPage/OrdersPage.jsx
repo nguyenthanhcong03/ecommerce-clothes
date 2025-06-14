@@ -1,20 +1,19 @@
-import { useState, useCallback, useEffect } from 'react';
-import { updateOrderStatusAPI, updatePaymentStatusAPI } from '@/services/orderService';
-import { useDispatch, useSelector } from 'react-redux';
+import Header from '@/components/AdminComponents/common/Header';
+import useDebounce from '@/hooks/useDebounce';
+import { updatePaymentStatusAPI } from '@/services/orderService';
 import { fetchOrders, setFilters } from '@/store/slices/adminOrderSlice';
-import { Table, Card, Button, Space, Tag, Select, Modal, Tooltip, message, Typography } from 'antd';
-import { ReloadOutlined, EyeOutlined, DollarOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import './OrdersPage.scss';
-import OrderDetails from './OrderDetails';
-import OrderFilters from './OrderFilters';
-import OrderStatistics from './OrderStatistics';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import { formatDate } from '@/utils/format/formatDate';
-import { orderStatuses, statusColors } from '@/utils/helpers/orderStatusUtils';
-import useDebounce from '@/hooks/useDebounce';
-import Header from '@/components/AdminComponents/common/Header';
+import { statusTranslations } from '@/utils/helpers/orderStatusUtils';
+import { ClockCircleOutlined, DollarOutlined, EyeOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Button, Card, message, Modal, Select, Space, Table, Tag, Tooltip, Typography } from 'antd';
+import { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { updateOrderStatus } from '../../../store/slices/adminOrderSlice';
 import { getValidStatusTransitions } from '../../../utils/helpers/orderStatusUtils';
+import OrderDetails from './OrderDetails';
+import OrderFilters from './OrderFilters';
+import './OrdersPage.scss';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -60,7 +59,6 @@ const OrdersPage = () => {
           delete queryParams[key];
         }
       });
-      console.log('quaryParams', queryParams);
 
       dispatch(fetchOrders(queryParams));
     },
@@ -80,7 +78,6 @@ const OrdersPage = () => {
 
   // Handlers for table actions với hỗ trợ nhiều bộ lọc hơn
   const handleTableChange = (pagination, filters, sorter) => {
-    console.log('filters', filters);
     const params = {
       page: pagination.current,
       limit: pagination.pageSize,
@@ -108,7 +105,6 @@ const OrdersPage = () => {
       field: params.sortBy,
       order: params.sortOrder
     });
-    console.log('paymentStatus', params.paymentStatus);
 
     fetchAllOrders(params);
   };
@@ -192,7 +188,6 @@ const OrdersPage = () => {
   };
 
   const openStatusModal = (order) => {
-    console.log('Order', order);
     setSelectedOrder(order);
     setNewStatus(order.status);
     setStatusModalVisible(true);
@@ -284,30 +279,22 @@ const OrdersPage = () => {
       key: 'status',
       render: (status, record) => {
         const isUpdating = updatingOrderIds.includes(record._id);
-        // Lấy màu từ statusColors và sử dụng nó
-        const statusColor = statusColors[status] || '#d9d9d9';
 
         return (
           <Select
-            value={status}
+            value={statusTranslations[status] || status}
             style={{
-              width: '100%',
-              // Thêm border color để sử dụng statusColor
-              borderColor: isUpdating ? '#d9d9d9' : statusColor
+              width: '100%'
             }}
-            className={`status-select status-${status.toLowerCase()}`}
             loading={isUpdating}
-            disabled={isUpdating}
+            disabled={isUpdating || status === 'Cancelled'}
             onChange={(value) => handleOrderStatusChange(record._id, value)}
-            // options={getValidStatusTransitions(status)}
-            options={orderStatuses}
-            bordered={true}
+            options={getValidStatusTransitions(status)}
             listItemHeight={30}
             dropdownStyle={{
               borderRadius: '4px',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
             }}
-            popupClassName={`dropdown-${status.toLowerCase()}`}
           />
         );
       },

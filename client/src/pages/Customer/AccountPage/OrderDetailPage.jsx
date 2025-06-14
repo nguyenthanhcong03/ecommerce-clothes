@@ -107,7 +107,7 @@ const OrderDetailPage = () => {
         <div className='rounded-sm bg-red-50 p-4 text-red-600'>{error}</div>
         <Button
           variant='ghost'
-          onClick={() => navigate('/user/orders')}
+          onClick={() => navigate('/user/order')}
           className='mt-4 flex items-center text-neutral-600 hover:text-neutral-900'
         >
           <ArrowLeft className='mr-1 h-5 w-5' />
@@ -128,7 +128,7 @@ const OrderDetailPage = () => {
         <div className='flex items-center gap-2'>
           <Button
             variant='ghost'
-            onClick={() => navigate('/user/orders')}
+            onClick={() => navigate('/user/order')}
             className='text-neutral-600 hover:text-neutral-900'
           >
             <ArrowLeft className='mr-1 h-5 w-5' />
@@ -405,7 +405,7 @@ const OrderDetailPage = () => {
               )}
 
               {canBeReviewed && (
-                <Link to={`/user/orders/review/${orderDetail._id}`}>
+                <Link to={`/user/order/review/${orderDetail._id}`}>
                   <Button className='w-full'>
                     <FileEdit className='mr-2 h-4 w-4' />
                     Đánh giá đơn hàng
@@ -413,7 +413,7 @@ const OrderDetailPage = () => {
                 </Link>
               )}
 
-              <Link to='/user/orders'>
+              <Link to='/user/order'>
                 <Button variant='secondary' className='w-full'>
                   <ArrowLeft className='mr-2 h-4 w-4' />
                   Quay lại
@@ -462,7 +462,7 @@ export default OrderDetailPage;
 //       <div className='rounded-sm bg-red-50 p-4 text-red-600'>{error}</div>
 //       <Button
 //         variant='ghost'
-//         onClick={() => navigate('/user/orders')}
+//         onClick={() => navigate('/user/order')}
 //         className='mt-4 text-neutral-600 hover:text-neutral-900'
 //       >
 //         <ArrowLeft className='mr-1 h-5 w-5' />

@@ -1,0 +1,180 @@
+const Order = require("../models/order");
+const Product = require("../models/product");
+const User = require("../models/user");
+const Category = require("../models/category");
+const statisticsService = require("../services/statisticsService");
+
+/**
+ * Lấy thống kê tổng quan
+ * @route GET /api/statistics/overview
+ * @access Admin
+ */
+const getOverviewStatistics = async (req, res) => {
+  try {
+    const stats = await statisticsService.getOverviewStatistics();
+    res.json({
+      success: true,
+      statistics: stats,
+    });
+  } catch (error) {
+    console.error("Error fetching overview statistics:", error);
+    res.status(500).json({
+      success: false,
+      message: "Không thể lấy thống kê tổng quan",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Lấy thống kê doanh thu
+ * @route GET /api/statistics/revenue
+ * @access Admin
+ */
+const getRevenueStatistics = async (req, res) => {
+  try {
+    const { period, startDate, endDate } = req.query;
+    const revenueStats = await statisticsService.getRevenueStatistics(period, startDate, endDate);
+
+    res.json({
+      success: true,
+      statistics: revenueStats,
+    });
+  } catch (error) {
+    console.error("Error fetching revenue statistics:", error);
+    res.status(500).json({
+      success: false,
+      message: "Không thể lấy thống kê doanh thu",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Lấy thống kê sản phẩm bán chạy
+ * @route GET /api/statistics/top-products
+ * @access Admin
+ */
+const getTopProducts = async (req, res) => {
+  try {
+    const { limit = 10, period, startDate, endDate } = req.query;
+    const topProducts = await statisticsService.getTopProducts(parseInt(limit), period, startDate, endDate);
+
+    res.json({
+      success: true,
+      products: topProducts,
+    });
+  } catch (error) {
+    console.error("Error fetching top products:", error);
+    res.status(500).json({
+      success: false,
+      message: "Không thể lấy thống kê sản phẩm bán chạy",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Lấy thống kê khách hàng
+ * @route GET /api/statistics/customers
+ * @access Admin
+ */
+const getCustomerStatistics = async (req, res) => {
+  try {
+    const { period, startDate, endDate } = req.query;
+    const customerStats = await statisticsService.getCustomerStatistics(period, startDate, endDate);
+
+    res.json({
+      success: true,
+      statistics: customerStats,
+    });
+  } catch (error) {
+    console.error("Error fetching customer statistics:", error);
+    res.status(500).json({
+      success: false,
+      message: "Không thể lấy thống kê khách hàng",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Lấy thống kê theo danh mục sản phẩm
+ * @route GET /api/statistics/categories
+ * @access Admin
+ */
+const getCategoryStatistics = async (req, res) => {
+  try {
+    const { period, startDate, endDate } = req.query;
+    const categoryStats = await statisticsService.getCategoryStatistics(period, startDate, endDate);
+
+    res.json({
+      success: true,
+      statistics: categoryStats,
+    });
+  } catch (error) {
+    console.error("Error fetching category statistics:", error);
+    res.status(500).json({
+      success: false,
+      message: "Không thể lấy thống kê theo danh mục sản phẩm",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Lấy thống kê đơn hàng
+ * @route GET /api/statistics/orders
+ * @access Admin
+ */
+const getOrderStatistics = async (req, res) => {
+  try {
+    const { period, startDate, endDate } = req.query;
+    const orderStats = await statisticsService.getOrderStatistics(period, startDate, endDate);
+
+    res.json({
+      success: true,
+      statistics: orderStats,
+    });
+  } catch (error) {
+    console.error("Error fetching order statistics:", error);
+    res.status(500).json({
+      success: false,
+      message: "Không thể lấy thống kê đơn hàng",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Lấy thống kê tồn kho
+ * @route GET /api/statistics/inventory
+ * @access Admin
+ */
+const getInventoryStatistics = async (req, res) => {
+  try {
+    const inventoryStats = await statisticsService.getInventoryStatistics();
+
+    res.json({
+      success: true,
+      statistics: inventoryStats,
+    });
+  } catch (error) {
+    console.error("Error fetching inventory statistics:", error);
+    res.status(500).json({
+      success: false,
+      message: "Không thể lấy thống kê tồn kho",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = {
+  getOverviewStatistics,
+  getRevenueStatistics,
+  getTopProducts,
+  getCustomerStatistics,
+  getCategoryStatistics,
+  getOrderStatistics,
+  getInventoryStatistics,
+};

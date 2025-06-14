@@ -2,39 +2,28 @@
  * Các hàm tiện ích để xử lý trạng thái đơn hàng
  */
 
-// Định nghĩa màu cho các trạng thái đơn hàng
-export const statusColors = {
-  Pending: 'gold',
-  Processing: 'blue',
-  Shipping: 'cyan',
-  Delivered: 'green',
-  Cancelled: 'red'
+// Chuyển đổi tiếng Anh sang tiếng Việt
+export const statusTranslations = {
+  Pending: 'Đang chờ xử lý',
+  Processing: 'Đang xử lý',
+  Shipping: 'Đang giao hàng',
+  Delivered: 'Đã giao hàng',
+  Cancelled: 'Đã hủy'
 };
-
-// // Chuyển đổi tiếng Anh sang tiếng Việt
-// export const statusTranslations = {
-//   Pending: 'Đang chờ xử lý',
-//   Processing: 'Đang xử lý',
-//   Shipping: 'Đang giao hàng',
-//   Delivered: 'Đã giao hàng',
-//   Cancelled: 'Đã hủy'
-// };
 
 // Danh sách các trạng thái đơn hàng
 export const orderStatuses = [
-  { value: 'Pending', label: 'Đang chờ xử lý', color: 'gold' },
-  { value: 'Processing', label: 'Đang xử lý', color: 'blue' },
-  { value: 'Shipping', label: 'Đang giao hàng', color: 'cyan' },
-  { value: 'Delivered', label: 'Đã giao hàng', color: 'green' },
-  { value: 'Cancelled', label: 'Đã hủy', color: 'red' }
+  { value: 'Pending', label: 'Đang chờ xử lý' },
+  { value: 'Processing', label: 'Đang xử lý' },
+  { value: 'Shipping', label: 'Đang giao hàng' },
+  { value: 'Delivered', label: 'Đã giao hàng' },
+  { value: 'Cancelled', label: 'Đã hủy' }
 ];
 
 /**
  * Kiểm tra xem đơn hàng có thể chuyển sang trạng thái mới không
  */
 export const canChangeStatus = (currentStatus, newStatus) => {
-  console.log('currentStatus', currentStatus);
-  console.log('newStatus', newStatus);
   // Nếu đơn hàng đã bị hủy, không thể chuyển sang trạng thái khác
   if (currentStatus === 'Cancelled') {
     return false;
@@ -68,8 +57,7 @@ export const getValidStatusTransitions = (currentStatus) => {
 };
 
 export default {
-  statusColors,
-  // statusTranslations,
+  statusTranslations,
   orderStatuses,
   canChangeStatus,
   getValidStatusTransitions

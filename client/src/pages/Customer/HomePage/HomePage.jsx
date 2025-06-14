@@ -1,17 +1,31 @@
+import countdownBanner1 from '@/assets/images/countdownBanner1.jpeg';
 import Button from '@/components/common/Button/Button';
 import CountDownBanner from '@/components/common/CountDownBanner/CountDownBanner';
 import Headline from '@/components/common/Headline/Headline';
-import PopularProduct from '@/components/product/PopularProduct/PopularProduct';
+import ProductCard from '@/components/product/ProductCard/ProductCard';
 import CategorySection from '@/pages/customer/HomePage/components/CategorySection';
 import Info from '@/pages/customer/HomePage/components/Info';
-import { fetchProducts } from '@/store/slices/productSlice';
-import { useEffect } from 'react';
+import { fetchProducts, setPage } from '@/store/slices/productSlice';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import countdownBanner1 from '@/assets/images/countdownBanner1.jpeg';
 
 function HomePage() {
   const dispatch = useDispatch();
-  const { products } = useSelector((state) => state.product);
+  const { products, pagination } = useSelector((state) => state.product);
+  const [hasMore, setHasMore] = useState(true);
+
+  const handleLoadMore = async () => {
+    const nextPage = pagination.page + 1;
+
+    const resultAction = await dispatch(fetchProducts({ page: nextPage, limit: 10 }));
+    // Nếu kết quả trả về ít hơn limit, thì không còn sản phẩm
+    if (resultAction.payload.products.length < 10) {
+      setHasMore(false);
+    }
+
+    dispatch(setPage(nextPage));
+  };
+
   useEffect(() => {
     dispatch(fetchProducts({ page: 1, limit: 10 }));
   }, [dispatch]);
@@ -29,10 +43,14 @@ function HomePage() {
         <div className='col-span-2 h-full w-full'>
           <CountDownBanner bannerImage={countdownBanner1} />
         </div>
-        <PopularProduct data={products.slice(0, 10)} />
-        <div className='col-span-full my-10'>
-          <Button>Xem thêm</Button>
-        </div>
+        {products.map((item) => (
+          <ProductCard item={item} key={item._id} />
+        ))}
+        {hasMore && (
+          <div className='col-span-full my-10'>
+            <Button onClick={handleLoadMore}>Xem thêm</Button>
+          </div>
+        )}
       </div>
     </div>
   );

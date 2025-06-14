@@ -51,7 +51,7 @@ export const fetchProducts = createAsyncThunk('product/fetchProducts', async (pa
 });
 
 const shopSlice = createSlice({
-  name: 'product',
+  name: 'shop',
   initialState: {
     products: [],
     pagination: {
@@ -61,25 +61,9 @@ const shopSlice = createSlice({
       totalPages: 0
     },
     loading: false,
-    error: null,
-    categories: [],
-    brands: [],
-    priceRange: { min: 0, max: 1000000 }
+    error: null
   },
-  reducers: {
-    clearProducts: (state) => {
-      state.products = [];
-    },
-    setCategories: (state, action) => {
-      state.categories = action.payload;
-    },
-    setBrands: (state, action) => {
-      state.brands = action.payload;
-    },
-    setPriceRange: (state, action) => {
-      state.priceRange = action.payload;
-    }
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       // FETCH ALL PRODUCTS
@@ -98,7 +82,5 @@ const shopSlice = createSlice({
       });
   }
 });
-
-export const { clearProducts, setCategories, setBrands, setPriceRange } = shopSlice.actions;
 
 export default shopSlice.reducer;

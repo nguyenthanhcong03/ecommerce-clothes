@@ -1,10 +1,7 @@
-import React, { memo, useEffect, useState } from 'react';
-import { Controller } from 'react-hook-form';
 import Input from '@/components/common/Input/Input';
 import Select from '@/components/common/Select/Select';
-import { getDistrictsAPI, getProvincesAPI } from '@/services/mapService';
-import { useDispatch, useSelector } from 'react-redux';
-import { calculateDistance } from '../../../../store/slices/orderSlice';
+import { memo } from 'react';
+import { Controller } from 'react-hook-form';
 
 const ShippingForm = ({ control, errors, provinces, districts, wards, selectedProvince, selectedDistrict }) => {
   return (

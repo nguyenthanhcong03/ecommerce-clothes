@@ -21,7 +21,7 @@ const AccountLayout = () => {
     {
       title: 'Đơn hàng và ưu đãi',
       items: [
-        { name: 'Đơn mua', path: '/user/orders', icon: <ClipboardList width={18} /> },
+        { name: 'Đơn mua', path: '/user/order', icon: <ClipboardList width={18} /> },
         { name: 'Kho Voucher', path: '/user/vouchers', icon: <Ticket width={18} /> }
       ]
     }

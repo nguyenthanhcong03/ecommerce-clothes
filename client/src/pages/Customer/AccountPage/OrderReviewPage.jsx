@@ -80,7 +80,7 @@ const OrderReviewPage = () => {
     dispatch(reviewOrder({ orderId, reviewData }))
       .unwrap()
       .then(() => {
-        navigate(`/user/orders/detail/${orderId}`);
+        navigate(`/user/order/detail/${orderId}`);
       })
       .catch((error) => {
         toast.error('Có lỗi xảy ra khi đánh giá. Vui lòng thử lại!');
@@ -105,7 +105,7 @@ const OrderReviewPage = () => {
         </div>
         <Button
           variant='ghost'
-          onClick={() => navigate(`/user/orders/detail/${orderId}`)}
+          onClick={() => navigate(`/user/order/detail/${orderId}`)}
           className='mt-4 flex items-center text-neutral-600 hover:text-neutral-900'
         >
           <ArrowLeft className='mr-1 h-5 w-5' />
@@ -119,7 +119,7 @@ const OrderReviewPage = () => {
     <div className='container mx-auto p-4'>
       <div className='mb-6 flex items-center'>
         <button
-          onClick={() => navigate(`/user/orders/detail/${orderId}`)}
+          onClick={() => navigate(`/user/order/detail/${orderId}`)}
           className='mr-4 flex items-center text-gray-600 hover:text-orange-500'
         >
           <ArrowLeft className='mr-1 h-5 w-5' />
@@ -189,7 +189,7 @@ const OrderReviewPage = () => {
 
         {/* Nút gửi đánh giá */}
         <div className='flex justify-end gap-4'>
-          <Button variant='secondary' onClick={() => navigate(`/user/orders/detail/${orderId}`)} className='w-20'>
+          <Button variant='secondary' onClick={() => navigate(`/user/order/detail/${orderId}`)} className='w-20'>
             Hủy
           </Button>
           <Button type='submit' disabled={loading}>

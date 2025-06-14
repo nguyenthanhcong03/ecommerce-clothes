@@ -90,8 +90,6 @@ function OurShopPage() {
   };
 
   const handleFilterChange = (name, value) => {
-    console.log('handleFilterChange:', name, value);
-
     // Xử lý theo từng loại filter
     switch (name) {
       case 'priceRange': {
@@ -112,7 +110,6 @@ function OurShopPage() {
 
       case 'minPrice':
       case 'maxPrice': {
-        console.log('hihi');
         // Xử lý giá tùy chỉnh
         if (value && value.trim() !== '') {
           params.set(name, value);
@@ -178,7 +175,6 @@ function OurShopPage() {
 
   // Fetch products when filters change
   useEffect(() => {
-    console.log('catId', catId);
     const queryParams = {
       search: params.get('search') || '',
       minPrice: params.get('minPrice') || '',
@@ -195,7 +191,6 @@ function OurShopPage() {
 
     // // Remove undefined/empty values
     // Object.keys(queryParams).forEach((key) => !queryParams[key] && delete queryParams[key]);
-    console.log('queryParams', queryParams);
 
     dispatch(fetchProducts(queryParams));
   }, [dispatch, catId, params]);

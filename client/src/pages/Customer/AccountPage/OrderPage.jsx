@@ -124,11 +124,11 @@ const OrderItem = ({ order, onCancel }) => {
               </Button>
             )}
             {canBeReviewed && (
-              <Link to={`/user/orders/review/${order._id}`}>
+              <Link to={`/user/order/review/${order._id}`}>
                 <Button leftIcon={<FileEdit className='h-4 w-4' />}>Đánh giá</Button>
               </Link>
             )}
-            <Link to={`/user/orders/detail/${order._id}`}>
+            <Link to={`/user/order/detail/${order._id}`}>
               <Button variant='ghost' rightIcon={<ChevronRight className='h-4 w-4' />}>
                 Xem chi tiết
               </Button>
@@ -187,8 +187,8 @@ const OrderPage = () => {
   // Load đơn hàng khi component mount hoặc khi tab thay đổi
   useEffect(() => {
     const selectedTab = tabs.find((tab) => tab.id === activeTab);
-    dispatch(fetchUserOrders({ page: 1, limit: 5, status: selectedTab?.status || '' }));
-  }, [activeTab, dispatch]);
+    dispatch(fetchUserOrders({ status: selectedTab?.status || '' }));
+  }, [dispatch, activeTab]);
 
   // Xử lý thay đổi tab
   const handleTabChange = (tabId) => {
@@ -215,7 +215,6 @@ const OrderPage = () => {
   // Xử lý tìm kiếm
   const handleSearch = (e) => {
     e.preventDefault();
-    console.log('Tìm kiếm:', searchKeyword);
   };
 
   return (

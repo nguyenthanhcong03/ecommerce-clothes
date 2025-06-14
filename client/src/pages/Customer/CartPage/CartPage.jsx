@@ -1,3 +1,5 @@
+import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
+import Headline from '@/components/common/Headline/Headline';
 import { getCart, removeMultipleCartItems } from '@/store/slices/cartSlice';
 import { Skeleton } from 'antd';
 import { useEffect, useState } from 'react';
@@ -6,9 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import CartTable from './components/CartTable';
 import EmptyCart from './components/EmptyCart';
-import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
-import Headline from '@/components/common/Headline/Headline';
-import UnavailableItemsModal from '@/components/cart/UnavailableItemsModal/UnavailableItemsModal';
+import PaymentMethods from '@/pages/customer/CartPage/components/PaymentMethods';
 
 // Cart skeleton loading component
 const CartSkeleton = () => (
@@ -67,12 +67,12 @@ function CartPage() {
     dispatch(getCart())
       .unwrap()
       .then((response) => {
-        // Kiểm tra các sản phẩm không khả dụng
-        const unavailable = response.data.items.filter((item) => item.isAvailable === false);
-        if (unavailable.length > 0) {
-          setUnavailableItems(unavailable);
-          setShowUnavailableModal(true);
-        }
+        // // Kiểm tra các sản phẩm không khả dụng
+        // const unavailable = response.data.items.filter((item) => item.isAvailable === false);
+        // if (unavailable.length > 0) {
+        //   setUnavailableItems(unavailable);
+        //   setShowUnavailableModal(true);
+        // }
       })
       .catch((error) => {
         toast.error('Không thể tải giỏ hàng: ' + error);
@@ -125,13 +125,14 @@ function CartPage() {
       )}
 
       {/* Modal hiển thị khi có sản phẩm không khả dụng */}
-      <UnavailableItemsModal
+      {/* <UnavailableItemsModal
         visible={showUnavailableModal}
         unavailableItems={unavailableItems}
         onRemoveItems={handleRemoveUnavailableItems}
         onKeepItems={handleKeepUnavailableItems}
         onCancel={handleKeepUnavailableItems}
-      />
+      /> */}
+      <PaymentMethods />
     </div>
   );
 }

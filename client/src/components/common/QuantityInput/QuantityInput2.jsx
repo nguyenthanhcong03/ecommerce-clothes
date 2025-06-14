@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 
 const QuantityInput2 = ({ value = 1, min = 1, max = 99, onChange, onFinalChange }) => {
   const [inputValue, setInputValue] = useState(value);
-  console.log('inputValue2', inputValue);
 
   useEffect(() => {
     setInputValue(value);

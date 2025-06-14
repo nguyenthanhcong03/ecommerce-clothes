@@ -60,7 +60,6 @@ const UserForm = ({ user, onClose, loading }) => {
   ];
 
   const onSubmit = async (data) => {
-    console.log('dataIndex', data);
     try {
       if (user && user._id) {
         // Chế độ cập nhật

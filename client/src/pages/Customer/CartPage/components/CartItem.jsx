@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 const CartItem = ({ item, onSelect, isSelected }) => {
   const { loadingUpdate, itemUpdate } = useSelector((state) => state.cart);
   const isUpdating = loadingUpdate && itemUpdate?._id === item._id;
-  const isAvailable = item.isAvailable !== false; // Mặc định là true nếu không có giá trị
+  const isAvailable = item?.isAvailable !== false; // Mặc định là true nếu không có giá trị
   const dispatch = useDispatch();
 
   const [quantity, setQuantity] = useState(item.quantity);
@@ -39,13 +39,6 @@ const CartItem = ({ item, onSelect, isSelected }) => {
   };
   return (
     <div className={`flex flex-col gap-4 border-b px-2 py-4 ${!isAvailable ? 'bg-gray-50' : ''}`}>
-      {/* Badge khi sản phẩm không khả dụng */}
-      {!isAvailable && (
-        <div className='flex w-fit items-center gap-1 rounded bg-red-50 px-2 py-1 text-xs font-medium text-red-600'>
-          <span className='inline-block h-2 w-2 rounded-full bg-red-500'></span>
-          Sản phẩm không khả dụng
-        </div>
-      )}
       {/* Mobile view - cart item */}
       <div className='flex items-center justify-start gap-2 md:hidden'>
         {isSelected && (
@@ -60,18 +53,25 @@ const CartItem = ({ item, onSelect, isSelected }) => {
           </div>
         )}
         <div className='flex flex-1 items-center justify-between'>
-          <div className='flex items-center gap-3'>
+          <div className='flex gap-3'>
             <img
               src={item.snapshot.image}
               alt={item.snapshot.name}
               className={`h-24 w-20 object-cover ${!isAvailable ? 'opacity-60 grayscale' : ''}`}
             />
-            <div className='flex flex-1 flex-col justify-start gap-3'>
-              <div className={`text-sm ${!isAvailable ? 'text-gray-500' : ''}`}>{item.snapshot.name}</div>
+            <div className='flex flex-col justify-between'>
+              {/* Badge khi sản phẩm không khả dụng */}
+              {!isAvailable && (
+                <div className='flex w-fit items-center gap-1 rounded bg-red-50 text-xs font-medium text-red-600'>
+                  <span className='inline-block h-2 w-2 rounded-full bg-red-500'></span>
+                  Sản phẩm không khả dụng
+                </div>
+              )}
+              <div className={`line-clamp-2 text-sm ${!isAvailable ? 'text-gray-500' : ''}`}>{item.snapshot.name}</div>
               <div className='text-sm text-gray-600'>
                 {item.snapshot.size}, {item.snapshot.color}
               </div>
-              <div className='text-gray-600'>{formatCurrency(item.snapshot.price)}</div>
+              <div className='text-sm text-gray-600'>{formatCurrency(item.snapshot.price)}</div>
             </div>
           </div>
           <div className='flex h-[96px] flex-col justify-between'>
@@ -107,8 +107,14 @@ const CartItem = ({ item, onSelect, isSelected }) => {
             className={`h-24 w-20 object-cover md:h-20 md:w-16 ${!isAvailable ? 'opacity-60 grayscale' : ''}`}
           />
           <div className={`text-sm ${!isAvailable ? 'text-gray-500' : ''}`}>
+            {/* Badge khi sản phẩm không khả dụng */}
+            {!isAvailable && (
+              <div className='flex w-fit items-center gap-1 rounded bg-red-50 text-xs font-medium text-red-600'>
+                <span className='inline-block h-2 w-2 rounded-full bg-red-500'></span>
+                Sản phẩm không khả dụng
+              </div>
+            )}
             {item.snapshot.name}
-            {!isAvailable && <span className='ml-1 text-xs text-red-500'>(Không khả dụng)</span>}
           </div>
         </div>
         <div className='col-span-1 text-center text-sm text-gray-600'>

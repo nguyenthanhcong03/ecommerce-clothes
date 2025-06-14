@@ -18,8 +18,8 @@ import CheckoutPage from '@/pages/customer/CheckoutPage/CheckoutPage.jsx';
 import ContactPage from '@/pages/customer/ContactPage/ContactPage.jsx';
 import HomePage from '@/pages/customer/HomePage/HomePage.jsx';
 import NewsPage from '@/pages/customer/NewsPage/NewsPage.jsx';
-import PaymentFailedPage from '@/pages/customer/PaymentStatusPage/PaymentFailedPage.jsx';
 import PaymentSuccessPage from '@/pages/customer/PaymentStatusPage/PaymentSuccessPage.jsx';
+import PaymentFailedPage from '@/pages/customer/PaymentStatusPage/PaymentFailedPage';
 import ProductDetail from '@/pages/customer/ProductDetail/ProductDetail.jsx';
 import WishlistPage from '@/pages/customer/WishlistPage/WishlistPage.jsx';
 
@@ -115,19 +115,11 @@ const customerProtectedRoutes = [
   },
   {
     path: 'payment-success',
-    element: (
-      <ProtectedRoute roles={['customer']}>
-        <PaymentSuccessPage />
-      </ProtectedRoute>
-    )
+    element: <PaymentSuccessPage />
   },
   {
     path: 'payment-failed',
-    element: (
-      <ProtectedRoute roles={['customer']}>
-        <PaymentFailedPage />
-      </ProtectedRoute>
-    )
+    element: <PaymentFailedPage />
   },
   {
     path: 'user',
@@ -156,7 +148,7 @@ const customerProtectedRoutes = [
         element: <PrivacyPage />
       },
       {
-        path: 'orders',
+        path: 'order',
         element: <OrderPage />
       },
       {

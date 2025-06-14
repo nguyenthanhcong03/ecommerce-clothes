@@ -6,13 +6,8 @@ const BASE_API = '/api/category';
  * @param {Object} params Các tham số truy vấn {page, limit, search}
  * @returns {Promise} Kết quả từ API chứa danh sách danh mục và thông tin phân trang
  */
-export const getAllCategoriesAPI = async ({ page = 1, limit = 10, search = '' }) => {
-  const queryParams = new URLSearchParams({
-    page,
-    limit,
-    search
-  }).toString();
-  const url = `${BASE_API}?${queryParams}`;
+export const getAllCategoriesAPI = async () => {
+  const url = `${BASE_API}`;
   return await axios.get(url);
 };
 

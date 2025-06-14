@@ -5,8 +5,6 @@ import PropTypes from 'prop-types';
 import { useMemo } from 'react';
 import './styles.css';
 
-// const { Option } = Select;
-
 const ProductTable = ({
   products,
   pagination,

@@ -5,7 +5,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import * as yup from 'yup';
 import { registerUser, clearSuccessMessage } from '@/store/slices/accountSlice';
 import { checkUsernameExists, checkEmailExists } from '@/services/authService';
@@ -45,6 +45,7 @@ const registerSchema = yup.object().shape({
 function RegisterPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
 
   // State cho việc kiểm tra username và email
   const [usernameCheck, setUsernameCheck] = useState({ isChecking: false, message: '', error: false });
@@ -86,11 +87,12 @@ function RegisterPage() {
       toast.success(successMessage);
       dispatch(clearSuccessMessage());
       // Chuyển hướng đến trang đăng nhập sau khi đăng ký thành công
+      // Giữ lại thông tin về trang trước đó từ location.state
       setTimeout(() => {
-        navigate('/login');
+        navigate('/login', { state: location.state });
       }, 2000);
     }
-  }, [successMessage, dispatch, navigate]);
+  }, [successMessage, dispatch, navigate, location.state]);
 
   // Kiểm tra username khi người dùng nhập
   useEffect(() => {

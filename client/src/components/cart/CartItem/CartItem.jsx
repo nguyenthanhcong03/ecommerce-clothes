@@ -9,16 +9,15 @@ import { toggleSidebar } from '@/store/slices/sidebarSlice';
 
 function CartItem({ item }) {
   const { loadingUpdate, itemUpdate } = useSelector((state) => state.cart);
-  const isUpdating = loadingUpdate && itemUpdate?._id === item.productId;
-  console.log('item', item);
-  const isAvailable = item.isAvailable !== false; // Mặc định là true nếu không có giá trị
+  const isUpdating = loadingUpdate && itemUpdate?._id === item?.productId;
+  const isAvailable = item?.isAvailable !== false; // Mặc định là true nếu không có giá trị
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleItemClick = useCallback(() => {
     dispatch(toggleSidebar());
-    navigate(`/product/${item.productId}`);
-  }, [item, navigate]);
+    navigate(`/product/${item?.productId}`);
+  }, [item, navigate, dispatch]);
 
   const handleQuantityChange = useCallback(
     (newQuantity) => {
@@ -27,8 +26,8 @@ function CartItem({ item }) {
         return;
       }
 
-      if (newQuantity !== item.quantity) {
-        dispatch(updateCartItem({ itemId: item._id, quantity: newQuantity }))
+      if (newQuantity !== item?.quantity) {
+        dispatch(updateCartItem({ itemId: item?._id, quantity: newQuantity }))
           .unwrap()
           // .then(() => toast.success('Cập nhật số lượng thành công'))
           .catch((err) => toast.error('Cập nhật số lượng thất bại: ' + err));
@@ -81,10 +80,10 @@ function CartItem({ item }) {
           min={1}
           max={item?.snapshot.stock || 999}
           onChange={(newQuantity) => handleQuantityChange(newQuantity)}
-          disabled={isUpdating || !isAvailable}
+          disabled={!isAvailable || isUpdating}
         />
       </div>
-      <div className='absolute right-2 top-2 translate-x-6 cursor-pointer text-sm text-secondaryColor opacity-0 transition-all duration-200 ease-in hover:scale-110 hover:text-primaryColor active:scale-95 group-hover:-translate-x-0 group-hover:opacity-100'>
+      <div className='absolute right-2 top-2 z-40 translate-x-6 cursor-pointer text-sm text-secondaryColor opacity-0 transition-all duration-200 ease-in hover:scale-110 hover:text-primaryColor active:scale-95 group-hover:-translate-x-0 group-hover:opacity-100'>
         <X width={20} onClick={() => handleRemoveItem(item._id)} />
       </div>
     </div>

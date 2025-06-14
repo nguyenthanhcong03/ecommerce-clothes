@@ -1,15 +1,13 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllUsers, deleteUser, setFilters, banUser, unbanUser } from '@/store/slices/userSlice';
-import { message, Button } from 'antd';
-import { motion } from 'framer-motion';
-import { Users, UserPlus, CheckCircle, AlertTriangle } from 'lucide-react';
 import Header from '@/components/AdminComponents/common/Header';
-import StatCard from '@/components/AdminComponents/common/StatCard';
-import UserTable from './UserTable';
-import UserForm from './UserForm';
-import BanUserModal from './BanUserModal';
 import useDebounce from '@/hooks/useDebounce';
+import { banUser, deleteUser, fetchAllUsers, setLimit, setPage, unbanUser } from '@/store/slices/userSlice';
+import { message } from 'antd';
+import { motion } from 'framer-motion';
+import { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import BanUserModal from './BanUserModal';
+import UserForm from './UserForm';
+import UserTable from './UserTable';
 
 const UserPage = () => {
   const dispatch = useDispatch();
@@ -23,43 +21,37 @@ const UserPage = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isBanModalVisible, setIsBanModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [sortInfo, setSortInfo] = useState({
-    field: 'createdAt',
-    order: 'descend'
-  });
+  const [sortOption, setSortOption] = useState({ sortBy: 'createdAt', sortOrder: 'desc' });
 
   // Áp dụng debounce cho search để tránh gọi API quá nhiều
   const debouncedSearchText = useDebounce(searchText, 500);
 
   // Tạo params cho API từ state
-  const fetchUsers = useCallback(
-    (params = {}) => {
-      const queryParams = {
-        page: params.page || pagination.page || 1,
-        limit: params.limit || pagination.limit || 10,
-        search: params.search !== undefined ? params.search : debouncedSearchText,
-        role: params.role || filters.role,
-        isBlocked: params.isBlocked || filters.isBlocked,
-        sortBy: params.sortBy || sortInfo.field,
-        sortOrder: params.sortOrder === 'ascend' ? 'asc' : 'desc'
-      };
+  const fetchUsers = useCallback(() => {
+    const queryParams = {
+      page: pagination.page || 1,
+      limit: pagination.limit || 5,
+      search: debouncedSearchText || '',
+      role: filters.role,
+      isBlocked: filters.isBlocked,
+      sortBy: sortOption.sortBy || 'createdAt',
+      sortOrder: sortOption.sortOrder || 'desc',
+      ...filters
+    };
 
-      // Xử lý trường hợp đặc biệt khi cả hai trạng thái isBlocked được chọn
-      if (Array.isArray(queryParams.isBlocked) && queryParams.isBlocked.length === 2) {
-        // Nếu chọn cả hai trạng thái (true và false), không cần lọc theo isBlocked
-        console.log('Both blocked states selected, removing filter');
-        delete queryParams.isBlocked;
-      }
+    // Xử lý trường hợp đặc biệt khi cả hai trạng thái isBlocked được chọn
+    if (Array.isArray(queryParams.isBlocked) && queryParams.isBlocked.length === 2) {
+      // Nếu chọn cả hai trạng thái (true và false), không cần lọc theo isBlocked
+      delete queryParams.isBlocked;
+    }
 
-      dispatch(fetchAllUsers(queryParams));
-    },
-    [dispatch, pagination.page, pagination.limit, debouncedSearchText, filters.role, filters.isBlocked, sortInfo.field]
-  );
+    dispatch(fetchAllUsers(queryParams));
+  }, [dispatch, pagination.page, pagination.limit, filters, debouncedSearchText, sortOption]);
 
   // Fetch users khi component mount hoặc các dependencies thay đổi
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
   // Hiển thị lỗi nếu có
   useEffect(() => {
@@ -68,38 +60,11 @@ const UserPage = () => {
     }
   }, [error]);
 
-  // Handlers for table actions
-  const handleTableChange = (pagination, filters, sorter) => {
-    console.log('Table pagination:', pagination); // Debug log
-
-    const params = {
-      page: pagination.current,
-      limit: pagination.pageSize,
-      // role: filters.role && filters.role.length > 0 ? filters.role[0] : null,
-      role: filters.role && filters.role.length > 0 ? filters.role : null,
-      isBlocked: filters.isBlocked && filters.isBlocked.length > 0 ? filters.isBlocked : null,
-      sortBy: sorter.field || 'createdAt',
-      sortOrder: sorter.order || 'descend'
-    };
-
-    // Debug log
-    console.log('Params being sent:', params);
-
-    // Lưu giá trị filters vào Redux
-    dispatch(
-      setFilters({
-        role: params.role,
-        isBlocked: params.isBlocked
-      })
-    );
-
-    // Lưu thông tin sort
-    setSortInfo({
-      field: params.sortBy,
-      order: params.sortOrder
-    });
-
-    fetchUsers(params);
+  const handlePageChange = (page, pageSize) => {
+    dispatch(setPage(page));
+    if (pageSize !== pagination.limit) {
+      dispatch(setLimit(pageSize));
+    }
   };
 
   const handleSearch = (e) => {
@@ -124,7 +89,7 @@ const UserPage = () => {
   };
   const handleRefresh = () => {
     setSearchText('');
-    setSortInfo({ field: 'createdAt', order: 'descend' });
+    setSortOption({ sortBy: 'createdAt', sortOrder: 'desc' });
     setSelectedUser(null);
     setIsModalVisible(false);
     fetchUsers({
@@ -150,7 +115,6 @@ const UserPage = () => {
 
   // Xử lý chặn người dùng
   const handleBanUser = (userId) => {
-    console.log('userId', userId);
     setSelectedUserIdForBan(userId);
     setIsBanModalVisible(true);
   };
@@ -188,14 +152,6 @@ const UserPage = () => {
     }
   };
 
-  // Tính toán thống kê người dùng
-  const userStats = {
-    totalUsers: pagination.total || 0,
-    activeUsers: users.filter((user) => user.isBlocked === false).length,
-    adminUsers: users.filter((user) => user.role === 'admin').length,
-    bannedUsers: users.filter((user) => user.isBlocked === true).length
-  };
-
   return (
     <div className='relative z-10 flex-1 overflow-auto'>
       <Header title='Quản lý người dùng' />
@@ -211,7 +167,7 @@ const UserPage = () => {
             users={users}
             loading={loading}
             pagination={pagination}
-            onChange={handleTableChange}
+            onPageChange={handlePageChange}
             onSearch={handleSearch}
             searchText={searchText}
             onEdit={handleEditUser}

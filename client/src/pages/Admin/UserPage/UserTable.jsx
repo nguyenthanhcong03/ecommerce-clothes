@@ -8,7 +8,7 @@ const UserTable = ({
   users,
   loading,
   pagination,
-  onChange,
+  onPageChange,
   onSearch,
   onAdd,
   onRefresh,
@@ -183,10 +183,11 @@ const UserTable = ({
           pageSize: pagination.limit,
           total: pagination.total,
           position: ['bottomCenter'],
+          onChange: onPageChange,
           showSizeChanger: true,
-          showTotal: (total) => `Tổng cộng ${total} người dùng`
+          pageSizeOptions: ['5', '10', '20', '50'],
+          showTotal: (total) => `Tổng số ${total} sản phẩm`
         }}
-        onChange={onChange}
         locale={{
           emptyText: loading
             ? 'Đang tải dữ liệu...'

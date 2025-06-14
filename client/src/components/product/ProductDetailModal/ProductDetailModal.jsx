@@ -291,20 +291,20 @@ const ProductDetailModal = () => {
                   <div className='flex items-center'>
                     <Star className='h-4 w-4 fill-yellow-400 text-yellow-400' />
                     <span className='ml-1 text-sm text-gray-600'>
-                      {product.averageRating} ({product.totalReviews} đánh giá)
+                      {product.averageRating} ({product.totalReviews} đánh giá) | {product.salesCount} lượt bán
                     </span>
                   </div>
                 </div>
               </div>
 
               <div className='my-4 flex items-center gap-4 bg-[#F9F9F9] p-3'>
-                <span className='text-xl font-medium sm:text-3xl'>
+                <span className='text-md font-medium sm:text-3xl'>
                   {price.toLocaleString('vi-VN', {
                     style: 'currency',
                     currency: 'VND'
                   })}
                 </span>
-                {originalPrice && (
+                {originalPrice && originalPrice !== 0 && (
                   <span className='ml-1 text-sm text-gray-400 line-through sm:ml-2 sm:text-lg'>
                     {originalPrice.toLocaleString('vi-VN', {
                       style: 'currency',

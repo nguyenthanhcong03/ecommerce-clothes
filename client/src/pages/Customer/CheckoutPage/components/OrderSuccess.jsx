@@ -118,7 +118,7 @@ const OrderSuccess = () => {
         <h2 className='mb-2 text-2xl font-medium text-gray-700'>Đang tải thông tin đơn hàng...</h2>
         <p className='text-gray-500'>
           Vui lòng đợi hoặc{' '}
-          <Link to='/user/orders' className='text-blue-600 hover:underline'>
+          <Link to='/user/order' className='text-blue-600 hover:underline'>
             xem lịch sử đơn hàng
           </Link>
         </p>
@@ -170,7 +170,7 @@ const OrderSuccess = () => {
                 In hóa đơn
               </button>
               <Link
-                to='/user/orders'
+                to='/user/order'
                 className='inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700'
               >
                 <Clock className='mr-2 h-4 w-4' />
@@ -376,7 +376,7 @@ const OrderSuccess = () => {
               Tiếp tục mua sắm
             </Link>
 
-            <Link to='/user/orders' className='text-sm text-blue-600 hover:underline'>
+            <Link to='/user/order' className='text-sm text-blue-600 hover:underline'>
               Xem lịch sử đơn hàng
             </Link>
           </div>

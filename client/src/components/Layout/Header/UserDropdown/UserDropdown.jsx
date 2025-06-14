@@ -43,7 +43,7 @@ const UserDropdown = ({ handleLogout }) => {
           <>
             <hr className='my-2' />
             <ul>
-              <Link to={'/user/orders'} className='py-2 text-[#666] hover:text-primaryColor'>
+              <Link to={'/user/order'} className='py-2 text-[#666] hover:text-primaryColor'>
                 <li className='cursor-pointer rounded-md px-[10px] py-[10px] text-sm text-[#666] hover:bg-[#f7f7f7] hover:text-primaryColor'>
                   Đơn mua
                 </li>

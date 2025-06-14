@@ -1,14 +1,12 @@
 import Header from '@/components/AdminComponents/common/Header';
-import StatCard from '@/components/AdminComponents/common/StatCard';
-import { deleteCategory, fetchCategories, getCategoriesTree, setFilters } from '@/store/slices/categorySlice';
-import { Button, message } from 'antd';
+import useDebounce from '@/hooks/useDebounce';
+import { deleteCategory, fetchCategories } from '@/store/slices/categorySlice';
+import { message } from 'antd';
 import { motion } from 'framer-motion';
-import { Calendar, FolderOpen, FolderPlus, FolderTree } from 'lucide-react';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import CategoryForm from './CategoryForm';
 import CategoryTable from './CategoryTable';
-import useDebounce from '@/hooks/useDebounce';
 const CategoryPage = () => {
   const dispatch = useDispatch();
   const { categories, loading, error, pagination, filters } = useSelector((state) => state.category);
@@ -22,56 +20,9 @@ const CategoryPage = () => {
 
   const debouncedSearchText = useDebounce(searchText, 500);
 
-  // Tạo params cho API từ state
-  // const fetchAllCategories = useCallback(
-  //   (params = {}) => {
-  //     const queryParams = {
-  //       page: params.page || pagination.page || 1,
-  //       limit: params.limit || pagination.limit || 10,
-  //       search: params.search !== undefined ? params.search : debouncedSearchText,
-  //       sortBy: params.sortBy || sortInfo.field,
-  //       sortOrder: params.sortOrder === 'ascend' ? 'asc' : 'desc'
-  //     };
-
-  //     // // Xử lý trường hợp có nhiều giá trị isActive (mảng)
-  //     // if (Array.isArray(queryParams.isActive) && queryParams.isActive.length === 2) {
-  //     //   // Nếu chọn cả "active" và "inactive", không cần lọc theo trạng thái
-  //     //   delete queryParams.isActive;
-  //     // }
-
-  //     dispatch(fetchCategories(queryParams));
-  //   },
-  //   [dispatch, pagination.page, pagination.limit, debouncedSearchText, sortInfo.field]
-  // );
-
-  // useEffect(() => {
-  //   fetchAllCategories();
-  // }, []);
-
-  const fetchCategoriesTree = useCallback(
-    (params = {}) => {
-      const queryParams = {
-        // page: params.page || pagination.page || 1,
-        // limit: params.limit || pagination.limit || 10,
-        // search: params.search !== undefined ? params.search : debouncedSearchText
-        // sortBy: params.sortBy || sortInfo.field,
-        // sortOrder: params.sortOrder === 'ascend' ? 'asc' : 'desc'
-      };
-
-      // // Xử lý trường hợp có nhiều giá trị isActive (mảng)
-      // if (Array.isArray(queryParams.isActive) && queryParams.isActive.length === 2) {
-      //   // Nếu chọn cả "active" và "inactive", không cần lọc theo trạng thái
-      //   delete queryParams.isActive;
-      // }
-
-      dispatch(getCategoriesTree(queryParams));
-    },
-    [dispatch, pagination.page, pagination.limit, debouncedSearchText, sortInfo.field]
-  );
-
   useEffect(() => {
-    fetchCategoriesTree();
-  }, []);
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   // Hiển thị lỗi nếu có
   useEffect(() => {

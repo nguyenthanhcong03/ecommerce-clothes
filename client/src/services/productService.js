@@ -3,36 +3,6 @@ const BASE_API = '/api/product';
 
 // Lấy danh sách sản phẩm với các tùy chọn lọc, sắp xếp, phân trang
 export const getAllProductsAPI = (params) => {
-  // const {
-  //   page = 1,
-  //   limit = 10,
-  //   search,
-  //   category,
-  //   minPrice,
-  //   maxPrice,
-  //   tags,
-  //   size,
-  //   color,
-  //   rating,
-  //   sortBy,
-  //   sortOrder
-  // } = params;
-
-  // const queryParams = { page, limit };
-
-  // // Thêm các tham số tìm kiếm và lọc nếu có
-  // if (search) queryParams.search = search;
-  // if (sortBy) queryParams.sortBy = sortBy;
-  // if (sortOrder) queryParams.sortOrder = sortOrder;
-  // if (category) queryParams.category = category;
-  // if (tags) queryParams.tags = tags;
-  // if (size) queryParams.size = size;
-  // if (color) queryParams.color = color;
-  // if (rating) queryParams.rating = rating;
-  // if (minPrice) queryParams.minPrice = minPrice;
-  // if (maxPrice) queryParams.maxPrice = maxPrice;
-
-  // Sửa lỗi cú pháp khi gọi axios
   return axios.get(`${BASE_API}`, { params: params });
 };
 

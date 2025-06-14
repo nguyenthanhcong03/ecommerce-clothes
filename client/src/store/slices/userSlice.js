@@ -83,7 +83,7 @@ const initialState = {
   users: [],
   pagination: {
     page: 1,
-    limit: 10,
+    limit: 5,
     total: 0,
     totalPages: 0
   },
@@ -103,6 +103,12 @@ const userSlice = createSlice({
   name: 'users',
   initialState,
   reducers: {
+    setPage: (state, action) => {
+      state.pagination.page = action.payload;
+    },
+    setLimit: (state, action) => {
+      state.pagination.limit = action.payload;
+    },
     resetActionState: (state) => {
       state.actionLoading = false;
       state.actionError = null;
@@ -268,5 +274,5 @@ const userSlice = createSlice({
   }
 });
 
-export const { resetActionState, setFilters } = userSlice.actions;
+export const { resetActionState, setFilters, setPage, setLimit } = userSlice.actions;
 export default userSlice.reducer;
