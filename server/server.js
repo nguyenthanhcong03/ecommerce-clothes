@@ -24,7 +24,10 @@ app.use(express.urlencoded({ extended: true }));
 
 connectDB();
 initRoutes(app);
-console.log("firs2t");
+
+// Import và khởi động cron
+require("./cron/cleanUnpaidOrders");
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
