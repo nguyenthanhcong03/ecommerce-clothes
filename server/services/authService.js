@@ -50,7 +50,7 @@ const registerUser = async (userData) => {
   });
 
   // Gửi email xác thực
-  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+  const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
   const html = `
     <h1>Chào mừng, ${firstName} ${lastName}!</h1>
     <p>Vui lòng xác thực email của bạn bằng cách nhấp vào liên kết dưới đây:</p>
@@ -134,7 +134,7 @@ const forgotUserPassword = async (email) => {
   await user.save();
 
   // Gửi email reset
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+  const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
   const html = `
     <h1>Đặt lại mật khẩu</h1>
     <p>Nhấp vào liên kết bên dưới để đặt lại mật khẩu của bạn:</p>

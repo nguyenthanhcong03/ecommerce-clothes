@@ -26,15 +26,15 @@ const ProtectedRoute = ({
     return <Navigate to='/unauthorized' state={{ from: location.pathname }} replace />;
   }
 
-  // // Chuyển hướng người dùng đã đăng nhập khi họ cố gắng truy cập trang đăng nhập/đăng ký
-  // if (!requireAuth && isAuthenticated) {
-  //   // Lấy đường dẫn từ state nếu có, nếu không thì điều hướng theo role của user
-  //   const fromPath = location.state?.from;
-  //   const defaultRedirectPath = user?.role === 'admin' ? '/admin' : '/';
-  //   const redirectTo = fromPath || defaultRedirectPath;
+  // Chuyển hướng người dùng đã đăng nhập khi họ cố gắng truy cập trang đăng nhập/đăng ký
+  if (!requireAuth && isAuthenticated) {
+    // Lấy đường dẫn từ state nếu có, nếu không thì điều hướng theo role của user
+    const fromPath = location.state?.from;
+    const defaultRedirectPath = user?.role === 'admin' ? '/admin' : '/';
+    const redirectTo = fromPath || defaultRedirectPath;
 
-  //   return <Navigate to={redirectTo} replace />;
-  // }
+    return <Navigate to={redirectTo} replace />;
+  }
 
   return children;
 };

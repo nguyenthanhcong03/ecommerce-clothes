@@ -18,8 +18,6 @@ import CheckoutPage from '@/pages/customer/CheckoutPage/CheckoutPage.jsx';
 import ContactPage from '@/pages/customer/ContactPage/ContactPage.jsx';
 import HomePage from '@/pages/customer/HomePage/HomePage.jsx';
 import NewsPage from '@/pages/customer/NewsPage/NewsPage.jsx';
-import PaymentSuccessPage from '@/pages/customer/PaymentStatusPage/PaymentSuccessPage.jsx';
-import PaymentFailedPage from '@/pages/customer/PaymentStatusPage/PaymentFailedPage';
 import ProductDetail from '@/pages/customer/ProductDetail/ProductDetail.jsx';
 import WishlistPage from '@/pages/customer/WishlistPage/WishlistPage.jsx';
 
@@ -41,6 +39,8 @@ import PrivacyPage from '@/pages/customer/AccountPage/PrivacyPage.jsx';
 import ProfilePage from '@/pages/customer/AccountPage/ProfilePage.jsx';
 import VoucherPage from '@/pages/customer/AccountPage/VoucherPage.jsx';
 import OurShopPage from '@/pages/customer/OurShopPage/OurShopPage';
+import PaymentSuccessPage from '@/pages/customer/PaymentSuccessPage/PaymentSuccessPage.jsx';
+import PaymentFailedPage from '@/pages/customer/PaymentFailedPage/PaymentFailedPage.jsx';
 import Example from '../components/examples/Example';
 
 const publicRoutes = [
@@ -51,6 +51,8 @@ const publicRoutes = [
   { path: 'news', element: <NewsPage /> },
   { path: 'contact', element: <ContactPage /> },
   { path: 'product/:id', element: <ProductDetail /> },
+  { path: 'payment-success', element: <PaymentSuccessPage /> },
+  { path: 'payment-failed', element: <PaymentFailedPage /> },
 
   { path: 'example', element: <Example /> }
 ];
@@ -112,14 +114,6 @@ const customerProtectedRoutes = [
         <CheckoutPage />
       </ProtectedRoute>
     )
-  },
-  {
-    path: 'payment-success',
-    element: <PaymentSuccessPage />
-  },
-  {
-    path: 'payment-failed',
-    element: <PaymentFailedPage />
   },
   {
     path: 'user',

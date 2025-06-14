@@ -3,6 +3,7 @@ const User = require("../models/user");
 class UserController {
   // Lấy danh sách người dùng với phân trang và lọc
   async getAllUsers(req, res) {
+    console.log("product");
     try {
       const filters = {
         role: req.query.role,

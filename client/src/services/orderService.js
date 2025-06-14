@@ -1,7 +1,5 @@
 import axios from '@/config/axios';
 const BASE_API = '/api/orders';
-const MAPBOX_TOKEN =
-  'pk.eyJ1Ijoibmd1eWVudGhhbmhjb25nMDMiLCJhIjoiY21hODQ5dnUwMTQwajJscHc1bW93eWQ4NSJ9.ItXZ4G8QVf0wFZcqev7_WQ';
 
 export const createOrderAPI = (orderData) => {
   return axios.post(`${BASE_API}`, orderData);

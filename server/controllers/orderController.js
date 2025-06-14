@@ -4,11 +4,11 @@ const Cart = require("../models/cart");
 const Coupon = require("../models/coupon");
 const Product = require("../models/product");
 const orderService = require("../services/orderService");
+const { createVnpayPaymentUrl, createMomoPaymentUrl } = require("../services/paymentService");
 
 const createOrder = async (req, res) => {
   try {
     const { products, shippingAddress, paymentMethod, couponCode, distance, note } = req.body;
-
     const userId = req.user._id;
 
     // Validate required fields
@@ -18,12 +18,12 @@ const createOrder = async (req, res) => {
         message: "Missing required order details",
       });
     }
+
     // Kiểm tra giá sản phẩm hiện tại
     const updatedProducts = [];
     const changedProducts = [];
 
     for (const product of products) {
-      // Lấy thông tin sản phẩm mới nhất từ database
       const currentProduct = await Product.findById(product.productId);
 
       if (!currentProduct) {
@@ -33,7 +33,6 @@ const createOrder = async (req, res) => {
         });
       }
 
-      // Kiểm tra variant nếu có
       let currentVariant = null;
       if (product.variantId && currentProduct.variants && currentProduct.variants.length > 0) {
         currentVariant = currentProduct.variants.find((v) => v._id.toString() === product.variantId);
@@ -45,58 +44,55 @@ const createOrder = async (req, res) => {
         }
       }
 
-      // Lấy giá hiện tại
-      const currentPrice = currentVariant.price;
+      const currentPrice = currentVariant ? currentVariant.price : currentProduct.price;
+      const snapshotPrice = product.snapshot.price || product.snapshot.originalPrice;
 
-      // Giá trong giỏ hàng
-      const cartPrice = product.snapshot.price;
-
-      // Cập nhật sản phẩm với giá mới nhất
-      const updatedProduct = {
-        ...product,
-        snapshot: {
-          ...product.snapshot,
-          price: currentVariant.price,
-          originalPrice: currentVariant.originalPrice,
-        },
-      };
-
-      updatedProducts.push(updatedProduct);
-
-      // Nếu giá đã thay đổi, thêm vào danh sách sản phẩm cần thông báo
-      if (currentPrice !== cartPrice) {
+      if (currentPrice !== snapshotPrice) {
         changedProducts.push({
-          name: currentProduct.name,
-          oldPrice: cartPrice,
+          productId: product.productId,
+          variantId: product.variantId,
+          oldPrice: snapshotPrice,
           newPrice: currentPrice,
+          productName: currentProduct.name,
           variantName: currentVariant ? currentVariant.name : null,
         });
+
+        const updatedSnapshot = {
+          ...product.snapshot,
+          price: currentPrice,
+          originalPrice: currentPrice,
+        };
+
+        updatedProducts.push({
+          ...product,
+          snapshot: updatedSnapshot,
+        });
+      } else {
+        updatedProducts.push(product);
       }
     }
 
-    // Nếu có sản phẩm thay đổi giá, thông báo cho người dùng
+    // Nếu có sản phẩm thay đổi giá, trả về thông báo
     if (changedProducts.length > 0) {
       return res.status(409).json({
         success: false,
-        message: "Giá một số sản phẩm đã thay đổi kể từ khi bạn thêm vào giỏ hàng",
-        changedProducts: changedProducts,
-        updatedProducts: updatedProducts,
+        message: "Giá một số sản phẩm đã thay đổi. Vui lòng xác nhận giá mới.",
+        changedProducts,
+        updatedProducts,
       });
     }
 
-    // Tính tổng giá với sản phẩm đã cập nhật
-    let subtotal = updatedProducts.reduce(
-      (sum, item) => sum + (item.snapshot.price || item.snapshot.discountAmount) * item.quantity,
+    // Tính toán giá trị đơn hàng
+    const subtotal = products.reduce(
+      (sum, item) => sum + (item.snapshot.price || item.snapshot.originalPrice) * item.quantity,
       0
     );
 
-    // Tính phí vận chuyển
     let shippingFee = 0;
     if (distance) {
       shippingFee = orderService.calculateShippingFee(distance);
     }
 
-    // Apply coupon if provided
     let discountAmount = 0;
     let couponApplied = null;
 
@@ -114,86 +110,165 @@ const createOrder = async (req, res) => {
         });
       }
 
-      // Calculate discount using orderService
       discountAmount = orderService.calculateDiscount(subtotal, coupon);
       couponApplied = coupon;
-
-      // Update coupon usage
-      if (coupon.usageLimit) {
-        coupon.usageCount = (coupon.usageCount || 0) + 1;
-        await coupon.save();
-      }
     }
 
-    // Calculate final price
     const totalPrice = Math.max(0, subtotal - discountAmount + shippingFee);
 
-    // Generate tracking number
-    const trackingNumber = orderService.generateTrackingNumber();
+    // Nếu là COD, tạo đơn hàng ngay lập tức
+    if (paymentMethod === "COD") {
+      const trackingNumber = orderService.generateTrackingNumber();
 
-    // Create the order
-    const newOrder = new Order({
-      userId: userId || null,
-      products,
-      totalPrice: totalPrice,
-      shippingAddress,
-      payment: {
-        method: paymentMethod,
-        isPaid: paymentMethod !== "COD",
-        paidAt: paymentMethod !== "COD" ? new Date() : null,
-      },
-      trackingNumber,
-      couponApplied,
-      discountAmount,
-      shippingFee,
-      note: note || "",
-    });
+      const newOrder = new Order({
+        userId: userId || null,
+        products,
+        totalPrice: totalPrice,
+        shippingAddress,
+        payment: {
+          method: paymentMethod,
+          isPaid: false,
+          paidAt: null,
+        },
+        trackingNumber,
+        couponApplied,
+        discountAmount,
+        shippingFee,
+        note: note || "",
+      });
 
-    const savedOrder = await newOrder.save();
+      const savedOrder = await newOrder.save();
 
-    // Cập nhật số lượng sản phẩm trong kho sau khi đặt hàng
-    for (const item of products) {
-      const product = await Product.findById(item.productId);
-
-      if (product) {
-        if (item.variantId) {
-          // Trừ số lượng cho variant cụ thể
-          const variantIndex = product.variants.findIndex((v) => v._id.toString() === item.variantId);
-          console.log("variantIndex khi tạo", variantIndex);
-
-          if (variantIndex !== -1) {
-            // Đảm bảo số lượng không âm
-            product.variants[variantIndex].stock = Math.max(0, product.variants[variantIndex].stock - item.quantity);
+      // Cập nhật số lượng sản phẩm trong kho
+      for (const item of products) {
+        const product = await Product.findById(item.productId);
+        if (product) {
+          if (item.variantId) {
+            const variantIndex = product.variants.findIndex((v) => v._id.toString() === item.variantId);
+            if (variantIndex !== -1) {
+              product.variants[variantIndex].stock = Math.max(0, product.variants[variantIndex].stock - item.quantity);
+            }
+          } else {
+            product.stock = Math.max(0, product.stock - item.quantity);
           }
-        } else {
-          // Trừ số lượng cho sản phẩm không có variant
-          product.stock = Math.max(0, product.stock - item.quantity);
+          await product.save();
         }
-
-        await product.save();
       }
+
+      // Xóa sản phẩm khỏi giỏ hàng
+      const cart = await Cart.findOne({ userId: userId });
+      if (cart) {
+        cart.items = cart.items.filter(
+          (item) =>
+            !products.some(
+              (product) =>
+                product.productId === item.productId.toString() && product.variantId === item.variantId.toString()
+            )
+        );
+        await cart.save();
+      }
+
+      // Cập nhật coupon usage
+      if (couponApplied && couponApplied.usageLimit) {
+        couponApplied.usageCount = (couponApplied.usageCount || 0) + 1;
+        await couponApplied.save();
+      }
+
+      return res.status(201).json({
+        success: true,
+        message: "Tạo đơn hàng thành công",
+        data: savedOrder,
+      });
     }
+    // Nếu là thanh toán online (VNPay hoặc Momo), tạo link thanh toán
+    else if (paymentMethod === "VNPay" || paymentMethod === "Momo") {
+      // Tạo đơn hàng tạm thời với trạng thái Unpaid
+      const trackingNumber = orderService.generateTrackingNumber();
 
-    // Nếu tạo đơn hàng thành công, xóa các sản phẩm giỏ hàng
-    const cart = await Cart.findOne({ userId: userId });
+      const tempOrder = new Order({
+        userId: userId || null,
+        products,
+        totalPrice: totalPrice,
+        shippingAddress,
+        status: "Unpaid",
+        payment: {
+          method: paymentMethod,
+          isPaid: false,
+          paidAt: null,
+        },
+        trackingNumber,
+        couponApplied,
+        discountAmount,
+        shippingFee,
+        note: note || "",
+      });
 
-    if (cart) {
-      cart.items = cart.items.filter(
-        (item) =>
-          !products.some(
-            (product) =>
-              product.productId === item.productId.toString() && product.variantId === item.variantId.toString()
-          )
-      );
-      await cart.save();
+      const savedOrder = await tempOrder.save();
+
+      // Cập nhật số lượng sản phẩm trong kho
+      for (const item of products) {
+        const product = await Product.findById(item.productId);
+        if (product) {
+          if (item.variantId) {
+            const variantIndex = product.variants.findIndex((v) => v._id.toString() === item.variantId);
+            if (variantIndex !== -1) {
+              product.variants[variantIndex].stock = Math.max(0, product.variants[variantIndex].stock - item.quantity);
+            }
+          } else {
+            product.stock = Math.max(0, product.stock - item.quantity);
+          }
+          await product.save();
+        }
+      }
+
+      // Xóa sản phẩm khỏi giỏ hàng
+      const cart = await Cart.findOne({ userId: userId });
+      if (cart) {
+        cart.items = cart.items.filter(
+          (item) =>
+            !products.some(
+              (product) =>
+                product.productId === item.productId.toString() && product.variantId === item.variantId.toString()
+            )
+        );
+        await cart.save();
+      }
+
+      // Cập nhật coupon usage
+      if (couponApplied && couponApplied.usageLimit) {
+        couponApplied.usageCount = (couponApplied.usageCount || 0) + 1;
+        await couponApplied.save();
+      }
+
+      // Tạo liên kết thanh toán
+      let paymentUrl;
+      const orderId = savedOrder._id.toString();
+      const paymentData = {
+        amount: totalPrice,
+        orderId: orderId,
+        orderInfo: `Thanh toán đơn hàng ${orderId}`,
+      };
+
+      if (paymentMethod === "VNPay") {
+        paymentUrl = createVnpayPaymentUrl(paymentData);
+      } else if (paymentMethod === "Momo") {
+        paymentUrl = await createMomoPaymentUrl(paymentData);
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Tạo liên kết thanh toán thành công",
+        paymentUrl,
+        orderId,
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Phương thức thanh toán không được hỗ trợ",
+      });
     }
-
-    return res.status(201).json({
-      success: true,
-      message: "Tạo đơn hàng thành công",
-      data: savedOrder,
-    });
   } catch (error) {
+    console.error("Error in createOrder:", error);
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -201,6 +276,7 @@ const createOrder = async (req, res) => {
   }
 };
 
+// Các function khác giữ nguyên (copy từ file cũ)
 const getAllOrders = async (req, res) => {
   try {
     const {
@@ -286,11 +362,11 @@ const getAllOrders = async (req, res) => {
       const searchQuery = [
         { "shippingAddress.fullName": { $regex: search, $options: "i" } },
         { "shippingAddress.phoneNumber": { $regex: search, $options: "i" } },
+        { "shippingAddress.email": { $regex: search, $options: "i" } },
         { trackingNumber: { $regex: search, $options: "i" } },
-        { "products.snapshot.name": { $regex: search, $options: "i" } },
       ];
 
-      // Thêm tìm kiếm theo ID nếu search là ObjectId hợp lệ
+      // Nếu search là ObjectId hợp lệ, thêm tìm kiếm theo _id
       if (isValidObjectId) {
         searchQuery.push({ _id: search });
       }
@@ -298,42 +374,47 @@ const getAllOrders = async (req, res) => {
       query.$or = searchQuery;
     }
 
-    // Cấu hình sorting và phân trang
-    const sort = {};
-    sort[sortBy] = sortOrder === "asc" ? 1 : -1;
+    // Tính toán phân trang
+    const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    const options = {
-      page: parseInt(page, 10),
-      limit: parseInt(limit, 10),
-      sort: sort,
-      populate: [
-        { path: "userId", select: "firstName lastName username email phone" },
-        { path: "couponApplied", select: "code discountType discountValue" },
-      ],
-    };
+    // Tạo sort object
+    const sortObj = {};
+    sortObj[sortBy] = sortOrder === "asc" ? 1 : -1;
 
-    // Gọi service để lấy đơn hàng với các tùy chọn đã cấu hình
-    const result = await orderService.getOrders(query, options);
+    // Lấy đơn hàng với populate để lấy thông tin user
+    const orders = await Order.find(query)
+      .populate("userId", "fullName email")
+      .sort(sortObj)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .lean();
 
-    // Thêm thông tin tổng kết về kết quả lọc
-    const summary = {
-      totalOrders: result.pagination.totalDocs,
-      totalPages: result.pagination.totalPages,
-      totalRevenue: result.orders.reduce((sum, order) => sum + order.totalPrice, 0),
+    // Đếm tổng số đơn hàng
+    const totalOrders = await Order.countDocuments(query);
+
+    // Tính toán metadata phân trang
+    const totalPages = Math.ceil(totalOrders / parseInt(limit));
+
+    const result = {
+      orders,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages,
+        totalOrders,
+        hasNextPage: parseInt(page) < totalPages,
+        hasPrevPage: parseInt(page) > 1,
+      },
     };
 
     return res.status(200).json({
       success: true,
-      data: {
-        ...result,
-        summary,
-      },
+      message: "Orders retrieved successfully",
+      data: result,
     });
   } catch (error) {
-    console.error("Error in getAllOrders:", error);
     return res.status(500).json({
       success: false,
-      message: error.message || "Có lỗi xảy ra khi lấy danh sách đơn hàng",
+      message: error.message,
     });
   }
 };
@@ -341,23 +422,45 @@ const getAllOrders = async (req, res) => {
 const getUserOrders = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { page = 1, limit = 10, status } = req.query;
+    const { page = 1, limit = 10, status, paymentStatus } = req.query;
 
+    // Xây dựng query
     const query = { userId };
+
     if (status) {
       query.status = status;
     }
 
-    const options = {
-      page: parseInt(page, 10),
-      limit: parseInt(limit, 10),
-      sort: { createdAt: -1 },
-    };
+    if (paymentStatus !== undefined) {
+      query["payment.isPaid"] = paymentStatus === "true";
+    }
 
-    const result = await orderService.getOrders(query, options);
+    // Tính toán phân trang
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Lấy đơn hàng của user
+    const orders = await Order.find(query).sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit)).lean();
+
+    // Đếm tổng số đơn hàng
+    const totalOrders = await Order.countDocuments(query);
+
+    // Tính toán metadata phân trang
+    const totalPages = Math.ceil(totalOrders / parseInt(limit));
+
+    const result = {
+      orders,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages,
+        totalOrders,
+        hasNextPage: parseInt(page) < totalPages,
+        hasPrevPage: parseInt(page) > 1,
+      },
+    };
 
     return res.status(200).json({
       success: true,
+      message: "User orders retrieved successfully",
       data: result,
     });
   } catch (error) {
@@ -371,28 +474,29 @@ const getUserOrders = async (req, res) => {
 const getOrderById = async (req, res) => {
   try {
     const { id } = req.params;
-    const order = await Order.findById(id).populate("userId");
+    const userId = req.user._id;
+    const userRole = req.user.role;
+
+    // Build query based on user role
+    let query = { _id: id };
+
+    // If user is not admin, they can only see their own orders
+    if (userRole !== "admin") {
+      query.userId = userId;
+    }
+
+    const order = await Order.findOne(query).populate("userId", "fullName email").lean();
 
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: "Order not found",
-      });
-    }
-
-    // Check if the user is authorized (admin or the order owner)
-    const isAdmin = req.user.role === "admin";
-    const isOwner = order.userId._id.toString() === req.user._id.toString();
-
-    if (!isAdmin && !isOwner) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to access this order",
+        message: "Order not found or you don't have permission to view this order",
       });
     }
 
     return res.status(200).json({
       success: true,
+      message: "Order retrieved successfully",
       data: order,
     });
   } catch (error) {
@@ -408,10 +512,12 @@ const updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!["Pending", "Processing", "Shipping", "Delivered", "Cancelled"].includes(status)) {
+    // Validate status
+    const validStatuses = ["Pending", "Processing", "Shipping", "Delivered", "Cancelled"];
+    if (!validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
-        message: "Không thể cập nhật trạng thái đơn hàng này, vui lòng chọn trạng thái khác.",
+        message: "Invalid status",
       });
     }
 
@@ -424,47 +530,12 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
+    // Update status
     order.status = status;
 
-    // Update delivered timestamp if status is Delivered
+    // Set deliveredAt if status is Delivered
     if (status === "Delivered") {
       order.deliveredAt = new Date();
-
-      // Cập nhật số lượng đã bán cho sản phẩm khi đơn hàng chuyển sang trạng thái đã giao
-      for (const item of order.products) {
-        const product = await Product.findById(item.productId);
-
-        if (product) {
-          // Tăng số lượng đã bán của sản phẩm
-          product.salesCount = (product.salesCount || 0) + item.quantity;
-
-          await product.save();
-        }
-      }
-    }
-
-    // Nếu đơn hàng chuyển từ trạng thái khác sang Cancelled, cập nhật lại số lượng trong kho
-    if (status === "Cancelled" && order.status !== "Cancelled") {
-      // Trả lại số lượng sản phẩm vào kho
-      for (const item of order.products) {
-        const product = await Product.findById(item.productId);
-
-        if (product) {
-          if (item.variantId) {
-            // Cập nhật số lượng cho variant cụ thể
-            const variantIndex = product.variants.findIndex((v) => v._id.toString() === item.variantId.toString());
-
-            if (variantIndex !== -1) {
-              product.variants[variantIndex].stock += item.quantity;
-            }
-          } else {
-            // Cập nhật số lượng cho sản phẩm không có variant
-            product.stock += item.quantity;
-          }
-
-          await product.save();
-        }
-      }
     }
 
     const updatedOrder = await order.save();
@@ -524,6 +595,7 @@ const getOrderStatistics = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+      message: "Order statistics retrieved successfully",
       data: statistics,
     });
   } catch (error) {
@@ -540,14 +612,7 @@ const cancelOrder = async (req, res) => {
     const { reason } = req.body;
     const userId = req.user._id;
 
-    if (!reason) {
-      return res.status(400).json({
-        success: false,
-        message: "Cancellation reason is required",
-      });
-    }
-
-    const order = await Order.findById(id);
+    const order = await Order.findOne({ _id: id, userId: userId });
 
     if (!order) {
       return res.status(404).json({
@@ -556,49 +621,38 @@ const cancelOrder = async (req, res) => {
       });
     }
 
-    // Check if the user is authorized (must be the order owner)
-    if (order.userId.toString() !== userId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to cancel this order",
-      });
-    }
-
-    // Check if the order can be cancelled (only Pending or Processing orders can be cancelled)
-    if (!["Pending", "Processing"].includes(order.status)) {
+    // Check if order can be cancelled
+    if (order.status === "Delivered" || order.status === "Cancelled") {
       return res.status(400).json({
         success: false,
-        message: "Only pending or processing orders can be cancelled",
+        message: "Cannot cancel this order",
       });
     }
 
-    // Update order status to Cancelled
+    // Update order status and add cancel reason
     order.status = "Cancelled";
-    order.cancelReason = reason;
+    order.cancelReason = reason || "Customer requested cancellation";
     order.cancelTime = new Date();
 
-    // Trả lại số lượng sản phẩm vào kho
+    const updatedOrder = await order.save();
+
+    // Restore product stock
     for (const item of order.products) {
       const product = await Product.findById(item.productId);
 
       if (product) {
         if (item.variantId) {
-          // Cập nhật số lượng cho variant cụ thể
-          const variantIndex = product.variants.findIndex((v) => v._id.toString() === item.variantId.toString());
-          console.log("variantIndex khi hủy", variantIndex, item.variantId);
+          const variantIndex = product.variants.findIndex((v) => v._id.toString() === item.variantId);
           if (variantIndex !== -1) {
             product.variants[variantIndex].stock += item.quantity;
           }
         } else {
-          // Cập nhật số lượng cho sản phẩm không có variant
           product.stock += item.quantity;
         }
 
         await product.save();
       }
     }
-
-    const updatedOrder = await order.save();
 
     return res.status(200).json({
       success: true,
@@ -615,49 +669,54 @@ const cancelOrder = async (req, res) => {
 
 const searchOrders = async (req, res) => {
   try {
-    const { keyword } = req.query;
+    const { query: searchQuery, page = 1, limit = 10 } = req.query;
     const userId = req.user._id;
-    const isAdmin = req.user.role === "admin";
 
-    if (!keyword) {
+    if (!searchQuery) {
       return res.status(400).json({
         success: false,
-        message: "Search keyword is required",
+        message: "Search query is required",
       });
     }
 
-    // Build search query
-    let query = {};
-
-    // For admin, search all orders, for regular users, only their own orders
-    if (!isAdmin) {
-      query.userId = userId;
-    }
-
-    // Search by order ID if the keyword matches MongoDB ObjectId pattern
-    if (/^[0-9a-fA-F]{24}$/.test(keyword)) {
-      query._id = keyword;
-    } else {
-      // Search by tracking number or in the shipping address fields
-      query = {
-        ...query,
-        $or: [
-          { trackingNumber: { $regex: keyword, $options: "i" } },
-          { "shippingAddress.fullName": { $regex: keyword, $options: "i" } },
-          { "shippingAddress.phoneNumber": { $regex: keyword, $options: "i" } },
-          { "products.snapshot.name": { $regex: keyword, $options: "i" } },
-        ],
-      };
-    }
-
-    const options = {
-      page: parseInt(req.query.page || 1, 10),
-      limit: parseInt(req.query.limit || 10, 10),
-      sort: { createdAt: -1 },
+    // Create search conditions
+    const searchConditions = {
+      userId: userId,
+      $or: [
+        { "shippingAddress.fullName": { $regex: searchQuery, $options: "i" } },
+        { "shippingAddress.phoneNumber": { $regex: searchQuery, $options: "i" } },
+        { trackingNumber: { $regex: searchQuery, $options: "i" } },
+      ],
     };
 
-    // Sử dụng service để tìm kiếm đơn hàng
-    const result = await orderService.searchOrders(query, keyword, options);
+    // Check if searchQuery is a valid ObjectId for searching by order ID
+    if (/^[0-9a-fA-F]{24}$/.test(searchQuery)) {
+      searchConditions.$or.push({ _id: searchQuery });
+    }
+
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Search orders
+    const orders = await Order.find(searchConditions).sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit)).lean();
+
+    // Count total matching orders
+    const totalOrders = await Order.countDocuments(searchConditions);
+
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(totalOrders / parseInt(limit));
+
+    const result = {
+      orders,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages,
+        totalOrders,
+        hasNextPage: parseInt(page) < totalPages,
+        hasPrevPage: parseInt(page) > 1,
+      },
+      searchQuery,
+    };
 
     return res.status(200).json({
       success: true,
@@ -699,48 +758,42 @@ const reviewOrder = async (req, res) => {
     if (order.userId.toString() !== userId.toString()) {
       return res.status(403).json({
         success: false,
-        message: "Not authorized to review this order",
+        message: "You are not authorized to review this order",
       });
     }
 
-    // Check if the order has been delivered
+    // Check if order is delivered
     if (order.status !== "Delivered") {
       return res.status(400).json({
         success: false,
-        message: "Only delivered orders can be reviewed",
+        message: "Order must be delivered before reviewing",
       });
     }
 
-    // Check if order has already been reviewed
+    // Check if already reviewed
     if (order.isReviewed) {
       return res.status(400).json({
         success: false,
-        message: "This order has already been reviewed",
+        message: "Order has already been reviewed",
       });
     }
 
-    // Process the review
+    // Update order with review
+    order.isReviewed = true;
     order.review = {
       rating: orderRating,
       comment: comment || "",
-      reviewDate: new Date(),
+      reviewedAt: new Date(),
     };
-    order.isReviewed = true;
 
-    // Save product reviews if provided
+    // Add product-specific reviews if provided
     if (productReviews && Array.isArray(productReviews)) {
-      // First we should save each product review in a product review collection
-      // This part would typically involve creating product reviews in another collection
-      // But for simplicity, we'll just add them to the order for now
       order.productReviews = productReviews.map((review) => ({
         productId: review.productId,
+        variantId: review.variantId,
         rating: review.rating,
         comment: review.comment || "",
-        reviewDate: new Date(),
       }));
-
-      // In a real application, you would also update the product's average rating
-      // and associate the review with the product in a separate collection
     }
 
     const updatedOrder = await order.save();

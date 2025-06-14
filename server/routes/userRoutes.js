@@ -5,8 +5,6 @@ const { verifyToken, checkRole } = require("../middlewares/auth");
 const validator = require("../middlewares/validator");
 const { updateSchema, idSchema, passwordUpdateSchema, registerSchema } = require("../validation/userValidation");
 
-// ===== Các route cho quản lý user =====
-
 // Lấy thông tin của người dùng hiện tại
 router.get("/me", verifyToken, userController.getCurrentUser);
 

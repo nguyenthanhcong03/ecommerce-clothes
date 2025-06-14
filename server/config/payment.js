@@ -12,8 +12,11 @@ const momoConfig = {
   accessKey: "YOUR_ACCESS_KEY", // Khóa truy cập MoMo cấp
   secretKey: "YOUR_SECRET_KEY", // Khóa bí mật để tạo chữ ký
   redirectUrl: "http://localhost:5000/api/payment/momo/return", // URL nhận kết quả trả về từ MoMo
-  ipnUrl: "http://localhost:3000/api/payment/momo/ipn", // URL nhận thông báo kết quả giao dịch từ MoMo
+  ipnUrl: "http://localhost:5000/api/payment/momo/ipn", // URL nhận thông báo kết quả giao dịch từ MoMo
   endpoint: "https://test-payment.momo.vn/v2/gateway/api/create", // URL tạo giao dịch thanh toán MoMo
 };
 
-module.exports = { vnpayConfig, momoConfig };
+// Cấu hình client URL
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+
+module.exports = { vnpayConfig, momoConfig, CLIENT_URL };

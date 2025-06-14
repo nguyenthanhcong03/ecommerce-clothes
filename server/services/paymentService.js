@@ -2,48 +2,42 @@ const crypto = require("crypto");
 const querystring = require("qs");
 const moment = require("moment");
 const axios = require("axios");
-const { vnpayConfig } = require("../config/payment");
+const { vnpayConfig, momoConfig } = require("../config/payment");
 
 /**
  * Tạo URL thanh toán VNPay
- * @param {Object} orderInfo - Thông tin đơn hàng gồm amount, orderId, orderInfo
+ * @param {Object} order - Thông tin đơn hàng gồm amount, orderId, orderInfo
  * @returns {String} - URL thanh toán để chuyển hướng người dùng
  */
-const createVnpayPaymentUrl = async (orderInfo) => {
+const createVnpayPaymentUrl = (order) => {
   try {
-    // Lấy ngày hiện tại theo múi giờ Việt Nam
-    let createDate = moment(date).format("YYYYMMDDHHmmss");
-    const orderId = orderInfo.orderId || `ORDER-${Date.now()}`;
+    const date = new Date();
+    const createDate = moment(date).format("YYYYMMDDHHmmss");
+    const orderId = order.orderId || `ORDER-${Date.now()}`;
+    const amount = parseInt(order.amount) * 100; // VNPay yêu cầu amount * 100
+    const orderDescription = order.orderInfo || `Thanh toan don hang ${orderId}`;
 
-    // Xây dựng dữ liệu thanh toán
-    let vnpParams = {
-      vnp_Version: "2.1.0", // Phiên bản API VNPay
-      vnp_Command: "pay", // Lệnh thanh toán
-      vnp_TmnCode: vnpayConfig.vnp_TmnCode, // Mã website của merchant
-      vnp_Locale: "vn", // Ngôn ngữ
-      vnp_CurrCode: "VND", // Tiền tệ
-      vnp_TxnRef: orderId, // Mã tham chiếu giao dịch (mã đơn hàng)
-      vnp_OrderInfo: orderInfo.orderInfo || `Payment for order ${orderId}`, // Thông tin mô tả đơn hàng
-      vnp_OrderType: "other", // Loại hình thanh toán
-      vnp_Amount: parseInt(orderInfo.amount) * 100, // Số tiền * 100 (VNPay yêu cầu x100)
-      vnp_ReturnUrl: vnpayConfig.returnUrl, // URL nhận kết quả trả về
-      vnp_IpAddr: orderInfo.ipAddr || "127.0.0.1", // IP của khách hàng
-      vnp_CreateDate: createDate, // Ngày tạo giao dịch
-    };
+    let vnp_Params = {};
+    vnp_Params["vnp_Version"] = "2.1.0";
+    vnp_Params["vnp_Command"] = "pay";
+    vnp_Params["vnp_TmnCode"] = vnpayConfig.vnp_TmnCode;
+    vnp_Params["vnp_Locale"] = "vn";
+    vnp_Params["vnp_CurrCode"] = "VND";
+    vnp_Params["vnp_TxnRef"] = orderId;
+    vnp_Params["vnp_OrderInfo"] = orderDescription;
+    vnp_Params["vnp_OrderType"] = "other";
+    vnp_Params["vnp_Amount"] = amount;
+    vnp_Params["vnp_ReturnUrl"] = vnpayConfig.returnUrl;
+    vnp_Params["vnp_IpAddr"] = "127.0.0.1";
+    vnp_Params["vnp_CreateDate"] = createDate;
 
-    // Sắp xếp tham số theo thứ tự a-z trước khi tạo chữ ký
-    const sortedParams = sortObject(vnpParams);
+    vnp_Params = sortObject(vnp_Params);
 
-    // Tạo chữ ký
-    const signData = querystring.stringify(sortedParams, { encode: false });
+    const signData = querystring.stringify(vnp_Params, { encode: false });
     const hmac = crypto.createHmac("sha512", vnpayConfig.vnp_HashSecret);
     const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
-
-    // Thêm chữ ký vào tham số
-    vnpParams.vnp_SecureHash = signed;
-
-    // Xây dựng URL thanh toán
-    const paymentUrl = `${vnpayConfig.vnp_Url}?${querystring.stringify(vnpParams, { encode: false })}`;
+    vnp_Params["vnp_SecureHash"] = signed;
+    const paymentUrl = vnpayConfig.vnp_Url + "?" + querystring.stringify(vnp_Params, { encode: false });
 
     return paymentUrl;
   } catch (error) {
@@ -54,39 +48,34 @@ const createVnpayPaymentUrl = async (orderInfo) => {
 
 /**
  * Xác minh kết quả thanh toán từ VNPay
- * @param {Object} vnpParams - Tham số trả về từ VNPay
+ * @param {Object} vnpayParams - Tham số trả về từ VNPay
  * @returns {Object} - Kết quả xác minh
  */
-const verifyVnpayReturn = (vnpParams) => {
+const verifyVnpayReturn = (vnpayParams) => {
   try {
-    // Lấy chữ ký bảo mật từ request
-    const secureHash = vnpParams.vnp_SecureHash;
+    let vnp_Params = { ...vnpayParams };
+    const secureHash = vnp_Params["vnp_SecureHash"];
 
-    // Xóa hash khỏi tham số trước khi xác thực
-    delete vnpParams.vnp_SecureHash;
-    delete vnpParams.vnp_SecureHashType;
+    delete vnp_Params["vnp_SecureHash"];
+    delete vnp_Params["vnp_SecureHashType"];
 
-    // Sắp xếp tham số theo thứ tự a-z
-    const sortedParams = sortObject(vnpParams);
+    vnp_Params = sortObject(vnp_Params);
 
-    // Tạo chữ ký
-    const signData = querystring.stringify(sortedParams, { encode: false });
+    const signData = querystring.stringify(vnp_Params, { encode: false });
     const hmac = crypto.createHmac("sha512", vnpayConfig.vnp_HashSecret);
     const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
 
-    // So sánh chữ ký
     const isValid = secureHash === signed;
 
     return {
-      isValid, // Kết quả xác thực chữ ký
-      orderId: vnpParams.vnp_TxnRef, // Mã đơn hàng
-      amount: vnpParams.vnp_Amount / 100, // Số tiền (chuyển về đơn vị gốc)
-      responseCode: vnpParams.vnp_ResponseCode, // Mã phản hồi
-      bankCode: vnpParams.vnp_BankCode, // Mã ngân hàng
-      bankTranNo: vnpParams.vnp_BankTranNo, // Mã giao dịch tại ngân hàng
-      payDate: vnpParams.vnp_PayDate, // Ngày thanh toán
-      transactionStatus: vnpParams.vnp_TransactionStatus, // Trạng thái giao dịch
-      transactionNo: vnpParams.vnp_TransactionNo, // Mã giao dịch tại VNPay
+      isValid,
+      orderId: vnpayParams.vnp_TxnRef,
+      amount: parseInt(vnpayParams.vnp_Amount) / 100, // Chia cho 100 để trở lại số tiền gốc
+      transactionNo: vnpayParams.vnp_TransactionNo,
+      responseCode: vnpayParams.vnp_ResponseCode,
+      transactionStatus: vnpayParams.vnp_TransactionStatus,
+      payDate: vnpayParams.vnp_PayDate,
+      bankCode: vnpayParams.vnp_BankCode,
     };
   } catch (error) {
     console.error("Lỗi khi xác minh kết quả thanh toán VNPay:", error);

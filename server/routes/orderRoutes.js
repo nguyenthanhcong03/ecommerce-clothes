@@ -16,7 +16,7 @@ const { verifyToken, checkRole } = require("../middlewares/auth");
 const router = express.Router();
 
 // User routes
-router.post("/", verifyToken, createOrder);
+router.post("/", verifyToken, createOrder); // Tạo đơn hàng - COD hoặc online payment
 router.get("/user", verifyToken, getUserOrders);
 router.get("/:id", verifyToken, getOrderById);
 router.post("/:id/cancel", verifyToken, cancelOrder);

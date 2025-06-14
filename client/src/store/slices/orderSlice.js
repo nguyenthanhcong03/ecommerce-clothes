@@ -18,7 +18,8 @@ const initialState = {
   calculatingDistance: false, // Trạng thái để theo dõi việc tính toán phí vận chuyển
   changedPriceProducts: [], // Danh sách sản phẩm thay đổi giá
   updatedProducts: [], // Sản phẩm đã cập nhật giá mới
-  showPriceChangeModal: false // Hiển thị modal thông báo thay đổi giá
+  showPriceChangeModal: false, // Hiển thị modal thông báo thay đổi giá
+  paymentUrl: null // URL thanh toán cho các phương thức online
 };
 
 export const calculateDistance = createAsyncThunk(
@@ -36,8 +37,9 @@ export const calculateDistance = createAsyncThunk(
 
 export const createNewOrder = createAsyncThunk('order/createNewOrder', async (orderData, { rejectWithValue }) => {
   try {
+    // Sử dụng API duy nhất cho tất cả các loại thanh toán
     const response = await createOrderAPI(orderData);
-    return response.data;
+    return response;
   } catch (error) {
     return rejectWithValue(error.response?.data);
   }
@@ -130,9 +132,19 @@ const orderSlice = createSlice({
       })
       .addCase(createNewOrder.fulfilled, (state, action) => {
         state.loading = false;
-        state.orderSuccess = true;
-        state.currentOrder = action.payload;
-        // Không reset state ở đây để có thể hiển thị thông tin xác nhận đơn hàng
+        console.log('action.payload', action.payload);
+
+        // Nếu có paymentUrl, đây là thanh toán online
+        if (action.payload.paymentUrl) {
+          state.paymentUrl = action.payload.paymentUrl;
+          state.orderSuccess = false; // Chưa thành công, đang chờ thanh toán
+          // Chuyển hướng sẽ được xử lý ở component
+        } else {
+          // COD - đơn hàng đã được tạo thành công
+          state.orderSuccess = true;
+          state.currentOrder = action.payload;
+          state.paymentUrl = null;
+        }
       })
       .addCase(createNewOrder.rejected, (state, action) => {
         state.loading = false;

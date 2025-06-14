@@ -11,21 +11,28 @@ import {
   FileEdit,
   Search,
   Loader2,
-  UserRound,
+  CreditCard,
   ClipboardList
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import { formatDate } from '@/utils/format/formatDate';
 import { toast } from 'react-toastify';
 import Modal from '@/components/common/Modal/Modal';
 import Button from '@/components/common/Button/Button';
 import Input from '@/components/common/Input/Input';
+import { createVnpayPayment } from '@/services/paymentService';
 
 // Component hiển thị trạng thái đơn hàng
 const OrderStatusBadge = ({ status }) => {
   const getStatusConfig = () => {
     switch (status) {
+      case 'Unpaid':
+        return {
+          color: 'bg-orange-100 text-orange-800',
+          icon: <CreditCard className='h-4 w-4' />,
+          text: 'Chưa thanh toán'
+        };
       case 'Pending':
         return { color: 'bg-amber-100 text-amber-800', icon: <Clock className='h-4 w-4' />, text: 'Chờ xác nhận' };
       case 'Processing':
@@ -63,6 +70,20 @@ const OrderStatusBadge = ({ status }) => {
 const OrderItem = ({ order, onCancel }) => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
+  const navigate = useNavigate();
+
+  const handleCreatePaymentUrl = async (orderId) => {
+    try {
+      const response = await createVnpayPayment(orderId);
+      if (response && response.paymentUrl) {
+        // Chuyển hướng người dùng đến URL thanh toán
+        window.location.href = response.paymentUrl;
+      }
+    } catch (error) {
+      console.error('Lỗi khi tạo liên kết thanh toán:', error);
+      toast.error('Không thể tạo liên kết thanh toán. Vui lòng thử lại sau.');
+    }
+  };
 
   const handleCancelOrder = () => {
     if (!cancelReason.trim()) {
@@ -118,6 +139,9 @@ const OrderItem = ({ order, onCancel }) => {
             <span className='ml-2 text-xl font-medium'>{formatCurrency(order.totalPrice)}</span>
           </div>
           <div className='flex items-center gap-2'>
+            {order.status === 'Unpaid' && (
+              <Button onClick={() => handleCreatePaymentUrl(order._id.toString())}>Thanh toán</Button>
+            )}
             {canBeCancelled && (
               <Button onClick={() => setShowCancelModal(true)} variant='secondary'>
                 Hủy đơn hàng

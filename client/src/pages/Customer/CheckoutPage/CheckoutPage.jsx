@@ -7,6 +7,8 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
+import { calculateDiscount, validateCoupon } from '../../../services/couponService';
 import {
   applyCoupon,
   calculateDistance,
@@ -15,20 +17,16 @@ import {
   removeCoupon,
   resetOrder,
   saveShippingInfo,
-  setOrderItems,
   setPaymentMethod,
   setShowPriceChangeModal,
   updateOrderNote
 } from '../../../store/slices/orderSlice';
-import LoadingSpinner from '../../../components/common/LoadingSpinner';
-import { calculateDiscount, validateCoupon } from '../../../services/couponService';
-import { processPayment } from '../../../services/paymentService';
 import OrderSuccess from './components/OrderSuccess';
 import OrderSummary from './components/OrderSummary';
 import PaymentMethod from './components/PaymentMethod';
+import PriceChangeModal from './components/PriceChangeModal';
 import ShippingForm from './components/ShippingForm';
 import { checkoutSchema } from './validationSchema';
-import PriceChangeModal from './components/PriceChangeModal';
 
 const CheckoutPage = () => {
   const dispatch = useDispatch();
@@ -43,7 +41,6 @@ const CheckoutPage = () => {
 
   // Thêm biến state để lưu dữ liệu đơn hàng
   const [orderData, setOrderData] = useState(null);
-
   // Selectors từ Redux
   const orderSuccess = useSelector((state) => state.order.orderSuccess);
   const orderItems = useSelector((state) => state.order.orderItems);
@@ -55,6 +52,7 @@ const CheckoutPage = () => {
   const changedPriceProducts = useSelector((state) => state.order.changedPriceProducts);
   const updatedProducts = useSelector((state) => state.order.updatedProducts);
   const showPriceChangeModal = useSelector((state) => state.order.showPriceChangeModal);
+  const paymentUrl = useSelector((state) => state.order.paymentUrl);
 
   // Setup form với validation schema tổng hợp
   const {
@@ -140,7 +138,7 @@ const CheckoutPage = () => {
         }
       }
     }
-  }, [selectedDistrict, setValue, dispatch]);
+  }, [selectedProvince, selectedDistrict, provinces, districts, setValue, dispatch]);
 
   // Reset order state khi unmount component
   useEffect(() => {
@@ -208,7 +206,6 @@ const CheckoutPage = () => {
       toast.error('Có lỗi xảy ra khi xóa mã giảm giá');
     }
   };
-
   // Xử lý khi submit form
   const onSubmit = (data) => {
     // 1. Tìm tên tỉnh/thành và quận/huyện từ mã
@@ -250,57 +247,8 @@ const CheckoutPage = () => {
 
     // Lưu lại orderData để có thể sử dụng khi xác nhận giá mới
     setOrderData(newOrderData);
-    console.log('orderData', newOrderData);
-
-    // 3. Tạo đơn hàng
-    dispatch(createNewOrder(newOrderData))
-      .unwrap()
-      .then((response) => {
-        const orderId = response._id;
-
-        if (data.paymentMethod === 'VNPay' || data.paymentMethod === 'Momo') {
-          // Tính tổng giá trị đơn hàng để gửi đến cổng thanh toán
-          let totalAmount = response.totalPrice;
-
-          // Chuẩn bị thông tin thanh toán
-          const paymentData = {
-            amount: totalAmount,
-            orderId: orderId,
-            orderInfo: `Thanh toán đơn hàng #${orderId}`
-          };
-
-          // Xử lý thanh toán qua VNPay hoặc Momo
-          const paymentMethod = data.paymentMethod;
-
-          processPayment(paymentMethod, paymentData)
-            .then((response) => {
-              // Chuyển hướng người dùng đến trang thanh toán
-              if (response && response.success && response.paymentUrl) {
-                dispatch(setOrderItems([]));
-                localStorage.removeItem('orderItems');
-                window.location.href = response.paymentUrl;
-              } else {
-                toast.error('Không thể tạo liên kết thanh toán. Vui lòng thử lại sau.');
-              }
-            })
-            .catch((error) => {
-              console.error('Lỗi tạo URL thanh toán:', error);
-              toast.error('Có lỗi xảy ra khi tạo liên kết thanh toán. Vui lòng thử lại sau.');
-            });
-        } else {
-          // Xử lý các phương thức thanh toán khác (COD)
-          dispatch(setOrderItems([])); // Xóa sản phẩm trong redux sau khi đặt hàng thành công
-          localStorage.removeItem('orderItems'); // Xóa sản phẩm trong localStorage
-          toast.success('Đặt hàng thành công!');
-        }
-      })
-      .catch((error) => {
-        // Nếu không phải lỗi thay đổi giá (đã được xử lý trong reducer)
-        if (!error?.changedProducts) {
-          console.error('Lỗi đặt hàng:', error);
-          toast.error('Đã có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.');
-        }
-      });
+    console.log('orderData', newOrderData); // 3. Tạo đơn hàng (COD sẽ tạo ngay, VNPay/Momo sẽ trả về paymentUrl)
+    dispatch(createNewOrder(newOrderData));
   };
 
   // Xử lý khi đóng modal thay đổi giá
@@ -323,52 +271,16 @@ const CheckoutPage = () => {
     toast.info('Đơn hàng đã được cập nhật với giá mới.');
 
     // Gọi lại API đặt hàng
-    dispatch(createNewOrder(updatedOrderData))
-      .unwrap()
-      .then((response) => {
-        const orderId = response._id;
-
-        if (updatedOrderData.paymentMethod === 'VNPay' || updatedOrderData.paymentMethod === 'Momo') {
-          // Tính tổng giá trị đơn hàng để gửi đến cổng thanh toán
-          let totalAmount = response.totalPrice;
-
-          // Chuẩn bị thông tin thanh toán
-          const paymentData = {
-            amount: totalAmount,
-            orderId: orderId,
-            orderInfo: `Thanh toán đơn hàng #${orderId}`
-          };
-
-          // Xử lý thanh toán qua VNPay hoặc Momo
-          const paymentMethod = updatedOrderData.paymentMethod;
-
-          processPayment(paymentMethod, paymentData)
-            .then((response) => {
-              // Chuyển hướng người dùng đến trang thanh toán
-              if (response && response.success && response.paymentUrl) {
-                dispatch(setOrderItems([]));
-                localStorage.removeItem('orderItems');
-                window.location.href = response.paymentUrl;
-              } else {
-                toast.error('Không thể tạo liên kết thanh toán. Vui lòng thử lại sau.');
-              }
-            })
-            .catch((error) => {
-              console.error('Lỗi tạo URL thanh toán:', error);
-              toast.error('Có lỗi xảy ra khi tạo liên kết thanh toán. Vui lòng thử lại sau.');
-            });
-        } else {
-          // Xử lý các phương thức thanh toán khác (COD)
-          dispatch(setOrderItems([])); // Xóa sản phẩm trong redux sau khi đặt hàng thành công
-          localStorage.removeItem('orderItems'); // Xóa sản phẩm trong localStorage
-          toast.success('Đặt hàng thành công!');
-        }
-      })
-      .catch((error) => {
-        console.error('Lỗi đặt hàng:', error);
-        toast.error('Đã có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.');
-      });
+    dispatch(createNewOrder(updatedOrderData));
   };
+
+  // Effect để xử lý chuyển hướng thanh toán online
+  useEffect(() => {
+    if (paymentUrl) {
+      // Chuyển hướng đến trang thanh toán
+      window.location.href = paymentUrl;
+    }
+  }, [paymentUrl]);
 
   // Nếu đơn hàng đã hoàn tất, hiển thị trang thành công
   if (orderSuccess) {

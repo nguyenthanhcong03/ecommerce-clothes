@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 
 connectDB();
 initRoutes(app);
-
+console.log("firs2t");
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
