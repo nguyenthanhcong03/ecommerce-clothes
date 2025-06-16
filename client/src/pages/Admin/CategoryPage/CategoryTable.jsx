@@ -175,8 +175,8 @@ const CategoryTable = ({
               : 'Không có dữ liệu'
         }}
         title={() => (
-          <div className='flex flex-col items-center justify-between rounded-t-lg lg:flex-row'>
-            <h3 className='text-xl font-bold'>Danh sách danh mục</h3>
+          <div className='flex items-center justify-between rounded-t-lg'>
+            <h3 className='text-lg font-bold'>Danh sách danh mục</h3>
           </div>
         )}
         // // expandable={true}

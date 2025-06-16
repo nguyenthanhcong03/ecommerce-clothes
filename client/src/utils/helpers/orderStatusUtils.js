@@ -2,6 +2,24 @@
  * Các hàm tiện ích để xử lý trạng thái đơn hàng
  */
 
+// Hàm hỗ trợ chuyển đổi trạng thái đơn hàng sang tiếng Việt
+export const translateOrderStatus = (status) => {
+  switch (status) {
+    case 'Unpaid':
+      return 'Chưa thanh toán';
+    case 'Processing':
+      return 'Đang xử lý';
+    case 'Shipping':
+      return 'Đang giao hàng';
+    case 'Delivered':
+      return 'Đã giao hàng';
+    case 'Cancelled':
+      return 'Đã hủy';
+    default:
+      return 'Đang xử lý';
+  }
+};
+
 // Chuyển đổi tiếng Anh sang tiếng Việt
 export const statusTranslations = {
   Pending: 'Đang chờ xử lý',

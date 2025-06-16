@@ -75,6 +75,7 @@ class UserController {
 
   // Cập nhật thông tin người dùng
   async updateUser(req, res) {
+    console.log("jj");
     const { username, email, phone, ...rest } = req.body;
     try {
       const userId = req.params.id;

@@ -114,7 +114,6 @@ class UserService {
 
   // Cập nhật thông tin người dùng
   async updateUser(userId, userData) {
-    console.log("userData", userData);
     // Không cho phép cập nhật một số trường nhạy cảm qua phương thức này
     const { password, resetPasswordToken, resetPasswordExpires, verificationToken, ...updateData } = userData;
 

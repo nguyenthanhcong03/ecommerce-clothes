@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RouterProvider } from 'react-router-dom';
 import router from './routes/routes.jsx';
 import { getCart } from '@/store/slices/cartSlice.js';
+import { toast } from 'react-toastify';
 
 function AppRouter() {
   const { isLoading, isAuthenticated, error, user } = useSelector((state) => state.account);

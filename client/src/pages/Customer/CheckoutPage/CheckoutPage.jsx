@@ -54,7 +54,6 @@ const CheckoutPage = () => {
   const showPriceChangeModal = useSelector((state) => state.order.showPriceChangeModal);
   const paymentUrl = useSelector((state) => state.order.paymentUrl);
 
-  // Setup form với validation schema tổng hợp
   const {
     register,
     handleSubmit,
@@ -78,8 +77,8 @@ const CheckoutPage = () => {
     mode: 'onChange'
   });
 
-  const selectedProvince = watch('province');
-  const selectedDistrict = watch('district');
+  const watchProvince = watch('province');
+  const watchDistrict = watch('district');
 
   // Load danh sách tỉnh
   useEffect(() => {
@@ -97,9 +96,10 @@ const CheckoutPage = () => {
 
   // Khi chọn tỉnh → load huyện
   useEffect(() => {
+    const selectedProvince = provinces.find((p) => p.label === watchProvince);
     const fetchDistricts = async () => {
       try {
-        const response = await getDistrictsAPI(selectedProvince);
+        const response = await getDistrictsAPI(selectedProvince.value);
         setDistricts(response);
         setValue('district', '');
         setWards([]);
@@ -107,38 +107,35 @@ const CheckoutPage = () => {
         console.error('Error loading district:', error);
       }
     };
-    if (selectedProvince) {
+    if (watchProvince) {
       fetchDistricts();
     }
-  }, [selectedProvince, setValue]);
+  }, [watchProvince, provinces, setValue]);
 
   // Khi chọn quận => load phường/xã
   useEffect(() => {
+    const selectedDistrict = districts.find((d) => d.label === watchDistrict);
+
     const fetchWards = async () => {
       try {
-        const response = await getWardsAPI(selectedDistrict);
+        const response = await getWardsAPI(selectedDistrict.value);
         setWards(response);
         setValue('ward', '');
       } catch (error) {
         console.error('Error loading ward:', error);
       }
     };
-    if (selectedDistrict) {
+    if (watchDistrict) {
       fetchWards();
       // Tính phí vận chuyển khi đã chọn quận/huyện
-      if (selectedProvince && selectedDistrict) {
-        const provinceName = provinces.find((p) => p.value === +selectedProvince)?.label;
-        const districtName = districts.find((d) => d.value === +selectedDistrict)?.label;
-
-        if (districtName && provinceName) {
-          const customerLocation = `${districtName}, ${provinceName}, Việt Nam`;
-          const storeLocation = '175 Tây Sơn, Trung Liệt, Đống Đa, Hà Nội, Việt Nam';
-          // Tính khoảng cách giữa hai địa điểm
-          dispatch(calculateDistance({ storeLocation, customerLocation }));
-        }
+      if (watchProvince && watchDistrict) {
+        const customerLocation = `${watchDistrict}, ${watchProvince}, Việt Nam`;
+        const storeLocation = '175 Tây Sơn, Trung Liệt, Đống Đa, Hà Nội, Việt Nam';
+        // Tính khoảng cách giữa hai địa điểm
+        dispatch(calculateDistance({ storeLocation, customerLocation }));
       }
     }
-  }, [selectedProvince, selectedDistrict, provinces, districts, setValue, dispatch]);
+  }, [watchProvince, watchDistrict, provinces, districts, setValue, dispatch]);
 
   // Reset order state khi unmount component
   useEffect(() => {
@@ -208,11 +205,6 @@ const CheckoutPage = () => {
   };
   // Xử lý khi submit form
   const onSubmit = (data) => {
-    // 1. Tìm tên tỉnh/thành và quận/huyện từ mã
-    const provinceName = provinces.find((p) => p.value === +data.province)?.label;
-    const districtName = districts.find((d) => d.value === +data.district)?.label;
-    const wardName = wards.find((w) => w.code === +data.ward)?.label;
-
     // Lưu thông tin giao hàng
     const shippingData = {
       fullName: data.fullName,
@@ -233,9 +225,9 @@ const CheckoutPage = () => {
       shippingAddress: {
         fullName: data.fullName,
         street: data.street,
-        province: provinceName,
-        district: districtName,
-        ward: wardName,
+        province: data.province,
+        district: data.district,
+        ward: data.ward,
         phoneNumber: data.phoneNumber,
         email: data.email
       },
@@ -322,8 +314,8 @@ const CheckoutPage = () => {
                 provinces={provinces}
                 districts={districts}
                 wards={wards}
-                selectedProvince={selectedProvince}
-                selectedDistrict={selectedDistrict}
+                watchProvince={watchProvince}
+                watchDistrict={watchDistrict}
               />
 
               {/* Payment Methods */}

@@ -100,13 +100,22 @@ const createOrder = async (req, res) => {
       const coupon = await Coupon.findOne({
         code: couponCode,
         isActive: true,
-        expiryDate: { $gt: new Date() },
+        startDate: { $lte: new Date() },
+        endDate: { $gte: new Date() },
       });
 
+      console.log("vào đây", coupon);
       if (!coupon) {
         return res.status(400).json({
           success: false,
-          message: "Invalid or expired coupon code",
+          message: "Mã giảm giá không hợp lệ hoặc đã hết hạn",
+        });
+      }
+
+      if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) {
+        return res.status(400).json({
+          success: false,
+          message: "Mã giảm giá đã hết lượt sử dụng",
         });
       }
 
@@ -276,7 +285,6 @@ const createOrder = async (req, res) => {
   }
 };
 
-// Các function khác giữ nguyên (copy từ file cũ)
 const getAllOrders = async (req, res) => {
   try {
     const {
@@ -589,23 +597,6 @@ const updatePaymentStatus = async (req, res) => {
   }
 };
 
-const getOrderStatistics = async (req, res) => {
-  try {
-    const statistics = await orderService.getOrderStatistics();
-
-    return res.status(200).json({
-      success: true,
-      message: "Order statistics retrieved successfully",
-      data: statistics,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
 const cancelOrder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -731,86 +722,6 @@ const searchOrders = async (req, res) => {
   }
 };
 
-const reviewOrder = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { orderRating, comment, productReviews } = req.body;
-    const userId = req.user._id;
-
-    // Validate
-    if (!orderRating || orderRating < 1 || orderRating > 5) {
-      return res.status(400).json({
-        success: false,
-        message: "Valid order rating (1-5) is required",
-      });
-    }
-
-    const order = await Order.findById(id);
-
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
-    }
-
-    // Check if the user is authorized (must be the order owner)
-    if (order.userId.toString() !== userId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "You are not authorized to review this order",
-      });
-    }
-
-    // Check if order is delivered
-    if (order.status !== "Delivered") {
-      return res.status(400).json({
-        success: false,
-        message: "Order must be delivered before reviewing",
-      });
-    }
-
-    // Check if already reviewed
-    if (order.isReviewed) {
-      return res.status(400).json({
-        success: false,
-        message: "Order has already been reviewed",
-      });
-    }
-
-    // Update order with review
-    order.isReviewed = true;
-    order.review = {
-      rating: orderRating,
-      comment: comment || "",
-      reviewedAt: new Date(),
-    };
-
-    // Add product-specific reviews if provided
-    if (productReviews && Array.isArray(productReviews)) {
-      order.productReviews = productReviews.map((review) => ({
-        productId: review.productId,
-        variantId: review.variantId,
-        rating: review.rating,
-        comment: review.comment || "",
-      }));
-    }
-
-    const updatedOrder = await order.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Order reviewed successfully",
-      data: updatedOrder,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
 module.exports = {
   createOrder,
   getAllOrders,
@@ -818,8 +729,6 @@ module.exports = {
   getOrderById,
   updateOrderStatus,
   updatePaymentStatus,
-  getOrderStatistics,
   cancelOrder,
   searchOrders,
-  reviewOrder,
 };

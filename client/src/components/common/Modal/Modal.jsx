@@ -87,7 +87,7 @@ const Modal = ({
           <div className='flex items-center justify-between border-b px-6 py-4'>
             <h3 className='text-lg font-medium'>{title}</h3>
             {!hideCloseButton && (
-              <Button variant='ghost' size='sm' className='rounded-full p-1 hover:bg-gray-100' onClick={onClose}>
+              <button className='rounded-full p-1 hover:bg-gray-100' onClick={onClose}>
                 <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' viewBox='0 0 20 20' fill='currentColor'>
                   <path
                     fillRule='evenodd'
@@ -95,7 +95,7 @@ const Modal = ({
                     clipRule='evenodd'
                   />
                 </svg>
-              </Button>
+              </button>
             )}
           </div>
         )}

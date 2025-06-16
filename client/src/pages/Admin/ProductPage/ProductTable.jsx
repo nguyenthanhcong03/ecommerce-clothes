@@ -1,9 +1,7 @@
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import { Button, Card, Image, Input, Popconfirm, Space, Table, Tag, Tooltip } from 'antd';
 import { Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
-import PropTypes from 'prop-types';
 import { useMemo } from 'react';
-import './styles.css';
 
 const ProductTable = ({
   products,

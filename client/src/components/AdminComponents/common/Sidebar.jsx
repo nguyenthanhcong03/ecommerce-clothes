@@ -1,18 +1,17 @@
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   BarChart2,
   ChartBarStacked,
-  DollarSign,
   Menu,
   Settings,
   ShoppingBag,
   ShoppingCart,
+  Tag,
   TrendingUp,
-  Users,
-  Tag
+  Users
 } from 'lucide-react';
 import { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Link, NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 const SIDEBAR_ITEMS = [
   { name: 'Tổng quan', icon: BarChart2, color: '#333', href: '/admin' },

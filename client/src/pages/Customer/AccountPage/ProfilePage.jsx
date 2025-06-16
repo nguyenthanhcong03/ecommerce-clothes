@@ -11,7 +11,9 @@ import Input from '@/components/common/Input/Input';
 import Select from '@/components/common/Select/Select';
 import { uploadFile } from '@/services/fileService';
 import Button from '@/components/common/Button/Button';
-import { FileUser, Shield, UserRound } from 'lucide-react';
+import { FileUser, UserRound } from 'lucide-react';
+import { getProvincesAPI, getDistrictsAPI, getWardsAPI } from '@/services/mapService';
+import { set } from 'date-fns';
 
 // Schema xác thực cho form cập nhật thông tin cá nhân
 const profileSchema = yup.object({
@@ -40,7 +42,7 @@ const profileSchema = yup.object({
   gender: yup
     .string()
     .nullable()
-    .oneOf(['male', 'female', 'other'], 'Giới tính phải là male, female hoặc other')
+    .oneOf(['Nam', 'Nữ', 'Khác'], 'Giới tính phải là Nam, Nữ hoặc Khác')
     .transform((value) => (value === '' ? null : value)),
   dateOfBirth: yup
     .string()
@@ -55,7 +57,25 @@ const profileSchema = yup.object({
       if (!value) return true;
       const date = new Date(value);
       return date <= new Date();
-    })
+    }),
+  // Địa chỉ
+  street: yup
+    .string()
+    .nullable()
+    .max(200, 'Địa chỉ đường không được quá 200 ký tự')
+    .transform((value) => (value === '' ? null : value)),
+  ward: yup
+    .string()
+    .nullable()
+    .transform((value) => (value === '' ? null : value)),
+  district: yup
+    .string()
+    .nullable()
+    .transform((value) => (value === '' ? null : value)),
+  province: yup
+    .string()
+    .nullable()
+    .transform((value) => (value === '' ? null : value))
 });
 
 const ProfilePage = () => {
@@ -65,13 +85,27 @@ const ProfilePage = () => {
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [avatarChanged, setAvatarChanged] = useState(false);
+
+  // State cho địa chỉ
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [selectedProvince, setSelectedProvince] = useState(null);
+  const [selectedDistrict, setSelectedDistrict] = useState(null);
+  const [isLoadingProvinces, setIsLoadingProvinces] = useState(false);
+  const [isLoadingDistricts, setIsLoadingDistricts] = useState(false);
+  const [isLoadingWards, setIsLoadingWards] = useState(false);
+
   const {
     control,
     handleSubmit,
     formState: { errors, isDirty },
     reset,
+    register,
+    watch,
     setError,
-    clearErrors
+    clearErrors,
+    setValue
   } = useForm({
     resolver: yupResolver(profileSchema),
     defaultValues: {
@@ -81,9 +115,16 @@ const ProfilePage = () => {
       email: '',
       phone: '',
       gender: '',
-      dateOfBirth: ''
+      dateOfBirth: '',
+      street: '',
+      ward: '',
+      district: '',
+      province: ''
     }
   });
+
+  const provinceName = watch('province');
+  const districtName = watch('district');
 
   // Lấy thông tin người dùng khi component được tải
   useEffect(() => {
@@ -91,54 +132,103 @@ const ProfilePage = () => {
       dispatch(fetchUserById(user._id));
     }
   }, [dispatch, user]);
+  // Load provinces
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      setIsLoadingProvinces(true);
+      try {
+        const response = await getProvincesAPI();
+        setProvinces(response);
+        if (currentUser?.address?.province) {
+          setValue('province', currentUser.address.province);
+        }
+      } catch (error) {
+        console.error('Lỗi khi tải tỉnh/thành phố:', error);
+      } finally {
+        setIsLoadingProvinces(false);
+      }
+    };
+    fetchProvinces();
+  }, [currentUser, setValue]);
 
-  // Cập nhật form khi có dữ liệu người dùng
+  // Load districts khi province thay đổi
+  useEffect(() => {
+    const selectedProvince = provinces.find((p) => p.label === provinceName);
+    const fetchDistricts = async (provinceCode) => {
+      setIsLoadingDistricts(true);
+      try {
+        const response = await getDistrictsAPI(provinceCode);
+        setDistricts(response);
+
+        // Nếu province thay đổi (không phải lần đầu load), reset district và ward
+        if (provinceName !== currentUser?.address?.province) {
+          setValue('district', '');
+          setValue('ward', '');
+        } else if (currentUser?.address?.district) {
+          // Chỉ set giá trị district từ currentUser nếu province không thay đổi
+          setValue('district', currentUser.address.district);
+        }
+      } catch (error) {
+        console.error('Lỗi khi tải quận/huyện:', error);
+      } finally {
+        setIsLoadingDistricts(false);
+      }
+    };
+
+    if (selectedProvince) {
+      fetchDistricts(selectedProvince.value);
+    } else {
+      setDistricts([]);
+      setValue('district', '');
+      setValue('ward', '');
+    }
+  }, [provinceName, provinces, currentUser, setValue]);
+
+  // Load wards khi district thay đổi
+  useEffect(() => {
+    const selectedDistrict = districts.find((d) => d.label === districtName);
+    const fetchWards = async (districtCode) => {
+      setIsLoadingWards(true);
+      try {
+        const response = await getWardsAPI(districtCode);
+        setWards(response);
+
+        // Nếu district thay đổi (không phải lần đầu load), reset ward
+        if (districtName !== currentUser?.address?.district) {
+          setValue('ward', '');
+        } else if (currentUser?.address?.ward) {
+          // Chỉ set giá trị ward từ currentUser nếu district không thay đổi
+          setValue('ward', currentUser.address.ward);
+        }
+      } catch (error) {
+        console.error('Lỗi khi tải phường/xã:', error);
+      } finally {
+        setIsLoadingWards(false);
+      }
+    };
+
+    if (selectedDistrict) {
+      fetchWards(selectedDistrict.value);
+    } else {
+      setWards([]);
+      setValue('ward', '');
+    }
+  }, [districtName, districts, currentUser, setValue]);
+
+  // Set các trường khác
   useEffect(() => {
     if (currentUser) {
-      // Xử lý ngày sinh để tránh vấn đề múi giờ
-      let dateOfBirthFormatted = '';
-      if (currentUser.dateOfBirth) {
-        try {
-          // Lấy ngày sinh từ dữ liệu người dùng
-          const date = new Date(currentUser.dateOfBirth);
-
-          if (!isNaN(date.getTime())) {
-            // Giải pháp triệt để: Tạo ngày mới với cùng năm, tháng, ngày nhưng ở múi giờ địa phương
-            const year = date.getFullYear();
-            const month = date.getMonth() + 1; // getMonth() trả về 0-11
-            const day = date.getDate();
-
-            // Format lại thành chuỗi yyyy-mm-dd cho input type="date"
-            dateOfBirthFormatted = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-          }
-        } catch (error) {
-          console.error('Lỗi xử lý ngày sinh:', error);
-        }
-      }
-
-      // Clear any previous errors
-      clearErrors();
-
-      reset({
-        firstName: currentUser.firstName || '',
-        lastName: currentUser.lastName || '',
-        username: currentUser.username || '',
-        email: currentUser.email || '',
-        phone: currentUser.phone || '',
-        gender: currentUser.gender || '',
-        // dateOfBirth: dateOfBirthFormatted,
-        dateOfBirth: currentUser.dateOfBirth || ''
-      });
-
-      // Hiển thị avatar nếu có
-      if (currentUser.avatar) {
-        setAvatarPreview(currentUser.avatar);
-      }
-
-      // Reset avatar changed state
-      setAvatarChanged(false);
+      console.log('currentUser', currentUser);
+      setValue('username', currentUser.username);
+      setValue('firstName', currentUser.firstName);
+      setValue('lastName', currentUser.lastName);
+      setValue('email', currentUser.email);
+      setValue('phone', currentUser.phone);
+      setValue('gender', currentUser.gender);
+      setValue('dateOfBirth', currentUser.dateOfBirth || '');
+      setValue('street', currentUser.address?.street || '');
     }
-  }, [currentUser, reset, clearErrors]);
+  }, [currentUser, setValue]);
 
   // Xử lý khi người dùng chọn ảnh đại diện mới
   const handleAvatarChange = (e) => {
@@ -174,23 +264,36 @@ const ProfilePage = () => {
       });
     }
   };
-
   // Xử lý cập nhật thông tin cá nhân
   const onSubmit = async (data) => {
+    console.log('dataSubmit', data);
     if (!user || !user._id) {
       toast.error('Không tìm thấy thông tin người dùng');
       return;
-    }
-
-    // Reset form errors before submission
+    } // Reset form errors before submission
     clearErrors(['username', 'email', 'phone']);
-
-    const toastId = toast.loading('Đang cập nhật thông tin người dùng...');
-
     try {
-      // Tạo đối tượng data để cập nhật thông tin người dùng
-      const userData = { ...data };
-
+      // Xử lý địa chỉ - tạo mảng address nếu có thông tin địa chỉ
+      const { street, ward, district, province, ...otherData } = data;
+      const userData = { ...otherData };
+      if (province && (!street || !ward || !district)) {
+        // Nếu có tỉnh thành thì bắt buộc phải có ít nhất một trong các trường street, ward, district
+        // throw new Error('Vui lòng cung cấp ít nhất một trong các trường địa chỉ: đường, phường/xã, quận/huyện.');
+        if (!street) setError('street', { type: 'manual', message: 'Đường không được để trống.' });
+        if (!ward) setError('ward', { type: 'manual', message: 'Phường/xã không được để trống.' });
+        if (!district) setError('district', { type: 'manual', message: 'Quận/huyện không được để trống.' });
+        return;
+      }
+      if (street && ward && district && province) {
+        userData.address = {
+          street: street || '',
+          ward: ward || '',
+          district: district || '',
+          province: province || ''
+        };
+      } else if (!street && !ward && !district && !province) {
+        userData.address = null;
+      }
       // Xử lý upload avatar nếu có
       if (avatarFile) {
         try {
@@ -209,15 +312,12 @@ const ProfilePage = () => {
 
       // Cập nhật thông tin người dùng với dữ liệu bao gồm avatar URL (nếu có)
       await dispatch(updateUser({ userId: user._id, userData })).unwrap();
-
       // Cập nhật lại thông tin người dùng
       await dispatch(fetchUserById(user._id));
-
       // Xóa file avatar khỏi state sau khi đã upload thành công
       setAvatarFile(null);
       setAvatarChanged(false);
-
-      toast.update(toastId, {
+      toast.success('Thông tin cá nhân đã được cập nhật thành công!', {
         render: 'Thông tin cá nhân đã được cập nhật thành công!',
         type: 'success',
         isLoading: false,
@@ -232,15 +332,14 @@ const ProfilePage = () => {
           setError(field, { type: 'server', message });
         });
       }
-
-      toast.update(toastId, {
-        render: `Cập nhật thất bại: ${error?.errors ? error.errors.map((err) => err.message).join(', ') : 'Đã xảy ra lỗi'}`,
-        type: 'error',
-        isLoading: false,
-        autoClose: 5000,
-        closeButton: true,
-        hideProgressBar: false
-      });
+      // toast.update(toastId, {
+      //   render: `Cập nhật thất bại: ${error?.errors ? error.errors.map((err) => err.message).join(', ') : 'Đã xảy ra lỗi'}`,
+      //   type: 'error',
+      //   isLoading: false,
+      //   autoClose: 5000,
+      //   closeButton: true,
+      //   hideProgressBar: false
+      // });
     }
   };
 
@@ -470,6 +569,88 @@ const ProfilePage = () => {
             )}
           />
         </div>
+
+        {/* Địa chỉ section */}
+        <div className='mb-6 mt-8'>
+          <div className='mb-4 flex items-center space-x-4'>
+            <div className='rounded-lg bg-green-100 p-2'>
+              <FileUser className='h-5 w-5 text-green-600' />
+            </div>
+            <div>
+              <h2 className='text-lg font-bold text-gray-900'>Địa chỉ</h2>
+              <p className='text-sm text-gray-600'>Thông tin địa chỉ sẽ được sử dụng cho đơn hàng của bạn</p>
+            </div>
+          </div>
+        </div>
+
+        <div className='mb-6 grid grid-cols-1 gap-4 md:grid-cols-3'>
+          {' '}
+          {/* Province */}
+          <Controller
+            name='province'
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                label='Tỉnh/Thành phố'
+                placeholder='-- Chọn Tỉnh/Thành phố --'
+                options={provinces}
+                error={errors.province?.message}
+                isLoading={isLoadingProvinces}
+              />
+            )}
+          />
+          {/* District */}
+          <Controller
+            name='district'
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                label='Quận/Huyện'
+                placeholder='-- Chọn Quận/Huyện --'
+                options={districts}
+                error={errors.district?.message}
+                isLoading={isLoadingDistricts}
+                disabled={!provinceName || isLoadingDistricts}
+              />
+            )}
+          />
+          {/* Ward */}
+          <Controller
+            name='ward'
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                label='Phường/Xã'
+                placeholder='-- Chọn Phường/Xã --'
+                options={wards}
+                error={errors.ward?.message}
+                isLoading={isLoadingWards}
+                disabled={!districtName || isLoadingWards}
+              />
+            )}
+          />
+        </div>
+
+        {/* Street address */}
+        <div className='mb-6'>
+          <Controller
+            name='street'
+            control={control}
+            render={({ field }) => (
+              <Input
+                {...field}
+                type='text'
+                label='Số nhà, đường'
+                placeholder='Nhập số nhà, tên đường'
+                error={errors.street?.message}
+              />
+            )}
+          />
+        </div>
+
         <div className='mt-8 flex justify-end'>
           <div className='flex gap-4'>
             {(isDirty || avatarChanged) && (
@@ -479,24 +660,10 @@ const ProfilePage = () => {
                 onClick={() => {
                   if (currentUser) {
                     // Reset về giá trị ban đầu từ currentUser
-                    let dateOfBirthFormatted = '';
-                    if (currentUser.dateOfBirth) {
-                      try {
-                        const date = new Date(currentUser.dateOfBirth);
-                        if (!isNaN(date.getTime())) {
-                          const year = date.getFullYear();
-                          const month = date.getMonth() + 1;
-                          const day = date.getDate();
-                          dateOfBirthFormatted = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-                        }
-                      } catch (error) {
-                        console.error('Lỗi khi xử lý ngày sinh:', error);
-                      }
-                    }
-
                     // Clear all form errors
                     clearErrors();
 
+                    // Reset form
                     reset({
                       firstName: currentUser.firstName || '',
                       lastName: currentUser.lastName || '',
@@ -504,7 +671,11 @@ const ProfilePage = () => {
                       email: currentUser.email || '',
                       phone: currentUser.phone || '',
                       gender: currentUser.gender || '',
-                      dateOfBirth: dateOfBirthFormatted
+                      dateOfBirth: currentUser.dateOfBirth || '',
+                      street: currentUser.address?.street || '',
+                      province: currentUser.address?.province || '',
+                      district: currentUser.address?.district || '',
+                      ward: currentUser.address?.ward || ''
                     });
 
                     // Reset avatar về giá trị ban đầu

@@ -10,10 +10,6 @@ router.get("/active", couponController.getActiveCoupons);
 // GET /api/coupons/validate/:code - Kiểm tra mã coupon có hợp lệ không
 router.get("/validate/:code", couponController.validateCoupon);
 
-// Routes yêu cầu đăng nhập
-// POST /api/coupons/:id/apply - Áp dụng coupon trong đơn hàng
-router.post("/:id/apply", verifyToken, couponController.applyCoupon);
-
 // Routes chỉ dành cho admin
 // GET /api/coupons - Lấy danh sách coupon có phân trang và lọc
 router.get("/", verifyToken, checkRole("admin"), couponController.getCoupons);

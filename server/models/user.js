@@ -42,9 +42,9 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     avatar: { type: String },
-    gender: { enum: ["male", "female", "other"] },
+    gender: { enum: ["Nam", "Nữ", "Khác"] },
     dateOfBirth: { type: String },
-    address: [addressSchema],
+    address: addressSchema,
 
     // Account status and roles
     role: { type: String, enum: ["customer", "admin"], default: "customer" },

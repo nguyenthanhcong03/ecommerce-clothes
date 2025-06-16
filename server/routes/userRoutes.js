@@ -24,7 +24,8 @@ router.post(
 router.get("/:id", verifyToken, validator(idSchema, "params"), userController.getUserById);
 
 // Cập nhật thông tin người dùng
-router.put("/:id", verifyToken, validator(updateSchema), userController.updateUser);
+router.put("/:id", verifyToken, userController.updateUser);
+// router.put("/:id", verifyToken, validator(updateSchema), userController.updateUser);
 
 // Cập nhật thông tin người dùng bởi Admin (có nhiều quyền hạn hơn)
 router.put(

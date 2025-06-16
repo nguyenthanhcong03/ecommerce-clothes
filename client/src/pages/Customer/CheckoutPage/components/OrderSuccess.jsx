@@ -1,17 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { memo, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { formatCurrency } from '../../../../utils/format/formatCurrency';
-import { formatDate } from '../../../../utils/format/formatDate';
-
-// Icons
+import { formatCurrency } from '@/utils/format/formatCurrency';
+import { formatDate } from '@/utils/format/formatDate';
+import { translateOrderStatus } from '@/utils/helpers/orderStatusUtils';
 import { ArrowLeft, Clock, MapPin, Package, Printer } from 'lucide-react';
-import boxIcon from '../../../../assets/icons/boxIcon.svg';
-import creditCardIcon from '../../../../assets/icons/debitCardIcon.svg';
-import truckIcon from '../../../../assets/icons/truckIcon.svg';
+import boxIcon from '@/assets/icons/boxIcon.svg';
+import creditCardIcon from '@/assets/icons/debitCardIcon.svg';
+import truckIcon from '@/assets/icons/truckIcon.svg';
 
 // Component hiển thị thông tin từng sản phẩm trong đơn hàng
-const OrderProductItem = React.memo(({ product }) => {
+const OrderProductItem = memo(({ product }) => {
   const price = product.snapshot?.originalPrice || product.snapshot?.price || 0;
 
   return (
@@ -45,23 +44,6 @@ const OrderProductItem = React.memo(({ product }) => {
   );
 });
 
-// Hàm hỗ trợ chuyển đổi trạng thái đơn hàng sang tiếng Việt
-const translateOrderStatus = (status) => {
-  switch (status) {
-    case 'Processing':
-      return 'Đang xử lý';
-    case 'Shipping':
-      return 'Đang giao hàng';
-    case 'Delivered':
-      return 'Đã giao hàng';
-    case 'Cancelled':
-      return 'Đã hủy';
-    default:
-      return 'Đang xử lý';
-  }
-};
-
-// Component chính
 const OrderSuccess = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -385,5 +367,8 @@ const OrderSuccess = () => {
     </div>
   );
 };
+
+OrderProductItem.displayName = 'OrderProductItem';
+OrderSuccess.displayName = 'OrderSuccess';
 
 export default OrderSuccess;

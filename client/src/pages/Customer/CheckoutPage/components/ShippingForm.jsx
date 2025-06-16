@@ -3,7 +3,7 @@ import Select from '@/components/common/Select/Select';
 import { memo } from 'react';
 import { Controller } from 'react-hook-form';
 
-const ShippingForm = ({ control, errors, provinces, districts, wards, selectedProvince, selectedDistrict }) => {
+const ShippingForm = ({ control, errors, provinces, districts, wards, watchProvince, watchDistrict }) => {
   return (
     <div className='rounded-sm bg-white p-6'>
       <h2 className='mb-6 text-xl font-bold'>Thông tin giao hàng</h2>
@@ -89,7 +89,7 @@ const ShippingForm = ({ control, errors, provinces, districts, wards, selectedPr
                 options={districts}
                 error={errors.district?.message}
                 required
-                disabled={!selectedProvince}
+                disabled={!watchProvince}
               />
             )}
           />
@@ -105,7 +105,7 @@ const ShippingForm = ({ control, errors, provinces, districts, wards, selectedPr
                 options={wards}
                 error={errors.ward?.message}
                 required
-                disabled={!selectedDistrict}
+                disabled={!watchDistrict}
               />
             )}
           />

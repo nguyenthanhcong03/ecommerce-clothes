@@ -7,13 +7,13 @@ const createCoupon = async (req, res) => {
     const newCoupon = await couponService.createCoupon(couponData);
     res.status(201).json({
       success: true,
-      message: "Đã tạo coupon thành công",
+      message: "Đã tạo mã giảm giá thành công",
       data: newCoupon,
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message || "Có lỗi xảy ra khi tạo coupon",
+      message: error.message || "Có lỗi xảy ra khi tạo mã giảm giá",
     });
   }
 };
@@ -23,13 +23,13 @@ const getCoupons = async (req, res) => {
     const result = await couponService.getCoupons(req.query);
     res.status(200).json({
       success: true,
-      message: "Lấy danh sách coupon thành công",
+      message: "Lấy danh sách mã giảm giá thành công",
       data: result,
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message || "Có lỗi xảy ra khi lấy danh sách coupon",
+      message: error.message || "Có lỗi xảy ra khi lấy danh sách mã giảm giá",
     });
   }
 };
@@ -39,13 +39,13 @@ const getCouponById = async (req, res) => {
     const coupon = await couponService.getCouponById(req.params.id);
     res.status(200).json({
       success: true,
-      message: "Lấy thông tin coupon thành công",
+      message: "Lấy thông tin mã giảm giá thành công",
       data: coupon,
     });
   } catch (error) {
     res.status(404).json({
       success: false,
-      message: error.message || "Không tìm thấy coupon",
+      message: error.message || "Không tìm thấy mã giảm giá",
     });
   }
 };
@@ -58,7 +58,7 @@ const validateCoupon = async (req, res) => {
     if (!code) {
       return res.status(400).json({
         success: false,
-        message: "Vui lòng cung cấp mã coupon",
+        message: "Vui lòng cung cấp mã giảm giá",
       });
     }
 
@@ -95,13 +95,13 @@ const updateCoupon = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Đã cập nhật coupon thành công",
+      message: "Đã cập nhật mã giảm giá thành công",
       data: updatedCoupon,
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message || "Có lỗi xảy ra khi cập nhật coupon",
+      message: error.message || "Có lỗi xảy ra khi cập nhật mã giảm giá",
     });
   }
 };
@@ -113,12 +113,12 @@ const deleteCoupon = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Đã xóa coupon thành công",
+      message: "Đã xóa mã giảm giá thành công",
     });
   } catch (error) {
     res.status(404).json({
       success: false,
-      message: error.message || "Có lỗi xảy ra khi xóa coupon",
+      message: error.message || "Có lỗi xảy ra khi xóa mã giảm giá",
     });
   }
 };
@@ -139,13 +139,13 @@ const toggleCouponStatus = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `Đã ${isActive ? "kích hoạt" : "vô hiệu hóa"} coupon thành công`,
+      message: `Đã ${isActive ? "kích hoạt" : "vô hiệu hóa"} mã giảm giá thành công`,
       data: updatedCoupon,
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message || "Có lỗi xảy ra khi cập nhật trạng thái coupon",
+      message: error.message || "Có lỗi xảy ra khi cập nhật trạng thái mã giảm giá",
     });
   }
 };
@@ -156,36 +156,13 @@ const getActiveCoupons = async (req, res) => {
     const coupons = await couponService.getActiveCoupons();
     res.status(200).json({
       success: true,
-      message: "Lấy danh sách coupon đang có hiệu lực thành công",
+      message: "Lấy danh sách mã giảm giá đang có hiệu lực thành công",
       data: coupons,
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message || "Có lỗi xảy ra khi lấy danh sách coupon",
-    });
-  }
-};
-
-/**
- * Sử dụng coupon trong đơn hàng (tăng số lượt sử dụng)
- * @route POST /api/coupons/:id/apply
- * @access Private
- */
-const applyCoupon = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updatedCoupon = await couponService.incrementCouponUsage(id);
-
-    res.status(200).json({
-      success: true,
-      message: "Đã áp dụng coupon thành công",
-      data: updatedCoupon,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message || "Có lỗi xảy ra khi áp dụng coupon",
+      message: error.message || "Có lỗi xảy ra khi lấy danh sách mã giảm giá",
     });
   }
 };
@@ -199,5 +176,4 @@ module.exports = {
   deleteCoupon,
   toggleCouponStatus,
   getActiveCoupons,
-  applyCoupon,
 };

@@ -14,7 +14,8 @@ import {
   Calendar,
   FileEdit,
   CreditCard,
-  AlertCircle
+  AlertCircle,
+  Timer
 } from 'lucide-react';
 import { useState } from 'react';
 import { formatCurrency } from '@/utils/format/formatCurrency';
@@ -22,39 +23,10 @@ import { formatDate } from '@/utils/format/formatDate';
 import { toast } from 'react-toastify';
 import Modal from '@/components/common/Modal/Modal2';
 import Button from '@/components/common/Button';
-
-// Component hiển thị trạng thái đơn hàng
-const OrderStatusBadge = ({ status }) => {
-  const getStatusConfig = () => {
-    switch (status) {
-      case 'Pending':
-        return { color: 'bg-amber-100 text-amber-800', icon: <Clock className='h-4 w-4' />, text: 'Chờ xác nhận' };
-      case 'Processing':
-        return { color: 'bg-blue-100 text-blue-800', icon: <Package className='h-4 w-4' />, text: 'Đang xử lý' };
-      case 'Shipping':
-        return {
-          color: 'bg-indigo-100 text-indigo-800',
-          icon: <TruckIcon className='h-4 w-4' />,
-          text: 'Đang giao hàng'
-        };
-      case 'Delivered':
-        return { color: 'bg-green-100 text-green-800', icon: <Package className='h-4 w-4' />, text: 'Đã giao hàng' };
-      case 'Cancelled':
-        return { color: 'bg-red-100 text-red-800', icon: <AlertCircle className='h-4 w-4' />, text: 'Đã hủy' };
-      default:
-        return { color: 'bg-gray-100 text-gray-800', icon: <Clock className='h-4 w-4' />, text: 'Không xác định' };
-    }
-  };
-
-  const { color, icon, text } = getStatusConfig();
-
-  return (
-    <div className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium ${color}`}>
-      {icon}
-      <span className='ml-1.5'>{text}</span>
-    </div>
-  );
-};
+import CountdownTimer from '@/pages/customer/AccountPage/OrderPage/components/CountdownTimer';
+import { createVnpayPayment } from '@/services/paymentService';
+import OrderStatusBadge from '@/pages/customer/AccountPage/OrderPage/components/OrderStatusBadge';
+import OrderTimeline from '@/pages/customer/AccountPage/OrderPage/components/OrderTimeline';
 
 // Component hiển thị chi tiết đơn hàng
 const OrderDetailPage = () => {
@@ -62,9 +34,27 @@ const OrderDetailPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { orderDetail, loading, error } = useSelector((state) => state.userOrder);
-
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
+
+  // Xử lý tạo URL thanh toán
+  const handleCreatePaymentUrl = async (orderId) => {
+    try {
+      const response = await createVnpayPayment(orderId);
+      if (response && response.paymentUrl) {
+        // Chuyển hướng người dùng đến URL thanh toán
+        window.location.href = response.paymentUrl;
+      }
+    } catch (error) {
+      console.error('Lỗi khi tạo liên kết thanh toán:', error);
+      toast.error('Không thể tạo liên kết thanh toán. Vui lòng thử lại sau.');
+    }
+  };
+
+  // Xử lý khi đơn hàng hết hạn thanh toán
+  const handleOrderExpired = () => {
+    toast.warning('Đơn hàng đã hết thời gian thanh toán và sẽ bị hủy tự động.');
+  };
 
   // Lấy thông tin chi tiết đơn hàng khi component mount
   useEffect(() => {
@@ -123,6 +113,7 @@ const OrderDetailPage = () => {
 
   return (
     <div className='container mx-auto p-4'>
+      {' '}
       {/* Header */}
       <div className='mb-6 flex items-center justify-between'>
         <div className='flex items-center gap-2'>
@@ -136,9 +127,33 @@ const OrderDetailPage = () => {
           </Button>
           <h1 className='text-2xl font-medium'>Chi tiết đơn hàng</h1>
         </div>
-        <OrderStatusBadge status={orderDetail.status} />
+        <div className='flex items-center gap-3'>
+          <OrderStatusBadge status={orderDetail.status} />
+          {orderDetail.status === 'Unpaid' && (
+            <CountdownTimer createdAt={orderDetail.createdAt} onExpired={handleOrderExpired} />
+          )}
+        </div>
       </div>
-
+      {/* Thông báo cảnh báo cho đơn hàng chưa thanh toán */}
+      {orderDetail.status === 'Unpaid' && (
+        <div className='mb-6 rounded-lg border border-orange-200 bg-orange-50 p-4'>
+          <div className='flex items-start'>
+            <Timer className='mt-0.5 h-5 w-5 flex-shrink-0 text-orange-600' />
+            <div className='ml-3'>
+              <h3 className='text-sm font-medium text-orange-800'>Lưu ý về thời gian thanh toán</h3>
+              <div className='mt-2 text-sm text-orange-700'>
+                <p>
+                  Đơn hàng chưa thanh toán chỉ tồn tại trong <strong>1 giờ</strong> kể từ khi tạo đơn. Sau thời gian
+                  này, đơn hàng sẽ tự động bị hủy.
+                </p>
+                <p className='mt-1'>
+                  Vui lòng hoàn tất thanh toán trước khi hết thời gian để đảm bảo đơn hàng của bạn được xử lý.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
         <div className='lg:col-span-2'>
           {/* Thông tin đơn hàng */}
@@ -207,135 +222,19 @@ const OrderDetailPage = () => {
           </div>
 
           {/* Trạng thái đơn hàng */}
-          <div className='rounded-sm border border-gray-200 bg-white p-6 shadow-sm'>
-            <h2 className='mb-4 flex items-center text-lg font-medium'>
-              <Clock className='mr-2 h-5 w-5 text-gray-500' />
-              Trạng thái đơn hàng
-            </h2>
-
-            <div className='relative'>
-              {/* Timeline */}
-              <div className='absolute bottom-0 left-3 top-0 w-0.5 bg-gray-200' />
-
-              <div className='space-y-6'>
-                {/* Đặt hàng */}
-                <div className='relative pl-10'>
-                  <div className='absolute left-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#333] bg-white'>
-                    <div className='h-2 w-2 rounded-full bg-[#333]' />
-                  </div>
-                  <div>
-                    <p className='font-medium'>Đơn hàng đã được đặt</p>
-                    <p className='text-sm text-gray-500'>{formatDate(orderDetail?.createdAt)}</p>
-                  </div>
-                </div>
-
-                {/* Xử lý */}
-                <div className='relative pl-10'>
-                  <div
-                    className={`absolute left-0 h-6 w-6 rounded-full border-2 ${
-                      ['Processing', 'Shipping', 'Delivered'].includes(orderDetail?.status)
-                        ? 'border-[#333] bg-white'
-                        : 'border-gray-300 bg-white'
-                    } flex items-center justify-center`}
-                  >
-                    {['Processing', 'Shipping', 'Delivered'].includes(orderDetail?.status) && (
-                      <div className='h-2 w-2 rounded-full bg-[#333]' />
-                    )}
-                  </div>
-                  <div>
-                    <p
-                      className={
-                        ['Processing', 'Shipping', 'Delivered'].includes(orderDetail?.status)
-                          ? 'font-medium'
-                          : 'text-gray-500'
-                      }
-                    >
-                      Đơn hàng đang được xử lý
-                    </p>
-                    {orderDetail?.statusUpdates?.processing && (
-                      <p className='text-sm text-gray-500'>{formatDate(orderDetail?.statusUpdates?.processing)}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Giao hàng */}
-                <div className='relative pl-10'>
-                  <div
-                    className={`absolute left-0 h-6 w-6 rounded-full border-2 ${
-                      ['Shipping', 'Delivered'].includes(orderDetail?.status)
-                        ? 'border-[#333] bg-white'
-                        : 'border-gray-300 bg-white'
-                    } flex items-center justify-center`}
-                  >
-                    {['Shipping', 'Delivered'].includes(orderDetail?.status) && (
-                      <div className='h-2 w-2 rounded-full bg-[#333]' />
-                    )}
-                  </div>
-                  <div>
-                    <p
-                      className={
-                        ['Shipping', 'Delivered'].includes(orderDetail?.status) ? 'font-medium' : 'text-gray-500'
-                      }
-                    >
-                      Đơn hàng đang được giao
-                    </p>
-                    {orderDetail.statusUpdates?.shipping && (
-                      <p className='text-sm text-gray-500'>{formatDate(orderDetail?.statusUpdates?.shipping)}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Đã giao */}
-                <div className='relative pl-10'>
-                  <div
-                    className={`absolute left-0 h-6 w-6 rounded-full border-2 ${
-                      orderDetail?.status === 'Delivered' ? 'border-[#333] bg-white' : 'border-gray-300 bg-white'
-                    } flex items-center justify-center`}
-                  >
-                    {orderDetail?.status === 'Delivered' && <div className='h-2 w-2 rounded-full bg-[#333]' />}
-                  </div>
-                  <div>
-                    <p className={orderDetail?.status === 'Delivered' ? 'font-medium' : 'text-gray-500'}>
-                      Đơn hàng đã được giao
-                    </p>
-                    {orderDetail?.statusUpdates?.delivered && (
-                      <p className='text-sm text-gray-500'>{formatDate(orderDetail.statusUpdates.delivered)}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Đã hủy (nếu có) */}
-                {orderDetail?.status === 'Cancelled' && (
-                  <div className='relative pl-10'>
-                    <div className='absolute left-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-red-500 bg-white'>
-                      <div className='h-2 w-2 rounded-full bg-red-500' />
-                    </div>
-                    <div>
-                      <p className='font-medium text-red-600'>Đơn hàng đã bị hủy</p>
-                      {orderDetail?.cancelTime && (
-                        <p className='text-sm text-gray-500'>{formatDate(orderDetail?.cancelTime)}</p>
-                      )}
-                      {orderDetail?.cancelReason && (
-                        <p className='mt-1 text-sm text-gray-500'>Lý do: {orderDetail?.cancelReason}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <OrderTimeline orderDetail={orderDetail} />
         </div>
 
         {/* Sidebar */}
         <div className='lg:col-span-1'>
           {/* Thông tin giao hàng */}
-          <div className='mb-6 rounded-sm border border-gray-200 bg-white p-6 shadow-sm'>
+          <div className='mb-6 rounded-sm border border-gray-200 bg-white p-4 shadow-sm'>
             <h2 className='mb-4 flex items-center text-lg font-medium'>
-              <MapPin className='mr-2 h-5 w-5 text-blue-500' />
+              {/* <MapPin className='mr-2 h-5 w-5 text-blue-500' /> */}
               Địa chỉ giao hàng
             </h2>
 
-            <div className='space-y-3'>
+            <div className='space-y-3 text-sm text-gray-600'>
               <div className='flex items-start'>
                 <User className='mr-2 mt-0.5 h-5 w-5 flex-shrink-0 text-gray-400' />
                 <div>
@@ -357,11 +256,10 @@ const OrderDetailPage = () => {
               </div>
             </div>
           </div>
-
           {/* Thông tin thanh toán */}
-          <div className='mb-6 rounded-sm border border-gray-200 bg-white p-6 shadow-sm'>
-            <h2 className='mb-4 flex items-center text-base font-medium'>
-              <CreditCard className='mr-2 h-5 w-5 text-blue-500' />
+          <div className='mb-6 rounded-sm border border-gray-200 bg-white p-4 shadow-sm'>
+            <h2 className='mb-4 flex items-center text-lg font-medium'>
+              {/* <CreditCard className='mr-2 h-5 w-5 text-blue-500' /> */}
               Phương thức thanh toán
             </h2>
 
@@ -391,13 +289,19 @@ const OrderDetailPage = () => {
                 <p className='text-sm text-gray-500'>Thanh toán lúc: {formatDate(orderDetail?.payment?.paidAt)}</p>
               )}
             </div>
-          </div>
-
+          </div>{' '}
           {/* Các hành động */}
-          <div className='rounded-sm border border-gray-200 bg-white p-6 shadow-sm'>
+          <div className='rounded-sm border border-gray-200 bg-white p-4 shadow-sm'>
             <h2 className='mb-4 text-lg font-medium'>Hành động</h2>
 
             <div className='flex flex-col space-y-3'>
+              {orderDetail.status === 'Unpaid' && (
+                <Button onClick={() => handleCreatePaymentUrl(orderDetail._id.toString())}>
+                  <CreditCard className='mr-2 h-4 w-4' />
+                  Thanh toán ngay
+                </Button>
+              )}
+
               {canBeCancelled && (
                 <Button variant='danger' onClick={() => setShowCancelModal(true)}>
                   Hủy đơn hàng
@@ -423,7 +327,6 @@ const OrderDetailPage = () => {
           </div>
         </div>
       </div>
-
       {/* Modal hủy đơn hàng */}
       <Modal isOpen={showCancelModal} onClose={() => setShowCancelModal(false)} title='Hủy đơn hàng'>
         <div className='p-4'>

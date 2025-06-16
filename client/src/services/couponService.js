@@ -49,11 +49,6 @@ export const validateCoupon = async (code, orderTotal = null) => {
   }
 };
 
-export const applyCoupon = async (id) => {
-  const response = await axios.post(`${BASE_API}/${id}/apply`);
-  return response;
-};
-
 export const calculateDiscount = (coupon, orderTotal) => {
   if (!coupon || !orderTotal) return { discount: 0, finalTotal: orderTotal };
 
@@ -102,7 +97,6 @@ const couponService = {
   toggleCouponStatus,
   getActiveCoupons,
   validateCoupon,
-  applyCoupon,
   calculateDiscount
 };
 

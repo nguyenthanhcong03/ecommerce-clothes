@@ -17,7 +17,7 @@ class OrderService {
     }
   }
 
-  // Apply a coupon to calculate discount
+  // Tính toán giảm giá dựa trên mã mã giảm giá
   calculateDiscount(totalPrice, coupon) {
     if (!coupon) {
       return 0;
@@ -31,7 +31,7 @@ class OrderService {
       discountAmount = coupon.discountValue;
     }
 
-    // Apply maximum discount if applicable
+    // Áp dụng giảm giá tối đa nếu có
     if (coupon.maxDiscountAmount && discountAmount > coupon.maxDiscountAmount) {
       discountAmount = coupon.maxDiscountAmount;
     }
@@ -39,11 +39,12 @@ class OrderService {
     return discountAmount;
   }
 
-  // Generate a unique tracking number
+  // Tạo mã vận đơn
   generateTrackingNumber() {
     return "TRK" + Date.now() + Math.floor(Math.random() * 1000);
   }
-  // Get orders with pagination
+
+  // Lấy danh sách đơn hàng với phân trang và lọc
   async getOrders(query = {}, options = {}) {
     const { page = 1, limit = 10, sort = { createdAt: -1 }, populate } = options;
 
@@ -90,84 +91,6 @@ class OrderService {
       currentPage: page,
       totalOrders,
     };
-  }
-
-  // Tạo đánh giá cho sản phẩm sau khi đơn hàng hoàn thành
-  async createReview(orderId, userId, reviewData) {
-    // Kiểm tra đơn hàng có tồn tại và thuộc về người dùng
-    const order = await Order.findOne({
-      _id: orderId,
-      userId,
-      status: "Delivered",
-      isReviewed: false,
-    });
-
-    if (!order) {
-      throw new Error("Order not found or cannot be reviewed");
-    }
-
-    // Cập nhật đơn hàng với thông tin đánh giá
-    order.isReviewed = true;
-    order.review = {
-      rating: reviewData.rating,
-      comment: reviewData.comment,
-      reviewDate: new Date(),
-    };
-
-    // Lưu thông tin đánh giá sản phẩm nếu có
-    if (reviewData.productReviews && reviewData.productReviews.length > 0) {
-      order.productReviews = reviewData.productReviews.map((review) => ({
-        productId: review.productId,
-        rating: review.rating,
-        comment: review.comment,
-        reviewDate: new Date(),
-      }));
-    }
-
-    await order.save();
-    return order;
-  }
-
-  // Calculate order statistics for admin dashboard
-  async getOrderStatistics() {
-    try {
-      const totalOrders = await Order.countDocuments();
-      const totalRevenue = await Order.aggregate([{ $group: { _id: null, total: { $sum: "$totalPrice" } } }]);
-
-      const ordersByStatus = await Order.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]);
-
-      // Last 5 orders
-      const recentOrders = await Order.find().sort({ createdAt: -1 }).limit(5).populate("userId", "name email");
-
-      // Today's orders
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayOrders = await Order.countDocuments({ createdAt: { $gte: today } });
-
-      // Monthly revenue statistics
-      const monthlyRevenue = await Order.aggregate([
-        {
-          $match: {
-            createdAt: {
-              $gte: new Date(new Date().setDate(1)),
-              $lte: new Date(),
-            },
-          },
-        },
-        { $group: { _id: null, total: { $sum: "$totalPrice" } } },
-      ]);
-
-      return {
-        totalOrders,
-        totalRevenue: totalRevenue[0]?.total || 0,
-        ordersByStatus,
-        recentOrders,
-        todayOrders,
-        monthlyRevenue: monthlyRevenue[0]?.total || 0,
-      };
-    } catch (error) {
-      throw new Error(`Error getting order statistics: ${error.message}`);
-    }
   }
 }
 

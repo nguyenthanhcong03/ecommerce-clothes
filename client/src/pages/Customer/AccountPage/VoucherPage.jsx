@@ -169,7 +169,7 @@ const VoucherPage = () => {
                         {coupon.code}
                       </span>
                       <div className='mt-1 text-xs text-gray-500'>
-                        {copiedCode === coupon.code ? 'Đã sao chép vào clipboard!' : 'Nhấn để sao chép'}
+                        {copiedCode === coupon.code ? 'Đã sao chép!' : 'Nhấn để sao chép'}
                       </div>
                     </div>{' '}
                     <button

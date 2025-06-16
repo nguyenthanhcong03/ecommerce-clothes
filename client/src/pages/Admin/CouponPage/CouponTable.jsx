@@ -110,12 +110,12 @@ const CouponTable = ({ coupons, pagination, onEdit, loading, onPageChange, onRef
     },
     {
       title: 'Giá trị',
-      dataIndex: 'value',
-      key: 'value',
+      dataIndex: 'discountValue',
+      key: 'discountValue',
       align: 'right',
       render: (value, record) => (
         <div>
-          <Text>{record.type === 'percentage' ? `${value}%` : formatCurrency(value)}</Text>
+          <Text>{record.discountType === 'percentage' ? `${value}%` : formatCurrency(value)}</Text>
           {record.type === 'percentage' && record.maxDiscountValue > 0 && (
             <div>
               <Text type='secondary' style={{ fontSize: '0.85em' }}>
