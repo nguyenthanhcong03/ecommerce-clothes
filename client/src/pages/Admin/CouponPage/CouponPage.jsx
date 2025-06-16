@@ -1,7 +1,7 @@
 import Header from '@/components/AdminComponents/common/Header';
 import { Card, message, Typography } from 'antd';
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import CouponFilter from './CouponFilter';
@@ -39,7 +39,7 @@ const CouponPage = () => {
   // Fetch coupons khi component được mount hoặc pagination/filters thay đổi
   useEffect(() => {
     fetchCouponList();
-  }, [pagination.page, pagination.limit, filters]);
+  }, [fetchCouponList]);
 
   // Xử lý thông báo thành công/lỗi
   useEffect(() => {
@@ -55,7 +55,7 @@ const CouponPage = () => {
     }
   }, [success, error, responseMessage, messageApi, dispatch]);
 
-  const fetchCouponList = () => {
+  const fetchCouponList = useCallback(() => {
     const params = {
       page: pagination.page || 1,
       limit: pagination.limit || 5,
@@ -70,7 +70,7 @@ const CouponPage = () => {
     });
 
     dispatch(fetchCoupons(params));
-  };
+  }, [dispatch, pagination.page, pagination.limit, filters]);
 
   const handlePageChange = (page, pageSize) => {
     dispatch(setPage(page));

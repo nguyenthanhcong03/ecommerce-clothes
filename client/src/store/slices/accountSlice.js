@@ -16,7 +16,6 @@ export const loginUser = createAsyncThunk(
       const data = await login(username, password, rememberMe);
       return data;
     } catch (err) {
-      console.log('first', err);
       return rejectWithValue(err.response?.data?.message || 'Đăng nhập thất bại');
     }
   }
@@ -110,21 +109,6 @@ export const accountSlice = createSlice({
     },
     setLoading(state, action) {
       state.isLoading = action.payload;
-    },
-
-    doLogoutAction: (state) => {
-      state.isAuthenticated = false;
-      state.isLoading = false;
-      state.error = null;
-      state.user = {
-        _id: '',
-        email: '',
-        username: '',
-        firstName: '',
-        lastName: '',
-        role: '',
-        avatar: ''
-      };
     }
   },
   extraReducers: (builder) => {
@@ -173,7 +157,6 @@ export const accountSlice = createSlice({
         state.error = null;
       })
       .addCase(logoutUser.rejected, (state, action) => {
-        // Still logout the user locally even if server logout failed
         state.user = initialState.user;
         state.isAuthenticated = false;
         state.isLoading = false;
@@ -214,23 +197,6 @@ export const accountSlice = createSlice({
   }
 });
 
-// Action creators are generated for each case reducer function
-export const {
-  doLoginAction,
-  setUser,
-  setLoading,
-  doGetAccountAction,
-  doLogoutAction,
-  clearError,
-  clearSuccessMessage
-} = accountSlice.actions;
-
-// // Selectors
-// export const selectCurrentUser = (state) => state.account.user;
-// export const selectIsAuthenticated = (state) => state.account.isAuthenticated;
-// export const selectIsLoading = (state) => state.account.isLoading;
-// export const selectAuthError = (state) => state.account.error;
-// export const selectUserRole = (state) => state.account.user.role;
-// export const selectUserPreferences = (state) => state.account.preferences;
+export const { setUser, setLoading, clearError, clearSuccessMessage } = accountSlice.actions;
 
 export default accountSlice.reducer;

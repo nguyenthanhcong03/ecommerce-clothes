@@ -16,7 +16,7 @@ import {
 } from 'recharts';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import * as statisticsService from '@/services/statisticsService';
-import { Tabs } from 'antd';
+import { Select, Tabs } from 'antd';
 import {
   DollarOutlined,
   ShoppingOutlined,
@@ -25,6 +25,7 @@ import {
   SkinOutlined,
   HddOutlined
 } from '@ant-design/icons';
+import Header from '@/components/AdminComponents/common/Header';
 
 const AnalyticsPage = () => {
   // State cho chọn khoảng thời gian
@@ -81,6 +82,7 @@ const AnalyticsPage = () => {
           params.startDate,
           params.endDate
         );
+        console.log('topProductsResponse', topProductsResponse);
         setTopProductsData(topProductsResponse.products);
 
         // Fetch dữ liệu khách hàng
@@ -125,8 +127,8 @@ const AnalyticsPage = () => {
   };
 
   // Xử lý thay đổi khoảng thời gian
-  const handleTimeRangeChange = (e) => {
-    setTimeRange(e.target.value);
+  const handleTimeRangeChange = (value) => {
+    setTimeRange(value);
   };
 
   // Xử lý thay đổi ngày tùy chỉnh
@@ -142,7 +144,7 @@ const AnalyticsPage = () => {
     if (!overviewData) return <div className='loading'>Đang tải...</div>;
 
     return (
-      <div className='mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
+      <div className='mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4'>
         <div className='rounded-lg bg-white p-4 shadow'>
           <div className='flex items-center justify-between'>
             <div>
@@ -700,17 +702,18 @@ const AnalyticsPage = () => {
           <h3 className='mb-4 text-lg font-semibold md:mb-0'>Khoảng thời gian</h3>
 
           <div className='flex flex-wrap items-center gap-4'>
-            <select
+            <Select
               value={timeRange}
+              style={{ width: 120 }}
               onChange={handleTimeRangeChange}
-              className='rounded border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500'
-            >
-              <option value='today'>Hôm nay</option>
-              <option value='week'>Tuần này</option>
-              <option value='month'>Tháng này</option>
-              <option value='year'>Năm nay</option>
-              <option value='custom'>Tùy chỉnh</option>
-            </select>
+              options={[
+                { value: 'today', label: 'Hôm nay' },
+                { value: 'week', label: 'Tuần này' },
+                { value: 'month', label: 'Tháng này' },
+                { value: 'year', label: 'Năm nay' },
+                { value: 'custom', label: 'Tùy chỉnh' }
+              ]}
+            />
 
             {timeRange === 'custom' && (
               <div className='flex flex-wrap items-center gap-2'>
@@ -805,18 +808,20 @@ const AnalyticsPage = () => {
   ];
 
   return (
-    <div className='container mx-auto px-4 py-6'>
-      <h1 className='mb-6 text-2xl font-bold text-gray-800'>Thống kê doanh số</h1>
+    <div className='relative z-10 flex-1 overflow-auto'>
+      <Header title='Thống kê doanh số' />
 
-      {renderTimeRangeSelector()}
+      <main className='mx-auto px-4 py-6 lg:px-8'>
+        {renderTimeRangeSelector()}
 
-      {loading ? (
-        <div className='flex h-64 items-center justify-center'>
-          <div className='h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-blue-500'></div>
-        </div>
-      ) : (
-        <Tabs defaultActiveKey='1' items={tabItems} />
-      )}
+        {loading ? (
+          <div className='flex h-64 items-center justify-center'>
+            <div className='h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-blue-500'></div>
+          </div>
+        ) : (
+          <Tabs defaultActiveKey='1' items={tabItems} />
+        )}
+      </main>
     </div>
   );
 };

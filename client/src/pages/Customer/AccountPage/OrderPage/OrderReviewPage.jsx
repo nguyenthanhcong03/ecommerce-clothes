@@ -1,5 +1,5 @@
 import Button from '@/components/common/Button';
-import { fetchOrderDetail, reviewOrder } from '@/store/slices/userOrderSlice';
+import { fetchOrderDetail } from '@/store/slices/userOrderSlice';
 import { AlertCircle, ArrowLeft, Loader2, Send, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -76,15 +76,6 @@ const OrderReviewPage = () => {
         comment: review.comment
       }))
     };
-
-    dispatch(reviewOrder({ orderId, reviewData }))
-      .unwrap()
-      .then(() => {
-        navigate(`/user/order/detail/${orderId}`);
-      })
-      .catch((error) => {
-        toast.error('Có lỗi xảy ra khi đánh giá. Vui lòng thử lại!');
-      });
   };
 
   if (loading || !orderDetail) {

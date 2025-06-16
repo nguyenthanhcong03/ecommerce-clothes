@@ -135,25 +135,6 @@ const ProductTable = ({
         render: (salesCount) => salesCount || 0
       },
       {
-        title: 'Tags',
-        dataIndex: 'tags',
-        key: 'tags',
-        width: 200,
-        render: (tags) => (
-          <div className='flex flex-wrap gap-1'>
-            {tags && Array.isArray(tags) && tags.length > 0 ? (
-              tags.map((tag) => (
-                <Tag color='blue' key={tag}>
-                  {tag}
-                </Tag>
-              ))
-            ) : (
-              <span className='text-gray-400'>Không có</span>
-            )}
-          </div>
-        )
-      },
-      {
         title: 'Tình trạng',
         key: 'inStock',
         width: 120,
@@ -186,9 +167,12 @@ const ProductTable = ({
             }}
           >
             <Tooltip title='Chỉnh sửa'>
-              <div className='cursor-pointer rounded-[5px] bg-[#0961FF] p-1 transition-colors hover:bg-blue-700'>
-                <Pencil strokeWidth={1.5} width={16} height={16} onClick={() => onEdit(record)} color='#fff' />
-              </div>
+              <button
+                onClick={() => onEdit(record)}
+                className='cursor-pointer rounded-[5px] bg-[#0961FF] p-1 transition-colors hover:bg-blue-700'
+              >
+                <Pencil strokeWidth={1.5} width={16} height={16} color='#fff' />
+              </button>
             </Tooltip>
             <Popconfirm
               title='Bạn có chắc muốn xóa sản phẩm này?'

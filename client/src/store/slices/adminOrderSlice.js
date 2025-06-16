@@ -6,7 +6,7 @@ const initialState = {
   orders: [],
   pagination: {
     page: 1,
-    limit: 10,
+    limit: 5,
     total: 0,
     totalPages: 0
   },
@@ -31,9 +31,9 @@ const initialState = {
 
 export const fetchOrders = createAsyncThunk('orders/fetchOrders', async (params, { rejectWithValue }) => {
   try {
-    const data = await getAllOrdersAPI(params);
-    console.log('orders', data);
-    return data;
+    const response = await getAllOrdersAPI(params);
+    console.log('adminOrderSlice.js - fetchOrders response:', response);
+    return response;
   } catch (error) {
     return rejectWithValue(error.response?.data || error.message);
   }
@@ -44,7 +44,6 @@ export const updateOrderStatus = createAsyncThunk(
   async ({ orderId, status }, { rejectWithValue }) => {
     try {
       const response = await updateOrderStatusAPI(orderId, status);
-      console.log('da', response);
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -56,6 +55,13 @@ const adminOrderSlice = createSlice({
   name: 'adminOrder',
   initialState,
   reducers: {
+    setPage: (state, action) => {
+      state.pagination.page = action.payload;
+    },
+    setLimit: (state, action) => {
+      state.pagination.limit = action.payload;
+      state.pagination.page = 1; // Reset về trang 1 khi thay đổi số lượng hiển thị
+    },
     // Xóa trạng thái lỗi
     clearError: (state) => {
       state.error = null;
@@ -107,6 +113,6 @@ const adminOrderSlice = createSlice({
   }
 });
 
-export const { clearError, setFilters } = adminOrderSlice.actions;
+export const { clearError, setFilters, setPage, setLimit } = adminOrderSlice.actions;
 
 export default adminOrderSlice.reducer;

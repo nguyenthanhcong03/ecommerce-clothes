@@ -6,10 +6,8 @@ const {
   getOrderById,
   updateOrderStatus,
   updatePaymentStatus,
-  getOrderStatistics,
   cancelOrder,
   searchOrders,
-  reviewOrder,
 } = require("../controllers/orderController");
 const { verifyToken, checkRole } = require("../middlewares/auth");
 

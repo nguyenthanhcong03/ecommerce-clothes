@@ -161,6 +161,7 @@ const adminProductSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
+        console.log('action.payload', action.payload);
         state.loading = false;
         state.products = action.payload.products || [];
         state.pagination = action.payload.pagination;

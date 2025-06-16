@@ -1,7 +1,7 @@
 import Header from '@/components/AdminComponents/common/Header';
 import useDebounce from '@/hooks/useDebounce';
 import { updatePaymentStatusAPI } from '@/services/orderService';
-import { fetchOrders, setFilters } from '@/store/slices/adminOrderSlice';
+import { fetchOrders, setFilters, setLimit, setPage } from '@/store/slices/adminOrderSlice';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import { formatDate } from '@/utils/format/formatDate';
 import { statusTranslations } from '@/utils/helpers/orderStatusUtils';
@@ -14,60 +14,48 @@ import { getValidStatusTransitions } from '../../../utils/helpers/orderStatusUti
 import OrderDetails from './OrderDetails';
 import OrderFilters from './OrderFilters';
 import './OrdersPage.scss';
-
-const { Title } = Typography;
-const { Option } = Select;
+import VNPayLogo from '../../../assets/images/vnpay-logo-vinadesign-25-12-59-16.jpg';
+import MomoLogo from '../../../assets/images/momo_icon_square_pinkbg@3x.png';
 
 const OrdersPage = () => {
   const dispatch = useDispatch();
-  const { orders, pagination, loading, error } = useSelector((state) => state.adminOrder);
+  const { orders, pagination, filters, loading, error } = useSelector((state) => state.adminOrder);
   const [searchText, setSearchText] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [statusModalVisible, setStatusModalVisible] = useState(false);
   const [newStatus, setNewStatus] = useState('');
   const [updatingOrderIds, setUpdatingOrderIds] = useState([]);
-  const [sortInfo, setSortInfo] = useState({
-    field: 'createdAt',
-    order: 'descend'
-  });
+  const [sortOption, setSortOption] = useState({ sortBy: 'createdAt', sortOrder: 'desc' });
   const [filteredInfo, setFilteredInfo] = useState({});
 
   const debouncedSearchText = useDebounce(searchText, 500);
+  console.log('pagination', pagination);
 
   // Tạo params cho API từ state với các tùy chọn lọc mở rộng
-  const fetchAllOrders = useCallback(
-    (params = {}) => {
-      const queryParams = {
-        page: params.page || pagination.page || 1,
-        limit: params.limit || pagination.limit || 10,
-        search: params.search !== undefined ? params.search : debouncedSearchText,
-        sortBy: params.sortBy || sortInfo.field,
-        sortOrder: params.sortOrder === 'ascend' ? 'asc' : 'desc',
-        status: params.status,
-        paymentStatus: params.paymentStatus,
-        paymentMethod: params.paymentMethod,
-        startDate: params.startDate,
-        endDate: params.endDate,
-        minAmount: params.minAmount,
-        maxAmount: params.maxAmount
-      };
+  const fetchAllOrders = useCallback(() => {
+    const queryParams = {
+      page: pagination.page || 1,
+      limit: pagination.limit || 5,
+      search: debouncedSearchText,
+      sortBy: sortOption.sortBy || 'createdAt',
+      sortOrder: sortOption.sortOrder || 'desc',
+      ...filters
+    };
 
-      // Loại bỏ các tham số undefined
-      Object.keys(queryParams).forEach((key) => {
-        if (queryParams[key] === undefined) {
-          delete queryParams[key];
-        }
-      });
+    // Loại bỏ các tham số undefined
+    Object.keys(queryParams).forEach((key) => {
+      if (queryParams[key] === undefined) {
+        delete queryParams[key];
+      }
+    });
 
-      dispatch(fetchOrders(queryParams));
-    },
-    [dispatch, pagination.page, pagination.limit, debouncedSearchText, sortInfo.field]
-  );
+    dispatch(fetchOrders(queryParams));
+  }, [dispatch, pagination.page, pagination.limit, debouncedSearchText, sortOption, filters]);
 
   useEffect(() => {
     fetchAllOrders();
-  }, [debouncedSearchText, fetchAllOrders]);
+  }, [fetchAllOrders]);
 
   // Hiển thị lỗi nếu có
   useEffect(() => {
@@ -76,76 +64,29 @@ const OrdersPage = () => {
     }
   }, [error]);
 
-  // Handlers for table actions với hỗ trợ nhiều bộ lọc hơn
-  const handleTableChange = (pagination, filters, sorter) => {
-    const params = {
-      page: pagination.current,
-      limit: pagination.pageSize,
-      sortBy: sorter.field || 'createdAt',
-      sortOrder: sorter.order || 'descend',
-      status: filters.status ? filters.status : undefined,
-      paymentStatus: filters['payment.isPaid'] ? filters['payment.isPaid'] : undefined,
-      paymentMethod: filters['payment.method'] ? filters['payment.method'] : undefined
-    };
-
-    // Lưu giá trị filters vào Redux và state
-    dispatch(
-      setFilters({
-        status: params.status,
-        paymentStatus: params.paymentStatus,
-        paymentMethod: params.paymentMethod
-      })
-    );
-
-    // Lưu thông tin filters hiện tại để có thể đặt lại sau này
-    setFilteredInfo(filters);
-
-    // Lưu thông tin sort
-    setSortInfo({
-      field: params.sortBy,
-      order: params.sortOrder
-    });
-
-    fetchAllOrders(params);
-  };
-
   const handleSearch = (e) => {
     setSearchText(e.target.value);
   };
 
   const handleRefresh = () => {
-    setSearchText('');
-
-    // Reset tất cả các bộ lọc trong Redux
-    dispatch(
-      setFilters({
-        search: '',
-        status: undefined,
-        paymentStatus: undefined,
-        paymentMethod: undefined,
-        startDate: undefined,
-        endDate: undefined,
-        minAmount: undefined,
-        maxAmount: undefined
-      })
-    );
-
-    // Reset các bộ lọc của bảng
-    setFilteredInfo({});
-
-    // Reset trạng thái sắp xếp về mặc định
-    setSortInfo({
-      field: 'createdAt',
-      order: 'descend'
-    });
-
-    // Tải lại dữ liệu với các tham số mặc định
-    fetchAllOrders({ page: 1, limit: 10 });
+    fetchAllOrders();
   };
+  // const handleFilterChange = (newFilters) => {
+  //     // Reset về trang 1 khi áp dụng bộ lọc mới
+  //     dispatch(setPage(1));
+  //     dispatch(setFilter(newFilters));
+  //   };
 
   const showOrderDetails = (order) => {
     setSelectedOrder(order);
     setDetailsVisible(true);
+  };
+
+  const handlePageChange = (page, pageSize) => {
+    dispatch(setPage(page));
+    if (pageSize !== pagination.limit) {
+      dispatch(setLimit(pageSize));
+    }
   };
 
   const handleStatusChange = async () => {
@@ -209,7 +150,9 @@ const OrdersPage = () => {
       render: (user) =>
         user ? (
           <div>
-            <div>{user.username}</div>
+            <span className='font-semibold'>
+              {user.firstName} {user.lastName}
+            </span>
           </div>
         ) : (
           'Khách vãng lai'
@@ -222,7 +165,6 @@ const OrdersPage = () => {
       key: 'createdAt',
       render: (date) => formatDate(date),
       sorter: true,
-      sortOrder: sortInfo.field === 'createdAt' ? sortInfo.order : null,
       width: 150
     },
     {
@@ -232,7 +174,6 @@ const OrdersPage = () => {
       key: 'totalPrice',
       render: (price) => formatCurrency(price),
       sorter: true,
-      sortOrder: sortInfo.field === 'totalPrice' ? sortInfo.order : null,
       width: 150
     },
     {
@@ -240,38 +181,34 @@ const OrdersPage = () => {
       dataIndex: 'payment',
       key: 'payment.method',
       width: 150,
-      filters: [
-        { text: 'Thanh toán khi nhận hàng', value: 'COD' },
-        { text: 'Ví Momo', value: 'Momo' },
-        { text: 'VNPay', value: 'VNPay' }
-      ],
-      filteredValue: filteredInfo['payment.method'] || null,
       render: (payment) => {
         switch (payment.method) {
           case 'COD':
-            return 'Thanh toán khi nhận hàng';
+            return '💵 Thanh toán khi nhận hàng';
           case 'Momo':
-            return 'Ví Momo';
+            return (
+              <div className='flex items-center gap-1'>
+                <img src={MomoLogo} className='h-5 w-5' alt='Ví Momo' />
+                Ví Momo
+                <Tag color={payment.isPaid ? 'green' : 'volcano'}>
+                  {payment.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                </Tag>
+              </div>
+            );
           case 'VNPay':
-            return 'VNPay';
+            return (
+              <div className='flex items-center gap-1'>
+                <img src={VNPayLogo} className='h-5 w-5' alt='VNPay' />
+                VNPay
+                <Tag color={payment.isPaid ? 'green' : 'volcano'}>
+                  {payment.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                </Tag>
+              </div>
+            );
           default:
-            return payment.method;
+            return 'Không xác định';
         }
       }
-    },
-    {
-      title: 'Trạng thái thanh toán',
-      dataIndex: 'payment',
-      key: 'payment.isPaid',
-      render: (payment) => (
-        <Tag color={payment.isPaid ? 'green' : 'volcano'}>{payment.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}</Tag>
-      ),
-      filters: [
-        { text: 'Đã thanh toán', value: true },
-        { text: 'Chưa thanh toán', value: false }
-      ],
-      filteredValue: filteredInfo['payment.isPaid'] || null,
-      width: 150
     },
     {
       title: 'Trạng thái đơn hàng',
@@ -344,9 +281,6 @@ const OrdersPage = () => {
     <div className='relative z-10 flex-1 overflow-auto'>
       <Header title='Quản lý đơn hàng' />
       <main className='mx-auto px-4 py-6 lg:px-8'>
-        {/* Statistics Cards */}
-        {/* <OrderStatistics /> */}
-
         {/* Search and Filters */}
         <OrderFilters
           onSearch={handleSearch}
@@ -380,13 +314,15 @@ const OrdersPage = () => {
               current: pagination.page,
               pageSize: pagination.limit,
               total: pagination.total,
+              onChange: handlePageChange,
+
               position: ['bottomCenter'],
               showSizeChanger: true,
               showQuickJumper: true,
+              pageSizeOptions: ['5', '10', '20', '50'],
               showTotal: (total) => `Tổng ${total} đơn hàng`
             }}
             loading={loading}
-            onChange={handleTableChange}
             scroll={{ x: 'max-content' }} // Cho phép cuộn ngang
             locale={{
               emptyText: loading

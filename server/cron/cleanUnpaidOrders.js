@@ -29,7 +29,7 @@ cron.schedule("*/10 * * * *", async () => {
         // .stock: field bạn muốn cập nhật (ở trong mỗi variant).
         // Vậy nghĩa là: Cộng thêm quantity vào stock của variant có variantId được chỉ định.
       }
-      console.log("den day");
+
       // 2. Giảm lượt dùng mã giảm giá nếu có
       if (order.couponCode) {
         await Coupon.findOneAndUpdate({ code: order.couponApplied }, { $inc: { usedCount: -1 } });

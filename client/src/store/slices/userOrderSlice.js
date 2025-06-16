@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getUserOrdersAPI, getOrderByIdAPI, cancelOrderAPI, reviewOrderAPI } from '@/services/orderService';
+import { getUserOrdersAPI, getOrderByIdAPI, cancelOrderAPI } from '@/services/orderService';
 import { toast } from 'react-toastify';
 
 const initialState = {
@@ -45,19 +45,6 @@ export const cancelOrder = createAsyncThunk(
       return { ...response.data, orderId };
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Có lỗi xảy ra khi hủy đơn hàng');
-    }
-  }
-);
-
-// Đánh giá đơn hàng
-export const reviewOrder = createAsyncThunk(
-  'userOrder/reviewOrder',
-  async ({ orderId, reviewData }, { rejectWithValue }) => {
-    try {
-      const response = await reviewOrderAPI(orderId, reviewData);
-      return { ...response.data, orderId };
-    } catch (error) {
-      return rejectWithValue(error.response?.data || 'Có lỗi xảy ra khi đánh giá đơn hàng');
     }
   }
 );
@@ -134,30 +121,6 @@ const userOrderSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
         toast.error(action.payload || 'Không thể hủy đơn hàng');
-      })
-
-      // Xử lý reviewOrder
-      .addCase(reviewOrder.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(reviewOrder.fulfilled, (state, action) => {
-        state.loading = false;
-        // Cập nhật trạng thái đã đánh giá trong danh sách
-        const index = state.orders.findIndex((order) => order._id === action.payload.orderId);
-        if (index !== -1) {
-          state.orders[index].isReviewed = true;
-        }
-        // Cập nhật chi tiết đơn hàng nếu đang xem
-        if (state.orderDetail && state.orderDetail._id === action.payload.orderId) {
-          state.orderDetail.isReviewed = true;
-        }
-        toast.success('Đã đánh giá đơn hàng thành công');
-      })
-      .addCase(reviewOrder.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-        toast.error(action.payload || 'Không thể đánh giá đơn hàng');
       });
   }
 });

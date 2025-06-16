@@ -6,6 +6,149 @@ const Product = require("../models/product");
 const orderService = require("../services/orderService");
 const { createVnpayPaymentUrl, createMomoPaymentUrl } = require("../services/paymentService");
 
+const getAllOrders = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      paymentStatus,
+      paymentMethod,
+      startDate,
+      endDate,
+      search,
+      minAmount,
+      maxAmount,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+    } = req.query;
+
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+
+    // Xây dựng query động dựa trên các tham số lọc
+    const query = {};
+
+    // Lọc theo trạng thái đơn hàng
+    if (status) {
+      // Hỗ trợ nhiều trạng thái (dạng mảng)
+      if (Array.isArray(status)) {
+        query.status = { $in: status };
+      } else {
+        query.status = status;
+      }
+    }
+
+    // Lọc theo trạng thái thanh toán
+    if (paymentStatus) {
+      if (Array.isArray(paymentStatus)) {
+        query["payment.isPaid"] = { $in: paymentStatus };
+      } else {
+        query["payment.isPaid"] = paymentStatus;
+      }
+    }
+
+    // Lọc theo phương thức thanh toán
+    if (paymentMethod) {
+      if (Array.isArray(paymentMethod)) {
+        query["payment.method"] = { $in: paymentMethod };
+      } else {
+        query["payment.method"] = paymentMethod;
+      }
+    }
+
+    // Lọc theo khoảng thời gian
+    if (startDate || endDate) {
+      query.createdAt = {};
+
+      if (startDate) {
+        query.createdAt.$gte = new Date(startDate);
+      }
+
+      if (endDate) {
+        // Thêm 1 ngày để bao gồm cả ngày kết thúc
+        const endOfDay = new Date(endDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        query.createdAt.$lte = endOfDay;
+      }
+    }
+
+    // Lọc theo khoảng giá trị đơn hàng
+    if (minAmount || maxAmount) {
+      query.totalPrice = {};
+
+      if (minAmount) {
+        query.totalPrice.$gte = parseFloat(minAmount);
+      }
+
+      if (maxAmount) {
+        query.totalPrice.$lte = parseFloat(maxAmount);
+      }
+    }
+
+    // Tìm kiếm theo từ khóa (ID, tên khách hàng, số điện thoại, email)
+    if (search) {
+      // Kiểm tra xem search có phải là MongoDB ObjectId không
+      const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(search);
+
+      const searchQuery = [
+        { "shippingAddress.fullName": { $regex: search, $options: "i" } },
+        { "shippingAddress.phoneNumber": { $regex: search, $options: "i" } },
+        { "shippingAddress.email": { $regex: search, $options: "i" } },
+        { trackingNumber: { $regex: search, $options: "i" } },
+      ];
+
+      // Nếu search là ObjectId hợp lệ, thêm tìm kiếm theo _id
+      if (isValidObjectId) {
+        searchQuery.push({ _id: search });
+      }
+
+      query.$or = searchQuery;
+    }
+
+    // Tính toán phân trang
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Tạo sort object
+    const sortObj = {};
+    sortObj[sortBy] = sortOrder === "asc" ? 1 : -1;
+
+    // Lấy đơn hàng với populate để lấy thông tin user
+    const orders = await Order.find(query)
+      .populate("userId", "username email firstName lastName")
+      .sort(sortObj)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .lean();
+
+    // Đếm tổng số đơn hàng
+    const totalOrders = await Order.countDocuments(query);
+
+    // Tính toán metadata phân trang
+    const totalPages = Math.ceil(totalOrders / parseInt(limit));
+
+    return res.status(200).json({
+      success: true,
+      message: "Orders retrieved successfully",
+      data: {
+        orders,
+        pagination: {
+          total: totalOrders,
+          page: Number(pageNumber),
+          limit: Number(limitNumber),
+          totalPages: totalPages,
+        },
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi khi lấy danh sách đơn hàng",
+      error: error.message,
+    });
+  }
+};
+
 const createOrder = async (req, res) => {
   try {
     const { products, shippingAddress, paymentMethod, couponCode, distance, note } = req.body;
@@ -278,148 +421,6 @@ const createOrder = async (req, res) => {
     }
   } catch (error) {
     console.error("Error in createOrder:", error);
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-const getAllOrders = async (req, res) => {
-  try {
-    const {
-      page = 1,
-      limit = 10,
-      status,
-      paymentStatus,
-      paymentMethod,
-      startDate,
-      endDate,
-      search,
-      minAmount,
-      maxAmount,
-      sortBy = "createdAt",
-      sortOrder = "desc",
-    } = req.query;
-
-    // Xây dựng query động dựa trên các tham số lọc
-    const query = {};
-
-    // Lọc theo trạng thái đơn hàng
-    if (status) {
-      // Hỗ trợ nhiều trạng thái (dạng mảng)
-      if (Array.isArray(status)) {
-        query.status = { $in: status };
-      } else {
-        query.status = status;
-      }
-    }
-
-    // Lọc theo trạng thái thanh toán
-    if (paymentStatus) {
-      if (Array.isArray(paymentStatus)) {
-        query["payment.isPaid"] = { $in: paymentStatus };
-      } else {
-        query["payment.isPaid"] = paymentStatus;
-      }
-    }
-
-    // Lọc theo phương thức thanh toán
-    if (paymentMethod) {
-      if (Array.isArray(paymentMethod)) {
-        query["payment.method"] = { $in: paymentMethod };
-      } else {
-        query["payment.method"] = paymentMethod;
-      }
-    }
-
-    // Lọc theo khoảng thời gian
-    if (startDate || endDate) {
-      query.createdAt = {};
-
-      if (startDate) {
-        query.createdAt.$gte = new Date(startDate);
-      }
-
-      if (endDate) {
-        // Thêm 1 ngày để bao gồm cả ngày kết thúc
-        const endOfDay = new Date(endDate);
-        endOfDay.setHours(23, 59, 59, 999);
-        query.createdAt.$lte = endOfDay;
-      }
-    }
-
-    // Lọc theo khoảng giá trị đơn hàng
-    if (minAmount || maxAmount) {
-      query.totalPrice = {};
-
-      if (minAmount) {
-        query.totalPrice.$gte = parseFloat(minAmount);
-      }
-
-      if (maxAmount) {
-        query.totalPrice.$lte = parseFloat(maxAmount);
-      }
-    }
-
-    // Tìm kiếm theo từ khóa (ID, tên khách hàng, số điện thoại, email)
-    if (search) {
-      // Kiểm tra xem search có phải là MongoDB ObjectId không
-      const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(search);
-
-      const searchQuery = [
-        { "shippingAddress.fullName": { $regex: search, $options: "i" } },
-        { "shippingAddress.phoneNumber": { $regex: search, $options: "i" } },
-        { "shippingAddress.email": { $regex: search, $options: "i" } },
-        { trackingNumber: { $regex: search, $options: "i" } },
-      ];
-
-      // Nếu search là ObjectId hợp lệ, thêm tìm kiếm theo _id
-      if (isValidObjectId) {
-        searchQuery.push({ _id: search });
-      }
-
-      query.$or = searchQuery;
-    }
-
-    // Tính toán phân trang
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-
-    // Tạo sort object
-    const sortObj = {};
-    sortObj[sortBy] = sortOrder === "asc" ? 1 : -1;
-
-    // Lấy đơn hàng với populate để lấy thông tin user
-    const orders = await Order.find(query)
-      .populate("userId", "fullName email")
-      .sort(sortObj)
-      .skip(skip)
-      .limit(parseInt(limit))
-      .lean();
-
-    // Đếm tổng số đơn hàng
-    const totalOrders = await Order.countDocuments(query);
-
-    // Tính toán metadata phân trang
-    const totalPages = Math.ceil(totalOrders / parseInt(limit));
-
-    const result = {
-      orders,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages,
-        totalOrders,
-        hasNextPage: parseInt(page) < totalPages,
-        hasPrevPage: parseInt(page) > 1,
-      },
-    };
-
-    return res.status(200).json({
-      success: true,
-      message: "Orders retrieved successfully",
-      data: result,
-    });
-  } catch (error) {
     return res.status(500).json({
       success: false,
       message: error.message,

@@ -1,5 +1,5 @@
 import React from 'react';
-import Header from '@/components/Layout/Header/Header_new';
+import Header from '@/components/layout/Header/Header';
 import Footer from '@/components/Layout/Footer/Footer';
 import { Outlet, useLocation } from 'react-router-dom';
 import SearchModal from '@/components/Layout/SearchModal/SearchModal';

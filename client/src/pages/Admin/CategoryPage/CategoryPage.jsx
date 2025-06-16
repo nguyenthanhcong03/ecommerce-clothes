@@ -73,41 +73,14 @@ const CategoryPage = () => {
     try {
       await dispatch(deleteCategory(id)).unwrap();
       message.success('Xóa danh mục thành công');
-      fetchAllCategories(); // Sử dụng hàm fetchAllCategories đã định nghĩa thay vì gọi fetchCategories trực tiếp
+      dispatch(fetchCategories());
     } catch (error) {
       message.error(`Lỗi khi xóa danh mục: ${error.message}`);
     }
   };
   const handleRefresh = () => {
-    fetchAllCategories({ page: 1, limit: 10 }); // Sử dụng hàm fetchAllCategories đã định nghĩa
+    dispatch(fetchCategories());
   };
-
-  // Tính toán các thống kê về danh mục
-  const categoryStats = useMemo(() => {
-    if (!categories || categories.length === 0) {
-      // Trả về giá trị mặc định nếu không có danh mục nào
-      return {
-        total: 0,
-        newToday: 0,
-        parentCategories: 0
-      };
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    return {
-      total: categories.length, // Tổng số danh mục
-      // Đếm số danh mục được tạo hôm nay
-      newToday: categories.filter((cat) => {
-        const createdAt = new Date(cat.createdAt);
-        createdAt.setHours(0, 0, 0, 0);
-        return createdAt.getTime() === today.getTime();
-      }).length,
-      // Đếm số danh mục gốc (không có danh mục cha)
-      parentCategories: categories.filter((cat) => !cat.parentId).length
-    };
-  }, [categories]);
 
   return (
     <div className='relative z-10 flex-1 overflow-auto'>
