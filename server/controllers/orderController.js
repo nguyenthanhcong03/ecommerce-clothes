@@ -534,23 +534,31 @@ const updateOrderStatus = async (req, res) => {
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: "Order not found",
+        message: "Đơn hàng không tồn tại",
       });
     }
 
     // Update status
     order.status = status;
 
-    // Set deliveredAt if status is Delivered
+    // Cập nhật thời gian giao hàng nếu trạng thái là Delivered
     if (status === "Delivered") {
       order.deliveredAt = new Date();
+      // Cập nhật số lượng đã bán cho sản phẩm
+      for (const item of order.products) {
+        const product = await Product.findById(item.productId);
+        if (product) {
+          product.salesCount = (product.salesCount || 0) + item.quantity;
+          await product.save();
+        }
+      }
     }
 
     const updatedOrder = await order.save();
 
     return res.status(200).json({
       success: true,
-      message: "Order status updated successfully",
+      message: "Cập nhật trạng thái đơn hàng thành công",
       data: updatedOrder,
     });
   } catch (error) {
