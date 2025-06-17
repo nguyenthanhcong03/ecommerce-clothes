@@ -1,15 +1,14 @@
 import { Select } from 'antd';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
 const { Option } = Select;
 
-const ProductSort = ({ sort, onSortChange }) => {
-  const handleSortChange = (value) => {
-    onSortChange(value);
-  };
+const ProductSort = ({ onSortChange }) => {
+  const { products, pagination, filters, sort, loading, error } = useSelector((state) => state.adminProduct);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
+    <div className='mb-4 flex items-center justify-end'>
       <span style={{ marginRight: 8 }}>Sắp xếp theo:</span>
       <Select
         value={(() => {
@@ -23,7 +22,7 @@ const ProductSort = ({ sort, onSortChange }) => {
           if (sortBy === 'createdAt' && sortOrder === 'desc') return 'default';
           return 'default';
         })()}
-        onChange={handleSortChange}
+        onChange={onSortChange}
         style={{ width: 200 }}
         placeholder='Sắp xếp theo'
       >
@@ -41,7 +40,6 @@ const ProductSort = ({ sort, onSortChange }) => {
 };
 
 ProductSort.propTypes = {
-  sort: PropTypes.string,
   onSortChange: PropTypes.func.isRequired
 };
 

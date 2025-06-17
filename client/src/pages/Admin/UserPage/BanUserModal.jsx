@@ -1,14 +1,17 @@
 import React from 'react';
 import { Modal, Form, Input, Button } from 'antd';
+import { useSelector } from 'react-redux';
+import PropTypes from 'prop-types';
 
-const BanUserModal = ({ visible, onClose, onConfirm, loading }) => {
+const BanUserModal = ({ isOpenBanModal, onCloseBanModal, onBan }) => {
+  const { loading } = useSelector((state) => state.adminUser);
   const [form] = Form.useForm();
 
   const handleOk = () => {
     form
       .validateFields()
       .then((values) => {
-        onConfirm(values);
+        onBan(values);
         form.resetFields();
       })
       .catch((info) => {
@@ -17,14 +20,14 @@ const BanUserModal = ({ visible, onClose, onConfirm, loading }) => {
   };
 
   const handleCancel = () => {
-    onClose();
+    onCloseBanModal();
     form.resetFields();
   };
 
   return (
     <Modal
       title='Xác nhận chặn người dùng'
-      open={visible}
+      open={isOpenBanModal}
       onCancel={handleCancel}
       footer={[
         <Button key='back' onClick={handleCancel}>
@@ -46,6 +49,12 @@ const BanUserModal = ({ visible, onClose, onConfirm, loading }) => {
       </Form>
     </Modal>
   );
+};
+
+BanUserModal.propTypes = {
+  isOpenBanModal: PropTypes.bool.isRequired,
+  onCloseBanModal: PropTypes.func.isRequired,
+  onBan: PropTypes.func.isRequired
 };
 
 export default BanUserModal;

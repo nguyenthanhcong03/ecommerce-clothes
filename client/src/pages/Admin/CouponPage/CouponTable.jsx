@@ -1,59 +1,18 @@
-import {
-  DeleteOutlined,
-  EditOutlined,
-  ExclamationCircleOutlined,
-  MoreOutlined,
-  ReloadOutlined
-} from '@ant-design/icons';
-import { Button, Card, Dropdown, Input, Menu, Modal, Switch, Table, Tag, Tooltip, Typography, message } from 'antd';
-import PropTypes from 'prop-types';
-import React from 'react';
-import { useDispatch } from 'react-redux';
-
-import { deleteCoupon, toggleCouponStatus } from '@/store/slices/couponSlice';
+import DeleteIcon from '@/components/AdminComponents/common/icon/DeleteIcon';
+import EditIcon from '@/components/AdminComponents/common/icon/EditIcon';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import { formatDate } from '@/utils/format/formatDate';
-import { Plus, RefreshCw } from 'lucide-react';
+import { DeleteOutlined, EditOutlined, MoreOutlined } from '@ant-design/icons';
+import { Button, Card, Dropdown, Input, Menu, Popconfirm, Space, Switch, Table, Tag, Tooltip, Typography } from 'antd';
+import { Plus, RefreshCw, Search } from 'lucide-react';
+import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
 
 const { Text } = Typography;
-const { confirm } = Modal;
 
-const CouponTable = ({ coupons, pagination, onEdit, loading, onPageChange, onRefresh, onAdd }) => {
+const CouponTable = ({ searchText, onSearch, onPageChange, onRefresh, onAdd, onEdit, onDelete, onToggleStatus }) => {
+  const { coupons, pagination, filters, loading, error } = useSelector((state) => state.adminCoupon);
   const dispatch = useDispatch();
-  const [messageApi, contextHolder] = message.useMessage();
-
-  const handleDelete = (coupon) => {
-    confirm({
-      title: 'Xác nhận xóa mã giảm giá',
-      icon: <ExclamationCircleOutlined />,
-      content: `Bạn có chắc chắn muốn xóa mã giảm giá "${coupon.code}"? Hành động này không thể hoàn tác.`,
-      okText: 'Xóa',
-      okType: 'danger',
-      cancelText: 'Hủy',
-      onOk: async () => {
-        try {
-          await dispatch(deleteCoupon(coupon._id)).unwrap();
-          messageApi.success(`Đã xóa mã giảm giá ${coupon.code} thành công`);
-        } catch (error) {
-          messageApi.error(error?.message || 'Có lỗi xảy ra khi xóa mã giảm giá');
-        }
-      }
-    });
-  };
-
-  const handleToggleStatus = async (coupon) => {
-    try {
-      await dispatch(
-        toggleCouponStatus({
-          id: coupon._id,
-          isActive: !coupon.isActive
-        })
-      ).unwrap();
-      messageApi.success(`Đã ${!coupon.isActive ? 'kích hoạt' : 'vô hiệu hóa'} mã giảm giá ${coupon.code}`);
-    } catch (error) {
-      messageApi.error(error?.message || 'Có lỗi xảy ra khi thay đổi trạng thái');
-    }
-  };
 
   const getCouponTypeLabel = (type) => {
     switch (type) {
@@ -169,7 +128,7 @@ const CouponTable = ({ coupons, pagination, onEdit, loading, onPageChange, onRef
       render: (isActive, record) => (
         <Switch
           checked={isActive}
-          onChange={() => handleToggleStatus(record)}
+          onChange={() => onToggleStatus(record)}
           disabled={getCouponTimeStatus(record) === 'expired'}
         />
       ),
@@ -184,87 +143,92 @@ const CouponTable = ({ coupons, pagination, onEdit, loading, onPageChange, onRef
       key: 'action',
       align: 'center',
       fixed: 'right',
-      render: (_, record) => {
-        const menu = (
-          <Menu>
-            <Menu.Item key='edit' icon={<EditOutlined />} onClick={() => onEdit(record)}>
-              Chỉnh sửa
-            </Menu.Item>
-            <Menu.Item key='delete' danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)}>
-              Xóa mã giảm giá
-            </Menu.Item>
-          </Menu>
-        );
+      render: (_, record) => (
+        <Space size='small'>
+          <Tooltip title='Chỉnh sửa'>
+            <div>
+              <EditIcon onClick={() => onEdit(record)} />
+            </div>
+          </Tooltip>
 
-        return (
-          <Dropdown overlay={menu} trigger={['click']}>
-            <Button icon={<MoreOutlined />} />
-          </Dropdown>
-        );
-      }
+          <Popconfirm
+            title='Bạn có chắc chắn muốn xóa mã giảm giá này?'
+            onConfirm={() => onDelete(record._id)}
+            okText='Có'
+            cancelText='Không'
+            placement='topRight'
+          >
+            <Tooltip title='Xóa'>
+              <div>
+                <DeleteIcon />
+              </div>
+            </Tooltip>
+          </Popconfirm>
+        </Space>
+      )
     }
   ];
 
   return (
-    <>
-      <Card className='mb-4'>
-        {contextHolder}
-        <div className='mb-4 flex flex-wrap items-center justify-between gap-2'>
-          <div className='flex items-center gap-2'>
-            <Button type='primary' icon={<Plus size={16} />} onClick={() => onAdd()} className='flex items-center'>
-              Thêm mã giảm giá mới
-            </Button>
-            <Button icon={<RefreshCw size={16} />} onClick={onRefresh} className='flex items-center'>
-              Làm mới
-            </Button>
-          </div>
-
-          {/* Ô tìm kiếm sản phẩm */}
-          {/* <div className='flex flex-wrap items-center gap-2'>
-            <Input
-              placeholder='Tìm kiếm danh mục...'
-              prefix={<Search />}
-              style={{ width: 250 }}
-              value={searchText}
-              onChange={onSearch}
-              allowClear
-            />
-          </div> */}
+    <Card className='bg-white shadow-sm'>
+      <div className='mb-4 flex flex-wrap items-center justify-between gap-2'>
+        <div className='flex items-center gap-2'>
+          <Button type='primary' icon={<Plus size={16} />} onClick={() => onAdd()} className='flex items-center'>
+            Thêm mã giảm giá mới
+          </Button>
+          <Button icon={<RefreshCw size={16} />} onClick={onRefresh} className='flex items-center'>
+            Làm mới
+          </Button>
         </div>
-        <Table
-          columns={columns}
-          dataSource={coupons}
-          rowKey='_id'
-          pagination={{
-            current: pagination.page,
-            pageSize: pagination.limit,
-            total: pagination.total,
-            onChange: onPageChange,
-            position: ['bottomCenter'],
-            showSizeChanger: true,
-            pageSizeOptions: ['5', '10', '20', '50'],
-            showTotal: (total) => `Tổng ${total} mã giảm giá`
-          }}
-          loading={loading}
-          locale={{ emptyText: loading ? 'Đang tải dữ liệu...' : 'Không có mã giảm giá nào' }}
-          scroll={{ x: 'max-content' }} // Cho phép cuộn ngang
-          title={() => (
-            <div className='flex items-center justify-between rounded-t-lg'>
-              <h3 className='text-lg font-bold'>Danh sách mã giảm giá</h3>
-            </div>
-          )}
-        />
-      </Card>
-    </>
+
+        {/* Ô tìm kiếm mã giảm giá */}
+        <div className='flex flex-wrap items-center gap-2'>
+          <Input
+            placeholder='Tìm kiếm sản phẩm...'
+            prefix={<Search width={18} />}
+            style={{ width: 300 }}
+            value={searchText || ''}
+            onChange={onSearch}
+            allowClear
+          />
+        </div>
+      </div>
+      <Table
+        rowKey='_id'
+        columns={columns}
+        dataSource={coupons}
+        loading={loading}
+        scroll={{ x: 'max-content' }} // Cho phép cuộn ngang
+        pagination={{
+          current: pagination.page,
+          pageSize: pagination.limit,
+          total: pagination.total,
+          onChange: onPageChange,
+          position: ['bottomCenter'],
+          showSizeChanger: true,
+          pageSizeOptions: ['5', '10', '20', '50'],
+          showTotal: (total) => `Tổng ${total} mã giảm giá`
+        }}
+        locale={{ emptyText: loading ? 'Đang tải dữ liệu...' : 'Không có mã giảm giá nào' }}
+        title={() => (
+          <div className='flex items-center justify-between rounded-t-lg'>
+            <h3 className='text-lg font-bold'>Danh sách mã giảm giá</h3>
+          </div>
+        )}
+      />
+    </Card>
   );
 };
 
 CouponTable.propTypes = {
-  coupons: PropTypes.array.isRequired,
-  pagination: PropTypes.object.isRequired,
+  searchText: PropTypes.string,
+  onSearch: PropTypes.func.isRequired,
+  onPageChange: PropTypes.func.isRequired,
+  onRefresh: PropTypes.func.isRequired,
+  onAdd: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
-  loading: PropTypes.bool,
-  onRefresh: PropTypes.func.isRequired
+  onDelete: PropTypes.func.isRequired,
+  onToggleStatus: PropTypes.func.isRequired
 };
 
 export default CouponTable;

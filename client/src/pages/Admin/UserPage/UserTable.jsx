@@ -1,24 +1,27 @@
+import BanIcon from '@/components/AdminComponents/common/icon/BanIcon';
+import DeleteIcon from '@/components/AdminComponents/common/icon/DeleteIcon';
+import EditIcon from '@/components/AdminComponents/common/icon/EditIcon';
+import UnbanIcon from '@/components/AdminComponents/common/icon/UnbanIcon';
 import { formatDate } from '@/utils/format/formatDate';
-import { SearchOutlined, UserOutlined } from '@ant-design/icons';
+import { UserOutlined } from '@ant-design/icons';
 import { Button, Card, Input, Popconfirm, Space, Table, Tag, Tooltip } from 'antd';
-import { Lock, LockOpen, Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
+import { Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
+import PropTypes from 'prop-types';
 import { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 
 const UserTable = ({
-  users,
-  loading,
-  pagination,
-  onPageChange,
-  onSearch,
-  onAdd,
-  onRefresh,
   searchText,
+  onSearch,
+  onPageChange,
+  onRefresh,
+  onAdd,
   onEdit,
   onDelete,
-  onBan,
   onUnban,
-  filters
+  onOpenBanModal
 }) => {
+  const { users, pagination, filters, sort, loading, error } = useSelector((state) => state.adminUser);
   // Tạo cột cho bảng
   const columns = useMemo(
     () => [
@@ -39,7 +42,7 @@ const UserTable = ({
                 <UserOutlined style={{ color: '#1890ff' }} />
               </div>
             )}
-            <span>{`${record.firstName} ${record.lastName}`}</span>
+            <span>{`${record.lastName} ${record.firstName}`}</span>
           </div>
         ),
         sorter: true
@@ -60,7 +63,7 @@ const UserTable = ({
         title: 'Số điện thoại',
         dataIndex: 'phone',
         key: 'phone',
-        render: (phone) => phone || '-'
+        render: (phone) => phone || 'Không có'
       },
       {
         title: 'Vai trò',
@@ -69,12 +72,7 @@ const UserTable = ({
         render: (role) => {
           let color = role === 'admin' ? 'green' : 'blue';
           return <Tag color={color}>{role.toUpperCase()}</Tag>;
-        },
-        filters: [
-          { text: 'Admin', value: 'admin' },
-          { text: 'Customer', value: 'customer' }
-        ],
-        filteredValue: filters.role ? [filters.role] : null
+        }
       },
       {
         title: 'Trạng thái',
@@ -83,12 +81,7 @@ const UserTable = ({
         render: (isBlocked) => {
           let color = isBlocked ? 'red' : 'green';
           return <Tag color={color}>{isBlocked ? 'Bị cấm' : 'Hoạt động'}</Tag>;
-        },
-        filters: [
-          { text: 'Hoạt động', value: 'false' },
-          { text: 'Bị cấm', value: 'true' }
-        ],
-        filteredValue: filters.isBlocked ? [filters.isBlocked] : null
+        }
       },
       {
         title: 'Ngày tạo',
@@ -102,32 +95,26 @@ const UserTable = ({
         key: 'action',
         fixed: 'right',
         render: (_, record) => (
-          <Space size='middle'>
+          <Space size='small'>
             <Tooltip title='Chỉnh sửa'>
-              <button
-                className='rounded-[5px] bg-[#0961FF] p-1 transition-colors hover:bg-blue-700'
-                onClick={() => onEdit(record)}
-              >
-                <Pencil strokeWidth={1.5} width={16} height={16} color='#fff' />
-              </button>
+              <div>
+                <EditIcon onClick={() => onEdit(record)} />
+              </div>
             </Tooltip>
 
             {/* Không cho phép chặn người dùng là admin */}
             {record.role !== 'admin' &&
               (record.isBlocked === true ? (
                 <Tooltip title='Bỏ chặn người dùng'>
-                  <button
-                    className='rounded-[5px] bg-[#52c41a] p-1 transition-colors'
-                    onClick={() => onUnban(record._id)}
-                  >
-                    <LockOpen strokeWidth={1.5} width={16} height={16} color='#fff' />
-                  </button>
+                  <div>
+                    <UnbanIcon onClick={() => onUnban(record._id)} />
+                  </div>
                 </Tooltip>
               ) : (
                 <Tooltip title='Chặn người dùng'>
-                  <button className='rounded-[5px] bg-black p-1 transition-colors' onClick={() => onBan(record._id)}>
-                    <Lock strokeWidth={1.5} width={16} height={16} color='#fff' />
-                  </button>
+                  <div>
+                    <BanIcon onClick={() => onOpenBanModal(record._id)} />
+                  </div>
                 </Tooltip>
               ))}
 
@@ -138,18 +125,17 @@ const UserTable = ({
               cancelText='Không'
             >
               <Tooltip title='Xóa'>
-                <button className='rounded-[5px] bg-[#DE2E3D] p-1 transition-colors hover:bg-red-700'>
-                  <Trash2 strokeWidth={1.5} width={16} height={16} color='#fff' />
-                </button>
+                <div>
+                  <DeleteIcon />
+                </div>
               </Tooltip>
             </Popconfirm>
           </Space>
         )
       }
     ],
-    [onEdit, onDelete, onBan, onUnban, filters]
+    [onEdit, onUnban, onDelete, onOpenBanModal]
   );
-
   return (
     <Card className='bg-white shadow'>
       <div className='mb-4 flex flex-wrap items-center justify-between gap-2'>
@@ -165,7 +151,7 @@ const UserTable = ({
         <div className='flex flex-wrap items-center gap-2'>
           <Input
             placeholder='Tìm kiếm người dùng...'
-            prefix={<Search />}
+            prefix={<Search width={18} />}
             style={{ width: 250 }}
             value={searchText}
             onChange={onSearch}
@@ -174,10 +160,11 @@ const UserTable = ({
         </div>
       </div>
       <Table
+        rowKey='_id'
         dataSource={users}
         columns={columns}
-        rowKey='_id'
         loading={loading}
+        scroll={{ x: 'max-content' }}
         pagination={{
           current: pagination.page,
           pageSize: pagination.limit,
@@ -200,10 +187,21 @@ const UserTable = ({
             <h3 className='text-lg font-bold'>Danh sách tài khoản người dùng</h3>
           </div>
         )}
-        scroll={{ x: 'max-content' }}
       />
     </Card>
   );
+};
+
+UserTable.propTypes = {
+  searchText: PropTypes.string.isRequired,
+  onSearch: PropTypes.func.isRequired,
+  onPageChange: PropTypes.func.isRequired,
+  onRefresh: PropTypes.func.isRequired,
+  onAdd: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onUnban: PropTypes.func.isRequired,
+  onOpenBanModal: PropTypes.func.isRequired
 };
 
 export default UserTable;

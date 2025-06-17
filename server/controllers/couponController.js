@@ -1,5 +1,20 @@
 const couponService = require("../services/couponService");
-const { Error } = require("mongoose");
+
+const getCoupons = async (req, res) => {
+  try {
+    const result = await couponService.getCoupons(req.query);
+    res.status(200).json({
+      success: true,
+      message: "Lấy danh sách mã giảm giá thành công",
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message || "Có lỗi xảy ra khi lấy danh sách mã giảm giá",
+    });
+  }
+};
 
 const createCoupon = async (req, res) => {
   try {
@@ -14,22 +29,6 @@ const createCoupon = async (req, res) => {
     res.status(400).json({
       success: false,
       message: error.message || "Có lỗi xảy ra khi tạo mã giảm giá",
-    });
-  }
-};
-
-const getCoupons = async (req, res) => {
-  try {
-    const result = await couponService.getCoupons(req.query);
-    res.status(200).json({
-      success: true,
-      message: "Lấy danh sách mã giảm giá thành công",
-      data: result,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message || "Có lỗi xảy ra khi lấy danh sách mã giảm giá",
     });
   }
 };

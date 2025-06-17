@@ -1,14 +1,11 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
-  addProductReviewAPI,
   createProductAPI,
   deleteProductByIdAPI,
   getAllProductsAPI,
-  getFeaturedProductsAPI,
   getProductByIdAPI,
-  getProductReviewsAPI,
   updateProductByIdAPI
-} from '../../services/productService';
+} from '@/services/productService';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 // Định nghĩa async thunk để gọi API
 export const fetchProducts = createAsyncThunk('product/fetchProducts', async (params, { rejectWithValue }) => {
@@ -29,18 +26,6 @@ export const fetchProductById = createAsyncThunk('product/fetchProductById', asy
     return rejectWithValue(error.response?.data || { message: error.message });
   }
 });
-
-export const fetchFeaturedProducts = createAsyncThunk(
-  'product/fetchFeaturedProducts',
-  async (limit = 8, { rejectWithValue }) => {
-    try {
-      const response = await getFeaturedProductsAPI(limit);
-      return response;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || { message: error.message });
-    }
-  }
-);
 
 export const createProduct = createAsyncThunk('product/createProduct', async (payload, { rejectWithValue }) => {
   try {
@@ -75,30 +60,6 @@ export const deleteProductById = createAsyncThunk(
   }
 );
 
-export const addProductReview = createAsyncThunk(
-  'product/addProductReview',
-  async ({ productId, reviewData }, { rejectWithValue }) => {
-    try {
-      const response = await addProductReviewAPI(productId, reviewData);
-      return { ...response, productId };
-    } catch (error) {
-      return rejectWithValue(error.response?.data || { message: error.message });
-    }
-  }
-);
-
-export const fetchProductReviews = createAsyncThunk(
-  'product/fetchProductReviews',
-  async ({ productId, page = 1, limit = 10 }, { rejectWithValue }) => {
-    try {
-      const response = await getProductReviewsAPI(productId, page, limit);
-      return { ...response, productId };
-    } catch (error) {
-      return rejectWithValue(error.response?.data || { message: error.message });
-    }
-  }
-);
-
 const adminProductSlice = createSlice({
   name: 'adminProduct',
   initialState: {
@@ -110,12 +71,12 @@ const adminProductSlice = createSlice({
       totalPages: 0
     },
     filters: {
-      search: '',
       minPrice: null,
       maxPrice: null,
-      sizes: [],
-      colors: [],
-      rating: null
+      size: [],
+      color: [],
+      rating: null,
+      stockStatus: 'all'
     },
     sort: {
       sortBy: 'createdAt',
@@ -125,20 +86,6 @@ const adminProductSlice = createSlice({
     error: null
   },
   reducers: {
-    resetFilters: (state) => {
-      state.filters = {
-        search: '',
-        minPrice: null,
-        maxPrice: null,
-        sizes: [],
-        colors: [],
-        rating: null,
-        inStock: false,
-        featured: false
-      };
-    },
-
-    //admin
     setPage: (state, action) => {
       state.pagination.page = action.payload;
     },
@@ -151,6 +98,23 @@ const adminProductSlice = createSlice({
         ...state.filters,
         ...action.payload
       };
+    },
+    resetFilter: (state) => {
+      state.filters = {
+        minPrice: null,
+        maxPrice: null,
+        size: [],
+        color: [],
+        rating: null,
+        stockStatus: 'all'
+      };
+    },
+    setSort: (state, action) => {
+      const { sortBy, sortOrder } = action.payload;
+      state.sort = {
+        sortBy: sortBy || 'createdAt',
+        sortOrder: sortOrder || 'desc'
+      };
     }
   },
   extraReducers: (builder) => {
@@ -161,7 +125,6 @@ const adminProductSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
-        console.log('action.payload', action.payload);
         state.loading = false;
         state.products = action.payload.products || [];
         state.pagination = action.payload.pagination;
@@ -224,6 +187,6 @@ const adminProductSlice = createSlice({
   }
 });
 
-export const { setPage, setLimit, setFilter, resetFilters } = adminProductSlice.actions;
+export const { setPage, setLimit, setFilter, resetFilter, setSort } = adminProductSlice.actions;
 
 export default adminProductSlice.reducer;

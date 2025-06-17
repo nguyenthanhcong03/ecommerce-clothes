@@ -1,84 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { ClearOutlined, DownOutlined, FilterOutlined, SearchOutlined, UpOutlined } from '@ant-design/icons';
+import { Button, Card, Col, DatePicker, Form, Row, Select, Space } from 'antd';
+import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
-import { Form, Input, Button, Select, DatePicker, Card, Row, Col, Space } from 'antd';
-import { SearchOutlined, FilterOutlined, ClearOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
-import { useForm, Controller } from 'react-hook-form';
-import moment from 'moment';
+import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { useSelector } from 'react-redux';
+const { RangePicker } = DatePicker;
 
-const CouponFilter = ({ filters, onFilterChange, onResetFilters }) => {
+const CouponFilter = ({ onFilterChange, onResetFilter }) => {
+  const { coupons, pagination, filters, loading, error } = useSelector((state) => state.adminCoupon);
   const [expanded, setExpanded] = useState(false);
-
-  // Setup react-hook-form
-  const { control, handleSubmit, reset, setValue } = useForm({
-    defaultValues: {
-      code: '',
-      isActive: '',
-      startDate: null,
-      endDate: null
-    }
-  });
-
-  // Đồng bộ form values khi filters từ props thay đổi
-  useEffect(() => {
-    // Cập nhật giá trị từ filters vào form
-    // setValue('code', filters.code || '');
-    // setValue('isActive', filters.isActive || '');
-    // // Xử lý các giá trị ngày tháng
-    // if (filters.startDate) {
-    //   setValue('startDate', moment(filters.startDate));
-    // } else {
-    //   setValue('startDate', null);
-    // }
-    // if (filters.endDate) {
-    //   setValue('endDate', moment(filters.endDate));
-    // } else {
-    //   setValue('endDate', null);
-    // }
-  }, [filters, setValue]);
-  const handleFormSubmit = (data) => {
-    // Xử lý và chuẩn hóa dữ liệu trước khi gửi đi
-    const cleanValues = {};
-
-    // Xử lý code - chỉ thêm khi có giá trị
-    if (data.code) cleanValues.code = data.code;
-
-    // Xử lý isActive - cần kiểm tra rõ ràng để bao gồm cả trường hợp false
-    if (data.isActive !== undefined && data.isActive !== '') {
-      cleanValues.isActive = data.isActive;
-    }
-
-    if (data.startDate) {
-      // Kiểm tra xem data.startDate có phải đối tượng moment không
-      cleanValues.startDate = moment.isMoment(data.startDate)
-        ? data.startDate.format('YYYY-MM-DD')
-        : moment(data.startDate).format('YYYY-MM-DD');
-    }
-
-    if (data.endDate) {
-      // Kiểm tra xem data.endDate có phải đối tượng moment không
-      cleanValues.endDate = moment.isMoment(data.endDate)
-        ? data.endDate.format('YYYY-MM-DD')
-        : moment(data.endDate).format('YYYY-MM-DD');
-    }
-
-    onFilterChange(data);
-  };
-  const handleReset = () => {
-    // Đặt lại tất cả các giá trị form về mặc định
-    reset({
-      code: '',
-      isActive: '',
-      startDate: null,
-      endDate: null
-    });
-
-    // Gọi callback để reset filters ở component cha
-    onResetFilters();
-  };
-
-  const handleExpandClick = () => {
-    setExpanded(!expanded);
-  };
 
   const headerStyle = {
     padding: '8px 16px',
@@ -90,12 +21,56 @@ const CouponFilter = ({ filters, onFilterChange, onResetFilters }) => {
     borderBottom: expanded ? '1px solid #f0f0f0' : 'none'
   };
 
+  const { control, handleSubmit, reset, setValue } = useForm({
+    defaultValues: {
+      discountRange: '', // Chọn ngày tháng #cách 2
+      isActive: '',
+      startDate: null,
+      endDate: null
+    }
+  });
+
+  const handleFormSubmit = (data) => {
+    const [startDate, endDate] = data.discountRange || [];
+    console.log('startDate', startDate.toDate());
+    console.log('endDate', endDate);
+
+    // // Convert dayjs to JS Date if needed
+    // const formattedData = {
+    //   ...data,
+    //   // startDate: data.startDate?.toDate(),
+    //   // endDate: data.endDate?.toDate()
+    //   // #cách 2
+    //   startDate: startDate ? startDate.toDate() : null,
+    //   endDate: endDate ? endDate.toDate() : null
+    // };
+
+    // onFilterChange(formattedData);
+  };
+
+  const handleReset = () => {
+    // Đặt lại tất cả các giá trị form về mặc định
+    reset({
+      discountRange: '',
+      isActive: '',
+      startDate: null,
+      endDate: null
+    });
+
+    // Gọi callback để reset filters ở component cha
+    onResetFilter();
+  };
+
+  const handleExpandClick = () => {
+    setExpanded(!expanded);
+  };
+
   return (
-    <Card style={{ marginBottom: 20 }} bodyStyle={{ padding: expanded ? 16 : 0 }} bordered={true}>
+    <Card style={{ marginBottom: 20 }}>
       <div style={headerStyle} onClick={handleExpandClick}>
         <Space>
           <FilterOutlined />
-          <span>Bộ lọc</span>
+          <span>Bộ lọc mã giảm giá</span>
         </Space>
         <Button type='text' icon={expanded ? <UpOutlined /> : <DownOutlined />} />
       </div>
@@ -104,19 +79,6 @@ const CouponFilter = ({ filters, onFilterChange, onResetFilters }) => {
         <Form layout='vertical' onFinish={handleSubmit(handleFormSubmit)}>
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={12} md={6}>
-              <Form.Item label='Mã giảm giá'>
-                <Controller
-                  name='code'
-                  control={control}
-                  render={({ field }) => (
-                    <Input {...field} placeholder='Tìm theo mã' prefix={<SearchOutlined />} allowClear />
-                  )}
-                />
-              </Form.Item>
-            </Col>
-
-            <Col xs={24} sm={12} md={6}>
-              {' '}
               <Form.Item label='Trạng thái'>
                 <Controller
                   name='isActive'
@@ -141,33 +103,55 @@ const CouponFilter = ({ filters, onFilterChange, onResetFilters }) => {
             </Col>
 
             <Col xs={24} sm={12} md={6}>
-              <Form.Item label='Từ ngày'>
+              <Form.Item label='Đến ngày'>
                 <Controller
-                  name='startDate'
                   control={control}
+                  name='startDate'
+                  rules={{ required: 'Chọn ngày bắt đầu' }}
                   render={({ field }) => (
                     <DatePicker
-                      {...field}
-                      style={{ width: '100%' }}
-                      format='DD/MM/YYYY'
+                      // showTime
                       placeholder='Chọn ngày bắt đầu'
+                      {...field}
+                      format='DD/MM/YYYY'
+                      value={field.value ? dayjs(field.value) : null}
+                      onChange={(date) => field.onChange(date)}
+                      style={{ width: '100%' }}
                     />
                   )}
                 />
               </Form.Item>
+              <Controller
+                control={control}
+                name='discountRange'
+                rules={{ required: 'Chọn khoảng thời gian' }}
+                render={({ field }) => (
+                  <RangePicker
+                    showTime
+                    {...field}
+                    value={field.value ? [dayjs(field.value[0]), dayjs(field.value[1])] : []}
+                    onChange={(dates) => field.onChange(dates)}
+                    style={{ width: '100%' }}
+                  />
+                )}
+              />
             </Col>
 
             <Col xs={24} sm={12} md={6}>
               <Form.Item label='Đến ngày'>
                 <Controller
-                  name='endDate'
                   control={control}
+                  name='endDate'
+                  rules={{ required: 'Chọn ngày kết thúc' }}
                   render={({ field }) => (
                     <DatePicker
-                      {...field}
-                      style={{ width: '100%' }}
-                      format='DD/MM/YYYY'
+                      // showTime
                       placeholder='Chọn ngày kết thúc'
+                      {...field}
+                      format='DD/MM/YYYY'
+                      value={field.value ? dayjs(field.value) : null}
+                      onChange={(date) => field.onChange(date)}
+                      style={{ width: '100%' }}
                     />
                   )}
                 />
@@ -181,7 +165,7 @@ const CouponFilter = ({ filters, onFilterChange, onResetFilters }) => {
                     Xóa bộ lọc
                   </Button>
                   <Button type='primary' htmlType='submit' icon={<SearchOutlined />}>
-                    Tìm kiếm
+                    Lọc
                   </Button>
                 </Space>
               </Form.Item>
@@ -194,14 +178,8 @@ const CouponFilter = ({ filters, onFilterChange, onResetFilters }) => {
 };
 
 CouponFilter.propTypes = {
-  filters: PropTypes.shape({
-    code: PropTypes.string,
-    isActive: PropTypes.string,
-    startDate: PropTypes.string,
-    endDate: PropTypes.string
-  }).isRequired,
   onFilterChange: PropTypes.func.isRequired,
-  onResetFilters: PropTypes.func.isRequired
+  onResetFilter: PropTypes.func.isRequired
 };
 
 export default CouponFilter;

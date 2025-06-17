@@ -1,9 +1,9 @@
-import { createCoupon, updateCoupon } from '@/store/slices/couponSlice';
+import { createCoupon, updateCoupon } from '@/store/slices/adminCouponSlice';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Col, DatePicker, Form, Input, InputNumber, message, Modal, Row, Select, Switch, Typography } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import * as yup from 'yup';
@@ -39,7 +39,7 @@ const couponSchema = yup.object({
   isActive: yup.boolean().default(true)
 });
 
-const CouponForm = ({ visible, onCancel, coupon, isEdit }) => {
+const CouponForm = ({ isOpenForm, onClose, selectedCoupon }) => {
   const dispatch = useDispatch();
   const { loading } = useSelector((state) => state.coupon);
   const [couponType, setCouponType] = useState('percentage');
@@ -48,7 +48,7 @@ const CouponForm = ({ visible, onCancel, coupon, isEdit }) => {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
     reset,
     setValue,
     watch
@@ -60,8 +60,8 @@ const CouponForm = ({ visible, onCancel, coupon, isEdit }) => {
       discountValue: 0,
       minOrderValue: 0,
       maxDiscount: 0,
-      startDate: moment(),
-      endDate: moment().add(30, 'days'),
+      startDate: null,
+      endDate: null,
       description: '',
       usageLimit: 0,
       isActive: true
@@ -77,21 +77,22 @@ const CouponForm = ({ visible, onCancel, coupon, isEdit }) => {
 
   // Reset form khi mở Modal và load dữ liệu khi chỉnh sửa
   useEffect(() => {
-    if (visible) {
-      if (coupon && isEdit) {
-        // Format dates for DatePicker
-        const formattedCoupon = {
-          ...coupon,
-          startDate: moment(coupon.startDate),
-          endDate: moment(coupon.endDate)
-        };
-
-        // Cập nhật form với dữ liệu hiện có
-        Object.keys(formattedCoupon).forEach((key) => {
-          setValue(key, formattedCoupon[key]);
+    if (isOpenForm) {
+      if (selectedCoupon) {
+        reset({
+          code: selectedCoupon.code,
+          discountType: selectedCoupon.discountType,
+          discountValue: selectedCoupon.discountValue,
+          minOrderValue: selectedCoupon.minOrderValue,
+          maxDiscount: selectedCoupon.maxDiscount,
+          startDate: selectedCoupon.startDate,
+          endDate: selectedCoupon.endDate,
+          description: selectedCoupon.description || '',
+          usageLimit: selectedCoupon.usageLimit || 0,
+          isActive: selectedCoupon.isActive || true
         });
 
-        setCouponType(coupon.discountType);
+        setCouponType(selectedCoupon.discountType);
       } else {
         // Reset form khi thêm mới
         reset({
@@ -100,11 +101,8 @@ const CouponForm = ({ visible, onCancel, coupon, isEdit }) => {
           discountValue: 0,
           minOrderValue: 0,
           maxDiscount: 0,
-          // startDate: moment(),
-          // endDate: moment().add(30, 'days'),
-          startDate: '',
-          endDate: '',
-          // endDate: moment().add(30, 'days'),
+          startDate: dayjs(),
+          endDate: dayjs().add(30, 'day'),
           description: '',
           usageLimit: 0,
           isActive: true
@@ -112,39 +110,27 @@ const CouponForm = ({ visible, onCancel, coupon, isEdit }) => {
         setCouponType('percentage');
       }
     }
-  }, [visible, coupon, isEdit, reset, setValue]);
+  }, [isOpenForm, selectedCoupon, reset, setValue]);
 
   const onSubmit = async (data) => {
     try {
       // Format dates for API
       const submitData = {
         ...data,
-        // Đảm bảo xử lý đúng định dạng ngày tháng
-        startDate:
-          data.startDate &&
-          (moment.isMoment(data.startDate)
-            ? data.startDate.format('YYYY-MM-DD')
-            : moment(data.startDate).format('YYYY-MM-DD')),
-        endDate:
-          data.endDate &&
-          (moment.isMoment(data.endDate)
-            ? data.endDate.format('YYYY-MM-DD')
-            : moment(data.endDate).format('YYYY-MM-DD')),
         // Đảm bảo các trường số được chuyển thành số
         discountValue: Number(data.discountValue) || 0,
         minOrderValue: Number(data.minOrderValue) || 0,
         maxDiscount: Number(data.maxDiscount) || 0,
         usageLimit: Number(data.usageLimit) || 0
       };
-
-      if (isEdit) {
-        await dispatch(updateCoupon({ id: coupon._id, updateData: submitData })).unwrap();
+      if (selectedCoupon) {
+        await dispatch(updateCoupon({ id: selectedCoupon._id, updateData: submitData })).unwrap();
         message.success('Cập nhật mã giảm giá thành công');
       } else {
         await dispatch(createCoupon(submitData)).unwrap();
         message.success('Thêm mã giảm giá thành công');
       }
-      onCancel();
+      onClose();
     } catch (error) {
       message.error(error?.message || 'Có lỗi xảy ra');
     }
@@ -152,14 +138,21 @@ const CouponForm = ({ visible, onCancel, coupon, isEdit }) => {
 
   return (
     <Modal
-      title={isEdit ? 'Chỉnh sửa mã giảm giá' : 'Thêm mã giảm giá mới'}
-      open={visible}
+      title={selectedCoupon ? 'Chỉnh sửa mã giảm giá' : 'Thêm mã giảm giá mới'}
+      open={isOpenForm}
       onOk={handleSubmit(onSubmit)}
-      onCancel={onCancel}
+      onCancel={onClose}
       confirmLoading={loading}
+      okButtonProps={{
+        autoFocus: true,
+        htmlType: 'submit',
+        loading: loading,
+        disabled: !isDirty
+      }}
       width={800}
-      okText={isEdit ? 'Cập nhật' : 'Thêm mã giảm giá'}
+      okText={selectedCoupon ? 'Cập nhật' : 'Thêm mã giảm giá'}
       cancelText='Hủy'
+      maskClosable={false}
     >
       <Form layout='vertical'>
         <Row gutter={16}>
@@ -169,6 +162,7 @@ const CouponForm = ({ visible, onCancel, coupon, isEdit }) => {
               validateStatus={errors.code ? 'error' : ''}
               help={errors.code?.message}
               tooltip='Mã này sẽ được chuyển tự động thành chữ hoa'
+              required
             >
               <Controller
                 name='code'
@@ -190,6 +184,7 @@ const CouponForm = ({ visible, onCancel, coupon, isEdit }) => {
               label='Loại giảm giá'
               validateStatus={errors.discountType ? 'error' : ''}
               help={errors.discountType?.message}
+              required
             >
               <Controller
                 name='discountType'
@@ -209,6 +204,7 @@ const CouponForm = ({ visible, onCancel, coupon, isEdit }) => {
               label='Giá trị giảm giá'
               validateStatus={errors.discountValue ? 'error' : ''}
               help={errors.discountValue?.message}
+              required
             >
               <Controller
                 name='discountValue'
@@ -300,12 +296,22 @@ const CouponForm = ({ visible, onCancel, coupon, isEdit }) => {
               label='Ngày bắt đầu'
               validateStatus={errors.startDate ? 'error' : ''}
               help={errors.startDate?.message}
+              required
             >
               <Controller
-                name='startDate'
                 control={control}
+                name='startDate'
+                rules={{ required: 'Chọn ngày bắt đầu' }}
                 render={({ field }) => (
-                  <DatePicker {...field} style={{ width: '100%' }} format='DD/MM/YYYY' disabled={loading} />
+                  <DatePicker
+                    showTime
+                    placeholder='Chọn ngày bắt đầu'
+                    {...field}
+                    format='DD/MM/YYYY'
+                    value={field.value ? dayjs(field.value) : null}
+                    onChange={(date) => field.onChange(date)}
+                    style={{ width: '100%' }}
+                  />
                 )}
               />
             </Form.Item>
@@ -316,12 +322,22 @@ const CouponForm = ({ visible, onCancel, coupon, isEdit }) => {
               label='Ngày kết thúc'
               validateStatus={errors.endDate ? 'error' : ''}
               help={errors.endDate?.message}
+              required
             >
               <Controller
-                name='endDate'
                 control={control}
+                name='endDate'
+                rules={{ required: 'Chọn ngày kết thúc' }}
                 render={({ field }) => (
-                  <DatePicker {...field} style={{ width: '100%' }} format='DD/MM/YYYY' disabled={loading} />
+                  <DatePicker
+                    showTime
+                    placeholder='Chọn ngày kết thúc'
+                    {...field}
+                    format='DD/MM/YYYY'
+                    value={field.value ? dayjs(field.value) : null}
+                    onChange={(date) => field.onChange(date)}
+                    style={{ width: '100%' }}
+                  />
                 )}
               />
             </Form.Item>
@@ -349,16 +365,16 @@ const CouponForm = ({ visible, onCancel, coupon, isEdit }) => {
                 name='isActive'
                 control={control}
                 render={({ field: { value, onChange } }) => (
-                  <>
+                  <div className='flex items-center'>
                     <Switch
                       checked={value}
                       onChange={onChange}
-                      checkedChildren='Kích hoạt'
-                      unCheckedChildren='Vô hiệu hóa'
+                      // checkedChildren='Kích hoạt'
+                      // unCheckedChildren='Vô hiệu hóa'
                       disabled={loading}
                     />
                     <Text style={{ marginLeft: 8 }}>{value ? 'Đang kích hoạt' : 'Vô hiệu hóa'}</Text>
-                  </>
+                  </div>
                 )}
               />
             </Form.Item>
@@ -370,10 +386,9 @@ const CouponForm = ({ visible, onCancel, coupon, isEdit }) => {
 };
 
 CouponForm.propTypes = {
-  visible: PropTypes.bool.isRequired,
-  onCancel: PropTypes.func.isRequired,
-  coupon: PropTypes.object,
-  isEdit: PropTypes.bool
+  isOpenForm: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  selectedCoupon: PropTypes.object
 };
 
 export default CouponForm;

@@ -1,13 +1,12 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {
   createCouponAPI,
   deleteCouponAPI,
-  getActiveCouponsAPI,
   getCouponByIdAPI,
   getCouponsAPI,
   toggleCouponStatusAPI,
   updateCouponAPI
 } from '@/services/couponService';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 export const fetchCoupons = createAsyncThunk('coupons/fetchCoupons', async (params, { rejectWithValue }) => {
   try {
@@ -15,15 +14,6 @@ export const fetchCoupons = createAsyncThunk('coupons/fetchCoupons', async (para
     return response;
   } catch (error) {
     return rejectWithValue(error.response?.data || { message: 'Không thể tải danh sách mã giảm giá' });
-  }
-});
-
-export const fetchActiveCoupons = createAsyncThunk('coupons/fetchActiveCoupons', async (_, { rejectWithValue }) => {
-  try {
-    const response = await getActiveCouponsAPI();
-    return response;
-  } catch (error) {
-    return rejectWithValue(error.response?.data || { message: 'Không thể tải danh sách mã giảm giá đang hoạt động' });
   }
 });
 
@@ -99,26 +89,32 @@ const initialState = {
   message: ''
 };
 
-const couponSlice = createSlice({
-  name: 'coupon',
+const adminCouponSlice = createSlice({
+  name: 'adminCoupon',
   initialState,
   reducers: {
+    setPage: (state, action) => {
+      state.pagination.page = action.payload;
+    },
+    setLimit: (state, action) => {
+      state.pagination.limit = action.payload;
+      state.pagination.page = 1;
+    },
     setFilter: (state, action) => {
       state.filters = {
         ...state.filters,
         ...action.payload
       };
     },
-    resetFilters: (state) => {
-      state.filters = initialState.filters;
+    resetFilter: (state) => {
+      state.filters = {
+        code: '',
+        isActive: '',
+        startDate: '',
+        endDate: ''
+      };
     },
-    setPage: (state, action) => {
-      state.pagination.page = action.payload;
-    },
-    setLimit: (state, action) => {
-      state.pagination.limit = action.payload;
-      state.pagination.page = 1; // Reset về trang 1 khi thay đổi số lượng hiển thị
-    },
+
     clearSuccess: (state) => {
       state.success = false;
       state.message = '';
@@ -147,20 +143,6 @@ const couponSlice = createSlice({
       .addCase(fetchCoupons.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || 'Không thể tải danh sách mã giảm giá';
-      })
-
-      // Fetch active coupons
-      .addCase(fetchActiveCoupons.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchActiveCoupons.fulfilled, (state, action) => {
-        state.loading = false;
-        state.coupons = action.payload.data;
-      })
-      .addCase(fetchActiveCoupons.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload?.message || 'Không thể tải danh sách mã giảm giá đang hoạt động';
       })
 
       // Fetch coupon by ID
@@ -272,7 +254,7 @@ const couponSlice = createSlice({
   }
 });
 
-export const { setFilter, resetFilters, setPage, setLimit, clearSuccess, clearError, resetCouponState } =
-  couponSlice.actions;
+export const { setFilter, resetFilter, setPage, setLimit, clearSuccess, clearError, resetCouponState } =
+  adminCouponSlice.actions;
 
-export default couponSlice.reducer;
+export default adminCouponSlice.reducer;

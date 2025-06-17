@@ -27,11 +27,26 @@ const createCoupon = async (couponData) => {
 
 const getCoupons = async (query) => {
   try {
-    const { page = 1, limit = 10, isActive, code, startDate, endDate } = query;
+    const { page = 1, limit = 10, search, isActive, code, startDate, endDate } = query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     // Xây dựng điều kiện lọc
     const filter = {};
+
+    // Text search if provided
+    if (search) {
+      filter.$or = [{ code: { $regex: search, $options: "i" } }, { description: { $regex: search, $options: "i" } }];
+
+      // Alternative: Use the text index if search term contains multiple words
+      // if (search.includes(' ')) {
+      //   filter.$text = { $search: search };
+      // } else {
+      //   filter.$or = [
+      //     { name: { $regex: search, $options: 'i' } },
+      //     { description: { $regex: search, $options: 'i' } }
+      //   ];
+      // }
+    }
 
     if (isActive !== undefined) {
       filter.isActive = isActive === "true";

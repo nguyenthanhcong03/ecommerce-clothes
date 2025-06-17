@@ -20,7 +20,6 @@ export const fetchCategories = createAsyncThunk('categories/fetchCategories', as
 export const getCategoriesTree = createAsyncThunk('categories/getCategoriesTree', async (_, { rejectWithValue }) => {
   try {
     const response = await getCategoryTreeAPI();
-    console.log('reducersponse', response.data);
     return response.data;
   } catch (error) {
     return rejectWithValue(error.response?.data || error.message);

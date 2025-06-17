@@ -256,7 +256,7 @@ const VoucherPage = () => {
           <div className='mt-6'>
             {' '}
             <button
-              onClick={() => dispatch(fetchActiveCoupons())}
+              onClick={() => dispatch(fetchActiveCouponsAPI())}
               className='flex items-center justify-center gap-2 rounded-md bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-200'
               aria-label='Kiểm tra lại các mã giảm giá đang hoạt động'
             >

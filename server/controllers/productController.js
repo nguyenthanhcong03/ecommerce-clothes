@@ -19,6 +19,7 @@ const getAllProducts = async (req, res) => {
       size,
       color,
       rating,
+      stockStatus,
       sortBy = "createdAt",
       sortOrder = "desc",
     } = req.query;
@@ -93,6 +94,20 @@ const getAllProducts = async (req, res) => {
     // Rating filter - lọc sản phẩm có rating >= giá trị đã cho
     if (rating) {
       query.averageRating = { $gte: parseFloat(rating) };
+    }
+
+    // Lọc theo tình trạng hàng
+    if (stockStatus && stockStatus !== "all") {
+      if (stockStatus === "in_stock") {
+        // Còn hàng: stock > 5
+        query["variants.stock"] = { $gt: 5 };
+      } else if (stockStatus === "low_stock") {
+        // Sắp hết hàng: 0 < stock <= 5
+        query["variants.stock"] = { $gt: 0, $lte: 5 };
+      } else if (stockStatus === "out_of_stock") {
+        // Hết hàng: stock = 0
+        query["variants.stock"] = 0;
+      }
     }
 
     // Text search if provided

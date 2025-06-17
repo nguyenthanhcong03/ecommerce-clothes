@@ -5,6 +5,8 @@ import { MinusSquare, Pencil, Plus, PlusSquare, RefreshCw, Search, Trash2 } from
 import { memo, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import './hihi.css';
+import EditIcon from '@/components/AdminComponents/common/icon/EditIcon';
+import DeleteIcon from '@/components/AdminComponents/common/icon/DeleteIcon';
 
 const CategoryTable = ({
   categories,
@@ -77,17 +79,11 @@ const CategoryTable = ({
         fixed: 'right',
         width: 120,
         render: (_, record) => (
-          <Space
-            size='middle'
-            style={{
-              justifyContent: 'center',
-              display: 'flex'
-            }}
-          >
+          <Space size='small'>
             {/* Nút chỉnh sửa danh mục */}
             <Tooltip title='Chỉnh sửa'>
-              <div className='cursor-pointer rounded-[5px] bg-[#0961FF] p-1 transition-colors hover:bg-blue-700'>
-                <Pencil strokeWidth={1.5} width={16} height={16} onClick={() => onEdit(record)} color='#fff' />
+              <div>
+                <EditIcon onClick={() => onEdit(record)} />
               </div>
             </Tooltip>
             {/* Dialog xác nhận xóa danh mục */}
@@ -102,17 +98,11 @@ const CategoryTable = ({
               okText='Có'
               cancelText='Không'
               placement='topRight'
-              okButtonProps={{
-                style: { backgroundColor: '#333', borderColor: '#333', color: 'white' }
-              }}
-              cancelButtonProps={{
-                style: { color: 'gray', borderColor: 'gray' }
-              }}
             >
               {/* Nút xóa danh mục */}
               <Tooltip title='Xóa'>
-                <div className='cursor-pointer rounded-[5px] bg-[#DE2E3D] p-1 transition-colors hover:bg-red-700'>
-                  <Trash2 strokeWidth={1.5} width={16} height={16} color='#fff' />
+                <div>
+                  <DeleteIcon />
                 </div>
               </Tooltip>
             </Popconfirm>

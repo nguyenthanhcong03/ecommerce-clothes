@@ -1,17 +1,19 @@
 import { configureStore } from '@reduxjs/toolkit';
 import accountReducer from './slices/accountSlice';
-import productReducer from './slices/productSlice';
-import userReducer from './slices/userSlice';
-import categoryReducer from './slices/categorySlice';
+import adminCouponReducer from './slices/adminCouponSlice';
+import adminOrderReducer from './slices/adminOrderSlice';
+import adminProductReducer from './slices/adminProductSlice';
+import adminUserReducer from './slices/adminUserSlice';
 import cartReducer from './slices/cartSlice';
-import searchReducer from './slices/searchSlice';
-import sidebarReducer from './slices/sidebarSlice';
+import categoryReducer from './slices/categorySlice';
 import couponReducer from './slices/couponSlice';
 import orderReducer from './slices/orderSlice';
-import userOrderReducer from './slices/userOrderSlice';
-import adminOrderReducer from './slices/adminOrderSlice';
+import productReducer from './slices/productSlice';
+import searchReducer from './slices/searchSlice';
 import shopReducer from './slices/shopSlice';
-import adminProductReducer from './slices/adminProductSlice';
+import sidebarReducer from './slices/sidebarSlice';
+import userOrderReducer from './slices/userOrderSlice';
+import userReducer from './slices/userSlice';
 
 export const store = configureStore({
   reducer: {
@@ -20,13 +22,15 @@ export const store = configureStore({
     search: searchReducer,
     cart: cartReducer,
     product: productReducer,
-    adminProduct: adminProductReducer,
     shop: shopReducer,
     user: userReducer,
     category: categoryReducer,
     coupon: couponReducer,
     order: orderReducer,
     userOrder: userOrderReducer,
-    adminOrder: adminOrderReducer
+    adminProduct: adminProductReducer,
+    adminOrder: adminOrderReducer,
+    adminUser: adminUserReducer,
+    adminCoupon: adminCouponReducer
   }
 });

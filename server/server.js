@@ -6,6 +6,8 @@ const connectDB = require("./config/dbconnect");
 const initRoutes = require("./routes");
 const cookieParser = require("cookie-parser");
 const fileUpload = require("express-fileupload");
+const { errorHandler } = require("./middlewares/errorHandler");
+const { errorConverter } = require("./middlewares/errorHandler");
 
 const app = express();
 const port = process.env.PORT || 8888;
@@ -24,6 +26,12 @@ app.use(express.urlencoded({ extended: true }));
 
 connectDB();
 initRoutes(app);
+
+// convert error to ApiError, if needed
+app.use(errorConverter);
+
+// handle error
+app.use(errorHandler);
 
 // Import và khởi động cron
 require("./cron/cleanUnpaidOrders");

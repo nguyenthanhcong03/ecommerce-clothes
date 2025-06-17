@@ -1,18 +1,17 @@
+import ImageUpload from '@/pages/admin/ProductPage/ImageUpload';
 import { deleteMultipleFiles, uploadMultipleFiles } from '@/services/fileService';
-import { fetchCategories } from '@/store/slices/categorySlice';
 import { createProduct, fetchProducts, updateProductById } from '@/store/slices/adminProductSlice';
-import { COLOR_OPTIONS, SIZE_OPTIONS } from '@/utils/constants';
+import { fetchCategories } from '@/store/slices/categorySlice';
+import { COLOR_OPTIONS } from '@/utils/constants';
 import { formatTree } from '@/utils/format/formatTree';
-import { buildTree } from '@/utils/helpers/buildTree';
-import { UploadOutlined, PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, Card, Form, Input, message, Modal, Radio, Select, Switch, Table, TreeSelect, Upload } from 'antd';
-import { fi } from 'date-fns/locale';
+import { Button, Form, Input, message, Modal, Radio, Select, Table, TreeSelect } from 'antd';
+import PropTypes from 'prop-types';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import * as yup from 'yup';
-import ImageUpload from '@/pages/admin/ProductPage/ImageUpload';
 
 const { Option } = Select;
 
@@ -713,6 +712,11 @@ const ProductForm = ({ selectedProduct, onClose }) => {
       </Modal>
     </Modal>
   );
+};
+
+ProductForm.propTypes = {
+  selectedProduct: PropTypes.object, // Sản phẩm được chọn để chỉnh sửa
+  onClose: PropTypes.func.isRequired // Hàm callback khi đóng form
 };
 
 export default memo(ProductForm);

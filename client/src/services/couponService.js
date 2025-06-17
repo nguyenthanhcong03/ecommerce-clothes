@@ -1,42 +1,43 @@
 import axios from '@/config/axios';
 const BASE_API = '/api/coupons';
 
-export const getCoupons = async (params = {}) => {
+export const getCouponsAPI = async (params = {}) => {
+  console.log('params', params);
   const response = await axios.get(BASE_API, { params });
   return response;
 };
 
-export const getCouponById = async (id) => {
+export const getCouponByIdAPI = async (id) => {
   const response = await axios.get(`${BASE_API}/${id}`);
   return response;
 };
 
-export const createCoupon = async (couponData) => {
+export const createCouponAPI = async (couponData) => {
   const response = await axios.post(BASE_API, couponData);
   return response;
 };
 
-export const updateCoupon = async (id, updateData) => {
+export const updateCouponAPI = async (id, updateData) => {
   const response = await axios.put(`${BASE_API}/${id}`, updateData);
   return response;
 };
 
-export const deleteCoupon = async (id) => {
+export const deleteCouponAPI = async (id) => {
   const response = await axios.delete(`${BASE_API}/${id}`);
   return response;
 };
 
-export const toggleCouponStatus = async (id, isActive) => {
+export const toggleCouponStatusAPI = async (id, isActive) => {
   const response = await axios.patch(`${BASE_API}/${id}/toggle-status`, { isActive });
   return response;
 };
 
-export const getActiveCoupons = async () => {
+export const getActiveCouponsAPI = async () => {
   const response = await axios.get(`${BASE_API}/active`);
   return response;
 };
 
-export const validateCoupon = async (code, orderTotal = null) => {
+export const validateCouponAPI = async (code, orderTotal = null) => {
   try {
     const params = orderTotal !== null ? { orderTotal } : {};
     const response = await axios.get(`${BASE_API}/validate/${code}`, { params });
@@ -87,17 +88,3 @@ export const calculateDiscount = (coupon, orderTotal) => {
     couponId: coupon._id
   };
 };
-
-const couponService = {
-  getCoupons,
-  getCouponById,
-  createCoupon,
-  updateCoupon,
-  deleteCoupon,
-  toggleCouponStatus,
-  getActiveCoupons,
-  validateCoupon,
-  calculateDiscount
-};
-
-export default couponService;

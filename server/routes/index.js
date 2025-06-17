@@ -8,7 +8,6 @@ const couponRoutes = require("./couponRoutes");
 const orderRoutes = require("./orderRoutes");
 const paymentRoutes = require("./paymentRoutes");
 const statisticsRoutes = require("./statisticsRoutes");
-const { notFound, errorHandler } = require("../middlewares/errHandler");
 
 const initRoutes = (app) => {
   app.use("/api/auth", authRoutes);
@@ -21,9 +20,6 @@ const initRoutes = (app) => {
   app.use("/api/orders", orderRoutes);
   app.use("/api/payment", paymentRoutes);
   app.use("/api/statistics", statisticsRoutes);
-
-  app.use(notFound);
-  app.use(errorHandler);
 };
 
 module.exports = initRoutes;

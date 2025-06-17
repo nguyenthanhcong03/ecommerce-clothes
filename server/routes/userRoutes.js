@@ -49,32 +49,4 @@ router.put("/:id/unban", verifyToken, checkRole("admin"), userController.unbanUs
 // Xóa người dùng (chỉ admin)
 router.delete("/:id", verifyToken, checkRole("admin"), userController.deleteUser);
 
-// ===== Các route cho quản lý địa chỉ =====
-
-// Thêm địa chỉ mới
-router.post("/:id/addresses", verifyToken, userController.addUserAddress);
-
-// Thêm địa chỉ mới cho người dùng hiện tại
-router.post("/addresses", verifyToken, userController.addUserAddress);
-
-// Cập nhật địa chỉ
-router.put("/addresses/:addressId", verifyToken, userController.updateUserAddress);
-
-// Cập nhật địa chỉ của người dùng cụ thể (admin)
-router.put("/:userId/addresses/:addressId", verifyToken, userController.updateUserAddress);
-
-// Xóa địa chỉ
-router.delete("/addresses/:addressId", verifyToken, userController.deleteUserAddress);
-
-// Xóa địa chỉ của người dùng cụ thể (admin)
-router.delete("/:userId/addresses/:addressId", verifyToken, userController.deleteUserAddress);
-
-// ===== Các route cho quản lý preferences =====
-
-// Cập nhật preferences
-router.put("/preferences", verifyToken, userController.updateUserPreferences);
-
-// Cập nhật preferences của người dùng cụ thể (admin)
-router.put("/:id/preferences", verifyToken, checkRole("admin"), userController.updateUserPreferences);
-
 module.exports = router;

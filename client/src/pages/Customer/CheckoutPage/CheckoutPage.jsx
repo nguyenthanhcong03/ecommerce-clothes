@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
-import { calculateDiscount, validateCoupon } from '../../../services/couponService';
+import { calculateDiscount, validateCouponAPI } from '../../../services/couponService';
 import {
   applyCoupon,
   calculateDistance,
@@ -163,7 +163,7 @@ const CheckoutPage = () => {
         return total + price * item.quantity;
       }, 0);
 
-      const response = await validateCoupon(couponCode, subtotal);
+      const response = await validateCouponAPI(couponCode, subtotal);
 
       if (response) {
         const couponData = response;

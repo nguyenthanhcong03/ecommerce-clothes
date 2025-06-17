@@ -1,19 +1,18 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Controller, useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { toast } from 'react-toastify';
-import { fetchUserById, updateUser } from '@/store/slices/userSlice';
-import { UserOutlined, MailOutlined, PhoneOutlined, CalendarOutlined } from '@ant-design/icons';
 import avatarDefault from '@/assets/images/user.png';
+import Button from '@/components/common/Button/Button';
 import Input from '@/components/common/Input/Input';
 import Select from '@/components/common/Select/Select';
 import { uploadFile } from '@/services/fileService';
-import Button from '@/components/common/Button/Button';
+import { getDistrictsAPI, getProvincesAPI, getWardsAPI } from '@/services/mapService';
+import { fetchUserById, updateUser } from '@/store/slices/userSlice';
+import { CalendarOutlined, MailOutlined, PhoneOutlined, UserOutlined } from '@ant-design/icons';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { FileUser, UserRound } from 'lucide-react';
-import { getProvincesAPI, getDistrictsAPI, getWardsAPI } from '@/services/mapService';
-import { set } from 'date-fns';
+import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import * as yup from 'yup';
 
 // Schema xác thực cho form cập nhật thông tin cá nhân
 const profileSchema = yup.object({

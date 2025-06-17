@@ -1,27 +1,33 @@
 import Header from '@/components/AdminComponents/common/Header';
 import useDebounce from '@/hooks/useDebounce';
-import { banUser, deleteUser, fetchAllUsers, setLimit, setPage, unbanUser } from '@/store/slices/userSlice';
-import { message } from 'antd';
+import { Card, message } from 'antd';
 import { motion } from 'framer-motion';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import BanUserModal from './BanUserModal';
 import UserForm from './UserForm';
 import UserTable from './UserTable';
+import {
+  banUser,
+  deleteUser,
+  fetchAllUsers,
+  resetFilter,
+  setFilter,
+  setLimit,
+  setPage,
+  unbanUser
+} from '@/store/slices/adminUserSlice';
+import UserFilter from '@/pages/admin/UserPage/UserFilter';
 
 const UserPage = () => {
   const dispatch = useDispatch();
+  const { users, pagination, loading, sort, error, filters } = useSelector((state) => state.adminUser);
 
-  // Lấy state từ Redux store
-  const { users, pagination, loading, error, actionLoading, filters } = useSelector((state) => state.user);
-
-  // State để quản lý UI
+  const [isOpenForm, setIsOpenForm] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedUserIdForBan, setSelectedUserIdForBan] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isBanModalVisible, setIsBanModalVisible] = useState(false);
+  const [isOpenBanModal, setIsOpenBanModal] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [sortOption, setSortOption] = useState({ sortBy: 'createdAt', sortOrder: 'desc' });
 
   // Áp dụng debounce cho search để tránh gọi API quá nhiều
   const debouncedSearchText = useDebounce(searchText, 500);
@@ -32,75 +38,80 @@ const UserPage = () => {
       page: pagination.page || 1,
       limit: pagination.limit || 5,
       search: debouncedSearchText || '',
-      role: filters.role,
-      isBlocked: filters.isBlocked,
-      sortBy: sortOption.sortBy || 'createdAt',
-      sortOrder: sortOption.sortOrder || 'desc',
+      role: filters.role || '',
+      isBlocked: filters.isBlocked || null,
+      sortBy: sort.sortBy || 'createdAt',
+      sortOrder: sort.sortOrder || 'desc',
       ...filters
     };
 
-    // Xử lý trường hợp đặc biệt khi cả hai trạng thái isBlocked được chọn
-    if (Array.isArray(queryParams.isBlocked) && queryParams.isBlocked.length === 2) {
-      // Nếu chọn cả hai trạng thái (true và false), không cần lọc theo isBlocked
-      delete queryParams.isBlocked;
-    }
+    // Loại bỏ các tham số undefined
+    Object.keys(queryParams).forEach((key) => {
+      if (queryParams[key] === undefined || queryParams[key] === null || queryParams[key] === '') {
+        delete queryParams[key];
+      }
+    });
 
     dispatch(fetchAllUsers(queryParams));
-  }, [dispatch, pagination.page, pagination.limit, filters, debouncedSearchText, sortOption]);
+  }, [dispatch, pagination.page, pagination.limit, filters, debouncedSearchText, sort]);
 
-  // Fetch users khi component mount hoặc các dependencies thay đổi
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
-
-  // Hiển thị lỗi nếu có
-  useEffect(() => {
-    if (error) {
-      message.error(`Lỗi khi tải danh sách người dùng: ${error.message}`);
-    }
-  }, [error]);
+  const handleSearch = (e) => {
+    setSearchText(e.target.value);
+  };
 
   const handlePageChange = (page, pageSize) => {
     dispatch(setPage(page));
     if (pageSize !== pagination.limit) {
       dispatch(setLimit(pageSize));
     }
+    console.log('pagination', pagination);
   };
 
-  const handleSearch = (e) => {
-    setSearchText(e.target.value);
+  // const handleSortChange = (newSortOption) => {
+  //   switch (newSortOption) {
+  //     case 'default':
+  //       dispatch(setSort({ sortBy: 'createdAt', sortOrder: 'desc' }));
+  //       break;
+  //     case 'popular':
+  //       dispatch(setSort({ sortBy: 'popular', sortOrder: 'desc' }));
+  //       break;
+  //     case 'latest':
+  //       dispatch(setSort({ sortBy: 'createdAt', sortOrder: 'desc' }));
+  //       break;
+  //     case 'price_asc':
+  //       dispatch(setSort({ sortBy: 'price', sortOrder: 'asc' }));
+  //       break;
+  //     case 'price_desc':
+  //       dispatch(setSort({ sortBy: 'price', sortOrder: 'desc' }));
+  //       break;
+  //     case 'name_asc':
+  //       dispatch(setSort({ sortBy: 'name', sortOrder: 'asc' }));
+  //       break;
+  //     case 'name_desc':
+  //       dispatch(setSort({ sortBy: 'name', sortOrder: 'desc' }));
+  //       break;
+  //     case 'rating_desc':
+  //       dispatch(setSort({ sortBy: 'rating', sortOrder: 'desc' }));
+  //       break;
+  //     default:
+  //       dispatch(setSort({ sortBy: 'createdAt', sortOrder: 'desc' }));
+  //       break;
+  //   }
+  // };
+
+  const handleFilterChange = (newFilters) => {
+    // Reset về trang 1 khi áp dụng bộ lọc mới
+    dispatch(setPage(1));
+    dispatch(setFilter(newFilters));
   };
 
-  const handleEditUser = (user) => {
-    setSelectedUser(user);
-    setIsModalVisible(true);
+  const handleResetFilter = () => {
+    dispatch(setPage(1));
+    dispatch(resetFilter());
   };
 
-  const handleAddUser = () => {
-    setSelectedUser(null);
-    setIsModalVisible(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalVisible(false);
-    setSelectedUser(null);
-    // Làm mới danh sách người dùng sau khi đóng modal
-    // fetchUsers();
-  };
   const handleRefresh = () => {
-    setSearchText('');
-    setSortOption({ sortBy: 'createdAt', sortOrder: 'desc' });
-    setSelectedUser(null);
-    setIsModalVisible(false);
-    fetchUsers({
-      page: 1,
-      limit: pagination.limit,
-      search: '',
-      role: null,
-      isBlocked: null,
-      sortBy: 'createdAt',
-      sortOrder: 'descend'
-    });
+    fetchUsers();
   };
 
   const handleDeleteUser = async (userId) => {
@@ -113,18 +124,7 @@ const UserPage = () => {
     }
   };
 
-  // Xử lý chặn người dùng
-  const handleBanUser = (userId) => {
-    setSelectedUserIdForBan(userId);
-    setIsBanModalVisible(true);
-  };
-
-  const handleCloseBanModal = () => {
-    setIsBanModalVisible(false);
-    setSelectedUserIdForBan(null);
-  };
-
-  const handleConfirmBanUser = async (values) => {
+  const handleBanUser = async (values) => {
     try {
       await dispatch(
         banUser({
@@ -134,7 +134,7 @@ const UserPage = () => {
       ).unwrap();
 
       message.success('Đã chặn người dùng thành công');
-      setIsBanModalVisible(false);
+      setIsOpenBanModal(false);
       fetchUsers();
     } catch (error) {
       message.error(`Lỗi khi chặn người dùng: ${error.message}`);
@@ -152,6 +152,43 @@ const UserPage = () => {
     }
   };
 
+  // Xử lý chặn người dùng
+  const handleOpenModalBanUser = (userId) => {
+    setSelectedUserIdForBan(userId);
+    setIsOpenBanModal(true);
+  };
+
+  const handleCloseBanModal = () => {
+    setIsOpenBanModal(false);
+    setSelectedUserIdForBan(null);
+  };
+
+  const handleOpenEditFormUser = (user) => {
+    setSelectedUser(user);
+    setIsOpenForm(true);
+  };
+
+  const handleOpenAddFormUser = () => {
+    setSelectedUser(null);
+    setIsOpenForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsOpenForm(false);
+    setSelectedUser(null);
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  // Hiển thị lỗi nếu có
+  useEffect(() => {
+    if (error) {
+      message.error(`Lỗi khi tải danh sách người dùng: ${error.message}`);
+    }
+  }, [error]);
+
   return (
     <div className='relative z-10 flex-1 overflow-auto'>
       <Header title='Quản lý người dùng' />
@@ -159,38 +196,40 @@ const UserPage = () => {
       <main className='mx-auto px-4 py-6 lg:px-8'>
         {/* User Table */}
         <motion.div
+          className='flex flex-col gap-2'
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
+          <div className='site-card-border-less-wrapper'>
+            <Card className='card-shadow'>
+              <UserFilter onFilterChange={handleFilterChange} onResetFilter={handleResetFilter} />
+              {/* <ProductSort onSortChange={handleSortChange} /> */}
+            </Card>
+          </div>
+
           <UserTable
-            users={users}
-            loading={loading}
-            pagination={pagination}
-            onPageChange={handlePageChange}
-            onSearch={handleSearch}
             searchText={searchText}
-            onEdit={handleEditUser}
-            onDelete={handleDeleteUser}
-            onAdd={handleAddUser}
+            onSearch={handleSearch}
+            onPageChange={handlePageChange}
             onRefresh={handleRefresh}
-            onBan={handleBanUser}
+            onAdd={handleOpenAddFormUser}
+            onEdit={handleOpenEditFormUser}
+            onDelete={handleDeleteUser}
             onUnban={handleUnbanUser}
-            filters={filters}
+            onOpenBanModal={handleOpenModalBanUser}
+            onOpenUnbanModal={handleOpenModalBanUser}
           />
         </motion.div>
       </main>
 
       {/* User Form Modal */}
-      {isModalVisible && <UserForm user={selectedUser} onClose={handleCloseModal} loading={actionLoading} />}
+      {isOpenForm && <UserForm selectedUser={selectedUser} onClose={handleCloseForm} />}
 
       {/* Ban User Modal */}
-      <BanUserModal
-        visible={isBanModalVisible}
-        onClose={handleCloseBanModal}
-        onConfirm={handleConfirmBanUser}
-        loading={actionLoading}
-      />
+      {isOpenBanModal && (
+        <BanUserModal isOpenBanModal={isOpenBanModal} onCloseBanModal={handleCloseBanModal} onBan={handleBanUser} />
+      )}
     </div>
   );
 };

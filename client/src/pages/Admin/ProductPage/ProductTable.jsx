@@ -2,19 +2,14 @@ import { formatCurrency } from '@/utils/format/formatCurrency';
 import { Button, Card, Image, Input, Popconfirm, Space, Table, Tag, Tooltip } from 'antd';
 import { Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
+import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
+import EditIcon from '@/components/AdminComponents/common/icon/EditIcon';
+import DeleteIcon from '@/components/AdminComponents/common/icon/DeleteIcon';
 
-const ProductTable = ({
-  products,
-  pagination,
-  onSearch,
-  onPageChange,
-  searchText,
-  loading,
-  onRefresh,
-  onDelete,
-  onEdit,
-  onAdd
-}) => {
+const ProductTable = ({ searchText, onSearch, onPageChange, onRefresh, onDelete, onEdit, onAdd }) => {
+  const { products, pagination, filters, sort, loading, error } = useSelector((state) => state.adminProduct);
+
   const columns = useMemo(
     () => [
       {
@@ -138,17 +133,21 @@ const ProductTable = ({
         title: 'Tình trạng',
         key: 'inStock',
         width: 120,
-        filters: [
-          { text: 'Còn hàng', value: 'true' },
-          { text: 'Hết hàng', value: 'false' }
-        ],
         onFilter: (value, record) => {
           const hasInStock = record?.variants && record?.variants.some((v) => v.stock > 0);
           return value === 'true' ? hasInStock : !hasInStock;
         },
         render: (_, record) => {
-          const hasInStock = record?.variants && record?.variants.some((v) => v.stock > 0);
-          return hasInStock ? <Tag color='green'>Còn hàng</Tag> : <Tag color='red'>Hết hàng</Tag>;
+          const inStock = record?.variants && record?.variants.some((v) => v.stock > 0);
+          const lowStock = record?.variants && record?.variants.some((v) => v.stock > 0 && v.stock < 5);
+          const outOfStock = record?.variants && record?.variants.every((v) => v.stock <= 0);
+          if (outOfStock) {
+            return <Tag color='red'>Hết hàng</Tag>;
+          } else if (lowStock) {
+            return <Tag color='orange'>Sắp hết hàng</Tag>;
+          } else if (inStock) {
+            return <Tag color='green'>Còn hàng</Tag>;
+          }
         }
       },
 
@@ -160,19 +159,16 @@ const ProductTable = ({
         width: 120,
         render: (_, record) => (
           <Space
-            size='middle'
+            size='small'
             style={{
               justifyContent: 'center',
               display: 'flex'
             }}
           >
             <Tooltip title='Chỉnh sửa'>
-              <button
-                onClick={() => onEdit(record)}
-                className='cursor-pointer rounded-[5px] bg-[#0961FF] p-1 transition-colors hover:bg-blue-700'
-              >
-                <Pencil strokeWidth={1.5} width={16} height={16} color='#fff' />
-              </button>
+              <div>
+                <EditIcon onClick={() => onEdit(record)} />
+              </div>
             </Tooltip>
             <Popconfirm
               title='Bạn có chắc muốn xóa sản phẩm này?'
@@ -188,8 +184,8 @@ const ProductTable = ({
               }}
             >
               <Tooltip title='Xóa'>
-                <div className='cursor-pointer rounded-[5px] bg-[#DE2E3D] p-1 transition-colors hover:bg-red-700'>
-                  <Trash2 strokeWidth={1.5} width={16} height={16} color='#fff' />
+                <div>
+                  <DeleteIcon />
                 </div>
               </Tooltip>
             </Popconfirm>
@@ -232,9 +228,9 @@ const ProductTable = ({
         <div className='flex flex-wrap items-center gap-2'>
           <Input
             placeholder='Tìm kiếm sản phẩm...'
-            prefix={<Search />}
-            style={{ width: 250 }}
-            value={searchText}
+            prefix={<Search width={18} />}
+            style={{ width: 300 }}
+            value={searchText || ''}
             onChange={onSearch}
             allowClear
           />
@@ -245,8 +241,9 @@ const ProductTable = ({
       <Table
         rowKey='_id'
         columns={columns}
-        scroll={{ x: 'max-content' }}
         dataSource={products}
+        loading={loading}
+        scroll={{ x: 'max-content' }}
         pagination={{
           current: pagination.page,
           pageSize: pagination.limit,
@@ -257,11 +254,10 @@ const ProductTable = ({
           pageSizeOptions: ['5', '10', '20', '50'],
           showTotal: (total) => `Tổng số ${total} sản phẩm`
         }}
-        loading={loading}
         locale={{
           emptyText: loading
             ? 'Đang tải dữ liệu...'
-            : searchText
+            : filters.search
               ? 'Không tìm thấy kết quả phù hợp'
               : 'Không có dữ liệu'
         }}
@@ -300,6 +296,16 @@ const ProductTable = ({
       </div> */}
     </Card>
   );
+};
+
+ProductTable.propTypes = {
+  searchText: PropTypes.string,
+  onSearch: PropTypes.func.isRequired,
+  onPageChange: PropTypes.func.isRequired,
+  onRefresh: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onAdd: PropTypes.func.isRequired
 };
 
 export default ProductTable;

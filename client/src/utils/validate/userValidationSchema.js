@@ -42,7 +42,7 @@ export const userAdminSchema = yup.object({
   gender: yup
     .string()
     .nullable()
-    .oneOf(['male', 'female', 'other', null], 'Giới tính phải là male, female hoặc other')
+    .oneOf(['Nam', 'Nữ', 'Khác'], 'Giới tính phải là Nam, Nữ hoặc Khác')
     .transform((value) => (value === '' ? null : value)),
 
   newPassword: yup

@@ -5,10 +5,11 @@ import ProductSort from '@/pages/admin/ProductPage/ProductSort';
 import {
   deleteProductById,
   fetchProducts,
-  resetFilters,
+  resetFilter,
   setFilter,
   setLimit,
-  setPage
+  setPage,
+  setSort
 } from '@/store/slices/adminProductSlice';
 import { Card, message } from 'antd';
 import { motion } from 'framer-motion';
@@ -19,13 +20,11 @@ import ProductTable from './ProductTable';
 
 const ProductPage = () => {
   const dispatch = useDispatch();
-  const { products, loading, pagination, filters, error } = useSelector((state) => state.adminProduct);
+  const { products, pagination, filters, sort, loading, error } = useSelector((state) => state.adminProduct);
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchText, setSearchText] = useState('');
-  const [sortOption, setSortOption] = useState({ sortBy: 'createdAt', sortOrder: 'desc' });
 
-  // Áp dụng debounce cho search để tránh gọi API quá nhiều
   const debouncedSearchText = useDebounce(searchText, 500);
 
   const fetchAllProducts = useCallback(() => {
@@ -33,8 +32,8 @@ const ProductPage = () => {
       page: pagination.page || 1,
       limit: pagination.limit || 5,
       search: debouncedSearchText || '',
-      sortBy: sortOption.sortBy || 'createdAt',
-      sortOrder: sortOption.sortOrder || 'desc',
+      sortBy: sort.sortBy || 'createdAt',
+      sortOrder: sort.sortOrder || 'desc',
       ...filters
     };
 
@@ -46,22 +45,11 @@ const ProductPage = () => {
     });
 
     dispatch(fetchProducts(queryParams));
-  }, [pagination.page, pagination.limit, filters, debouncedSearchText, sortOption, dispatch]);
-
-  useEffect(() => {
-    fetchAllProducts();
-  }, [fetchAllProducts]);
+  }, [pagination.page, pagination.limit, filters, debouncedSearchText, sort, dispatch]);
 
   const handleSearch = (e) => {
     setSearchText(e.target.value);
   };
-
-  // Hiển thị lỗi nếu có
-  useEffect(() => {
-    if (error) {
-      message.error(`Lỗi khi tải danh sách sản phẩm: ${error}`);
-    }
-  }, [error]);
 
   const handlePageChange = (page, pageSize) => {
     dispatch(setPage(page));
@@ -73,43 +61,33 @@ const ProductPage = () => {
   const handleSortChange = (newSortOption) => {
     switch (newSortOption) {
       case 'default':
-        setSortOption({ sortBy: 'createdAt', sortOrder: 'desc' });
+        dispatch(setSort({ sortBy: 'createdAt', sortOrder: 'desc' }));
         break;
       case 'popular':
-        setSortOption({ sortBy: 'popular', sortOrder: 'desc' });
+        dispatch(setSort({ sortBy: 'popular', sortOrder: 'desc' }));
         break;
       case 'latest':
-        setSortOption({ sortBy: 'createdAt', sortOrder: 'desc' });
+        dispatch(setSort({ sortBy: 'createdAt', sortOrder: 'desc' }));
         break;
       case 'price_asc':
-        setSortOption({ sortBy: 'price', sortOrder: 'asc' });
+        dispatch(setSort({ sortBy: 'price', sortOrder: 'asc' }));
         break;
       case 'price_desc':
-        setSortOption({ sortBy: 'price', sortOrder: 'desc' });
+        dispatch(setSort({ sortBy: 'price', sortOrder: 'desc' }));
         break;
       case 'name_asc':
-        setSortOption({ sortBy: 'name', sortOrder: 'asc' });
+        dispatch(setSort({ sortBy: 'name', sortOrder: 'asc' }));
         break;
       case 'name_desc':
-        setSortOption({ sortBy: 'name', sortOrder: 'desc' });
+        dispatch(setSort({ sortBy: 'name', sortOrder: 'desc' }));
         break;
       case 'rating_desc':
-        setSortOption({ sortBy: 'rating', sortOrder: 'desc' });
+        dispatch(setSort({ sortBy: 'rating', sortOrder: 'desc' }));
         break;
       default:
-        setSortOption({ sortBy: 'createdAt', sortOrder: 'desc' });
+        dispatch(setSort({ sortBy: 'createdAt', sortOrder: 'desc' }));
         break;
     }
-  };
-
-  const handleOpenForm = (product = null) => {
-    setSelectedProduct(product);
-    setIsOpenForm(true);
-  };
-
-  const handleCloseForm = () => {
-    setSelectedProduct(null);
-    setIsOpenForm(false);
   };
 
   const handleFilterChange = (newFilters) => {
@@ -118,18 +96,24 @@ const ProductPage = () => {
     dispatch(setFilter(newFilters));
   };
 
-  const handleResetFilters = () => {
+  const handleResetFilter = () => {
     dispatch(setPage(1));
-    dispatch(resetFilters());
-    setSortOption({
-      sortBy: 'createdAt',
-      sortOrder: 'desc'
-    });
+    dispatch(resetFilter());
   };
 
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = () => {
     fetchAllProducts();
-  }, [fetchAllProducts]);
+  };
+
+  const handleOpenForm = (product = null) => {
+    setSelectedProduct(product);
+    setIsOpenForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsOpenForm(false);
+    setSelectedProduct(null);
+  };
 
   // Xử lý xóa sản phẩm
   const handleDeleteProduct = useCallback(
@@ -150,6 +134,17 @@ const ProductPage = () => {
     [dispatch, handleRefresh]
   );
 
+  useEffect(() => {
+    fetchAllProducts();
+  }, [fetchAllProducts]);
+
+  // Hiển thị lỗi nếu có
+  useEffect(() => {
+    if (error) {
+      message.error(`Lỗi khi tải danh sách sản phẩm: ${error}`);
+    }
+  }, [error]);
+
   return (
     <div className='relative z-10 flex-1 overflow-auto'>
       <Header title='Quản lý sản phẩm' />
@@ -163,34 +158,24 @@ const ProductPage = () => {
         >
           <div className='site-card-border-less-wrapper'>
             <Card className='card-shadow'>
-              <ProductFilter
-                filters={filters}
-                onFilterChange={handleFilterChange}
-                onResetFilters={handleResetFilters}
-              />
-              <div className='mt-4'>
-                <ProductSort sort={sortOption} onSortChange={handleSortChange} />
-              </div>
+              <ProductFilter onFilterChange={handleFilterChange} onResetFilter={handleResetFilter} />
+              <ProductSort onSortChange={handleSortChange} />
             </Card>
           </div>
 
           <ProductTable
-            products={products}
-            pagination={pagination}
-            onPageChange={handlePageChange}
-            onSearch={handleSearch}
             searchText={searchText}
+            onSearch={handleSearch}
+            onPageChange={handlePageChange}
+            onRefresh={handleRefresh}
             onDelete={handleDeleteProduct}
             onEdit={handleOpenForm}
             onAdd={handleOpenForm}
-            loading={loading}
-            onRefresh={handleRefresh}
-            filters={filters}
           />
         </motion.div>
       </main>
 
-      {isOpenForm && <ProductForm loading={loading} selectedProduct={selectedProduct} onClose={handleCloseForm} />}
+      {isOpenForm && <ProductForm selectedProduct={selectedProduct} onClose={handleCloseForm} />}
     </div>
   );
 };

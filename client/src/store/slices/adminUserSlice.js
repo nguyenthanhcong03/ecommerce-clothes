@@ -86,20 +86,20 @@ const initialState = {
     total: 0,
     totalPages: 0
   },
-  currentUser: null,
-  loading: false,
-  error: null,
-  actionLoading: false,
-  actionError: null,
   filters: {
-    search: '',
-    role: null,
+    role: '',
     isBlocked: null
-  }
+  },
+  sort: {
+    sortBy: 'createdAt',
+    sortOrder: 'desc'
+  },
+  loading: false,
+  error: null
 };
 
-const userSlice = createSlice({
-  name: 'users',
+const adminUserSlice = createSlice({
+  name: 'adminUser',
   initialState,
   reducers: {
     setPage: (state, action) => {
@@ -107,13 +107,23 @@ const userSlice = createSlice({
     },
     setLimit: (state, action) => {
       state.pagination.limit = action.payload;
+      state.pagination.page = 1;
     },
-    resetActionState: (state) => {
-      state.actionLoading = false;
-      state.actionError = null;
-    },
-    setFilters: (state, action) => {
+    setFilter: (state, action) => {
       state.filters = { ...state.filters, ...action.payload };
+    },
+    resetFilter: (state) => {
+      state.filters = {
+        role: null,
+        isBlocked: null
+      };
+    },
+    setSort: (state, action) => {
+      const { sortBy, sortOrder } = action.payload;
+      state.sort = {
+        sortBy: sortBy || 'createdAt',
+        sortOrder: sortOrder || 'desc'
+      };
     }
   },
   extraReducers: (builder) => {
@@ -273,5 +283,5 @@ const userSlice = createSlice({
   }
 });
 
-export const { resetActionState, setFilters, setPage, setLimit } = userSlice.actions;
-export default userSlice.reducer;
+export const { setPage, setLimit, setFilter, resetFilter, setSort } = adminUserSlice.actions;
+export default adminUserSlice.reducer;
