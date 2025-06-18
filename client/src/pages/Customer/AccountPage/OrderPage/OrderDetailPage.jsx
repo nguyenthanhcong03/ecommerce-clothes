@@ -3,7 +3,7 @@ import Modal from '@/components/common/Modal/Modal2';
 import CountdownTimer from '@/pages/customer/AccountPage/OrderPage/components/CountdownTimer';
 import OrderStatusBadge from '@/pages/customer/AccountPage/OrderPage/components/OrderStatusBadge';
 import OrderTimeline from '@/pages/customer/AccountPage/OrderPage/components/OrderTimeline';
-import { createVnpayPayment } from '@/services/paymentService';
+import { createVnpayPaymentAPI } from '@/services/paymentService';
 import { cancelOrder, fetchOrderDetail, resetOrderDetail } from '@/store/slices/userOrderSlice';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import { formatDate } from '@/utils/format/formatDate';
@@ -13,7 +13,6 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
-// Component hiển thị chi tiết đơn hàng
 const OrderDetailPage = () => {
   const { orderId } = useParams();
   const dispatch = useDispatch();
@@ -25,7 +24,7 @@ const OrderDetailPage = () => {
   // Xử lý tạo URL thanh toán
   const handleCreatePaymentUrl = async (orderId) => {
     try {
-      const response = await createVnpayPayment(orderId);
+      const response = await createVnpayPaymentAPI(orderId);
       if (response && response.paymentUrl) {
         // Chuyển hướng người dùng đến URL thanh toán
         window.location.href = response.paymentUrl;

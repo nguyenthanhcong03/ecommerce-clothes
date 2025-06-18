@@ -2,7 +2,7 @@ import avatarDefault from '@/assets/images/user.png';
 import Button from '@/components/common/Button/Button';
 import Input from '@/components/common/Input/Input';
 import Select from '@/components/common/Select/Select';
-import { uploadFile } from '@/services/fileService';
+import { uploadFileAPI } from '@/services/fileService';
 import { getDistrictsAPI, getProvincesAPI, getWardsAPI } from '@/services/mapService';
 import { fetchUserById, updateUser } from '@/store/slices/userSlice';
 import { CalendarOutlined, MailOutlined, PhoneOutlined, UserOutlined } from '@ant-design/icons';
@@ -297,7 +297,7 @@ const ProfilePage = () => {
       if (avatarFile) {
         try {
           // Upload avatar trước bằng fileService
-          const uploadResponse = await uploadFile(avatarFile);
+          const uploadResponse = await uploadFileAPI(avatarFile);
           // Lấy URL hình ảnh từ response
           if (uploadResponse?.data?.url) {
             // Thêm URL avatar vào dữ liệu cập nhật

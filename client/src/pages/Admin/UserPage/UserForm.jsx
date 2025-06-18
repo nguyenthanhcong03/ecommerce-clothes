@@ -12,7 +12,7 @@ const { Option } = Select;
 
 const UserForm = ({ selectedUser, onClose }) => {
   const dispatch = useDispatch();
-  const { loading } = useSelector((state) => state.adminUser);
+  const { actionLoading } = useSelector((state) => state.adminUser);
   const {
     control,
     handleSubmit,
@@ -147,7 +147,7 @@ const UserForm = ({ selectedUser, onClose }) => {
       okButtonProps={{
         autoFocus: true,
         htmlType: 'submit',
-        loading: loading,
+        loading: actionLoading,
         disabled: !isDirty
       }}
       onCancel={handleCancel}
@@ -155,7 +155,7 @@ const UserForm = ({ selectedUser, onClose }) => {
       onOk={handleSubmit(onSubmit)}
       maskClosable={false}
     >
-      <Spin spinning={loading}>
+      <Spin spinning={actionLoading}>
         <Form layout='vertical' onFinish={handleSubmit(onSubmit)}>
           <Row gutter={16}>
             <Col xs={24} sm={12}>

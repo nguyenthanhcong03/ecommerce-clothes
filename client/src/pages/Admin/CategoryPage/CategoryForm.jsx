@@ -1,11 +1,10 @@
 import ImageUpload from '@/pages/admin/ProductPage/ImageUpload';
-import { deleteMultipleFiles, uploadMultipleFiles } from '@/services/fileService';
+import { deleteMultipleFilesAPI, uploadMultipleFilesAPI } from '@/services/fileService';
 import { createCategory, updateCategoryById } from '@/store/slices/categorySlice';
 import { buildTree } from '@/utils/helpers/buildTree';
-import { UploadOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Form, Input, message, Modal, Switch, TreeSelect, Upload } from 'antd';
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { Form, Input, message, Modal, TreeSelect } from 'antd';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
 import * as yup from 'yup';
@@ -191,7 +190,7 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
         return files; // Nếu không có file mới nào cần tải lên
       }
 
-      const response = await uploadMultipleFiles(filesToUpload);
+      const response = await uploadMultipleFilesAPI(filesToUpload);
 
       if (!response.success) {
         throw new Error('Tải lên ảnh thất bại');
@@ -273,7 +272,7 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
 
         if (deletedImages.length > 0) {
           try {
-            await deleteMultipleFiles(deletedImages.map((img) => img.public_id || img));
+            await deleteMultipleFilesAPI(deletedImages.map((img) => img.public_id || img));
           } catch (deleteErr) {
             console.error('Lỗi khi xóa ảnh:', deleteErr);
           }

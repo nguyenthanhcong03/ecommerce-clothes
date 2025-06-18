@@ -116,7 +116,7 @@ const UserFilter = ({ onFilterChange, onResetFilter }) => {
                   <Button icon={<ClearOutlined />} onClick={handleReset}>
                     Xóa bộ lọc
                   </Button>
-                  <Button type='primary' htmlType='submit' icon={<SearchOutlined />}>
+                  <Button loading={loading} type='primary' htmlType='submit' icon={<SearchOutlined />}>
                     Lọc
                   </Button>
                 </Space>

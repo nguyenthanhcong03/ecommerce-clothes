@@ -1,7 +1,7 @@
 import axios from '@/config/axios';
 const BASE_API = '/api/file';
 
-export const uploadFile = (file, folder = 'uploads') => {
+export const uploadFileAPI = (file, folder = 'uploads') => {
   const formData = new FormData();
   formData.append('file', file);
   return axios.post(`${BASE_API}/cloud/upload?folder=${folder}`, formData, {
@@ -11,14 +11,12 @@ export const uploadFile = (file, folder = 'uploads') => {
   });
 };
 
-export const uploadMultipleFiles = (files, folder = 'uploads') => {
+export const uploadMultipleFilesAPI = (files, folder = 'uploads') => {
   const formData = new FormData();
   Array.from(files).forEach((file) => {
     formData.append('files', file);
   });
 
-  // Log FormData content to console for debugging
-  console.log('FormData content:');
   for (let pair of formData.entries()) {
     console.log(pair[0] + ': ' + pair[1]);
   }
@@ -30,13 +28,13 @@ export const uploadMultipleFiles = (files, folder = 'uploads') => {
   });
 };
 
-export const deleteFile = (fileIdentifier) => {
+export const deleteFileAPI = (fileIdentifier) => {
   return axios.delete(`${BASE_API}/cloud/delete`, {
     data: fileIdentifier.includes('cloudinary.com') ? { url: fileIdentifier } : { publicId: fileIdentifier }
   });
 };
 
-export const deleteMultipleFiles = (fileIdentifiers) => {
+export const deleteMultipleFilesAPI = (fileIdentifiers) => {
   return axios.delete(`${BASE_API}/cloud/delete/multiple`, {
     data: { files: fileIdentifiers }
   });

@@ -1,5 +1,5 @@
 import Button from '@/components/common/Button';
-import { createVnpayPayment } from '@/services/paymentService';
+import { createVnpayPaymentAPI } from '@/services/paymentService';
 import { message } from 'antd';
 import { AlertTriangle, ClipboardList, Home, RotateCcw, XCircle } from 'lucide-react';
 import { useEffect } from 'react';
@@ -15,7 +15,7 @@ const PaymentFailedPage = () => {
 
   const handleCreatePaymentUrl = async (orderId) => {
     try {
-      const response = await createVnpayPayment(orderId);
+      const response = await createVnpayPaymentAPI(orderId);
       if (response && response.paymentUrl) {
         // Chuyển hướng người dùng đến URL thanh toán
         window.location.href = response.paymentUrl;

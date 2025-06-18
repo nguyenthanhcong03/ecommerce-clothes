@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 
 const BanUserModal = ({ isOpenBanModal, onCloseBanModal, onBan }) => {
-  const { loading } = useSelector((state) => state.adminUser);
+  const { actionLoading } = useSelector((state) => state.adminUser);
   const [form] = Form.useForm();
 
   const handleOk = () => {
@@ -33,7 +33,7 @@ const BanUserModal = ({ isOpenBanModal, onCloseBanModal, onBan }) => {
         <Button key='back' onClick={handleCancel}>
           Hủy
         </Button>,
-        <Button key='submit' type='primary' danger loading={loading} onClick={handleOk}>
+        <Button key='submit' type='primary' danger loading={actionLoading} onClick={handleOk}>
           Chặn người dùng
         </Button>
       ]}

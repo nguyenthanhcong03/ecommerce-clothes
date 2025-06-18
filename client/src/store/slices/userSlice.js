@@ -1,137 +1,38 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import userService from '@/services/userService';
-
-// Async thunks
-export const fetchAllUsers = createAsyncThunk('users/fetchAll', async (params, { rejectWithValue }) => {
-  try {
-    const response = await userService.getAllUsers(params);
-    return response;
-  } catch (error) {
-    return rejectWithValue(error.response?.data || { message: error.message });
-  }
-});
+import { getUserByIdAPI, updateUserAPI } from '@/services/userService';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 export const fetchUserById = createAsyncThunk('users/fetchById', async (userId, { rejectWithValue }) => {
   try {
-    const response = await userService.getUserById(userId);
+    const response = await getUserByIdAPI(userId);
     return response;
   } catch (error) {
     return rejectWithValue(error.response?.data || { message: error.message });
   }
 });
-
-export const createUserByAdmin = createAsyncThunk('users/createByAdmin', async (userData, { rejectWithValue }) => {
-  try {
-    const response = await userService.createUserByAdmin(userData);
-    return response;
-  } catch (error) {
-    return rejectWithValue(error.response?.data || { message: error.message });
-  }
-});
-
-export const updateUserAdmin = createAsyncThunk(
-  'users/updateAdmin',
-  async ({ userId, userData }, { rejectWithValue }) => {
-    try {
-      const response = await userService.updateUserByAdmin(userId, userData);
-      return response;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || { message: error.message });
-    }
-  }
-);
 
 export const updateUser = createAsyncThunk('users/update', async ({ userId, userData }, { rejectWithValue }) => {
   try {
-    const response = await userService.updateUser(userId, userData);
-    console.log('response', response);
+    const response = await updateUserAPI(userId, userData);
     return response;
-  } catch (error) {
-    return rejectWithValue(error.response?.data || { message: error.message });
-  }
-});
-
-export const deleteUser = createAsyncThunk('users/delete', async (userId, { rejectWithValue }) => {
-  try {
-    const response = await userService.deleteUser(userId);
-    return { ...response, userId };
-  } catch (error) {
-    return rejectWithValue(error.response?.data || { message: error.message });
-  }
-});
-
-export const banUser = createAsyncThunk('users/ban', async ({ userId, banInfo }, { rejectWithValue }) => {
-  try {
-    const response = await userService.banUser(userId, banInfo);
-    return { ...response, userId };
-  } catch (error) {
-    return rejectWithValue(error.response?.data || { message: error.message });
-  }
-});
-
-export const unbanUser = createAsyncThunk('users/unban', async (userId, { rejectWithValue }) => {
-  try {
-    const response = await userService.unbanUser(userId);
-    return { ...response, userId };
   } catch (error) {
     return rejectWithValue(error.response?.data || { message: error.message });
   }
 });
 
 const initialState = {
-  users: [],
-  pagination: {
-    page: 1,
-    limit: 5,
-    total: 0,
-    totalPages: 0
-  },
   currentUser: null,
   loading: false,
   error: null,
   actionLoading: false,
-  actionError: null,
-  filters: {
-    search: '',
-    role: null,
-    isBlocked: null
-  }
+  actionError: null
 };
 
 const userSlice = createSlice({
   name: 'users',
   initialState,
-  reducers: {
-    setPage: (state, action) => {
-      state.pagination.page = action.payload;
-    },
-    setLimit: (state, action) => {
-      state.pagination.limit = action.payload;
-    },
-    resetActionState: (state) => {
-      state.actionLoading = false;
-      state.actionError = null;
-    },
-    setFilters: (state, action) => {
-      state.filters = { ...state.filters, ...action.payload };
-    }
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
-      // Fetch all users
-      .addCase(fetchAllUsers.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchAllUsers.fulfilled, (state, action) => {
-        state.loading = false;
-        state.users = action.payload.users || [];
-        state.pagination = action.payload.pagination;
-      })
-      .addCase(fetchAllUsers.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || { message: 'Failed to fetch users' };
-      })
 
       // Fetch user by ID
       .addCase(fetchUserById.pending, (state) => {
@@ -147,42 +48,6 @@ const userSlice = createSlice({
         state.error = action.payload || { message: 'Failed to fetch user' };
       })
 
-      // Thêm vào extraReducers
-      .addCase(createUserByAdmin.pending, (state) => {
-        state.actionLoading = true;
-        state.actionError = null;
-      })
-      .addCase(createUserByAdmin.fulfilled, (state, action) => {
-        state.actionLoading = false;
-        state.users.unshift(action.payload.data);
-        state.pagination.total += 1;
-      })
-      .addCase(createUserByAdmin.rejected, (state, action) => {
-        state.actionLoading = false;
-        state.actionError = action.payload || { message: 'Failed to create user' };
-      })
-
-      // Update user by admin
-      .addCase(updateUserAdmin.pending, (state) => {
-        state.actionLoading = true;
-        state.actionError = null;
-      })
-      .addCase(updateUserAdmin.fulfilled, (state, action) => {
-        state.actionLoading = false;
-        state.currentUser = action.payload.data;
-
-        // Also update in the users list if present
-        const index = state.users.findIndex((user) => user._id === action.payload.data._id);
-        if (index !== -1) {
-          state.users[index] = action.payload.data;
-        }
-      })
-      .addCase(updateUserAdmin.rejected, (state, action) => {
-        state.actionLoading = false;
-        state.actionError = action.payload || { message: 'Failed to update user' };
-      })
-
-      // Update user (regular user update)
       .addCase(updateUser.pending, (state) => {
         state.actionLoading = true;
         state.actionError = null;
@@ -190,88 +55,12 @@ const userSlice = createSlice({
       .addCase(updateUser.fulfilled, (state, action) => {
         state.actionLoading = false;
         state.currentUser = action.payload.data;
-
-        // Also update in the users list if present
-        const index = state.users.findIndex((user) => user._id === action.payload.data._id);
-        if (index !== -1) {
-          state.users[index] = action.payload.data;
-        }
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.actionLoading = false;
         state.actionError = action.payload || { message: 'Failed to update user' };
-      })
-
-      // Delete user
-      .addCase(deleteUser.pending, (state) => {
-        state.actionLoading = true;
-        state.actionError = null;
-      })
-      .addCase(deleteUser.fulfilled, (state, action) => {
-        state.actionLoading = false;
-
-        // Remove from the users list
-        state.users = state.users.filter((user) => user._id !== action.payload.userId);
-
-        // Clear current user if it's the same
-        if (state.currentUser && state.currentUser._id === action.payload.userId) {
-          state.currentUser = null;
-        }
-      })
-      .addCase(deleteUser.rejected, (state, action) => {
-        state.actionLoading = false;
-        state.actionError = action.payload || { message: 'Failed to delete user' };
-      })
-
-      // Ban user
-      .addCase(banUser.pending, (state) => {
-        state.actionLoading = true;
-        state.actionError = null;
-      })
-      .addCase(banUser.fulfilled, (state, action) => {
-        state.actionLoading = false;
-
-        // Update in the users list if present
-        const index = state.users.findIndex((user) => user._id === action.payload.data._id);
-        if (index !== -1) {
-          state.users[index] = action.payload.data;
-        }
-
-        // Update current user if it's the same
-        if (state.currentUser && state.currentUser._id === action.payload.data._id) {
-          state.currentUser = action.payload.data;
-        }
-      })
-      .addCase(banUser.rejected, (state, action) => {
-        state.actionLoading = false;
-        state.actionError = action.payload || { message: 'Failed to ban user' };
-      })
-
-      // Unban user
-      .addCase(unbanUser.pending, (state) => {
-        state.actionLoading = true;
-        state.actionError = null;
-      })
-      .addCase(unbanUser.fulfilled, (state, action) => {
-        state.actionLoading = false;
-
-        // Update in the users list if present
-        const index = state.users.findIndex((user) => user._id === action.payload.data._id);
-        if (index !== -1) {
-          state.users[index] = action.payload.data;
-        }
-
-        // Update current user if it's the same
-        if (state.currentUser && state.currentUser._id === action.payload.data._id) {
-          state.currentUser = action.payload.data;
-        }
-      })
-      .addCase(unbanUser.rejected, (state, action) => {
-        state.actionLoading = false;
-        state.actionError = action.payload || { message: 'Failed to unban user' };
       });
   }
 });
 
-export const { resetActionState, setFilters, setPage, setLimit } = userSlice.actions;
 export default userSlice.reducer;

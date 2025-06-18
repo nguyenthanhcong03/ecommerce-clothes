@@ -1,10 +1,19 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import userService from '@/services/userService';
+import {
+  banUserAPI,
+  createUserByAdminAPI,
+  deleteUserAPI,
+  getAllUsersAPI,
+  getUserByIdAPI,
+  unbanUserAPI,
+  updateUserAPI,
+  updateUserByAdminAPI
+} from '@/services/userService';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 // Async thunks
 export const fetchAllUsers = createAsyncThunk('users/fetchAll', async (params, { rejectWithValue }) => {
   try {
-    const response = await userService.getAllUsers(params);
+    const response = await getAllUsersAPI(params);
     return response;
   } catch (error) {
     return rejectWithValue(error.response?.data || { message: error.message });
@@ -13,7 +22,7 @@ export const fetchAllUsers = createAsyncThunk('users/fetchAll', async (params, {
 
 export const fetchUserById = createAsyncThunk('users/fetchById', async (userId, { rejectWithValue }) => {
   try {
-    const response = await userService.getUserById(userId);
+    const response = await getUserByIdAPI(userId);
     return response;
   } catch (error) {
     return rejectWithValue(error.response?.data || { message: error.message });
@@ -22,7 +31,7 @@ export const fetchUserById = createAsyncThunk('users/fetchById', async (userId, 
 
 export const createUserByAdmin = createAsyncThunk('users/createByAdmin', async (userData, { rejectWithValue }) => {
   try {
-    const response = await userService.createUserByAdmin(userData);
+    const response = await createUserByAdminAPI(userData);
     return response;
   } catch (error) {
     return rejectWithValue(error.response?.data || { message: error.message });
@@ -33,7 +42,7 @@ export const updateUserAdmin = createAsyncThunk(
   'users/updateAdmin',
   async ({ userId, userData }, { rejectWithValue }) => {
     try {
-      const response = await userService.updateUserByAdmin(userId, userData);
+      const response = await updateUserByAdminAPI(userId, userData);
       return response;
     } catch (error) {
       console.log('adminUserSlice.js - updateUserAdmin error:', error);
@@ -44,7 +53,7 @@ export const updateUserAdmin = createAsyncThunk(
 
 export const updateUser = createAsyncThunk('users/update', async ({ userId, userData }, { rejectWithValue }) => {
   try {
-    const response = await userService.updateUser(userId, userData);
+    const response = await updateUserAPI(userId, userData);
     console.log('response', response);
     return response;
   } catch (error) {
@@ -54,7 +63,7 @@ export const updateUser = createAsyncThunk('users/update', async ({ userId, user
 
 export const deleteUser = createAsyncThunk('users/delete', async (userId, { rejectWithValue }) => {
   try {
-    const response = await userService.deleteUser(userId);
+    const response = await deleteUserAPI(userId);
     return { ...response, userId };
   } catch (error) {
     return rejectWithValue(error.response?.data || { message: error.message });
@@ -63,7 +72,7 @@ export const deleteUser = createAsyncThunk('users/delete', async (userId, { reje
 
 export const banUser = createAsyncThunk('users/ban', async ({ userId, banInfo }, { rejectWithValue }) => {
   try {
-    const response = await userService.banUser(userId, banInfo);
+    const response = await banUserAPI(userId, banInfo);
     return { ...response, userId };
   } catch (error) {
     return rejectWithValue(error.response?.data || { message: error.message });
@@ -72,7 +81,7 @@ export const banUser = createAsyncThunk('users/ban', async ({ userId, banInfo },
 
 export const unbanUser = createAsyncThunk('users/unban', async (userId, { rejectWithValue }) => {
   try {
-    const response = await userService.unbanUser(userId);
+    const response = await unbanUserAPI(userId);
     return { ...response, userId };
   } catch (error) {
     return rejectWithValue(error.response?.data || { message: error.message });
@@ -96,6 +105,7 @@ const initialState = {
     sortOrder: 'desc'
   },
   loading: false,
+  actionLoading: false,
   error: null
 };
 

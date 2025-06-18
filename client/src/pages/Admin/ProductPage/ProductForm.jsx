@@ -1,5 +1,5 @@
 import ImageUpload from '@/pages/admin/ProductPage/ImageUpload';
-import { deleteMultipleFiles, uploadMultipleFiles } from '@/services/fileService';
+import { deleteMultipleFilesAPI, uploadMultipleFilesAPI } from '@/services/fileService';
 import { createProduct, fetchProducts, updateProductById } from '@/store/slices/adminProductSlice';
 import { fetchCategories } from '@/store/slices/categorySlice';
 import { COLOR_OPTIONS } from '@/utils/constants';
@@ -236,7 +236,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
         return files; // Nếu không có file mới nào cần tải lên
       }
 
-      const response = await uploadMultipleFiles(filesToUpload);
+      const response = await uploadMultipleFilesAPI(filesToUpload);
 
       if (!response.success) {
         throw new Error('Tải lên ảnh thất bại');
@@ -327,7 +327,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
 
           if (deletedImages.length > 0) {
             try {
-              await deleteMultipleFiles(deletedImages.map((img) => img.public_id || img));
+              await deleteMultipleFilesAPI(deletedImages.map((img) => img.public_id || img));
             } catch (deleteErr) {
               console.error('Lỗi khi xóa ảnh:', deleteErr);
             }
