@@ -14,11 +14,11 @@ const SizeSelector = ({ sizes = [], selectedSize, selectedColor, getAvailableSiz
               onSizeSelect(size);
             }}
             disabled={!isAvailable}
-            className={`h-[28px] min-w-[28px] border text-xs text-primaryColor sm:h-[30px] sm:min-w-[30px] ${
+            className={`flex h-8 w-8 items-center justify-center rounded-sm border text-xs transition ${
               selectedSize === size
-                ? 'border-black'
+                ? 'border-primaryColor bg-primaryColor font-medium text-white'
                 : isAvailable
-                  ? 'border-gray-300 bg-white text-gray-600 hover:bg-gray-100'
+                  ? 'border-gray-300 bg-white text-gray-700 hover:border-primaryColor hover:bg-gray-50'
                   : 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400 opacity-50'
             }`}
           >

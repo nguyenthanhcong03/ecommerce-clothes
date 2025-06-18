@@ -26,6 +26,7 @@ import PaymentMethod from './components/PaymentMethod';
 import PriceChangeModal from './components/PriceChangeModal';
 import ShippingForm from './components/ShippingForm';
 import { checkoutSchema } from './validationSchema';
+import { use } from 'react';
 
 const CheckoutPage = () => {
   const dispatch = useDispatch();
@@ -38,29 +39,37 @@ const CheckoutPage = () => {
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
 
+  const [isProvinceLoaded, setIsProvinceLoaded] = useState(false);
+  const [isDistrictLoaded, setIsDistrictLoaded] = useState(false);
+  const [isWardLoaded, setIsWardLoaded] = useState(false);
+
   // Thêm biến state để lưu dữ liệu đơn hàng
   const [orderData, setOrderData] = useState(null);
-  // Selectors từ Redux
-  const orderSuccess = useSelector((state) => state.order.orderSuccess);
-  const orderItems = useSelector((state) => state.order.orderItems);
-  const shippingInfo = useSelector((state) => state.order.shippingInfo);
-  const paymentMethod = useSelector((state) => state.order.paymentMethod);
-  const isLoading = useSelector((state) => state.order.loading);
-  const appliedCoupon = useSelector((state) => state.order.appliedCoupon);
-  const distance = useSelector((state) => state.order.distance);
-  const changedPriceProducts = useSelector((state) => state.order.changedPriceProducts);
-  const updatedProducts = useSelector((state) => state.order.updatedProducts);
-  const showPriceChangeModal = useSelector((state) => state.order.showPriceChangeModal);
-  const paymentUrl = useSelector((state) => state.order.paymentUrl);
+
+  const {
+    orderItems,
+    shippingInfo,
+    orderSuccess,
+    paymentMethod,
+    appliedCoupon,
+    note,
+    loading,
+    paymentUrl,
+    showPriceChangeModal,
+    changedPriceProducts,
+    updatedProducts,
+    distance
+  } = useSelector((state) => state.order);
+
+  const { user } = useSelector((state) => state.account);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    control,
     setValue,
-    watch,
-    resetField
+    reset,
+    watch
   } = useForm({
     resolver: yupResolver(checkoutSchema),
     mode: 'onChange',
@@ -69,81 +78,16 @@ const CheckoutPage = () => {
       phoneNumber: shippingInfo?.phoneNumber || '',
       email: shippingInfo?.email || '',
       street: shippingInfo?.street || '',
-      province: shippingInfo?.province || '',
+      ward: shippingInfo?.ward || '',
       district: shippingInfo?.district || '',
+      province: shippingInfo?.province || '',
       paymentMethod: paymentMethod || 'COD',
-      note: ''
+      note: note || ''
     }
   });
 
   const watchProvince = watch('province');
   const watchDistrict = watch('district');
-
-  // Load danh sách tỉnh
-  useEffect(() => {
-    const fetchProvinces = async () => {
-      try {
-        const response = await getProvincesAPI();
-        setProvinces(response);
-      } catch (error) {
-        console.error('Error loading provinces:', error);
-      }
-    };
-
-    fetchProvinces();
-  }, []);
-
-  // Khi chọn tỉnh → load huyện
-  useEffect(() => {
-    const selectedProvince = provinces.find((p) => p.label === watchProvince);
-    const fetchDistricts = async () => {
-      try {
-        const response = await getDistrictsAPI(selectedProvince.value);
-        setDistricts(response);
-        setValue('district', '');
-        setWards([]);
-      } catch (error) {
-        console.error('Error loading district:', error);
-      }
-    };
-    if (watchProvince) {
-      fetchDistricts();
-    }
-  }, [watchProvince, provinces, setValue]);
-
-  // Khi chọn quận => load phường/xã
-  useEffect(() => {
-    const selectedDistrict = districts.find((d) => d.label === watchDistrict);
-
-    const fetchWards = async () => {
-      try {
-        const response = await getWardsAPI(selectedDistrict.value);
-        setWards(response);
-        setValue('ward', '');
-      } catch (error) {
-        console.error('Error loading ward:', error);
-      }
-    };
-    if (watchDistrict) {
-      fetchWards();
-      // Tính phí vận chuyển khi đã chọn quận/huyện
-      if (watchProvince && watchDistrict) {
-        const customerLocation = `${watchDistrict}, ${watchProvince}, Việt Nam`;
-        const storeLocation = '175 Tây Sơn, Trung Liệt, Đống Đa, Hà Nội, Việt Nam';
-        // Tính khoảng cách giữa hai địa điểm
-        dispatch(calculateDistance({ storeLocation, customerLocation }));
-      }
-    }
-  }, [watchProvince, watchDistrict, provinces, districts, setValue, dispatch]);
-
-  // Reset order state khi unmount component
-  useEffect(() => {
-    return () => {
-      if (orderSuccess) {
-        dispatch(resetOrder());
-      }
-    };
-  }, [dispatch, orderSuccess]);
 
   // Xử lý áp dụng mã giảm giá
   const handleApplyCoupon = async () => {
@@ -192,16 +136,12 @@ const CheckoutPage = () => {
 
   // Xử lý xóa mã giảm giá đã áp dụng
   const handleRemoveCoupon = () => {
-    try {
-      dispatch(removeCoupon());
-      setCouponCode('');
-      setCouponError('');
-      message.success('Đã xóa mã giảm giá');
-    } catch (error) {
-      console.error('Error removing coupon:', error);
-      message.error('Có lỗi xảy ra khi xóa mã giảm giá');
-    }
+    dispatch(removeCoupon());
+    setCouponCode('');
+    setCouponError('');
+    message.success('Đã bỏ áp dụng mã giảm giá');
   };
+
   // Xử lý khi submit form
   const onSubmit = (data) => {
     // Lưu thông tin giao hàng
@@ -218,7 +158,7 @@ const CheckoutPage = () => {
     dispatch(setPaymentMethod(data.paymentMethod));
     dispatch(updateOrderNote(data.note));
 
-    // 2. Chuẩn bị dữ liệu đơn hàng
+    // Chuẩn bị dữ liệu đơn hàng
     const newOrderData = {
       products: orderItems,
       shippingAddress: {
@@ -265,6 +205,99 @@ const CheckoutPage = () => {
     dispatch(createNewOrder(updatedOrderData));
   };
 
+  // Load danh sách tỉnh
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        const response = await getProvincesAPI();
+        setProvinces(response);
+        setIsProvinceLoaded(true);
+      } catch (error) {
+        console.error('Error loading provinces:', error);
+      }
+    };
+
+    fetchProvinces();
+  }, []);
+
+  // Khi chọn tỉnh → load huyện
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      try {
+        const response = await getDistrictsAPI(watchProvince);
+        setDistricts(response);
+        setIsDistrictLoaded(true);
+      } catch (error) {
+        console.error('Error loading district:', error);
+      }
+    };
+
+    if (watchProvince) {
+      fetchDistricts();
+    } else {
+      setDistricts([]);
+      setValue('district', '');
+      setWards([]);
+      setValue('ward', '');
+    }
+  }, [watchProvince, setValue]);
+
+  // Khi chọn quận => load phường/xã
+  useEffect(() => {
+    const fetchWards = async () => {
+      try {
+        const response = await getWardsAPI(watchDistrict);
+        setWards(response);
+        setIsWardLoaded(true);
+      } catch (error) {
+        console.error('Error loading ward:', error);
+      }
+    };
+    if (watchDistrict) {
+      fetchWards();
+
+      // Tính phí vận chuyển khi đã chọn quận/huyện
+      if (watchProvince && watchDistrict) {
+        const customerLocation = `${watchDistrict}, ${watchProvince}, Việt Nam`;
+        const storeLocation = '175 Tây Sơn, Trung Liệt, Đống Đa, Hà Nội, Việt Nam';
+        // Tính khoảng cách giữa hai địa điểm
+        dispatch(calculateDistance({ storeLocation, customerLocation }));
+      }
+    } else {
+      setWards([]);
+      setValue('ward', '');
+    }
+  }, [watchProvince, watchDistrict, setValue, dispatch]);
+
+  // ✅ Nếu có user, điền dữ liệu mặc định
+  useEffect(() => {
+    if (!user) return;
+    reset({
+      fullName: user?.lastName + ' ' + user?.firstName,
+      email: user?.email,
+      phoneNumber: user?.phone,
+      street: user?.address?.street
+    });
+    if (isProvinceLoaded) {
+      setValue('province', user?.address?.province || '');
+    }
+    if (isDistrictLoaded) {
+      setValue('district', user?.address?.district || '');
+    }
+    if (isWardLoaded) {
+      setValue('ward', user?.address?.ward || '');
+    }
+  }, [user, isProvinceLoaded, isDistrictLoaded, isWardLoaded, setValue, reset]);
+
+  // Reset order state khi unmount component
+  useEffect(() => {
+    return () => {
+      if (orderSuccess) {
+        dispatch(resetOrder());
+      }
+    };
+  }, [dispatch, orderSuccess]);
+
   // Effect để xử lý chuyển hướng thanh toán online
   useEffect(() => {
     if (paymentUrl) {
@@ -278,7 +311,7 @@ const CheckoutPage = () => {
     return <OrderSuccess />;
   }
 
-  if (isLoading) {
+  if (loading) {
     return <LoadingSpinner fullPage size='large' />;
   }
 
@@ -306,7 +339,7 @@ const CheckoutPage = () => {
           <div className='grid grid-cols-1 gap-6 lg:grid-cols-5'>
             {/* Thông tin đặt hàng - Left Column */}
             <div className='space-y-6 lg:col-span-3'>
-              {/* Shipping Information */}
+              {/* Shipping Information */}{' '}
               <ShippingForm
                 register={register}
                 errors={errors}
@@ -315,15 +348,15 @@ const CheckoutPage = () => {
                 wards={wards}
                 watchProvince={watchProvince}
                 watchDistrict={watchDistrict}
+                setValue={setValue}
               />
-
               {/* Payment Methods */}
               <PaymentMethod register={register} errors={errors} watch={watch} />
             </div>
 
             {/* Order Summary - Right Column */}
             <OrderSummary
-              isLoading={isLoading}
+              isLoading={loading}
               handleApplyCoupon={handleApplyCoupon}
               handleRemoveCoupon={handleRemoveCoupon}
               couponCode={couponCode}

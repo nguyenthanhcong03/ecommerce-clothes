@@ -36,8 +36,6 @@ const getAllProducts = async (req, res) => {
       try {
         // Lấy tất cả ID danh mục con
         const allCategoryIds = await categoryService.getAllChildCategoryIds(category);
-        console.log("category", category);
-        console.log("allCategoryIds", allCategoryIds);
         query.categoryId = { $in: allCategoryIds };
       } catch (error) {
         // Nếu có lỗi, chỉ sử dụng danh mục hiện tại

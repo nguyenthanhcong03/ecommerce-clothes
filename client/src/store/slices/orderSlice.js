@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { calculateShippingFee, getDistanceAPI } from '../../services/mapService';
-import { createOrderAPI } from '../../services/orderService';
+import { createOrderAPI } from '@/services/orderService';
 
 const initialState = {
   orderItems: [],

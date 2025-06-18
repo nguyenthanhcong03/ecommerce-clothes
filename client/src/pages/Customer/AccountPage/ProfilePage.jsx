@@ -276,8 +276,7 @@ const ProfilePage = () => {
       const { street, ward, district, province, ...otherData } = data;
       const userData = { ...otherData };
       if (province && (!street || !ward || !district)) {
-        // Nếu có tỉnh thành thì bắt buộc phải có ít nhất một trong các trường street, ward, district
-        // throw new Error('Vui lòng cung cấp ít nhất một trong các trường địa chỉ: đường, phường/xã, quận/huyện.');
+        // Nếu có tỉnh thành thì bắt buộc phải chọn đầy đủ địa chỉ
         if (!street) setError('street', { type: 'manual', message: 'Đường không được để trống.' });
         if (!ward) setError('ward', { type: 'manual', message: 'Phường/xã không được để trống.' });
         if (!district) setError('district', { type: 'manual', message: 'Quận/huyện không được để trống.' });
@@ -316,14 +315,7 @@ const ProfilePage = () => {
       // Xóa file avatar khỏi state sau khi đã upload thành công
       setAvatarFile(null);
       setAvatarChanged(false);
-      message.success('Thông tin cá nhân đã được cập nhật thành công!', {
-        render: 'Thông tin cá nhân đã được cập nhật thành công!',
-        type: 'success',
-        isLoading: false,
-        autoClose: 3000,
-        closeButton: true,
-        hideProgressBar: false
-      });
+      message.success('Thông tin cá nhân đã được cập nhật thành công!');
     } catch (error) {
       console.log('error', error);
       if (error?.errors) {
@@ -331,14 +323,6 @@ const ProfilePage = () => {
           setError(field, { type: 'server', message });
         });
       }
-      // message.update(toastId, {
-      //   render: `Cập nhật thất bại: ${error?.errors ? error.errors.map((err) => err.message).join(', ') : 'Đã xảy ra lỗi'}`,
-      //   type: 'error',
-      //   isLoading: false,
-      //   autoClose: 5000,
-      //   closeButton: true,
-      //   hideProgressBar: false
-      // });
     }
   };
 

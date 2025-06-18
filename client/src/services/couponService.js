@@ -39,9 +39,13 @@ export const getActiveCouponsAPI = async () => {
 
 export const validateCouponAPI = async (code, orderTotal = null) => {
   try {
-    const params = orderTotal !== null ? { orderTotal } : {};
-    const response = await axios.get(`${BASE_API}/validate/${code}`, { params });
-    console.log('tồn tại mã giảm giá', response.data);
+    console.log('orderTotal', orderTotal);
+    // const params = orderTotal !== null ? { orderTotal } : {};
+    const response = await axios.get(`${BASE_API}/validate/${code}`, {
+      params: {
+        orderTotal
+      }
+    });
 
     return response.data;
   } catch (error) {

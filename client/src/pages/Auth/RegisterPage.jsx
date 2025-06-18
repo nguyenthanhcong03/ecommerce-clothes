@@ -61,7 +61,7 @@ function RegisterPage() {
     formState: { errors, isSubmitting }
   } = useForm({
     resolver: yupResolver(registerSchema),
-    mode: 'onBlur',
+    mode: 'onChange',
     defaultValues: {
       firstName: '',
       lastName: '',

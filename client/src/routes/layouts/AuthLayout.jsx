@@ -3,6 +3,7 @@ import logo from '@/assets/images/outfitory-logo.png';
 import Footer from '@/components/layout/Footer/Footer';
 import bannerImage from '@/assets/images/banner-ecommerce.jpeg';
 import { useEffect } from 'react';
+import { sk } from 'date-fns/locale';
 
 const AuthHeader = () => {
   const location = useLocation();
@@ -116,28 +117,21 @@ const AuthLayout = () => {
   }, []);
 
   return (
-    <div className='flex min-h-screen flex-col' style={{ backgroundImage: `url(${bannerImage})` }}>
+    <div className='flex min-h-screen flex-col'>
       <AuthHeader />
 
-      <main className='flex-1 px-4 py-20'>
+      <main className='flex-1 px-4 py-20' style={{ backgroundImage: `url(${bannerImage})` }}>
         <div className='container mx-auto'>
           <div className='mx-auto flex max-w-[1200px] items-center justify-between gap-6'>
             {/* Logo and Slogan */}
             <div className='hidden w-1/2 flex-col items-center text-center text-white md:flex'>
-              <div className='relative'>
-                <div className='absolute inset-x-1 inset-y-10 rounded-2xl bg-white/30 blur'></div>
-                <img
-                  src={logo}
-                  alt='Logo'
-                  className='relative h-auto w-96 drop-shadow-2xl transition-transform duration-300 hover:scale-125'
-                />
+              <div className='group relative flex h-24 w-48 -skew-x-[27deg] transform items-center bg-white/70 shadow-lg transition-all duration-300 hover:h-60 hover:scale-150'>
+                <img src={logo} alt='Logo' className='relative h-auto w-96 skew-x-[27deg] drop-shadow-2xl' />
               </div>
-              <div className='space-y-6 backdrop-blur-sm'>
+              <div className='space-y-6'>
                 <h1 className='text-3xl font-bold tracking-wide text-white drop-shadow-lg lg:text-4xl'>
                   Chào mừng đến với
-                  <span className='mt-2 block bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent'>
-                    Outfitory
-                  </span>
+                  <span className='mt-2 block'>Outfitory</span>
                 </h1>
                 <p className='text-xl font-medium text-white/90 drop-shadow-md lg:text-2xl'>
                   Khám phá các sản phẩm và ưu đãi tuyệt vời

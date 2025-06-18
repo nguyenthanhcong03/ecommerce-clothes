@@ -225,7 +225,7 @@ export function FilterSidebar({ isFilterOpen, setIsFilterOpen, onFilterChange, o
             </button>
           </div>
         )}
-      </div>{' '}
+      </div>
       {/* Colors */}
       <div className='mb-6'>
         <div className='flex items-center justify-between'>
@@ -248,8 +248,6 @@ export function FilterSidebar({ isFilterOpen, setIsFilterOpen, onFilterChange, o
                   colors.includes(color.name) ? 'scale-125 border-[#333] ring-2 ring-primaryColor' : 'border-gray-200'
                 }`}
                 style={{ backgroundColor: color.hex }}
-                aria-label={color.name}
-                aria-pressed={colors.includes(color.name)}
               />
               <div className='pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 -translate-y-1 transform rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100'>
                 {color.name}

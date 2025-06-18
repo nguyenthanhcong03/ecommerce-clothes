@@ -2,11 +2,56 @@ import Input from '@/components/common/Input/Input';
 import Select from '@/components/common/Select/Select';
 import PropTypes from 'prop-types';
 import { memo } from 'react';
+import { useSelector } from 'react-redux';
 
-const ShippingForm = ({ register, errors, provinces, districts, wards, watchProvince, watchDistrict }) => {
+const ShippingForm = ({ register, errors, provinces, districts, wards, watchProvince, watchDistrict, setValue }) => {
+  const { user } = useSelector((state) => state.account);
+
+  const fillUserInfo = () => {
+    if (user) {
+      // Điền thông tin cá nhân
+      if (user.firstName && user.lastName) {
+        setValue('fullName', `${user.lastName} ${user.firstName}`);
+      }
+      if (user.email) {
+        setValue('email', user.email);
+      }
+      if (user.phone) {
+        setValue('phoneNumber', user.phone);
+      }
+
+      // Điền thông tin địa chỉ
+      if (user.address) {
+        if (user.address.street) {
+          setValue('street', user.address.street);
+        }
+        if (user.address.province) {
+          setValue('province', user.address.province);
+        }
+        if (user.address.district) {
+          setValue('district', user.address.district);
+        }
+        if (user.address.ward) {
+          setValue('ward', user.address.ward);
+        }
+      }
+    }
+  };
+
   return (
     <div className='rounded-sm bg-white p-6'>
-      <h2 className='mb-6 text-xl font-bold'>Thông tin giao hàng</h2>
+      <div className='mb-6 flex items-center justify-between'>
+        <h2 className='text-xl font-bold'>Thông tin giao hàng</h2>
+        {user && (
+          <button
+            type='button'
+            onClick={fillUserInfo}
+            className='rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-100'
+          >
+            Dùng thông tin cá nhân
+          </button>
+        )}
+      </div>
 
       <div className='space-y-6'>
         <div>
@@ -115,7 +160,8 @@ ShippingForm.propTypes = {
   districts: PropTypes.array.isRequired,
   wards: PropTypes.array.isRequired,
   watchProvince: PropTypes.string,
-  watchDistrict: PropTypes.string
+  watchDistrict: PropTypes.string,
+  setValue: PropTypes.func.isRequired
 };
 
 export default ShippingForm;
