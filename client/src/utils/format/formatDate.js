@@ -1,4 +1,4 @@
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 /**
  * Định dạng ngày tháng theo định dạng mong muốn
@@ -11,7 +11,7 @@ export const formatDate = (date, format = 'DD/MM/YYYY') => {
   if (!date) return '';
 
   try {
-    return moment(date).format(format);
+    return dayjs(date).format(format);
   } catch (error) {
     console.error('Error formatting date:', error);
     return '';
@@ -38,7 +38,7 @@ export const formatDateFromNow = (date) => {
   if (!date) return '';
 
   try {
-    return moment(date).fromNow();
+    return dayjs(date).fromNow();
   } catch (error) {
     console.error('Error formatting relative date:', error);
     return '';
@@ -55,7 +55,7 @@ export const isDatePast = (date) => {
   if (!date) return false;
 
   try {
-    return moment(date).isBefore(moment());
+    return dayjs(date).isBefore(dayjs());
   } catch (error) {
     console.error('Error checking if date is past:', error);
     return false;
@@ -73,8 +73,8 @@ export const compareDates = (date1, date2) => {
   if (!date1 || !date2) return 0;
 
   try {
-    const d1 = moment(date1);
-    const d2 = moment(date2);
+    const d1 = dayjs(date1);
+    const d2 = dayjs(date2);
 
     if (d1.isAfter(d2)) return 1;
     if (d1.isBefore(d2)) return -1;

@@ -12,11 +12,11 @@ import { addToCart } from '@/store/slices/cartSlice';
 import { setOrderItems } from '@/store/slices/orderSlice';
 import { fetchProductById } from '@/store/slices/productSlice';
 import { getCategoryPath } from '@/utils/helpers/getCategoryPath';
+import { message } from 'antd';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
 
 const getImageUrl = (image) => {
   return typeof image === 'string' ? image : image?.url || '';
@@ -84,7 +84,7 @@ const DetailProduct = () => {
 
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
-      toast.error('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
+      message.error('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
       navigate('/login', { state: { from: `/product/${id}` } });
       return;
     }
@@ -111,9 +111,9 @@ const DetailProduct = () => {
         }
       };
       await dispatch(addToCart(cartItem)).unwrap();
-      toast.success('Thêm sản phẩm vào giỏ hàng thành công');
+      message.success('Thêm sản phẩm vào giỏ hàng thành công');
     } catch (error) {
-      toast.error('Thêm sản phẩm vào giỏ hàng thất bại');
+      message.error('Thêm sản phẩm vào giỏ hàng thất bại');
       console.log(error);
     }
     setShowValidation(false);
@@ -122,7 +122,7 @@ const DetailProduct = () => {
   // Hàm xử lý sự kiện khi nhấn nút "Mua ngay"
   const handleBuyNow = () => {
     if (!isAuthenticated) {
-      toast.error('Bạn cần đăng nhập để mua sản phẩm');
+      message.error('Bạn cần đăng nhập để mua sản phẩm');
       navigate('/login', { state: { from: `/product/${id}` } });
       return;
     }

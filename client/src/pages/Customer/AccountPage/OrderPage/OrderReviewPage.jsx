@@ -4,7 +4,6 @@ import { AlertCircle, ArrowLeft, Loader2, Send, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
 
 const StarRating = ({ rating, setRating, readOnly = false }) => {
   return (

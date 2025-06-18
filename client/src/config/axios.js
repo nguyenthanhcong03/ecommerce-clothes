@@ -1,7 +1,7 @@
+import { message } from 'antd';
 import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL;
 import Cookies from 'js-cookie';
-import { toast } from 'react-toastify';
 
 let hasShownSessionExpiredMessage = false;
 let isRefreshing = false;
@@ -80,7 +80,7 @@ const handleSessionExpired = () => {
   if (!hasShownSessionExpiredMessage) {
     hasShownSessionExpiredMessage = true;
 
-    toast.error('Phiên đăng nhập của bạn đã hết hạn, vui lòng đăng nhập lại.', {
+    message.error('Phiên đăng nhập của bạn đã hết hạn, vui lòng đăng nhập lại.', {
       position: 'top-right',
       autoClose: 3000,
       toastId: 'session-expired',

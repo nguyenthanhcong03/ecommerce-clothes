@@ -3,8 +3,6 @@ import { ConfigProvider } from 'antd';
 import viVN from 'antd/locale/vi_VN';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import AppRouter from './AppRouter';
 import './i18n';
 import './index.scss';
@@ -94,7 +92,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         }
       }}
     >
-      <ToastContainer
+      {/* <ToastContainer
         position='bottom-right'
         autoClose={3000}
         hideProgressBar={false}
@@ -104,7 +102,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         pauseOnFocusLoss
         draggable
         pauseOnHover
-      />
+      /> */}
       <AppRouter />
     </ConfigProvider>
   </Provider>

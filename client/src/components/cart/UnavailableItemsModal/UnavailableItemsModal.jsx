@@ -1,8 +1,6 @@
-import React from 'react';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { Button, Col, List, Modal, Row, Space, Tag, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { Button, Modal, List, Typography, Space, Tag, Row, Col } from 'antd';
-import { ExclamationCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('vi-VN', {

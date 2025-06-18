@@ -1,12 +1,11 @@
 import { removeMultipleCartItems } from '@/store/slices/cartSlice';
 import { setOrderItems } from '@/store/slices/orderSlice';
+import { message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import CartItem from './CartItem';
 import CartSummary from './CartSummary';
-import PaymentMethods from './PaymentMethods';
 
 const CartTable = () => {
   const navigate = useNavigate();
@@ -74,13 +73,13 @@ const CartTable = () => {
   const handleRemoveMultipleItems = (itemIds) => {
     dispatch(removeMultipleCartItems(itemIds))
       .unwrap()
-      .then(() => toast.success('Xóa sản phẩm thành công'))
-      .catch((err) => toast.error('Xóa sản phẩm thất bại: ' + err));
+      .then(() => message.success('Xóa sản phẩm thành công'))
+      .catch((err) => message.error('Xóa sản phẩm thất bại: ' + err));
   };
 
   const handleProceedToCheckout = () => {
     if (selectedItems.length === 0) {
-      toast.warning('Vui lòng chọn ít nhất một sản phẩm để thanh toán');
+      message.warning('Vui lòng chọn ít nhất một sản phẩm để thanh toán');
       return;
     }
 
@@ -89,7 +88,7 @@ const CartTable = () => {
 
     // Kiểm tra nếu không có sản phẩm khả dụng nào được chọn
     if (selectedProducts.length === 0) {
-      toast.error('Không thể thanh toán vì tất cả sản phẩm đã chọn đều không khả dụng');
+      message.error('Không thể thanh toán vì tất cả sản phẩm đã chọn đều không khả dụng');
       return;
     }
 

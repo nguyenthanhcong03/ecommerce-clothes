@@ -1,17 +1,16 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { toast } from 'react-toastify';
 import {
-  addToCartService,
-  getCartService,
-  removeCartItemService,
-  updateCartItemService
+  addToCartAPI,
+  getCartAPI,
+  removeCartItemAPI,
+  removeMultipleCartItemsAPI,
+  updateCartItemAPI
 } from '@/services/cartService.js';
-import { removeMultipleCartItemsService } from '../../services/cartService';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 // Định nghĩa async thunk để gọi API
 export const getCart = createAsyncThunk('cart/getCart', async (_, { rejectWithValue }) => {
   try {
-    const response = await getCartService();
+    const response = await getCartAPI();
     return response;
   } catch (error) {
     return rejectWithValue(error.response?.data || 'Failed to fetch cart');
@@ -20,8 +19,7 @@ export const getCart = createAsyncThunk('cart/getCart', async (_, { rejectWithVa
 
 export const addToCart = createAsyncThunk('cart/addToCart', async (cartItem, { rejectWithValue }) => {
   try {
-    const response = await addToCartService(cartItem);
-    console.log('response', response);
+    const response = await addToCartAPI(cartItem);
     return response;
   } catch (error) {
     return rejectWithValue(error.response?.data || 'Failed to add to cart');
@@ -31,10 +29,8 @@ export const addToCart = createAsyncThunk('cart/addToCart', async (cartItem, { r
 export const updateCartItem = createAsyncThunk(
   'cart/updateCartItem',
   async ({ itemId, quantity }, { rejectWithValue }) => {
-    console.log('itemId', itemId);
-    console.log('quantity', quantity);
     try {
-      const response = await updateCartItemService(itemId, quantity);
+      const response = await updateCartItemAPI(itemId, quantity);
       return response;
     } catch (error) {
       console.log('cartSlice.js error', error);
@@ -45,7 +41,7 @@ export const updateCartItem = createAsyncThunk(
 
 export const removeCartItem = createAsyncThunk('cart/removeCartItem', async (itemId, { rejectWithValue }) => {
   try {
-    const response = await removeCartItemService(itemId);
+    const response = await removeCartItemAPI(itemId);
     return response;
   } catch (error) {
     return rejectWithValue(error.response?.data || 'Failed to remove item');
@@ -56,7 +52,7 @@ export const removeMultipleCartItems = createAsyncThunk(
   'cart/removeMultipleCartItems',
   async (itemIds, { rejectWithValue }) => {
     try {
-      const response = await removeMultipleCartItemsService(itemIds);
+      const response = await removeMultipleCartItemsAPI(itemIds);
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to remove item');

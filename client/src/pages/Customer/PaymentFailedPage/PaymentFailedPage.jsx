@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { XCircle, AlertTriangle, RotateCcw, Home, ClipboardList } from 'lucide-react';
-import { toast } from 'react-toastify';
 import Button from '@/components/common/Button';
 import { createVnpayPayment } from '@/services/paymentService';
+import { message } from 'antd';
+import { AlertTriangle, ClipboardList, Home, RotateCcw, XCircle } from 'lucide-react';
+import { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const PaymentFailedPage = () => {
   const [searchParams] = useSearchParams();
@@ -22,14 +22,14 @@ const PaymentFailedPage = () => {
       }
     } catch (error) {
       console.error('Lỗi khi tạo liên kết thanh toán:', error);
-      toast.error('Không thể tạo liên kết thanh toán. Vui lòng thử lại sau.');
+      message.error('Không thể tạo liên kết thanh toán. Vui lòng thử lại sau.');
     }
   };
 
   useEffect(() => {
     // Đơn hàng chưa được tạo nên không cần cancel
     // Chỉ xóa thông tin tạm thời đã được xử lý ở backend
-    toast.error('Thanh toán thất bại! Vui lòng thử lại.');
+    message.error('Thanh toán thất bại! Vui lòng thử lại.');
   }, []);
 
   const getPaymentMethodText = (method) => {

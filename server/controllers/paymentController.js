@@ -1,4 +1,3 @@
-const { vnpayConfig } = require("../config/payment");
 const Order = require("../models/order");
 const {
   createMomoPaymentUrl,
@@ -6,7 +5,6 @@ const {
   createVnpayPaymentUrl,
   verifyVnpayReturn,
 } = require("../services/paymentService");
-const moment = require("moment");
 
 function sortObject(obj) {
   let sorted = {};

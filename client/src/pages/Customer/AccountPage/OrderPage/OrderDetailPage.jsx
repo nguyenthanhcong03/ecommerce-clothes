@@ -1,32 +1,17 @@
-import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { fetchOrderDetail, resetOrderDetail, cancelOrder } from '@/store/slices/userOrderSlice';
-import {
-  ArrowLeft,
-  Package,
-  TruckIcon,
-  Loader2,
-  MapPin,
-  Phone,
-  User,
-  Clock,
-  Calendar,
-  FileEdit,
-  CreditCard,
-  AlertCircle,
-  Timer
-} from 'lucide-react';
-import { useState } from 'react';
-import { formatCurrency } from '@/utils/format/formatCurrency';
-import { formatDate } from '@/utils/format/formatDate';
-import { toast } from 'react-toastify';
-import Modal from '@/components/common/Modal/Modal2';
 import Button from '@/components/common/Button';
+import Modal from '@/components/common/Modal/Modal2';
 import CountdownTimer from '@/pages/customer/AccountPage/OrderPage/components/CountdownTimer';
-import { createVnpayPayment } from '@/services/paymentService';
 import OrderStatusBadge from '@/pages/customer/AccountPage/OrderPage/components/OrderStatusBadge';
 import OrderTimeline from '@/pages/customer/AccountPage/OrderPage/components/OrderTimeline';
+import { createVnpayPayment } from '@/services/paymentService';
+import { cancelOrder, fetchOrderDetail, resetOrderDetail } from '@/store/slices/userOrderSlice';
+import { formatCurrency } from '@/utils/format/formatCurrency';
+import { formatDate } from '@/utils/format/formatDate';
+import { message } from 'antd';
+import { ArrowLeft, Calendar, CreditCard, FileEdit, Loader2, MapPin, Package, Phone, Timer, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 // Component hiển thị chi tiết đơn hàng
 const OrderDetailPage = () => {
@@ -47,13 +32,13 @@ const OrderDetailPage = () => {
       }
     } catch (error) {
       console.error('Lỗi khi tạo liên kết thanh toán:', error);
-      toast.error('Không thể tạo liên kết thanh toán. Vui lòng thử lại sau.');
+      message.error('Không thể tạo liên kết thanh toán. Vui lòng thử lại sau.');
     }
   };
 
   // Xử lý khi đơn hàng hết hạn thanh toán
   const handleOrderExpired = () => {
-    toast.warning('Đơn hàng đã hết thời gian thanh toán và sẽ bị hủy tự động.');
+    message.warning('Đơn hàng đã hết thời gian thanh toán và sẽ bị hủy tự động.');
   };
 
   // Lấy thông tin chi tiết đơn hàng khi component mount
@@ -69,7 +54,7 @@ const OrderDetailPage = () => {
   // Xử lý hủy đơn hàng
   const handleCancelOrder = () => {
     if (!cancelReason.trim()) {
-      toast.error('Vui lòng nhập lý do hủy đơn hàng');
+      message.error('Vui lòng nhập lý do hủy đơn hàng');
       return;
     }
 

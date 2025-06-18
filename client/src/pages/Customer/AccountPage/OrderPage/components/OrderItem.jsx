@@ -5,10 +5,10 @@ import OrderStatusBadge from '@/pages/customer/AccountPage/OrderPage/components/
 import { createVnpayPayment } from '@/services/paymentService';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import formatDate from '@/utils/format/formatDate';
+import { message } from 'antd';
 import { ChevronRight, FileEdit, Package } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
 
 const OrderItem = ({ order, onCancel }) => {
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -23,13 +23,13 @@ const OrderItem = ({ order, onCancel }) => {
       }
     } catch (error) {
       console.error('Lỗi khi tạo liên kết thanh toán:', error);
-      toast.error('Không thể tạo liên kết thanh toán. Vui lòng thử lại sau.');
+      message.error('Không thể tạo liên kết thanh toán. Vui lòng thử lại sau.');
     }
   };
 
   const handleCancelOrder = () => {
     if (!cancelReason.trim()) {
-      toast.error('Vui lòng nhập lý do hủy đơn hàng');
+      message.error('Vui lòng nhập lý do hủy đơn hàng');
       return;
     }
 
@@ -38,7 +38,7 @@ const OrderItem = ({ order, onCancel }) => {
   };
 
   const handleOrderExpired = () => {
-    toast.warning('Đơn hàng đã hết thời gian thanh toán và sẽ bị hủy tự động.');
+    message.warning('Đơn hàng đã hết thời gian thanh toán và sẽ bị hủy tự động.');
   };
 
   const canBeCancelled = ['Pending', 'Processing'].includes(order.status);
@@ -46,7 +46,6 @@ const OrderItem = ({ order, onCancel }) => {
 
   return (
     <div className='mb-4 overflow-hidden rounded-sm border border-gray-200 bg-white shadow-sm'>
-      {' '}
       {/* Header */}
       <div className='flex items-center justify-between border-b border-gray-100 p-4'>
         <div className='flex items-center'>
@@ -55,7 +54,7 @@ const OrderItem = ({ order, onCancel }) => {
           <OrderStatusBadge status={order?.status} />
           {order?.status === 'Unpaid' && (
             <div className='ml-3'>
-              <CountdownTimer createdAt={order?.createdAt} onExpired={handleOrderExpired} />
+              <CountdownTimer createdAt={order?.createdAt} durationMs={86400000} onExpired={handleOrderExpired} />
             </div>
           )}
         </div>
@@ -105,7 +104,7 @@ const OrderItem = ({ order, onCancel }) => {
               <Button size='sm' variant='danger' onClick={() => setShowCancelModal(true)}>
                 Hủy đơn hàng
               </Button>
-            )}{' '}
+            )}
             {canBeReviewed && (
               <Link to={`/user/order/review/${order._id}`}>
                 <Button size='sm' leftIcon={<FileEdit className='h-4 w-4' />}>

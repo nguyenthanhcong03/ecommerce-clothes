@@ -3,12 +3,12 @@ import Input from '@/components/common/Input';
 import { loginUser } from '@/store/slices/accountSlice';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { message } from 'antd';
 import { Eye, EyeOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import * as yup from 'yup';
 
 const loginSchema = yup.object().shape({
@@ -46,7 +46,7 @@ function LoginPage() {
       await dispatch(loginUser({ username, password, rememberMe }))
         .unwrap()
         .then((result) => {
-          toast.success('Đăng nhập thành công!');
+          message.success('Đăng nhập thành công!');
 
           // Lấy thông tin user từ kết quả đăng nhập
           const userRole = result.user?.role || result.role;
@@ -65,11 +65,11 @@ function LoginPage() {
           navigate(redirectPath, { replace: true });
         })
         .catch((err) => {
-          toast.error(err);
+          message.error(err);
           console.error('Lỗi đăng nhập:', err);
         });
     } catch (error) {
-      toast.error('Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin đăng nhập.');
+      message.error('Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin đăng nhập.');
       console.error('Lỗi đăng nhập:', error);
     }
   };

@@ -7,11 +7,11 @@ import { getDistrictsAPI, getProvincesAPI, getWardsAPI } from '@/services/mapSer
 import { fetchUserById, updateUser } from '@/store/slices/userSlice';
 import { CalendarOutlined, MailOutlined, PhoneOutlined, UserOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { message } from 'antd';
 import { FileUser, UserRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
 import * as yup from 'yup';
 
 // Schema xác thực cho form cập nhật thông tin cá nhân
@@ -236,14 +236,14 @@ const ProfilePage = () => {
       // Kiểm tra kích thước file (tối đa 1MB)
       const maxSize = 1024 * 1024; // 1MB
       if (file.size > maxSize) {
-        toast.error('Kích thước ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 1MB');
+        message.error('Kích thước ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 1MB');
         return;
       }
 
       // Kiểm tra loại file
       const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
       if (!validTypes.includes(file.type)) {
-        toast.error('Chỉ chấp nhận định dạng JPG, PNG hoặc GIF');
+        message.error('Chỉ chấp nhận định dạng JPG, PNG hoặc GIF');
         return;
       }
 
@@ -257,7 +257,7 @@ const ProfilePage = () => {
       // Đánh dấu avatar đã thay đổi
       setAvatarChanged(true);
 
-      toast.info('Đã chọn ảnh đại diện mới. Nhấn "Lưu thông tin" để cập nhật.', {
+      message.info('Đã chọn ảnh đại diện mới. Nhấn "Lưu thông tin" để cập nhật.', {
         autoClose: 3000,
         position: 'top-right'
       });
@@ -267,7 +267,7 @@ const ProfilePage = () => {
   const onSubmit = async (data) => {
     console.log('dataSubmit', data);
     if (!user || !user._id) {
-      toast.error('Không tìm thấy thông tin người dùng');
+      message.error('Không tìm thấy thông tin người dùng');
       return;
     } // Reset form errors before submission
     clearErrors(['username', 'email', 'phone']);
@@ -305,7 +305,7 @@ const ProfilePage = () => {
           }
         } catch (uploadError) {
           console.error('Lỗi khi upload avatar:', uploadError);
-          toast.error('Không thể tải lên ảnh đại diện. Vui lòng thử lại.');
+          message.error('Không thể tải lên ảnh đại diện. Vui lòng thử lại.');
         }
       }
 
@@ -316,7 +316,7 @@ const ProfilePage = () => {
       // Xóa file avatar khỏi state sau khi đã upload thành công
       setAvatarFile(null);
       setAvatarChanged(false);
-      toast.success('Thông tin cá nhân đã được cập nhật thành công!', {
+      message.success('Thông tin cá nhân đã được cập nhật thành công!', {
         render: 'Thông tin cá nhân đã được cập nhật thành công!',
         type: 'success',
         isLoading: false,
@@ -331,7 +331,7 @@ const ProfilePage = () => {
           setError(field, { type: 'server', message });
         });
       }
-      // toast.update(toastId, {
+      // message.update(toastId, {
       //   render: `Cập nhật thất bại: ${error?.errors ? error.errors.map((err) => err.message).join(', ') : 'Đã xảy ra lỗi'}`,
       //   type: 'error',
       //   isLoading: false,
@@ -682,7 +682,7 @@ const ProfilePage = () => {
                     setAvatarPreview(currentUser.avatar || null);
                     setAvatarChanged(false);
 
-                    toast.info('Đã khôi phục thông tin ban đầu', {
+                    message.info('Đã khôi phục thông tin ban đầu', {
                       autoClose: 2000,
                       position: 'top-right'
                     });

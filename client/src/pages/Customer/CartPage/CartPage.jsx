@@ -1,14 +1,13 @@
 import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import Headline from '@/components/common/Headline/Headline';
+import PaymentMethods from '@/pages/customer/CartPage/components/PaymentMethods';
 import { getCart, removeMultipleCartItems } from '@/store/slices/cartSlice';
-import { Skeleton } from 'antd';
+import { message, Skeleton } from 'antd';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import CartTable from './components/CartTable';
 import EmptyCart from './components/EmptyCart';
-import PaymentMethods from '@/pages/customer/CartPage/components/PaymentMethods';
 
 // Cart skeleton loading component
 const CartSkeleton = () => (
@@ -75,7 +74,7 @@ function CartPage() {
         // }
       })
       .catch((error) => {
-        toast.error('Không thể tải giỏ hàng: ' + error);
+        message.error('Không thể tải giỏ hàng: ' + error);
       });
   }, [dispatch]);
 
@@ -88,18 +87,18 @@ function CartPage() {
     dispatch(removeMultipleCartItems(itemIds))
       .unwrap()
       .then(() => {
-        toast.success('Đã xóa các sản phẩm không khả dụng khỏi giỏ hàng');
+        message.success('Đã xóa các sản phẩm không khả dụng khỏi giỏ hàng');
         setShowUnavailableModal(false);
       })
       .catch((error) => {
-        toast.error('Không thể xóa sản phẩm: ' + error);
+        message.error('Không thể xóa sản phẩm: ' + error);
       });
   };
 
   // Xử lý khi người dùng chọn giữ lại các sản phẩm không khả dụng
   const handleKeepUnavailableItems = () => {
     setShowUnavailableModal(false);
-    toast.info('Bạn vẫn giữ các sản phẩm không khả dụng trong giỏ hàng');
+    message.info('Bạn vẫn giữ các sản phẩm không khả dụng trong giỏ hàng');
   };
   return (
     <div className='px-5 pt-[60px] lg:pt-[80px]'>

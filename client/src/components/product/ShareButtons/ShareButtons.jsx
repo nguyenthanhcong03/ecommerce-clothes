@@ -1,10 +1,8 @@
 import facebookIcon from '@/assets/icons/facebook.png';
 import instagramIcon from '@/assets/icons/instagram.png';
 import messengerIcon from '@/assets/icons/messenger.png';
-import { set } from 'date-fns';
 import { Copy, CopyCheck } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'react-toastify';
 
 const ShareButtons = ({ product }) => {
   const [isCopied, setIsCopied] = useState(false);

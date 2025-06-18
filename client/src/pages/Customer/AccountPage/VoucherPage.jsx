@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchActiveCoupons } from '@/store/slices/couponSlice';
-import { toast } from 'react-toastify';
 import { format, differenceInDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import {
@@ -14,6 +13,7 @@ import {
   ExclamationCircleOutlined
 } from '@ant-design/icons';
 import { Ticket } from 'lucide-react';
+import { message } from 'antd';
 
 const VoucherPage = () => {
   const dispatch = useDispatch();
@@ -26,7 +26,7 @@ const VoucherPage = () => {
 
   useEffect(() => {
     if (error) {
-      toast.error(error);
+      message.error(error);
     }
   }, [error]);
 
@@ -34,11 +34,11 @@ const VoucherPage = () => {
     navigator.clipboard.writeText(code).then(
       () => {
         setCopiedCode(code);
-        toast.success('Đã sao chép mã giảm giá');
+        message.success('Đã sao chép mã giảm giá');
         setTimeout(() => setCopiedCode(null), 3000);
       },
       () => {
-        toast.error('Không thể sao chép mã giảm giá');
+        message.error('Không thể sao chép mã giảm giá');
       }
     );
   };
@@ -254,9 +254,8 @@ const VoucherPage = () => {
             Hiện tại không có mã giảm giá nào đang hoạt động. Vui lòng quay lại sau để cập nhật các ưu đãi mới.
           </p>
           <div className='mt-6'>
-            {' '}
             <button
-              onClick={() => dispatch(fetchActiveCouponsAPI())}
+              onClick={() => dispatch(fetchActiveCoupons())}
               className='flex items-center justify-center gap-2 rounded-md bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-200'
               aria-label='Kiểm tra lại các mã giảm giá đang hoạt động'
             >

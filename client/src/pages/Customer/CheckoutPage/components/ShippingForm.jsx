@@ -40,14 +40,6 @@ const ShippingForm = ({ register, errors, provinces, districts, wards, watchProv
             required={true}
             error={errors.phoneNumber?.message}
           />
-          <input
-            type='tel'
-            {...register('phoneNumber')}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 ${
-              errors.phoneNumber ? 'border-red-500' : ''
-            }`}
-          />
-          {errors.phoneNumber && <p className='mt-1 text-sm text-red-600'>{errors.phoneNumber.message}</p>}
         </div>
 
         <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>

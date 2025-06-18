@@ -1,11 +1,11 @@
-import React, { useCallback } from 'react';
-import { X } from 'lucide-react';
-import { removeCartItem, updateCartItem } from '@/store/slices/cartSlice';
-import { useDispatch, useSelector } from 'react-redux';
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
-import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { removeCartItem, updateCartItem } from '@/store/slices/cartSlice';
 import { toggleSidebar } from '@/store/slices/sidebarSlice';
+import { message } from 'antd';
+import { X } from 'lucide-react';
+import { useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 function CartItem({ item }) {
   const { loadingUpdate, itemUpdate } = useSelector((state) => state.cart);
@@ -22,15 +22,15 @@ function CartItem({ item }) {
   const handleQuantityChange = useCallback(
     (newQuantity) => {
       if (!isAvailable) {
-        toast.error('Sản phẩm này hiện không khả dụng');
+        message.error('Sản phẩm này hiện không khả dụng');
         return;
       }
 
       if (newQuantity !== item?.quantity) {
         dispatch(updateCartItem({ itemId: item?._id, quantity: newQuantity }))
           .unwrap()
-          // .then(() => toast.success('Cập nhật số lượng thành công'))
-          .catch((err) => toast.error('Cập nhật số lượng thất bại: ' + err));
+          // .then(() => message.success('Cập nhật số lượng thành công'))
+          .catch((err) => message.error('Cập nhật số lượng thất bại: ' + err));
       }
     },
     [item, dispatch, isAvailable]
@@ -39,8 +39,8 @@ function CartItem({ item }) {
   const handleRemoveItem = (itemId) => {
     dispatch(removeCartItem(itemId))
       .unwrap()
-      .then(() => toast.success('Xóa sản phẩm thành công'))
-      .catch((err) => toast.error('Xóa sản phẩm thất bại: ' + err));
+      .then(() => message.success('Xóa sản phẩm thành công'))
+      .catch((err) => message.error('Xóa sản phẩm thất bại: ' + err));
   };
   return (
     <div

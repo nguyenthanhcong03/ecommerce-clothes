@@ -1,5 +1,5 @@
 import { Timer } from 'lucide-react';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, memo } from 'react';
 
 const CountdownTimer = ({ createdAt, durationMs = 60 * 60 * 1000, onExpired }) => {
   const [timeLeft, setTimeLeft] = useState(null);

@@ -5,13 +5,13 @@ import ShareButtons from '@/components/product/ShareButtons/ShareButtons';
 import SizeSelector from '@/components/product/SizeSelector/SizeSelector';
 import useProductVariants from '@/hooks/useProductVariants';
 import { addToCart } from '@/store/slices/cartSlice';
+import { setOrderItems } from '@/store/slices/orderSlice';
 import { closeProductDetailModal, fetchProductById } from '@/store/slices/productSlice';
+import { message } from 'antd';
 import { Heart, ShoppingCart, Star, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { setOrderItems } from '../../../store/slices/orderSlice';
 
 const ProductDetailModal = () => {
   const dispatch = useDispatch();
@@ -59,7 +59,7 @@ const ProductDetailModal = () => {
       setCurrentImageIndex(0);
       setShowValidation(false);
     }
-  }, [isDetailModalOpen]);
+  }, [isDetailModalOpen, setQuantity, setCurrentImageIndex, setShowValidation]);
 
   const handleCloseModal = () => {
     dispatch(closeProductDetailModal());
@@ -67,7 +67,7 @@ const ProductDetailModal = () => {
 
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
-      toast.error('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
+      message.error('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
       handleCloseModal();
       navigate('/login');
       return;
@@ -95,9 +95,9 @@ const ProductDetailModal = () => {
         }
       };
       await dispatch(addToCart(cartItem)).unwrap();
-      toast.success('Thêm sản phẩm vào giỏ hàng thành công');
+      message.success('Thêm sản phẩm vào giỏ hàng thành công');
     } catch (error) {
-      toast.error('Thêm sản phẩm vào giỏ hàng thất bại');
+      message.error('Thêm sản phẩm vào giỏ hàng thất bại');
       console.log(error);
     }
     setShowValidation(false);
@@ -106,7 +106,7 @@ const ProductDetailModal = () => {
 
   const handleProceedToCheckout = () => {
     if (!isAuthenticated) {
-      toast.error('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
+      message.error('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
       handleCloseModal();
       navigate('/login');
       return;
@@ -128,8 +128,7 @@ const ProductDetailModal = () => {
           originalPrice: selectedVariant.originalPrice,
           color: selectedVariant.color,
           size: selectedVariant.size,
-          image:
-            selectedVariant.images && selectedVariant.images.length > 0 ? selectedVariant.images[0] : product.images[0]
+          image: product.images[0]
         }
       }
     ];
@@ -316,7 +315,7 @@ const ProductDetailModal = () => {
 
               {/* Size và color */}
               <div
-                className={`flex flex-col gap-4 py-2 ${showValidation && (!selectedSize || !selectedColor) ? 'rounded bg-red-50 p-2' : ''}`}
+                className={`flex flex-col gap-4 p-3 ${showValidation && (!selectedSize || !selectedColor) ? 'rounded bg-red-50' : ''}`}
               >
                 <div>
                   <h3 className='text-sm font-medium'>Size</h3>

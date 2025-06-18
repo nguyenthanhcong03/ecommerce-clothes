@@ -1,6 +1,6 @@
 const crypto = require("crypto");
 const querystring = require("qs");
-const moment = require("moment");
+const dayjs = require("dayjs");
 const axios = require("axios");
 const { vnpayConfig, momoConfig } = require("../config/payment");
 
@@ -12,7 +12,7 @@ const { vnpayConfig, momoConfig } = require("../config/payment");
 const createVnpayPaymentUrl = (order) => {
   try {
     const date = new Date();
-    const createDate = moment(date).format("YYYYMMDDHHmmss");
+    const createDate = dayjs(date).format("YYYYMMDDHHmmss");
     const orderId = order.orderId || `ORDER-${Date.now()}`;
     const amount = parseInt(order.amount) * 100; // VNPay yêu cầu amount * 100
     const orderDescription = order.orderInfo || `Thanh toan don hang ${orderId}`;

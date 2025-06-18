@@ -26,12 +26,6 @@ const OrderPage = () => {
     []
   );
 
-  // Load đơn hàng khi component mount hoặc khi tab thay đổi
-  useEffect(() => {
-    const selectedTab = tabs.find((tab) => tab.id === activeTab);
-    dispatch(fetchUserOrders({ status: selectedTab?.status || '' }));
-  }, [dispatch, activeTab, tabs]);
-
   // Xử lý thay đổi tab
   const handleTabChange = (tabId) => {
     dispatch(setActiveTab(tabId));
@@ -58,6 +52,12 @@ const OrderPage = () => {
   const handleSearch = (e) => {
     e.preventDefault();
   };
+
+  // Load đơn hàng khi component mount hoặc khi tab thay đổi
+  useEffect(() => {
+    const selectedTab = tabs.find((tab) => tab.id === activeTab);
+    dispatch(fetchUserOrders({ status: selectedTab?.status || '' }));
+  }, [dispatch, activeTab, tabs]);
 
   return (
     <div className='container mx-auto p-4'>

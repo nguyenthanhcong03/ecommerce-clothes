@@ -1,6 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getUserOrdersAPI, getOrderByIdAPI, cancelOrderAPI } from '@/services/orderService';
-import { toast } from 'react-toastify';
+import { cancelOrderAPI, getOrderByIdAPI, getUserOrdersAPI } from '@/services/orderService';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   orders: [],
@@ -78,7 +77,6 @@ const userOrderSlice = createSlice({
       .addCase(fetchUserOrders.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        toast.error(action.payload || 'Không thể tải danh sách đơn hàng');
       })
 
       // Xử lý fetchOrderDetail
@@ -94,7 +92,6 @@ const userOrderSlice = createSlice({
       .addCase(fetchOrderDetail.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        toast.error(action.payload || 'Không thể tải chi tiết đơn hàng');
       })
 
       // Xử lý cancelOrder
@@ -115,12 +112,10 @@ const userOrderSlice = createSlice({
           state.orderDetail.status = 'Cancelled';
           state.orderDetail.cancelReason = action.payload.reason;
         }
-        toast.success('Đơn hàng đã được hủy thành công');
       })
       .addCase(cancelOrder.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        toast.error(action.payload || 'Không thể hủy đơn hàng');
       });
   }
 });

@@ -1,40 +1,37 @@
 import axios from '@/config/axios';
 const BASE_API = '/api/cart';
 
-export const addToCartService = async (data) => {
-  console.log('data service', data);
+export const addToCartAPI = async (data) => {
   let url = BASE_API;
   const res = await axios.post(`${url}`, data);
   return res;
 };
 
-export const getCartService = async () => {
+export const getCartAPI = async () => {
   let url = BASE_API;
   const res = await axios.get(`${url}`);
   return res;
 };
 
-export const updateCartItemService = async (itemId, quantity) => {
+export const updateCartItemAPI = async (itemId, quantity) => {
   let url = BASE_API;
   const res = await axios.patch(`${url}/${itemId}`, { quantity });
   return res;
 };
 
-export const removeCartItemService = async (itemId) => {
+export const removeCartItemAPI = async (itemId) => {
   const res = await axios.delete(`${BASE_API}/${itemId}`);
   return res;
 };
 
-export const removeMultipleCartItemsService = async (itemIds) => {
-  console.log('itemIds service', itemIds);
+export const removeMultipleCartItemsAPI = async (itemIds) => {
   const res = await axios.delete(`${BASE_API}/multiple`, {
     data: { itemIds }
   });
-  console.log('res');
   return res;
 };
 
-export const clearCartService = async () => {
+export const clearCartAPI = async () => {
   let url = BASE_API;
   const res = await axios.delete(`${url}/clear`);
   return res;

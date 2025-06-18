@@ -1,10 +1,10 @@
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
 import { removeCartItem, updateCartItem } from '@/store/slices/cartSlice';
 import { formatCurrency } from '@/utils/format/formatCurrency';
+import { message } from 'antd';
 import { Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
 
 const CartItem = ({ item, onSelect, isSelected }) => {
   const { loadingUpdate, itemUpdate } = useSelector((state) => state.cart);
@@ -12,20 +12,18 @@ const CartItem = ({ item, onSelect, isSelected }) => {
   const isAvailable = item?.isAvailable !== false; // Mặc định là true nếu không có giá trị
   const dispatch = useDispatch();
 
-  const [quantity, setQuantity] = useState(item.quantity);
-
   const handleQuantityChange = useCallback(
     (newQuantity) => {
       if (!isAvailable) {
-        toast.error('Sản phẩm này hiện không khả dụng');
+        message.error('Sản phẩm này hiện không khả dụng');
         return;
       }
 
       if (newQuantity !== item.quantity) {
         dispatch(updateCartItem({ itemId: item._id, quantity: newQuantity }))
           .unwrap()
-          .then(() => toast.success('Cập nhật số lượng thành công'))
-          .catch((err) => toast.error('Cập nhật số lượng thất bại: ' + err));
+          // .then(() => message.success('Cập nhật số lượng thành công'))
+          .catch((err) => message.error('Cập nhật số lượng thất bại: ' + err));
       }
     },
     [item, dispatch, isAvailable]
@@ -34,8 +32,8 @@ const CartItem = ({ item, onSelect, isSelected }) => {
   const handleRemoveItem = (itemId) => {
     dispatch(removeCartItem(itemId))
       .unwrap()
-      .then(() => toast.success('Xóa sản phẩm thành công'))
-      .catch((err) => toast.error('Xóa sản phẩm thất bại: ' + err));
+      .then(() => message.success('Xóa sản phẩm thành công'))
+      .catch((err) => message.error('Xóa sản phẩm thất bại: ' + err));
   };
   return (
     <div className={`flex flex-col gap-4 border-b px-2 py-4 ${!isAvailable ? 'bg-gray-50' : ''}`}>
@@ -90,7 +88,7 @@ const CartItem = ({ item, onSelect, isSelected }) => {
             </div>
           </div>
         </div>
-      </div>{' '}
+      </div>
       {/* Desktop view - cart item */}
       <div className='hidden items-center justify-center gap-2 md:grid md:grid-cols-12'>
         <input

@@ -5,11 +5,11 @@ import { checkEmailExistsAPI, checkUsernameExistsAPI } from '@/services/authServ
 import { clearSuccessMessage, registerUser } from '@/store/slices/accountSlice';
 import { LockOutlined, MailOutlined, PhoneOutlined, UserOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { message } from 'antd';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import * as yup from 'yup';
 
 // Định nghĩa schema validation với yup
@@ -84,7 +84,7 @@ function RegisterPage() {
   // Hiệu ứng hiển thị thông báo thành công
   useEffect(() => {
     if (successMessage) {
-      toast.success(successMessage);
+      message.success(successMessage);
       dispatch(clearSuccessMessage());
       // Chuyển hướng đến trang đăng nhập sau khi đăng ký thành công
       // Giữ lại thông tin về trang trước đó từ location.state

@@ -1,14 +1,8 @@
 import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import Headline from '@/components/common/Headline/Headline';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { calculateDiscount, validateCouponAPI } from '@/services/couponService';
 import { getDistrictsAPI, getProvincesAPI, getWardsAPI } from '@/services/mapService';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { message } from 'antd';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
-import LoadingSpinner from '../../../components/common/LoadingSpinner';
-import { calculateDiscount, validateCouponAPI } from '../../../services/couponService';
 import {
   applyCoupon,
   calculateDistance,
@@ -20,7 +14,12 @@ import {
   setPaymentMethod,
   setShowPriceChangeModal,
   updateOrderNote
-} from '../../../store/slices/orderSlice';
+} from '@/store/slices/orderSlice';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { message } from 'antd';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useDispatch, useSelector } from 'react-redux';
 import OrderSuccess from './components/OrderSuccess';
 import OrderSummary from './components/OrderSummary';
 import PaymentMethod from './components/PaymentMethod';
@@ -179,7 +178,7 @@ const CheckoutPage = () => {
           })
         );
 
-        toast.success(`Đã áp dụng mã giảm giá: ${couponData.code}`);
+        message.success(`Đã áp dụng mã giảm giá: ${couponData.code}`);
       } else {
         setCouponError(response?.message || 'Mã giảm giá không hợp lệ hoặc đã hết hạn.');
       }
@@ -197,10 +196,10 @@ const CheckoutPage = () => {
       dispatch(removeCoupon());
       setCouponCode('');
       setCouponError('');
-      toast.success('Đã xóa mã giảm giá');
+      message.success('Đã xóa mã giảm giá');
     } catch (error) {
       console.error('Error removing coupon:', error);
-      toast.error('Có lỗi xảy ra khi xóa mã giảm giá');
+      message.error('Có lỗi xảy ra khi xóa mã giảm giá');
     }
   };
   // Xử lý khi submit form
@@ -246,7 +245,7 @@ const CheckoutPage = () => {
   // Xử lý khi đóng modal thay đổi giá
   const handleCancelPriceChange = () => {
     dispatch(setShowPriceChangeModal(false));
-    toast.info('Đơn hàng đã được hủy do thay đổi giá.');
+    message.info('Đơn hàng đã được hủy do thay đổi giá.');
   };
 
   // Xử lý khi người dùng đồng ý với giá mới
@@ -260,7 +259,7 @@ const CheckoutPage = () => {
       products: updatedProducts
     };
 
-    toast.info('Đơn hàng đã được cập nhật với giá mới.');
+    message.info('Đơn hàng đã được cập nhật với giá mới.');
 
     // Gọi lại API đặt hàng
     dispatch(createNewOrder(updatedOrderData));
