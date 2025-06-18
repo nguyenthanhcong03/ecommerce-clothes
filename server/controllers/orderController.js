@@ -153,7 +153,6 @@ const createOrder = async (req, res) => {
   try {
     const { products, shippingAddress, paymentMethod, couponCode, distance, note } = req.body;
     const userId = req.user._id;
-
     // Validate required fields
     if (!products || !products.length || !shippingAddress || !paymentMethod) {
       return res.status(400).json({
@@ -585,9 +584,12 @@ const updatePaymentStatus = async (req, res) => {
     }
 
     order.payment.isPaid = isPaid;
+    // Nếu isPaid là true, cập nhật thời gian thanh toán
     if (isPaid) {
+      order.status = "Pending";
       order.payment.paidAt = new Date();
     } else {
+      order.status = "Unpaid";
       order.payment.paidAt = null;
     }
 

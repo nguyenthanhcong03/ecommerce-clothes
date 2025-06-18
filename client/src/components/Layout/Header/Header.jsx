@@ -16,12 +16,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 function Header() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const { isAuthenticated, user } = useSelector((state) => state.account);
   const { totalCartItems } = useSelector((state) => state.cart);
   const [isShowUserDropdown, setIsShowUserDropdown] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const location = useLocation();
+
   const isHomePage = location.pathname === '/';
   const isAdmin = isAuthenticated && user?.role === 'admin';
 
@@ -42,9 +43,14 @@ function Header() {
   };
 
   const handleLogout = async () => {
-    dispatch(logoutUser());
-    message.success('Đăng xuất thành công');
-    navigate('/login');
+    try {
+      dispatch(logoutUser());
+      message.success('Đăng xuất thành công');
+    } catch (error) {
+      console.error('Logout error:', error);
+      message.error('Đăng xuất không thành công, vui lòng thử lại sau');
+      return;
+    }
   };
 
   // Xử lý scroll
@@ -138,7 +144,7 @@ function Header() {
         <div className='mx-auto flex h-full max-w-[1280px] items-center justify-between gap-10 px-5'>
           {/* Logo */}
           <Link to={'/'}>
-            <img src={Logo} alt='Logo' className='h-[50px] w-[150px] cursor-pointer' />
+            <img src={Logo} alt='Logo' className='h-[80px] transition-transform duration-300 hover:scale-110' />
           </Link>
 
           {/* Navbar */}

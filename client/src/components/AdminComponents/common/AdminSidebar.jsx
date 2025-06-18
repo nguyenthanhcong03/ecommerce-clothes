@@ -28,7 +28,7 @@ const SIDEBAR_ITEMS = [
   { name: 'Đăng xuất', icon: LogOut, color: '#333', href: '/admin/settings' }
 ];
 
-const Sidebar = () => {
+const AdminSidebar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -62,7 +62,7 @@ const Sidebar = () => {
               <motion.img
                 src={shopLogo}
                 alt='Outfitory'
-                className='h-12 w-12'
+                className='h-16'
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, width: 'auto' }}
                 exit={{ opacity: 0, width: 0 }}
@@ -145,4 +145,4 @@ const Sidebar = () => {
     </motion.div>
   );
 };
-export default Sidebar;
+export default AdminSidebar;

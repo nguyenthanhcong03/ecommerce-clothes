@@ -4,12 +4,14 @@ const Product = require("../models/product");
 const Coupon = require("../models/coupon");
 
 // Tự động xóa sau 10 phút
-cron.schedule("*/10 * * * *", async () => {
+cron.schedule("*/30 * * * *", async () => {
   try {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
     const orders = await Order.find({
       status: "Unpaid",
-      createdAt: { $lt: oneHourAgo },
+      createdAt: { $lt: oneDayAgo },
     });
 
     for (const order of orders) {

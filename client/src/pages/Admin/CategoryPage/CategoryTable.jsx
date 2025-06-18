@@ -1,16 +1,14 @@
+import DeleteIcon from '@/components/AdminComponents/common/icon/DeleteIcon';
+import EditIcon from '@/components/AdminComponents/common/icon/EditIcon';
 import { buildTree } from '@/utils/helpers/buildTree';
-import { auto } from '@popperjs/core';
 import { Button, Card, Image, Input, Popconfirm, Space, Table, Tooltip } from 'antd';
-import { MinusSquare, Pencil, Plus, PlusSquare, RefreshCw, Search, Trash2 } from 'lucide-react';
+import { Plus, RefreshCw, Search } from 'lucide-react';
 import { memo, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import './hihi.css';
-import EditIcon from '@/components/AdminComponents/common/icon/EditIcon';
-import DeleteIcon from '@/components/AdminComponents/common/icon/DeleteIcon';
 
 const CategoryTable = ({
   categories,
-  loading,
   pagination,
   onChange,
   onSearch,
@@ -110,9 +108,9 @@ const CategoryTable = ({
         )
       }
     ],
-    [onEdit, onDelete, filters]
+    [onEdit, onDelete]
   );
-  const { categoriesTree, error } = useSelector((state) => state.category);
+  const { categoriesTree, error, loading } = useSelector((state) => state.category);
 
   const treeData = useMemo(() => buildTree(categories), [categories]);
 
@@ -123,7 +121,7 @@ const CategoryTable = ({
           <Button type='primary' icon={<Plus size={16} />} onClick={() => onAdd()} className='flex items-center'>
             Thêm danh mục mới
           </Button>
-          <Button icon={<RefreshCw size={16} />} onClick={onRefresh} className='flex items-center'>
+          <Button loading={loading} icon={<RefreshCw size={16} />} onClick={onRefresh} className='flex items-center'>
             Làm mới
           </Button>
         </div>

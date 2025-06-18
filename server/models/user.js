@@ -41,9 +41,18 @@ const userSchema = new mongoose.Schema(
       required: [true, "Phone number is required"],
       trim: true,
     },
-    avatar: { type: String },
-    gender: { enum: ["Nam", "Nữ", "Khác"] },
-    dateOfBirth: { type: String },
+    avatar: { type: String, default: null, required: false },
+    gender: {
+      type: String,
+      enum: ["Nam", "Nữ", "Khác"],
+      default: null,
+      required: false,
+    },
+    dateOfBirth: {
+      type: String,
+      required: false,
+      default: null,
+    },
     address: addressSchema,
 
     // Account status and roles
@@ -64,10 +73,5 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
-// Virtual for full name
-userSchema.virtual("fullName").get(function () {
-  return `${this.firstName} ${this.lastName}`;
-});
 
 module.exports = mongoose.model("User", userSchema);

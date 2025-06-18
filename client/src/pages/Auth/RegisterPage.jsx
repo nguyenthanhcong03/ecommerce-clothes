@@ -1,16 +1,16 @@
 import Button from '@/components/common/Button/Button';
 import Input from '@/components/common/Input';
-import { UserOutlined, MailOutlined, PhoneOutlined, LockOutlined } from '@ant-design/icons';
+import useDebounce from '@/hooks/useDebounce';
+import { checkEmailExistsAPI, checkUsernameExistsAPI } from '@/services/authService';
+import { clearSuccessMessage, registerUser } from '@/store/slices/accountSlice';
+import { LockOutlined, MailOutlined, PhoneOutlined, UserOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
-import * as yup from 'yup';
-import { registerUser, clearSuccessMessage } from '@/store/slices/accountSlice';
-import { checkUsernameExists, checkEmailExists } from '@/services/authService';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import useDebounce from '@/hooks/useDebounce';
+import * as yup from 'yup';
 
 // Định nghĩa schema validation với yup
 const registerSchema = yup.object().shape({
@@ -101,7 +101,7 @@ function RegisterPage() {
         setUsernameCheck({ isChecking: true, message: '', error: false });
 
         try {
-          const result = await checkUsernameExists(debouncedUsername);
+          const result = await checkUsernameExistsAPI(debouncedUsername);
 
           if (result.success) {
             setUsernameCheck({
@@ -129,6 +129,19 @@ function RegisterPage() {
     checkUsername();
   }, [debouncedUsername, setError]);
 
+  // Xử lý khi submit form
+  const onSubmit = async (data) => {
+    // eslint-disable-next-line no-unused-vars
+    const { confirmPassword, ...registerData } = data;
+
+    try {
+      // Dispatch action đăng ký
+      dispatch(registerUser(registerData));
+    } catch (error) {
+      console.error('Lỗi đăng ký:', error);
+    }
+  };
+
   // Kiểm tra email khi người dùng nhập
   useEffect(() => {
     const checkEmail = async () => {
@@ -138,7 +151,7 @@ function RegisterPage() {
         setEmailCheck({ isChecking: true, message: '', error: false });
 
         try {
-          const result = await checkEmailExists(debouncedEmail);
+          const result = await checkEmailExistsAPI(debouncedEmail);
 
           if (result.success) {
             setEmailCheck({
@@ -165,197 +178,150 @@ function RegisterPage() {
 
     checkEmail();
   }, [debouncedEmail, setError]);
-  // Xử lý khi submit form
-  const onSubmit = async (data) => {
-    // eslint-disable-next-line no-unused-vars
-    const { confirmPassword, ...registerData } = data;
 
-    try {
-      // Dispatch action đăng ký
-      dispatch(registerUser(registerData));
-    } catch (error) {
-      console.error('Lỗi đăng ký:', error);
-    }
-  };
+  useEffect(() => {
+    document.title = 'Outfitory - Đăng ký';
+  }, []);
+
   return (
-    <div className='px-4 pt-24 sm:px-6 lg:px-8'>
-      <div className='flex min-h-full items-center justify-center'>
-        <div className='w-full max-w-2xl'>
-          <div className='text-center'>
-            <div className='relative mx-auto mb-8'>
-              {/* Logo/Brand Mark */}
-              <div>{/* <img src={Logo} alt='' /> */}</div>
-            </div>
+    <div className='w-full rounded-lg bg-white p-8 shadow-sm'>
+      <h2 className='mb-6 text-center text-2xl font-bold text-gray-800'>Đăng ký tài khoản</h2>
 
-            <div className='space-y-4'>
-              <h1 className='relative text-5xl font-black tracking-tight text-black'>
-                <span className='bg-gradient-to-r from-black via-gray-800 to-black bg-clip-text text-transparent'>
-                  OUTFITORY
-                </span>
-                <span className='ml-2 font-light text-gray-600'>FASHION</span>
-              </h1>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className='space-y-6'>
+        {/* Họ và Tên */}
+        <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+          <Controller
+            control={control}
+            name='firstName'
+            render={({ field }) => (
+              <Input
+                {...field}
+                label='Tên'
+                placeholder='Nhập tên của bạn'
+                prefix={<UserOutlined className='text-gray-400' />}
+                required
+                error={errors.firstName?.message}
+              />
+            )}
+          />
 
-              <div className='relative'>
-                <h2 className='relative text-2xl font-light italic text-gray-700'>
-                  &ldquo;Tạo tài khoản để trải nghiệm phong cách riêng&rdquo;
-                </h2>
-                <div className='absolute -left-4 -right-4 top-1/2 h-px -translate-y-1/2 transform bg-gradient-to-r from-transparent via-gray-300 to-transparent opacity-50'></div>
-              </div>
-
-              {/* Decorative elements */}
-              <div className='mt-6 flex items-center justify-center space-x-4'>
-                <div className='h-px w-8 bg-gradient-to-r from-transparent to-black'></div>
-                <div className='h-2 w-2 rounded-full bg-black'></div>
-                <div className='h-px w-8 bg-gradient-to-l from-transparent to-black'></div>
-              </div>
-            </div>
-          </div>
-          <div className='flex items-center justify-center py-8'>
-            <div className='w-full max-w-2xl rounded-lg bg-white p-8 shadow-sm'>
-              <h2 className='mb-6 text-center text-2xl font-bold text-gray-800'>Đăng ký tài khoản</h2>
-
-              <form onSubmit={handleSubmit(onSubmit)} noValidate className='space-y-6'>
-                {/* Họ và Tên */}
-                <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                  <Controller
-                    control={control}
-                    name='firstName'
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        label='Tên'
-                        placeholder='Nhập tên của bạn'
-                        prefix={<UserOutlined className='text-gray-400' />}
-                        required
-                        error={errors.firstName?.message}
-                      />
-                    )}
-                  />
-
-                  <Controller
-                    control={control}
-                    name='lastName'
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        label='Họ'
-                        placeholder='Nhập họ của bạn'
-                        prefix={<UserOutlined className='text-gray-400' />}
-                        required
-                        error={errors.lastName?.message}
-                      />
-                    )}
-                  />
-                </div>{' '}
-                {/* Tên đăng nhập */}
-                <Controller
-                  control={control}
-                  name='username'
-                  render={({ field }) => (
-                    <div>
-                      <Input
-                        {...field}
-                        label='Tên đăng nhập'
-                        placeholder='Nhập tên đăng nhập'
-                        prefix={<UserOutlined className='text-gray-400' />}
-                        required
-                        error={errors.username?.message}
-                      />
-                    </div>
-                  )}
-                />
-                {/* Email và Số điện thoại */}
-                <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                  {' '}
-                  <Controller
-                    control={control}
-                    name='email'
-                    render={({ field }) => (
-                      <div>
-                        <Input
-                          {...field}
-                          type='email'
-                          label='Email'
-                          placeholder='Nhập địa chỉ email'
-                          prefix={<MailOutlined className='text-gray-400' />}
-                          required
-                          error={errors.email?.message}
-                        />
-                      </div>
-                    )}
-                  />
-                  <Controller
-                    control={control}
-                    name='phone'
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        type='tel'
-                        label='Số điện thoại'
-                        placeholder='Nhập số điện thoại'
-                        prefix={<PhoneOutlined className='text-gray-400' />}
-                        required
-                        error={errors.phone?.message}
-                      />
-                    )}
-                  />
-                </div>
-                {/* Mật khẩu và Xác nhận mật khẩu */}
-                <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                  <Controller
-                    control={control}
-                    name='password'
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        type='password'
-                        label='Mật khẩu'
-                        placeholder='Nhập mật khẩu'
-                        prefix={<LockOutlined className='text-gray-400' />}
-                        required
-                        error={errors.password?.message}
-                      />
-                    )}
-                  />
-
-                  <Controller
-                    control={control}
-                    name='confirmPassword'
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        type='password'
-                        label='Xác nhận mật khẩu'
-                        placeholder='Nhập lại mật khẩu'
-                        prefix={<LockOutlined className='text-gray-400' />}
-                        required
-                        error={errors.confirmPassword?.message}
-                      />
-                    )}
-                  />
-                </div>{' '}
-                <Button
-                  type='submit'
-                  variant='primary'
-                  width='full'
-                  isLoading={isSubmitting || isLoading}
-                  disabled={
-                    usernameCheck.error || emailCheck.error || usernameCheck.isChecking || emailCheck.isChecking
-                  }
-                >
-                  Đăng ký
-                </Button>{' '}
-                <div className='text-center text-sm'>
-                  Đã có tài khoản?{' '}
-                  <Link to='/login' className='text-primaryColor hover:underline'>
-                    Đăng nhập ngay
-                  </Link>
-                </div>
-              </form>
-            </div>
-          </div>
+          <Controller
+            control={control}
+            name='lastName'
+            render={({ field }) => (
+              <Input
+                {...field}
+                label='Họ'
+                placeholder='Nhập họ của bạn'
+                prefix={<UserOutlined className='text-gray-400' />}
+                required
+                error={errors.lastName?.message}
+              />
+            )}
+          />
         </div>
-      </div>
+        {/* Tên đăng nhập */}
+        <Controller
+          control={control}
+          name='username'
+          render={({ field }) => (
+            <div>
+              <Input
+                {...field}
+                label='Tên đăng nhập'
+                placeholder='Nhập tên đăng nhập'
+                prefix={<UserOutlined className='text-gray-400' />}
+                required
+                error={errors.username?.message}
+              />
+            </div>
+          )}
+        />
+        {/* Email và Số điện thoại */}
+        <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+          <Controller
+            control={control}
+            name='email'
+            render={({ field }) => (
+              <div>
+                <Input
+                  {...field}
+                  type='email'
+                  label='Email'
+                  placeholder='Nhập địa chỉ email'
+                  prefix={<MailOutlined className='text-gray-400' />}
+                  required
+                  error={errors.email?.message}
+                />
+              </div>
+            )}
+          />
+          <Controller
+            control={control}
+            name='phone'
+            render={({ field }) => (
+              <Input
+                {...field}
+                type='tel'
+                label='Số điện thoại'
+                placeholder='Nhập số điện thoại'
+                prefix={<PhoneOutlined className='text-gray-400' />}
+                required
+                error={errors.phone?.message}
+              />
+            )}
+          />
+        </div>
+        {/* Mật khẩu và Xác nhận mật khẩu */}
+        <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+          <Controller
+            control={control}
+            name='password'
+            render={({ field }) => (
+              <Input
+                {...field}
+                type='password'
+                label='Mật khẩu'
+                placeholder='Nhập mật khẩu'
+                prefix={<LockOutlined className='text-gray-400' />}
+                required
+                error={errors.password?.message}
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name='confirmPassword'
+            render={({ field }) => (
+              <Input
+                {...field}
+                type='password'
+                label='Xác nhận mật khẩu'
+                placeholder='Nhập lại mật khẩu'
+                prefix={<LockOutlined className='text-gray-400' />}
+                required
+                error={errors.confirmPassword?.message}
+              />
+            )}
+          />
+        </div>
+        <Button
+          type='submit'
+          variant='primary'
+          width='full'
+          isLoading={isSubmitting || isLoading}
+          disabled={usernameCheck.error || emailCheck.error || usernameCheck.isChecking || emailCheck.isChecking}
+        >
+          Đăng ký
+        </Button>
+        <div className='text-center text-sm'>
+          Đã có tài khoản?{' '}
+          <Link to='/login' className='text-primaryColor hover:underline'>
+            Đăng nhập ngay
+          </Link>
+        </div>
+      </form>
     </div>
   );
 }

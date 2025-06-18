@@ -1,10 +1,10 @@
-import Header from '@/components/AdminComponents/common/Header';
+import AdminHeader from '@/components/AdminComponents/common/AdminHeader';
 import useDebounce from '@/hooks/useDebounce';
 import { updatePaymentStatusAPI } from '@/services/orderService';
 import { fetchOrders, setFilters, setLimit, setPage } from '@/store/slices/adminOrderSlice';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import { formatDate } from '@/utils/format/formatDate';
-import { statusTranslations } from '@/utils/helpers/orderStatusUtils';
+import { orderStatuses, statusTranslations, translateOrderStatus } from '@/utils/helpers/orderStatusUtils';
 import { ClockCircleOutlined, DollarOutlined, EyeOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Button, Card, message, Modal, Select, Space, Table, Tag, Tooltip, Typography } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
@@ -16,6 +16,7 @@ import OrderFilters from './OrderFilters';
 import './OrdersPage.scss';
 import VNPayLogo from '../../../assets/images/vnpay-logo-vinadesign-25-12-59-16.jpg';
 import MomoLogo from '../../../assets/images/momo_icon_square_pinkbg@3x.png';
+import CountdownTimer from '@/pages/customer/AccountPage/OrderPage/components/CountdownTimer';
 
 const OrdersPage = () => {
   const dispatch = useDispatch();
@@ -190,9 +191,9 @@ const OrdersPage = () => {
               <div className='flex items-center gap-1'>
                 <img src={MomoLogo} className='h-5 w-5' alt='Ví Momo' />
                 Ví Momo
-                <Tag color={payment.isPaid ? 'green' : 'volcano'}>
+                {/* <Tag color={payment.isPaid ? 'green' : 'volcano'}>
                   {payment.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
-                </Tag>
+                </Tag> */}
               </div>
             );
           case 'VNPay':
@@ -200,9 +201,9 @@ const OrdersPage = () => {
               <div className='flex items-center gap-1'>
                 <img src={VNPayLogo} className='h-5 w-5' alt='VNPay' />
                 VNPay
-                <Tag color={payment.isPaid ? 'green' : 'volcano'}>
+                {/* <Tag color={payment.isPaid ? 'green' : 'volcano'}>
                   {payment.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
-                </Tag>
+                </Tag> */}
               </div>
             );
           default:
@@ -216,17 +217,28 @@ const OrdersPage = () => {
       key: 'status',
       render: (status, record) => {
         const isUpdating = updatingOrderIds.includes(record._id);
-
+        if (status === 'Unpaid') {
+          return (
+            <div className='flex flex-col items-center gap-1'>
+              <span className='rounded-md border border-[#f09535] bg-[#fffaef] px-2 text-[#f09535]'>
+                Chưa thanh toán
+              </span>
+              <CountdownTimer createdAt={record.createdAt} durationMs={86400000} />
+            </div>
+          );
+        }
         return (
           <Select
-            value={statusTranslations[status] || status}
+            value={status}
+            // value={translateOrderStatus(status)}
             style={{
               width: '100%'
             }}
             loading={isUpdating}
             disabled={isUpdating || status === 'Cancelled'}
             onChange={(value) => handleOrderStatusChange(record._id, value)}
-            options={getValidStatusTransitions(status)}
+            options={orderStatuses}
+            // options={getValidStatusTransitions(status)}
             listItemHeight={30}
             dropdownStyle={{
               borderRadius: '4px',
@@ -236,7 +248,7 @@ const OrdersPage = () => {
         );
       },
       filters: [
-        { text: 'Đang chờ xử lý', value: 'Pending' },
+        { text: 'Chờ xác nhận', value: 'Pending' },
         { text: 'Đang xử lý', value: 'Processing' },
         { text: 'Đang giao', value: 'Shipping' },
         { text: 'Đã giao', value: 'Delivered' },
@@ -279,7 +291,7 @@ const OrdersPage = () => {
 
   return (
     <div className='relative z-10 flex-1 overflow-auto'>
-      <Header title='Quản lý đơn hàng' />
+      <AdminHeader title='Quản lý đơn hàng' />
       <main className='mx-auto px-4 py-6 lg:px-8'>
         {/* Search and Filters */}
         <OrderFilters
@@ -300,7 +312,7 @@ const OrdersPage = () => {
 
         <Card className='mb-6'>
           <div className='mb-4 flex justify-end'>
-            <Button type='primary' icon={<ReloadOutlined />} onClick={handleRefresh}>
+            <Button loading={loading} type='primary' icon={<ReloadOutlined />} onClick={handleRefresh}>
               Làm mới
             </Button>
           </div>
@@ -315,7 +327,6 @@ const OrdersPage = () => {
               pageSize: pagination.limit,
               total: pagination.total,
               onChange: handlePageChange,
-
               position: ['bottomCenter'],
               showSizeChanger: true,
               showQuickJumper: true,

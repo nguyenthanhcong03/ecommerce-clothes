@@ -1,4 +1,4 @@
-import Header from '@/components/AdminComponents/common/Header';
+import AdminHeader from '@/components/AdminComponents/common/AdminHeader';
 import { Card, message } from 'antd';
 import { motion } from 'framer-motion';
 import { useCallback, useEffect, useState } from 'react';
@@ -93,16 +93,10 @@ const CouponPage = () => {
 
   const handleDeleteCoupon = async (coupon) => {
     try {
-      const resultAction = await dispatch(deleteCoupon(coupon._id)).unwrap();
-      if (deleteCoupon.fulfilled.match(resultAction)) {
-        message.success(`Xóa mã giảm giá ${coupon.code} thành công!`);
-        handleRefresh();
-      } else if (deleteCoupon.rejected.match(resultAction)) {
-        message.error(resultAction?.payload?.message || 'Có lỗi xảy ra khi xóa mã giảm giá');
-      }
+      await dispatch(deleteCoupon(coupon._id)).unwrap();
+      message.success('Xóa mã giảm giá thành công');
     } catch (error) {
-      message.error('Có lỗi xảy ra khi xóa mã giảm giá');
-      console.error(error);
+      message.error(error?.message || 'Có lỗi xảy ra khi xóa mã giảm giá');
     }
   };
 
@@ -140,7 +134,7 @@ const CouponPage = () => {
 
   return (
     <div className='relative z-10 flex-1 overflow-auto'>
-      <Header title='Quản lý giảm giá' />
+      <AdminHeader title='Quản lý giảm giá' />
 
       <main className='mx-auto px-4 py-6 lg:px-8'>
         <motion.div

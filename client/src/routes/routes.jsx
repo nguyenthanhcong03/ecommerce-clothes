@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 // Layouts
 import AdminLayout from '@/routes/layouts/AdminLayout.jsx';
 import MainLayout from '@/routes/layouts/MainLayout.jsx';
+import AuthLayout from '@/routes/layouts/AuthLayout.jsx';
 
 // Components
 import NotFound from '@/components/auth/NotFound/NotFound.jsx';
@@ -175,6 +176,12 @@ const adminRoutes = [
 
 // Main router configuration
 const Router = [
+  {
+    path: '/',
+    element: <AuthLayout />,
+    errorElement: <NotFound />,
+    children: authRoutes
+  },
   {
     path: '/',
     element: <MainLayout />,

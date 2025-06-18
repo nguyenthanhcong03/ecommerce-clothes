@@ -20,7 +20,7 @@ function AboutPage() {
         />
       </div>
       <div className='my-8 rounded-md bg-white p-8'>
-        <Headline text1={'Tận tâm vì phong cách của bạn'} text2={'CHÀO MỪNG ĐẾN VỚI FASALO'} />
+        <Headline text1={'Tận tâm vì phong cách của bạn'} text2={'CHÀO MỪNG ĐẾN VỚI OUTFITORY'} />
       </div>
       <div className='rounded-md bg-white p-8'>
         <div>

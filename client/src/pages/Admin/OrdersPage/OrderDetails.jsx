@@ -2,10 +2,13 @@ import React from 'react';
 import { Table, Tag, Typography } from 'antd';
 import { formatDate } from '@/utils/format/formatDate';
 import { formatCurrency } from '../../../utils/format/formatCurrency';
+import { translateOrderStatus } from '@/utils/helpers/orderStatusUtils';
 
 const { Title } = Typography;
 
 const statusColors = {
+  Unpaid: 'gold',
+  Pending: 'orange',
   Processing: 'blue',
   Shipping: 'cyan',
   Delivered: 'green',
@@ -17,8 +20,8 @@ const OrderDetails = ({ order }) => {
 
   return (
     <div>
-      <div className='mb-4'>
-        <Title level={5}>Thông tin khách hàng</Title>
+      <div className='mb-4 flex flex-col items-start gap-1'>
+        <Title level={5}>🙍🏻‍♂️ Thông tin khách hàng</Title>
         <p>
           <strong>Tên:</strong> {order.shippingAddress?.fullName}
         </p>
@@ -30,19 +33,23 @@ const OrderDetails = ({ order }) => {
         </p>
       </div>
 
-      <div className='mb-4'>
-        <Title level={5}>Thông tin đơn hàng</Title>
+      <div className='mb-4 flex flex-col items-start gap-1'>
+        <Title level={5}>🛒 Thông tin đơn hàng</Title>
         <p>
           <strong>Trạng thái:</strong>
           <Tag color={statusColors[order.status]} className='ml-2'>
-            {order.status}
+            {translateOrderStatus(order.status)}
           </Tag>
         </p>
         <p>
-          <strong>Thanh toán:</strong>
-          <Tag color={order.payment?.isPaid ? 'green' : 'volcano'} className='ml-2'>
-            {order.payment?.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
-          </Tag>
+          {order.payment?.method !== 'COD' && order.payment?.isPaid && (
+            <>
+              <strong>Thanh toán:</strong>
+              <Tag color={order.payment?.isPaid ? 'green' : 'volcano'} className='ml-2'>
+                {order.payment?.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
+              </Tag>
+            </>
+          )}
         </p>
         <p>
           <strong>Phương thức thanh toán:</strong> {order.payment?.method}

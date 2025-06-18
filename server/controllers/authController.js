@@ -17,7 +17,7 @@ const register = async (req, res) => {
       firstName,
       lastName,
     });
-    res.status(201).json({ success: true, message: "Vui lòng kiểm tra email để xác nhận tài khoản." });
+    res.status(201).json({ success: true, message: "Đăng ký tài khoản thành công" });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -49,21 +49,6 @@ const login = async (req, res) => {
       accessToken,
       refreshToken,
     });
-  } catch (error) {
-    // if (error.message === "Vui lòng xác thực email trước khi đăng nhập") {
-    //   return res.status(403).json({ success: false, message: error.message });
-    // }
-    // console.log("error", error);
-    res.status(400).json({ success: false, message: error.message });
-  }
-};
-
-const verifyEmail = async (req, res) => {
-  const { token } = req.query;
-
-  try {
-    await authService.verifyUserEmail(token);
-    res.status(200).json({ success: true, message: "Xác thực email thành công" });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -231,7 +216,6 @@ module.exports = {
   register,
   login,
   forgotPassword,
-  verifyEmail,
   changePassword,
   confirmForgotPassword,
   logout,

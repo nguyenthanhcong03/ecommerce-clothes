@@ -219,7 +219,7 @@ const ProductTable = ({ searchText, onSearch, onPageChange, onRefresh, onDelete,
             Thêm sản phẩm mới
           </Button>
           {/* Nút làm mới danh sách */}
-          <Button icon={<RefreshCw size={16} />} onClick={onRefresh} className='flex items-center'>
+          <Button loading={loading} icon={<RefreshCw size={16} />} onClick={onRefresh} className='flex items-center'>
             Làm mới
           </Button>
         </div>

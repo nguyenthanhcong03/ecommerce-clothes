@@ -25,16 +25,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 connectDB();
+
+// Import và khởi động cron
+require("./cron/cleanUnpaidOrders");
+
+// Khởi tạo các routes
 initRoutes(app);
 
 // convert error to ApiError, if needed
 app.use(errorConverter);
-
 // handle error
 app.use(errorHandler);
-
-// Import và khởi động cron
-require("./cron/cleanUnpaidOrders");
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);

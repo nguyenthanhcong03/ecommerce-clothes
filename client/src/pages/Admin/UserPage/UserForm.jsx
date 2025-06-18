@@ -79,6 +79,7 @@ const UserForm = ({ selectedUser, onClose }) => {
   // Set default values when user data is loaded
   useEffect(() => {
     if (selectedUser) {
+      console.log('selectedUser', selectedUser);
       reset({
         firstName: selectedUser.firstName || '',
         lastName: selectedUser.lastName || '',
@@ -242,7 +243,15 @@ const UserForm = ({ selectedUser, onClose }) => {
                   name='gender'
                   control={control}
                   render={({ field }) => (
-                    <Select {...field} value={selectedUser?.gender} placeholder='Chọn giới tính' allowClear>
+                    <Select
+                      {...field}
+                      value={field.value || undefined}
+                      onChange={(value) => {
+                        field.onChange(value === undefined ? null : value);
+                      }}
+                      placeholder='Chọn giới tính'
+                      allowClear
+                    >
                       {genderOptions.map((option) => (
                         <Option key={option.value} value={option.value}>
                           {option.label}

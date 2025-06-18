@@ -25,7 +25,7 @@ import {
   SkinOutlined,
   HddOutlined
 } from '@ant-design/icons';
-import Header from '@/components/AdminComponents/common/Header';
+import AdminHeader from '@/components/AdminComponents/common/AdminHeader';
 
 const AnalyticsPage = () => {
   // State cho chọn khoảng thời gian
@@ -809,7 +809,7 @@ const AnalyticsPage = () => {
 
   return (
     <div className='relative z-10 flex-1 overflow-auto'>
-      <Header title='Thống kê doanh số' />
+      <AdminHeader title='Thống kê doanh số' />
 
       <main className='mx-auto px-4 py-6 lg:px-8'>
         {renderTimeRangeSelector()}

@@ -86,10 +86,12 @@ function ContactInfo() {
           <p className='text-secondaryColor'>Mỗi ngày từ 9:00 AM đến 22:00 PM</p>
         </div>
         <div className='flex gap-3'>
-          <Facebook fontSize={30} />
-          <Instagram fontSize={30} />
-          {/* <SiZalo fontSize={30} /> */}
-          {/* <SiShopee fontSize={30} /> */}
+          <a href='https://www.facebook.com/nguyenthanhcong03' target='_blank'>
+            <Facebook fontSize={30} />
+          </a>
+          <a href='https://www.facebook.com/nguyenthanhcong03' target='_blank'>
+            <Instagram fontSize={30} />
+          </a>
         </div>
       </div>
     </div>

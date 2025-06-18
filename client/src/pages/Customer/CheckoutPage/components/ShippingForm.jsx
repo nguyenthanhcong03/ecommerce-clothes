@@ -1,9 +1,9 @@
 import Input from '@/components/common/Input/Input';
 import Select from '@/components/common/Select/Select';
+import PropTypes from 'prop-types';
 import { memo } from 'react';
-import { Controller } from 'react-hook-form';
 
-const ShippingForm = ({ control, errors, provinces, districts, wards, watchProvince, watchDistrict }) => {
+const ShippingForm = ({ register, errors, provinces, districts, wards, watchProvince, watchDistrict }) => {
   return (
     <div className='rounded-sm bg-white p-6'>
       <h2 className='mb-6 text-xl font-bold'>Thông tin giao hàng</h2>
@@ -11,136 +11,96 @@ const ShippingForm = ({ control, errors, provinces, districts, wards, watchProvi
       <div className='space-y-6'>
         <div>
           {/* Họ tên */}
-          <Controller
-            control={control}
-            name='fullName'
-            render={({ field }) => (
-              <Input
-                {...field}
-                label='Họ và tên'
-                placeholder='Nhập họ và tên'
-                required={true}
-                error={errors.fullName?.message}
-              />
-            )}
+          <Input
+            {...register('fullName')}
+            label='Họ và tên'
+            placeholder='Nhập họ và tên'
+            required={true}
+            error={errors.fullName?.message}
           />
         </div>
 
         <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
           {/* Email */}
-          <Controller
-            control={control}
-            name='email'
-            render={({ field }) => (
-              <Input
-                {...field}
-                type='email'
-                label='Email'
-                placeholder='Nhập địa chỉ email'
-                required
-                error={errors.email?.message}
-              />
-            )}
+          <Input
+            {...register('email')}
+            type='email'
+            label='Email'
+            placeholder='Nhập địa chỉ email'
+            required
+            error={errors.email?.message}
           />
 
           {/* Số điện thoại */}
-          <Controller
-            control={control}
-            name='phoneNumber'
-            render={({ field }) => (
-              <Input
-                {...field}
-                type='tel'
-                label='Số điện thoại'
-                placeholder='Nhập số điện thoại'
-                required={true}
-                error={errors.phoneNumber?.message}
-              />
-            )}
+          <Input
+            {...register('phoneNumber')}
+            type='tel'
+            label='Số điện thoại'
+            placeholder='Nhập số điện thoại'
+            required={true}
+            error={errors.phoneNumber?.message}
           />
+          <input
+            type='tel'
+            {...register('phoneNumber')}
+            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 ${
+              errors.phoneNumber ? 'border-red-500' : ''
+            }`}
+          />
+          {errors.phoneNumber && <p className='mt-1 text-sm text-red-600'>{errors.phoneNumber.message}</p>}
         </div>
 
         <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
           {/* Thành phố */}
-          <Controller
-            control={control}
-            name='province'
-            render={({ field }) => (
-              <Select
-                {...field}
-                label='Tỉnh/Thành phố'
-                placeholder='-- Chọn Tỉnh/Thành phố --'
-                options={provinces}
-                error={errors.province?.message}
-                required
-              />
-            )}
+          <Select
+            {...register('province')}
+            label='Tỉnh/Thành phố'
+            placeholder='-- Chọn Tỉnh/Thành phố --'
+            options={provinces}
+            error={errors.province?.message}
+            required
           />
 
           {/* Quận/Huyện */}
-          <Controller
-            control={control}
-            name='district'
-            render={({ field }) => (
-              <Select
-                {...field}
-                label='Quận/Huyện'
-                placeholder='-- Chọn Quận/Huyện --'
-                options={districts}
-                error={errors.district?.message}
-                required
-                disabled={!watchProvince}
-              />
-            )}
+          <Select
+            {...register('district')}
+            label='Quận/Huyện'
+            placeholder='-- Chọn Quận/Huyện --'
+            options={districts}
+            error={errors.district?.message}
+            required
+            disabled={!watchProvince}
           />
           {/* Phường/Xã */}
-          <Controller
-            control={control}
-            name='ward'
-            render={({ field }) => (
-              <Select
-                {...field}
-                label='Phường/Xã'
-                placeholder='-- Chọn Phường/Xã --'
-                options={wards}
-                error={errors.ward?.message}
-                required
-                disabled={!watchDistrict}
-              />
-            )}
+          <Select
+            {...register('ward')}
+            label='Phường/Xã'
+            placeholder='-- Chọn Phường/Xã --'
+            options={wards}
+            error={errors.ward?.message}
+            required
+            disabled={!watchDistrict}
           />
         </div>
 
         <div>
           {/* Địa chỉ chi tiết */}
-          <Controller
-            control={control}
-            name='street'
-            render={({ field }) => (
-              <Input
-                {...field}
-                label='Địa chỉ chi tiết'
-                placeholder='Nhập địa chỉ giao hàng'
-                required
-                error={errors.street?.message}
-              />
-            )}
+          <Input
+            {...register('street')}
+            label='Địa chỉ chi tiết'
+            placeholder='Nhập địa chỉ giao hàng'
+            required
+            error={errors.street?.message}
           />
         </div>
 
         <div className='mb-6'>
           <label className='text-sm font-medium'>Ghi chú</label>
-          <Controller
-            control={control}
-            name='note'
-            render={({ field }) => (
-              <textarea
-                {...field}
-                className='mt-1 w-full flex-1 resize-none rounded-sm border-[1px] border-gray-300 p-3 px-[10px] text-sm outline-none focus:border-primaryColor'
-                placeholder='Nhập ghi chú cho đơn hàng (không bắt buộc)'
-                rows={3}
-              />
-            )}
+          <textarea
+            {...register('note')}
+            className='mt-1 w-full flex-1 resize-none rounded-sm border-[1px] border-gray-300 p-3 px-[10px] text-sm outline-none focus:border-primaryColor'
+            placeholder='Nhập ghi chú cho đơn hàng (không bắt buộc)'
+            rows={3}
           />
         </div>
       </div>
@@ -148,4 +108,22 @@ const ShippingForm = ({ control, errors, provinces, districts, wards, watchProvi
   );
 };
 
-export default memo(ShippingForm);
+ShippingForm.propTypes = {
+  register: PropTypes.func.isRequired,
+  errors: PropTypes.shape({
+    fullName: PropTypes.shape({ message: PropTypes.string }),
+    email: PropTypes.shape({ message: PropTypes.string }),
+    phoneNumber: PropTypes.shape({ message: PropTypes.string }),
+    province: PropTypes.shape({ message: PropTypes.string }),
+    district: PropTypes.shape({ message: PropTypes.string }),
+    ward: PropTypes.shape({ message: PropTypes.string }),
+    street: PropTypes.shape({ message: PropTypes.string })
+  }),
+  provinces: PropTypes.array.isRequired,
+  districts: PropTypes.array.isRequired,
+  wards: PropTypes.array.isRequired,
+  watchProvince: PropTypes.string,
+  watchDistrict: PropTypes.string
+};
+
+export default ShippingForm;

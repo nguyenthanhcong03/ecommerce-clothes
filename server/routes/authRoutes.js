@@ -12,7 +12,6 @@ router.get("/current", verifyToken, authController.getCurrentUser);
 router.post("/logout", authController.logout);
 router.post("/forgot-password", authController.forgotPassword);
 router.post("/forgot-password/confirm", authController.confirmForgotPassword);
-router.get("/verify-email", authController.verifyEmail);
 router.post("/refresh-token", authController.refreshToken);
 router.post("/change-password", verifyToken, authController.changePassword);
 

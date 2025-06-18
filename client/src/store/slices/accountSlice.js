@@ -1,22 +1,21 @@
 import {
-  login,
-  register,
-  callLogout,
-  callFetchAccount,
-  refreshAccessToken,
-  changePassword
+  loginAPI,
+  registerAPI,
+  logoutAPI,
+  fetchCurrentUserAPI,
+  refreshAccessTokenAPI,
+  changePasswordAPI
 } from '@/services/authService';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-// Thunk actions
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async ({ username, password, rememberMe = false }, { rejectWithValue }) => {
     try {
-      const data = await login(username, password, rememberMe);
+      const data = await loginAPI(username, password, rememberMe);
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Đăng nhập thất bại');
+      return rejectWithValue(err.response?.data?.message);
     }
   }
 );
@@ -25,7 +24,7 @@ export const registerUser = createAsyncThunk(
   'auth/registerUser',
   async ({ firstName, lastName, username, email, phone, password }, { rejectWithValue }) => {
     try {
-      const data = await register({ firstName, lastName, username, email, phone, password });
+      const data = await registerAPI({ firstName, lastName, username, email, phone, password });
       return data;
     } catch (err) {
       console.log('register error', err);
@@ -36,7 +35,7 @@ export const registerUser = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk('auth/logoutUser', async (_, { rejectWithValue }) => {
   try {
-    await callLogout();
+    await logoutAPI();
     return true;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Đăng xuất thất bại');
@@ -45,7 +44,7 @@ export const logoutUser = createAsyncThunk('auth/logoutUser', async (_, { reject
 
 export const fetchCurrentUser = createAsyncThunk('auth/fetchCurrentUser', async (_, { rejectWithValue }) => {
   try {
-    const data = await callFetchAccount();
+    const data = await fetchCurrentUserAPI();
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Không thể tải thông tin người dùng');
@@ -54,7 +53,7 @@ export const fetchCurrentUser = createAsyncThunk('auth/fetchCurrentUser', async 
 
 export const refreshToken = createAsyncThunk('auth/refreshToken', async (_, { rejectWithValue }) => {
   try {
-    const data = await refreshAccessToken();
+    const data = await refreshAccessTokenAPI();
     return data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Làm mới token thất bại');
@@ -66,7 +65,7 @@ export const updateUserPassword = createAsyncThunk(
   async ({ oldPassword, newPassword }, { rejectWithValue }) => {
     console.log('first', oldPassword, newPassword);
     try {
-      const data = await changePassword(oldPassword, newPassword);
+      const data = await changePasswordAPI(oldPassword, newPassword);
       return data;
     } catch (err) {
       console.log('err', err);
@@ -151,7 +150,15 @@ export const accountSlice = createSlice({
         state.isLoading = true;
       })
       .addCase(logoutUser.fulfilled, (state) => {
-        state.user = initialState.user;
+        state.user = {
+          _id: '',
+          email: '',
+          username: '',
+          firstName: '',
+          lastName: '',
+          role: '',
+          avatar: ''
+        };
         state.isAuthenticated = false;
         state.isLoading = false;
         state.error = null;

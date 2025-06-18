@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 
 const CountdownTimer = ({ targetDate }) => {
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+  const translates = {
+    Days: 'Ngày',
+    Hours: 'Giờ',
+    Mins: 'Phút',
+    Secs: 'Giây'
+  };
 
   function calculateTimeLeft() {
     const difference = +new Date(targetDate) - +new Date();
@@ -37,7 +43,7 @@ const CountdownTimer = ({ targetDate }) => {
     if (timeLeft[interval] !== undefined) {
       timerComponents.push(
         <span key={interval} className='rounded border border-[#E1E1E1] bg-white p-2 text-center'>
-          {formatNumber(timeLeft[interval])} <span className='text-sm text-secondaryColor'>{interval}</span>{' '}
+          {formatNumber(timeLeft[interval])} <span className='text-sm text-secondaryColor'>{translates[interval]}</span>
         </span>
       );
     }

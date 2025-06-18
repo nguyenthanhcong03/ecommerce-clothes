@@ -31,7 +31,7 @@ const sendEmail = async (to, subject, html) => {
   // async function main(email, html) {
   //   // send mail with defined transport object
   //   const info = await transporter.sendMail({
-  //     from: '"FASALO SHOP" <no-reply@hihi.com>', // sender address
+  //     from: '"OUTFITORY SHOP" <no-reply@hihi.com>', // sender address
   //     to: email, // list of receivers
   //     subject: "Forgot password", // Subject line
   //     // text: "Hello world?", // plain text body

@@ -64,6 +64,7 @@ const CheckoutPage = () => {
     resetField
   } = useForm({
     resolver: yupResolver(checkoutSchema),
+    mode: 'onChange',
     defaultValues: {
       fullName: shippingInfo?.fullName || '',
       phoneNumber: shippingInfo?.phoneNumber || '',
@@ -73,8 +74,7 @@ const CheckoutPage = () => {
       district: shippingInfo?.district || '',
       paymentMethod: paymentMethod || 'COD',
       note: ''
-    },
-    mode: 'onChange'
+    }
   });
 
   const watchProvince = watch('province');
@@ -303,13 +303,13 @@ const CheckoutPage = () => {
         <Headline text1={'đừng bỏ lỡ ưu đãi, hãy tiến hành thanh toán'} text2={'THANH TOÁN'} />
       </div>
       <div className=''>
-        <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className='space-y-6'>
           <div className='grid grid-cols-1 gap-6 lg:grid-cols-5'>
             {/* Thông tin đặt hàng - Left Column */}
             <div className='space-y-6 lg:col-span-3'>
               {/* Shipping Information */}
               <ShippingForm
-                control={control}
+                register={register}
                 errors={errors}
                 provinces={provinces}
                 districts={districts}

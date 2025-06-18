@@ -1,6 +1,6 @@
 import bannerImage from '@/assets/images/banner-ecommerce.jpeg';
+import Logo from '@/assets/images/outfitory-logo.png';
 import Button from '@/components/common/Button/Button';
-import React from 'react';
 import { Link } from 'react-router-dom';
 
 function Banner() {
@@ -10,7 +10,7 @@ function Banner() {
       style={{ backgroundImage: `url(${bannerImage})` }}
     >
       <div className='container mx-auto flex flex-col items-center justify-center gap-5'>
-        <h1 className='text-[42px] font-normal leading-[52px] text-primaryColor max-sm:text-[32px]'>Outfitory</h1>
+        <img src={Logo} alt='Logo' className='h-[150px] transition-transform duration-300 hover:scale-125' />
         <div className='mx-5 mb-4 text-center leading-[24px] text-primaryColor'>
           Hãy biến những ngày kỷ niệm của bạn trở nên đặc biệt hơn với vẻ đẹp tinh tế.
         </div>

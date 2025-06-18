@@ -4,6 +4,7 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { sendEmail } = require("./emailService");
 const { generateAccessToken, generateRefreshToken } = require("../utils/jwt");
+const ApiError = require("../utils/ApiError");
 
 /**
  * Kiểm tra username đã tồn tại hay chưa
@@ -30,13 +31,21 @@ const registerUser = async (userData) => {
   if (existedUser) {
     throw new Error("Người dùng đã tồn tại");
   }
+  // Kiểm tra email đã tồn tại
+  const existedEmail = await User.findOne({ email });
+  if (existedEmail) {
+    throw new Error("Email đã được sử dụng");
+  }
+
+  // Kiểm tra phonenumber đã tồn tại
+  const existedPhone = await User.findOne({ phone });
+  if (existedPhone) {
+    throw new Error("Số điện thoại đã được sử dụng");
+  }
 
   // Mã hóa mật khẩu
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-
-  // Tạo token xác thực email
-  const verificationToken = crypto.randomBytes(32).toString("hex");
 
   // Tạo người dùng mới
   const newUser = await User.create({
@@ -49,40 +58,15 @@ const registerUser = async (userData) => {
     verificationToken,
   });
 
-  // Gửi email xác thực
-  const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
-  const html = `
-    <h1>Chào mừng, ${firstName} ${lastName}!</h1>
-    <p>Vui lòng xác thực email của bạn bằng cách nhấp vào liên kết dưới đây:</p>
-    <a href="${verificationUrl}">Xác thực Email</a>
-    <p>Liên kết này sẽ hết hạn sau 24 giờ.</p>
-  `;
-  await sendEmail(email, "Xác thực Email của bạn", html);
-
   return newUser;
-};
-
-/**
- * Xác thực email của người dùng
- */
-const verifyUserEmail = async (token) => {
-  const user = await User.findOne({ verificationToken: token });
-  if (!user) {
-    throw new Error("Token xác thực không hợp lệ hoặc đã hết hạn");
-  }
-
-  user.verificationStatus = "verified";
-  user.verificationToken = undefined;
-  await user.save();
-
-  return user;
 };
 
 /**
  * Đăng nhập người dùng
  */
-const loginUser = async (credentials) => {
-  const { username, password } = credentials;
+const loginUser = async (userData) => {
+  const { username, password } = userData;
+
   // Tìm người dùng
   const user = await User.findOne({ username });
   if (!user) {
@@ -95,10 +79,10 @@ const loginUser = async (credentials) => {
     throw new Error("Thông tin đăng nhập không hợp lệ");
   }
 
-  // // Kiểm tra email đã xác thực chưa
-  // if (user.verificationStatus !== "verified") {
-  //   throw new Error("Vui lòng xác thực email trước khi đăng nhập");
-  // }
+  // Kiểm tra trạng thái tài khoản
+  if (user.isBlocked) {
+    throw new ApiError(400, "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.");
+  }
 
   // Tạo tokens
   const accessToken = generateAccessToken(user);
@@ -229,7 +213,6 @@ const getCurrentUserById = async (userId) => {
 
 module.exports = {
   registerUser,
-  verifyUserEmail,
   loginUser,
   forgotUserPassword,
   confirmResetPassword,

@@ -20,6 +20,11 @@ const initRoutes = (app) => {
   app.use("/api/orders", orderRoutes);
   app.use("/api/payment", paymentRoutes);
   app.use("/api/statistics", statisticsRoutes);
+
+  // Xử lý 404
+  app.use((req, res, next) => {
+    next(new ApiError(404, "Not found"));
+  });
 };
 
 module.exports = initRoutes;

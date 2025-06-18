@@ -22,7 +22,7 @@ export const translateOrderStatus = (status) => {
 
 // Chuyển đổi tiếng Anh sang tiếng Việt
 export const statusTranslations = {
-  Pending: 'Đang chờ xử lý',
+  Pending: 'Chờ xác nhận',
   Processing: 'Đang xử lý',
   Shipping: 'Đang giao hàng',
   Delivered: 'Đã giao hàng',
@@ -31,7 +31,7 @@ export const statusTranslations = {
 
 // Danh sách các trạng thái đơn hàng
 export const orderStatuses = [
-  { value: 'Pending', label: 'Đang chờ xử lý' },
+  { value: 'Pending', label: 'Chờ xác nhận' },
   { value: 'Processing', label: 'Đang xử lý' },
   { value: 'Shipping', label: 'Đang giao hàng' },
   { value: 'Delivered', label: 'Đã giao hàng' },

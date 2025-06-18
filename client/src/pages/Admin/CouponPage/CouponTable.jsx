@@ -153,7 +153,7 @@ const CouponTable = ({ searchText, onSearch, onPageChange, onRefresh, onAdd, onE
 
           <Popconfirm
             title='Bạn có chắc chắn muốn xóa mã giảm giá này?'
-            onConfirm={() => onDelete(record._id)}
+            onConfirm={() => onDelete(record)}
             okText='Có'
             cancelText='Không'
             placement='topRight'
@@ -176,7 +176,7 @@ const CouponTable = ({ searchText, onSearch, onPageChange, onRefresh, onAdd, onE
           <Button type='primary' icon={<Plus size={16} />} onClick={() => onAdd()} className='flex items-center'>
             Thêm mã giảm giá mới
           </Button>
-          <Button icon={<RefreshCw size={16} />} onClick={onRefresh} className='flex items-center'>
+          <Button loading={loading} icon={<RefreshCw size={16} />} onClick={onRefresh} className='flex items-center'>
             Làm mới
           </Button>
         </div>

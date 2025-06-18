@@ -36,6 +36,7 @@ export const updateUserAdmin = createAsyncThunk(
       const response = await userService.updateUserByAdmin(userId, userData);
       return response;
     } catch (error) {
+      console.log('adminUserSlice.js - updateUserAdmin error:', error);
       return rejectWithValue(error.response?.data || { message: error.message });
     }
   }

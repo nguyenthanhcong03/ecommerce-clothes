@@ -143,7 +143,7 @@ const UserTable = ({
           <Button type='primary' icon={<Plus size={16} />} onClick={() => onAdd()} className='flex items-center'>
             Thêm người dùng mới
           </Button>
-          <Button icon={<RefreshCw size={16} />} onClick={onRefresh} className='flex items-center'>
+          <Button loading={loading} icon={<RefreshCw size={16} />} onClick={onRefresh} className='flex items-center'>
             Làm mới
           </Button>
         </div>

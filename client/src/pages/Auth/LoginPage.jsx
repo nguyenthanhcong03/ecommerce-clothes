@@ -4,14 +4,13 @@ import { loginUser } from '@/store/slices/accountSlice';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as yup from 'yup';
 
-// Định nghĩa schema validation với yup
 const loginSchema = yup.object().shape({
   username: yup
     .string()
@@ -75,113 +74,80 @@ function LoginPage() {
     }
   };
 
+  useEffect(() => {
+    document.title = 'Outfitory - Đăng nhập';
+  }, []);
+
   return (
-    <div className='px-4 pt-24 sm:px-6 lg:px-8'>
-      <div className='flex min-h-full items-center justify-center'>
-        <div className='w-full max-w-md'>
-          <div className='text-center'>
-            <div className='relative mx-auto mb-8'>
-              {/* Logo/Brand Mark */}
-              <div>{/* <img src={Logo} alt='' /> */}</div>
-            </div>
+    <div className='w-full rounded-lg bg-white p-8 shadow-sm'>
+      <h2 className='mb-6 text-center text-2xl font-bold text-gray-800'>Đăng nhập tài khoản</h2>
 
-            <div className='space-y-4'>
-              <h1 className='relative text-5xl font-black tracking-tight text-black'>
-                <span className='bg-gradient-to-r from-black via-gray-800 to-black bg-clip-text text-transparent'>
-                  OUTFITORY
-                </span>
-                <span className='ml-2 font-light text-gray-600'>FASHION</span>
-              </h1>
+      <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
+        <Controller
+          control={control}
+          name='username'
+          render={({ field }) => (
+            <Input
+              {...field}
+              label='Tên đăng nhập'
+              placeholder='Nhập tên đăng nhập'
+              prefix={<UserOutlined className='text-gray-400' />}
+              required
+              error={errors.username?.message}
+            />
+          )}
+        />
 
-              <div className='relative'>
-                <h2 className='relative text-2xl font-light italic text-gray-700'>
-                  &ldquo;Khám phá phong cách của riêng bạn cùng chúng tôi&rdquo;
-                </h2>
-                <div className='absolute -left-4 -right-4 top-1/2 h-px -translate-y-1/2 transform bg-gradient-to-r from-transparent via-gray-300 to-transparent opacity-50'></div>
-              </div>
+        <Controller
+          control={control}
+          name='password'
+          render={({ field }) => (
+            <Input
+              {...field}
+              type={showPassword ? 'text' : 'password'}
+              label='Mật khẩu'
+              placeholder='Nhập mật khẩu'
+              prefix={<LockOutlined className='text-gray-400' />}
+              suffix={
+                showPassword ? (
+                  <EyeOff onClick={() => setShowPassword(false)} cursor={'pointer'} width={18} />
+                ) : (
+                  <Eye onClick={() => setShowPassword(true)} cursor={'pointer'} width={18} />
+                )
+              }
+              required
+              error={errors.password?.message}
+            />
+          )}
+        />
 
-              {/* Decorative elements */}
-              <div className='mt-6 flex items-center justify-center space-x-4'>
-                <div className='h-px w-8 bg-gradient-to-r from-transparent to-black'></div>
-                <div className='h-2 w-2 rounded-full bg-black'></div>
-                <div className='h-px w-8 bg-gradient-to-l from-transparent to-black'></div>
-              </div>
-            </div>
+        <div className='flex justify-between text-sm'>
+          <div className='flex items-center'>
+            <input
+              type='checkbox'
+              id='remember'
+              className='mr-2 h-4 w-4'
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+            />
+            <label htmlFor='remember'>Nhớ mật khẩu</label>
           </div>
-          <div className='flex items-center justify-center py-8'>
-            <div className='w-full max-w-md rounded-lg bg-white p-8 shadow-sm'>
-              <h2 className='mb-6 text-center text-2xl font-bold text-gray-800'>Đăng nhập tài khoản</h2>
-
-              <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
-                <Controller
-                  control={control}
-                  name='username'
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      label='Tên đăng nhập'
-                      placeholder='Nhập tên đăng nhập'
-                      prefix={<UserOutlined className='text-gray-400' />}
-                      required
-                      error={errors.username?.message}
-                    />
-                  )}
-                />
-
-                <Controller
-                  control={control}
-                  name='password'
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      type={showPassword ? 'text' : 'password'}
-                      label='Mật khẩu'
-                      placeholder='Nhập mật khẩu'
-                      prefix={<LockOutlined className='text-gray-400' />}
-                      suffix={
-                        showPassword ? (
-                          <EyeOff onClick={() => setShowPassword(false)} cursor={'pointer'} width={18} />
-                        ) : (
-                          <Eye onClick={() => setShowPassword(true)} cursor={'pointer'} width={18} />
-                        )
-                      }
-                      required
-                      error={errors.password?.message}
-                    />
-                  )}
-                />
-
-                <div className='flex justify-between text-sm'>
-                  <div className='flex items-center'>
-                    <input
-                      type='checkbox'
-                      id='remember'
-                      className='mr-2 h-4 w-4'
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                    />
-                    <label htmlFor='remember'>Nhớ mật khẩu</label>
-                  </div>
-                  <a href='/forgot-password' className='text-primaryColor hover:underline'>
-                    Quên mật khẩu?
-                  </a>
-                </div>
-
-                <Button type='submit' variant='primary' width='full' isLoading={isSubmitting}>
-                  Đăng nhập
-                </Button>
-
-                <div className='text-center text-sm'>
-                  Chưa có tài khoản?{' '}
-                  <Link to='/register' className='text-primaryColor hover:underline'>
-                    Đăng ký ngay
-                  </Link>
-                </div>
-              </form>
-            </div>
-          </div>
+          <a href='/forgot-password' className='text-primaryColor hover:underline'>
+            Quên mật khẩu?
+          </a>
         </div>
-      </div>
+
+        <Button type='submit' variant='primary' width='full' isLoading={isSubmitting}>
+          Đăng nhập
+        </Button>
+
+        <div className='text-center text-sm'>
+          Chưa có tài khoản?{' '}
+          <Link to='/register' className='text-primaryColor hover:underline'>
+            Đăng ký ngay
+          </Link>
+        </div>
+      </form>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import Header from '@/components/AdminComponents/common/Header';
+import AdminHeader from '@/components/AdminComponents/common/AdminHeader';
 import useDebounce from '@/hooks/useDebounce';
 import { Card, message } from 'antd';
 import { motion } from 'framer-motion';
@@ -191,7 +191,7 @@ const UserPage = () => {
 
   return (
     <div className='relative z-10 flex-1 overflow-auto'>
-      <Header title='Quản lý người dùng' />
+      <AdminHeader title='Quản lý người dùng' />
 
       <main className='mx-auto px-4 py-6 lg:px-8'>
         {/* User Table */}

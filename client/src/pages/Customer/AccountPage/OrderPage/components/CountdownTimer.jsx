@@ -1,7 +1,7 @@
 import { Timer } from 'lucide-react';
 import React, { useEffect, useState, useRef } from 'react';
 
-const CountdownTimer = ({ createdAt, onExpired }) => {
+const CountdownTimer = ({ createdAt, durationMs = 60 * 60 * 1000, onExpired }) => {
   const [timeLeft, setTimeLeft] = useState(null);
   const [isExpired, setIsExpired] = useState(false);
   const hasNotifiedRef = useRef(false);
@@ -13,7 +13,7 @@ const CountdownTimer = ({ createdAt, onExpired }) => {
 
     const calculateTimeLeft = () => {
       const orderTime = new Date(createdAt).getTime();
-      const expiryTime = orderTime + 60 * 60 * 1000; // 1 giờ = 60 phút * 60 giây * 1000ms
+      const expiryTime = orderTime + durationMs; // 1 giờ = 60 phút * 60 giây * 1000ms
       const now = new Date().getTime();
       const difference = expiryTime - now;
 

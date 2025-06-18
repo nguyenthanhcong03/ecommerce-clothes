@@ -166,8 +166,10 @@ const adminCouponSlice = createSlice({
         state.success = false;
       })
       .addCase(createCoupon.fulfilled, (state, action) => {
+        console.log('payload', action.payload);
         state.loading = false;
         state.success = true;
+        state.coupons.unshift(action.payload.data);
         state.message = 'Thêm mã giảm giá thành công';
       })
       .addCase(createCoupon.rejected, (state, action) => {
