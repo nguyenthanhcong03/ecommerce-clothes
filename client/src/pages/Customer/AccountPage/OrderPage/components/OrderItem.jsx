@@ -41,7 +41,7 @@ const OrderItem = ({ order, onCancel }) => {
     message.warning('Đơn hàng đã hết thời gian thanh toán và sẽ bị hủy tự động.');
   };
 
-  const canBeCancelled = ['Pending', 'Processing'].includes(order.status);
+  const canBeCancelled = ['Unpaid', 'Pending', 'Processing'].includes(order.status);
   const canBeReviewed = order.status === 'Delivered' && !order.isReviewed;
 
   return (
@@ -54,7 +54,7 @@ const OrderItem = ({ order, onCancel }) => {
           <OrderStatusBadge status={order?.status} />
           {order?.status === 'Unpaid' && (
             <div className='ml-3'>
-              <CountdownTimer createdAt={order?.createdAt} durationMs={86400000} onExpired={handleOrderExpired} />
+              <CountdownTimer createdAt={order?.createdAt} onExpired={handleOrderExpired} />
             </div>
           )}
         </div>
@@ -106,7 +106,7 @@ const OrderItem = ({ order, onCancel }) => {
               </Button>
             )}
             {canBeReviewed && (
-              <Link to={`/user/order/review/${order._id}`}>
+              <Link to={`/user/order/review-products/${order._id}`}>
                 <Button size='sm' leftIcon={<FileEdit className='h-4 w-4' />}>
                   Đánh giá
                 </Button>

@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { ClipboardList, KeyRound, LogOut, MapPinHouse, Ticket, UserPen, UserRound, UserRoundCog } from 'lucide-react';
+import {
+  ClipboardList,
+  KeyRound,
+  LogOut,
+  MapPinHouse,
+  Star,
+  Ticket,
+  UserPen,
+  UserRound,
+  UserRoundCog
+} from 'lucide-react';
 
 const AccountLayout = () => {
   const location = useLocation();
@@ -22,6 +32,7 @@ const AccountLayout = () => {
       title: 'Đơn hàng và ưu đãi',
       items: [
         { name: 'Đơn mua', path: '/user/order', icon: <ClipboardList width={18} /> },
+        { name: 'Đánh giá của tôi', path: '/user/reviews', icon: <Star width={18} /> },
         { name: 'Kho Voucher', path: '/user/vouchers', icon: <Ticket width={18} /> }
       ]
     }

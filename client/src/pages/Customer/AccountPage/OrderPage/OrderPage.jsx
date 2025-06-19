@@ -5,7 +5,7 @@ import { cancelOrder, fetchUserOrders, setActiveTab } from '@/store/slices/userO
 import { ClipboardList, Loader2, Package, Search, Timer } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 
 const OrderPage = () => {
   const dispatch = useDispatch();
@@ -74,27 +74,6 @@ const OrderPage = () => {
           </div>
         </div>
       </div>
-
-      {/* Thông báo cảnh báo cho đơn hàng chưa thanh toán */}
-      {/* {activeTab === 'unpaid' && orders.length > 0 && (
-        <div className='mb-6 rounded-lg border border-orange-200 bg-orange-50 p-4'>
-          <div className='flex items-start'>
-            <Timer className='mt-0.5 h-5 w-5 flex-shrink-0 text-orange-600' />
-            <div className='ml-3'>
-              <h3 className='text-sm font-medium text-orange-800'>Lưu ý về thời gian thanh toán</h3>
-              <div className='mt-2 text-sm text-orange-700'>
-                <p>
-                  Đơn hàng chưa thanh toán chỉ tồn tại trong <strong>1 giờ</strong> kể từ khi tạo đơn. Sau thời gian
-                  này, đơn hàng sẽ tự động bị hủy.
-                </p>
-                <p className='mt-1'>
-                  Vui lòng hoàn tất thanh toán trước khi hết thời gian để đảm bảo đơn hàng của bạn được xử lý.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )} */}
 
       {/* Tabs */}
       <div className='no-scrollbar mb-6 flex justify-evenly overflow-x-auto rounded-sm border border-gray-200 bg-white shadow-sm'>

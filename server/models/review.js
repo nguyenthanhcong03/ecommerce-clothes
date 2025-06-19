@@ -8,11 +8,16 @@ const reviewSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    orderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+      required: true,
+    },
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
       required: true,
-      index: true,
+      // index: true,
     },
     rating: {
       type: Number,
@@ -24,15 +29,6 @@ const reviewSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: 2000,
-    },
-    images: [
-      {
-        type: String, // Thường là URL ảnh
-      },
-    ],
-    isVerified: {
-      type: Boolean,
-      default: false,
     },
     likes: {
       type: Number,
@@ -47,9 +43,6 @@ const reviewSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
-// Không cho phép cùng một user đánh giá 1 sản phẩm nhiều lần
-reviewSchema.index({ userId: 1, productId: 1 }, { unique: true });
 
 const Review = mongoose.model("Review", reviewSchema);
 

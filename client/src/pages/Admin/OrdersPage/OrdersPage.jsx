@@ -223,7 +223,7 @@ const OrdersPage = () => {
               <span className='rounded-md border border-[#f09535] bg-[#fffaef] px-2 text-[#f09535]'>
                 Chưa thanh toán
               </span>
-              <CountdownTimer createdAt={record.createdAt} durationMs={86400000} />
+              <CountdownTimer createdAt={record.createdAt} />
             </div>
           );
         }

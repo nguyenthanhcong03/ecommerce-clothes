@@ -1,3 +1,4 @@
+import shopLogo from '@/assets/images/outfitory-logo.png'; // Assuming you have a logo image
 import { logoutUser } from '@/store/slices/accountSlice';
 import { Button, message, Modal } from 'antd';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -15,7 +16,6 @@ import {
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { NavLink, useNavigate } from 'react-router-dom';
-import shopLogo from '@/assets/images/outfitory-logo.png'; // Assuming you have a logo image
 
 const SIDEBAR_ITEMS = [
   { name: 'Tổng quan', icon: BarChart2, color: '#333', href: '/admin' },

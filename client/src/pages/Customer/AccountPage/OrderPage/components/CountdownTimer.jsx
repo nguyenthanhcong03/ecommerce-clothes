@@ -1,7 +1,7 @@
 import { Timer } from 'lucide-react';
 import React, { useEffect, useState, useRef, memo } from 'react';
 
-const CountdownTimer = ({ createdAt, durationMs = 60 * 60 * 1000, onExpired }) => {
+const CountdownTimer = ({ createdAt, durationMs = 24 * 60 * 60 * 1000, onExpired }) => {
   const [timeLeft, setTimeLeft] = useState(null);
   const [isExpired, setIsExpired] = useState(false);
   const hasNotifiedRef = useRef(false);

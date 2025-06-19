@@ -2,30 +2,9 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { calculateShippingFee, getDistanceAPI } from '../../services/mapService';
 import { createOrderAPI } from '@/services/orderService';
 
-const initialState = {
-  orderItems: [],
-  shippingInfo: null,
-  paymentMethod: 'COD', // Mặc định là thanh toán khi nhận hàng
-  couponDiscount: 0,
-  appliedCoupon: null,
-  note: '',
-  distance: 0,
-  shippingCost: 0,
-  loading: false,
-  orderSuccess: false,
-  orderError: null,
-  currentOrder: null,
-  calculatingDistance: false, // Trạng thái để theo dõi việc tính toán phí vận chuyển
-  changedPriceProducts: [], // Danh sách sản phẩm thay đổi giá
-  updatedProducts: [], // Sản phẩm đã cập nhật giá mới
-  showPriceChangeModal: false, // Hiển thị modal thông báo thay đổi giá
-  paymentUrl: null // URL thanh toán cho các phương thức online
-};
-
 export const calculateDistance = createAsyncThunk(
   'order/calculateDistance',
   async ({ storeLocation, customerLocation }, { rejectWithValue }) => {
-    console.log(storeLocation, customerLocation);
     try {
       const distance = await getDistanceAPI(storeLocation, customerLocation);
       return distance;
@@ -45,12 +24,31 @@ export const createNewOrder = createAsyncThunk('order/createNewOrder', async (or
   }
 });
 
+const initialState = {
+  orderItems: [],
+  shippingInfo: null,
+  paymentMethod: 'COD', // Mặc định là thanh toán khi nhận hàng
+  coupon: null,
+  couponDiscount: 0,
+  distance: 0,
+  shippingCost: 0,
+  loading: false,
+  orderSuccess: false,
+  orderError: null,
+  currentOrder: null,
+  calculatingDistance: false, // Trạng thái để theo dõi việc tính toán phí vận chuyển
+  changedPriceProducts: [], // Danh sách sản phẩm thay đổi giá
+  updatedProducts: [], // Sản phẩm đã cập nhật giá mới
+  showPriceChangeModal: false, // Hiển thị modal thông báo thay đổi giá
+  paymentUrl: null // URL thanh toán cho các phương thức online
+};
+
 const orderSlice = createSlice({
   name: 'order',
   initialState,
   reducers: {
     // Lưu thông tin giao hàng
-    saveShippingInfo: (state, action) => {
+    setShippingInfo: (state, action) => {
       state.shippingInfo = action.payload;
     },
     // Cập nhật phương thức thanh toán
@@ -62,18 +60,11 @@ const orderSlice = createSlice({
       state.orderItems = action.payload;
     },
     // Áp dụng mã giảm giá
-    applyCoupon: (state, action) => {
-      state.appliedCoupon = action.payload.coupon;
-      state.couponDiscount = action.payload.discountAmount;
+    setCoupon: (state, action) => {
+      state.coupon = action.payload;
     },
-    // Xóa mã giảm giá đã áp dụng
-    removeCoupon: (state) => {
-      state.appliedCoupon = null;
-      state.couponDiscount = 0;
-    },
-    // Cập nhật ghi chú cho đơn hàng
-    updateOrderNote: (state, action) => {
-      state.note = action.payload;
+    setCouponDiscount: (state, action) => {
+      state.couponDiscount = action.payload;
     },
     // Reset state sau khi hoàn thành đơn hàng
     resetOrder: (state) => {
@@ -163,12 +154,11 @@ const orderSlice = createSlice({
 });
 
 export const {
-  saveShippingInfo,
+  setShippingInfo,
   setPaymentMethod,
   setOrderItems,
-  applyCoupon,
-  removeCoupon,
-  updateOrderNote,
+  setCoupon,
+  setCouponDiscount,
   resetOrder,
   clearOrderError,
   setCalculatingDistance,

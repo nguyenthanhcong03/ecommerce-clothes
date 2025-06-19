@@ -46,6 +46,8 @@ function Header() {
     try {
       dispatch(logoutUser());
       message.success('Đăng xuất thành công');
+      // Chuyển hướng về trang chủ sau khi đăng xuất
+      navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
       message.error('Đăng xuất không thành công, vui lòng thử lại sau');

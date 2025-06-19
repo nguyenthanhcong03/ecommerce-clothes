@@ -25,6 +25,10 @@ const orderProductSchema = new mongoose.Schema(
       size: String,
       image: String,
     },
+    isReviewed: {
+      type: Boolean,
+      default: false,
+    },
   },
   { _id: false } // Không cần _id cho mỗi item nếu không dùng đến
 );
@@ -105,44 +109,6 @@ const orderSchema = new mongoose.Schema(
     cancelTime: {
       type: Date,
     },
-    isReviewed: {
-      type: Boolean,
-      default: false,
-    },
-    review: {
-      rating: {
-        type: Number,
-        min: 1,
-        max: 5,
-      },
-      comment: {
-        type: String,
-        maxlength: 1000,
-      },
-      reviewDate: {
-        type: Date,
-      },
-    },
-    productReviews: [
-      {
-        productId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
-        },
-        rating: {
-          type: Number,
-          min: 1,
-          max: 5,
-        },
-        comment: {
-          type: String,
-          maxlength: 1000,
-        },
-        reviewDate: {
-          type: Date,
-        },
-      },
-    ],
     // Lưu trữ thời gian cập nhật trạng thái đơn hàng
     statusUpdates: {
       processing: {

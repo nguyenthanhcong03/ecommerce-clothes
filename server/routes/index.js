@@ -8,6 +8,8 @@ const couponRoutes = require("./couponRoutes");
 const orderRoutes = require("./orderRoutes");
 const paymentRoutes = require("./paymentRoutes");
 const statisticsRoutes = require("./statisticsRoutes");
+const reviewRoutes = require("./reviewRoutes");
+const ApiError = require("../utils/ApiError");
 
 const initRoutes = (app) => {
   app.use("/api/auth", authRoutes);
@@ -20,6 +22,7 @@ const initRoutes = (app) => {
   app.use("/api/orders", orderRoutes);
   app.use("/api/payment", paymentRoutes);
   app.use("/api/statistics", statisticsRoutes);
+  app.use("/api/reviews", reviewRoutes);
 
   // Xử lý 404
   app.use((req, res, next) => {

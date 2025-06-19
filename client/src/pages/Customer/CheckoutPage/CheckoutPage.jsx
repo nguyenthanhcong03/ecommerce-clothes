@@ -1,186 +1,23 @@
 import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import Headline from '@/components/common/Headline/Headline';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
-import { calculateDiscount, validateCouponAPI } from '@/services/couponService';
-import { getDistrictsAPI, getProvincesAPI, getWardsAPI } from '@/services/mapService';
-import {
-  applyCoupon,
-  calculateDistance,
-  confirmUpdatedPrices,
-  createNewOrder,
-  removeCoupon,
-  resetOrder,
-  saveShippingInfo,
-  setPaymentMethod,
-  setShowPriceChangeModal,
-  updateOrderNote
-} from '@/store/slices/orderSlice';
-import { yupResolver } from '@hookform/resolvers/yup';
+import CouponApply from '@/pages/customer/CheckoutPage/components/CouponApply';
+import OrderList from '@/pages/customer/CheckoutPage/components/OrderList';
+import { confirmUpdatedPrices, createNewOrder, resetOrder, setShowPriceChangeModal } from '@/store/slices/orderSlice';
 import { message } from 'antd';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import OrderSuccess from './components/OrderSuccess';
 import OrderSummary from './components/OrderSummary';
 import PaymentMethod from './components/PaymentMethod';
 import PriceChangeModal from './components/PriceChangeModal';
 import ShippingForm from './components/ShippingForm';
-import { checkoutSchema } from './validationSchema';
-import { use } from 'react';
 
 const CheckoutPage = () => {
   const dispatch = useDispatch();
 
-  const [couponCode, setCouponCode] = useState('');
-  const [couponLoading, setCouponLoading] = useState(false);
-  const [couponError, setCouponError] = useState('');
-
-  const [provinces, setProvinces] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [wards, setWards] = useState([]);
-
-  const [isProvinceLoaded, setIsProvinceLoaded] = useState(false);
-  const [isDistrictLoaded, setIsDistrictLoaded] = useState(false);
-  const [isWardLoaded, setIsWardLoaded] = useState(false);
-
-  // Thêm biến state để lưu dữ liệu đơn hàng
-  const [orderData, setOrderData] = useState(null);
-
-  const {
-    orderItems,
-    shippingInfo,
-    orderSuccess,
-    paymentMethod,
-    appliedCoupon,
-    note,
-    loading,
-    paymentUrl,
-    showPriceChangeModal,
-    changedPriceProducts,
-    updatedProducts,
-    distance
-  } = useSelector((state) => state.order);
-
-  const { user } = useSelector((state) => state.account);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    reset,
-    watch
-  } = useForm({
-    resolver: yupResolver(checkoutSchema),
-    mode: 'onChange',
-    defaultValues: {
-      fullName: shippingInfo?.fullName || '',
-      phoneNumber: shippingInfo?.phoneNumber || '',
-      email: shippingInfo?.email || '',
-      street: shippingInfo?.street || '',
-      ward: shippingInfo?.ward || '',
-      district: shippingInfo?.district || '',
-      province: shippingInfo?.province || '',
-      paymentMethod: paymentMethod || 'COD',
-      note: note || ''
-    }
-  });
-
-  const watchProvince = watch('province');
-  const watchDistrict = watch('district');
-
-  // Xử lý áp dụng mã giảm giá
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) {
-      message.warning('Vui lòng nhập mã giảm giá');
-      return;
-    }
-
-    setCouponLoading(true);
-    setCouponError('');
-
-    try {
-      // Tính tổng tiền hiện tại để kiểm tra điều kiện áp dụng coupon
-      const subtotal = orderItems.reduce((total, item) => {
-        const price = item.snapshot.originalPrice || item.snapshot.price;
-        return total + price * item.quantity;
-      }, 0);
-
-      const response = await validateCouponAPI(couponCode, subtotal);
-
-      if (response) {
-        const couponData = response;
-
-        // Tính toán giảm giá
-        const discountCalculation = calculateDiscount(couponData, subtotal);
-
-        // Áp dụng coupon vào đơn hàng
-        dispatch(
-          applyCoupon({
-            coupon: couponData,
-            discountAmount: discountCalculation.discount
-          })
-        );
-
-        message.success(`Đã áp dụng mã giảm giá: ${couponData.code}`);
-      } else {
-        setCouponError(response?.message || 'Mã giảm giá không hợp lệ hoặc đã hết hạn.');
-      }
-    } catch (error) {
-      console.error('Error applying coupon:', error);
-      setCouponError(error?.response?.data?.message || 'Đã xảy ra lỗi khi áp dụng mã giảm giá.');
-    } finally {
-      setCouponLoading(false);
-    }
-  };
-
-  // Xử lý xóa mã giảm giá đã áp dụng
-  const handleRemoveCoupon = () => {
-    dispatch(removeCoupon());
-    setCouponCode('');
-    setCouponError('');
-    message.success('Đã bỏ áp dụng mã giảm giá');
-  };
-
-  // Xử lý khi submit form
-  const onSubmit = (data) => {
-    // Lưu thông tin giao hàng
-    const shippingData = {
-      fullName: data.fullName,
-      phoneNumber: data.phoneNumber,
-      email: data.email,
-      street: data.street,
-      province: data.province,
-      district: data.district,
-      ward: data.ward
-    };
-    dispatch(saveShippingInfo(shippingData));
-    dispatch(setPaymentMethod(data.paymentMethod));
-    dispatch(updateOrderNote(data.note));
-
-    // Chuẩn bị dữ liệu đơn hàng
-    const newOrderData = {
-      products: orderItems,
-      shippingAddress: {
-        fullName: data.fullName,
-        street: data.street,
-        province: data.province,
-        district: data.district,
-        ward: data.ward,
-        phoneNumber: data.phoneNumber,
-        email: data.email
-      },
-      paymentMethod: data.paymentMethod,
-      note: data.note || '',
-      couponCode: couponCode || '',
-      distance: distance || 0
-    };
-
-    // Lưu lại orderData để có thể sử dụng khi xác nhận giá mới
-    setOrderData(newOrderData);
-    console.log('orderData', newOrderData); // 3. Tạo đơn hàng (COD sẽ tạo ngay, VNPay/Momo sẽ trả về paymentUrl)
-    dispatch(createNewOrder(newOrderData));
-  };
+  const { orderSuccess, loading, paymentUrl, showPriceChangeModal, changedPriceProducts, updatedProducts } =
+    useSelector((state) => state.order);
 
   // Xử lý khi đóng modal thay đổi giá
   const handleCancelPriceChange = () => {
@@ -195,7 +32,7 @@ const CheckoutPage = () => {
 
     // Thực hiện đặt hàng lại với giá mới
     const updatedOrderData = {
-      ...orderData,
+      // ...orderData,
       products: updatedProducts
     };
 
@@ -204,90 +41,6 @@ const CheckoutPage = () => {
     // Gọi lại API đặt hàng
     dispatch(createNewOrder(updatedOrderData));
   };
-
-  // Load danh sách tỉnh
-  useEffect(() => {
-    const fetchProvinces = async () => {
-      try {
-        const response = await getProvincesAPI();
-        setProvinces(response);
-        setIsProvinceLoaded(true);
-      } catch (error) {
-        console.error('Error loading provinces:', error);
-      }
-    };
-
-    fetchProvinces();
-  }, []);
-
-  // Khi chọn tỉnh → load huyện
-  useEffect(() => {
-    const fetchDistricts = async () => {
-      try {
-        const response = await getDistrictsAPI(watchProvince);
-        setDistricts(response);
-        setIsDistrictLoaded(true);
-      } catch (error) {
-        console.error('Error loading district:', error);
-      }
-    };
-
-    if (watchProvince) {
-      fetchDistricts();
-    } else {
-      setDistricts([]);
-      setValue('district', '');
-      setWards([]);
-      setValue('ward', '');
-    }
-  }, [watchProvince, setValue]);
-
-  // Khi chọn quận => load phường/xã
-  useEffect(() => {
-    const fetchWards = async () => {
-      try {
-        const response = await getWardsAPI(watchDistrict);
-        setWards(response);
-        setIsWardLoaded(true);
-      } catch (error) {
-        console.error('Error loading ward:', error);
-      }
-    };
-    if (watchDistrict) {
-      fetchWards();
-
-      // Tính phí vận chuyển khi đã chọn quận/huyện
-      if (watchProvince && watchDistrict) {
-        const customerLocation = `${watchDistrict}, ${watchProvince}, Việt Nam`;
-        const storeLocation = '175 Tây Sơn, Trung Liệt, Đống Đa, Hà Nội, Việt Nam';
-        // Tính khoảng cách giữa hai địa điểm
-        dispatch(calculateDistance({ storeLocation, customerLocation }));
-      }
-    } else {
-      setWards([]);
-      setValue('ward', '');
-    }
-  }, [watchProvince, watchDistrict, setValue, dispatch]);
-
-  // ✅ Nếu có user, điền dữ liệu mặc định
-  useEffect(() => {
-    if (!user) return;
-    reset({
-      fullName: user?.lastName + ' ' + user?.firstName,
-      email: user?.email,
-      phoneNumber: user?.phone,
-      street: user?.address?.street
-    });
-    if (isProvinceLoaded) {
-      setValue('province', user?.address?.province || '');
-    }
-    if (isDistrictLoaded) {
-      setValue('district', user?.address?.district || '');
-    }
-    if (isWardLoaded) {
-      setValue('ward', user?.address?.ward || '');
-    }
-  }, [user, isProvinceLoaded, isDistrictLoaded, isWardLoaded, setValue, reset]);
 
   // Reset order state khi unmount component
   useEffect(() => {
@@ -335,38 +88,21 @@ const CheckoutPage = () => {
         <Headline text1={'đừng bỏ lỡ ưu đãi, hãy tiến hành thanh toán'} text2={'THANH TOÁN'} />
       </div>
       <div className=''>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className='space-y-6'>
+        <div className='space-y-6'>
           <div className='grid grid-cols-1 gap-6 lg:grid-cols-5'>
             {/* Thông tin đặt hàng - Left Column */}
             <div className='space-y-6 lg:col-span-3'>
-              {/* Shipping Information */}{' '}
-              <ShippingForm
-                register={register}
-                errors={errors}
-                provinces={provinces}
-                districts={districts}
-                wards={wards}
-                watchProvince={watchProvince}
-                watchDistrict={watchDistrict}
-                setValue={setValue}
-              />
-              {/* Payment Methods */}
-              <PaymentMethod register={register} errors={errors} watch={watch} />
+              <ShippingForm />
+              <PaymentMethod />
             </div>
-
-            {/* Order Summary - Right Column */}
-            <OrderSummary
-              isLoading={loading}
-              handleApplyCoupon={handleApplyCoupon}
-              handleRemoveCoupon={handleRemoveCoupon}
-              couponCode={couponCode}
-              setCouponCode={setCouponCode}
-              couponLoading={couponLoading}
-              couponError={couponError}
-              setCouponError={setCouponError}
-            />
+            {/* Danh sách đơn hàng và tóm tắt - Right Column */}
+            <div className='space-y-6 lg:sticky lg:top-5 lg:col-span-2 lg:self-start'>
+              <OrderList />
+              <CouponApply />
+              <OrderSummary />
+            </div>
           </div>
-        </form>
+        </div>
       </div>
 
       {/* Thêm modal thông báo thay đổi giá */}

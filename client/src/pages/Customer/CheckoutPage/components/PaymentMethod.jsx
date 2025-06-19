@@ -1,35 +1,40 @@
 import MomoLogo from '@/assets/images/momo_icon_square_pinkbg@3x.png';
 import VNPayLogo from '@/assets/images/vnpay-logo-vinadesign-25-12-59-16.jpg';
+import { setPaymentMethod } from '@/store/slices/orderSlice';
 import { Truck } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
 
-const PaymentMethod = ({ register, errors, watch }) => {
-  const watchedPaymentMethod = watch('paymentMethod');
+const paymentMethods = [
+  {
+    id: 'COD',
+    label: 'Thanh toán khi nhận hàng (COD)',
+    description: 'Thanh toán bằng tiền mặt khi nhận hàng tại địa chỉ giao hàng',
+    icon: <Truck size={24} className='text-amber-500' />,
+    value: 'COD'
+  },
+  {
+    id: 'VNPay',
+    label: 'VNPay',
+    description: 'Thanh toán trực tuyến qua cổng thanh toán VNPay',
+    icon: <img width={24} src={VNPayLogo} alt='VNPay Logo' />,
+    value: 'VNPay'
+  },
+  {
+    id: 'Momo',
+    label: 'Ví Momo',
+    description: 'Thanh toán trực tuyến an toàn qua Momo>',
+    icon: <img width={24} src={MomoLogo} alt=' Momo Logo' />,
+    value: 'Momo'
+  }
+];
 
-  // Payment method options with icons
-  const paymentMethods = [
-    {
-      id: 'COD',
-      label: 'Thanh toán khi nhận hàng (COD)',
-      description: 'Thanh toán bằng tiền mặt khi nhận hàng tại địa chỉ giao hàng',
-      icon: <Truck size={24} className='text-amber-500' />,
-      value: 'COD'
-    },
-    {
-      id: 'VNPay',
-      label: 'VNPay',
-      description: 'Thanh toán trực tuyến qua cổng thanh toán VNPay',
-      icon: <img width={24} src={VNPayLogo} alt='VNPay Logo' />,
-      value: 'VNPay'
-    },
-    {
-      id: 'Momo',
-      label: 'Momo',
-      description: 'Thanh toán trực tuyến an toàn qua Momo>',
-      icon: <img width={24} src={MomoLogo} alt=' Momo Logo' />,
-      value: 'Momo'
-    }
-  ];
+const PaymentMethod = () => {
+  const dispatch = useDispatch();
+  const { paymentMethod } = useSelector((state) => state.order);
 
+  const handleSetPaymentMethod = (method) => {
+    dispatch(setPaymentMethod(method));
+  };
   return (
     <div className='rounded-sm bg-white p-6'>
       <h2 className='mb-6 text-xl font-bold'>Phương thức thanh toán</h2>
@@ -39,15 +44,16 @@ const PaymentMethod = ({ register, errors, watch }) => {
           <label
             key={method.id}
             className={`flex cursor-pointer items-center gap-4 rounded-sm border p-4 transition-all ${
-              watchedPaymentMethod === method.id
+              paymentMethod === method.value
                 ? 'border-primaryColor bg-[#f3f3f3]'
                 : 'hover:border-gray-400 hover:bg-gray-50'
             }`}
           >
             <input
               type='radio'
-              value={method.id}
-              {...register('paymentMethod')}
+              value={method.value}
+              checked={paymentMethod === method.value}
+              onChange={() => handleSetPaymentMethod(method.value)}
               className='mt-1 h-5 w-5 cursor-pointer accent-primaryColor'
             />
 
@@ -59,8 +65,6 @@ const PaymentMethod = ({ register, errors, watch }) => {
             </div>
           </label>
         ))}
-
-        {errors.paymentMethod && <p className='mt-2 text-sm text-red-600'>{errors.paymentMethod.message}</p>}
       </div>
     </div>
   );

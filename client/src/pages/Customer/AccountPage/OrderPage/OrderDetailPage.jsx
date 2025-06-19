@@ -127,7 +127,7 @@ const OrderDetailPage = () => {
               <h3 className='text-sm font-medium text-orange-800'>Lưu ý về thời gian thanh toán</h3>
               <div className='mt-2 text-sm text-orange-700'>
                 <p>
-                  Đơn hàng chưa thanh toán chỉ tồn tại trong <strong>1 giờ</strong> kể từ khi tạo đơn. Sau thời gian
+                  Đơn hàng chưa thanh toán chỉ tồn tại trong <strong>1 ngày</strong> kể từ khi tạo đơn. Sau thời gian
                   này, đơn hàng sẽ tự động bị hủy.
                 </p>
                 <p className='mt-1'>
@@ -258,16 +258,18 @@ const OrderDetailPage = () => {
                       : ''}
               </p>
 
-              <div className='mt-2 flex items-center'>
-                <span
-                  className={`mr-2 inline-block h-3 w-3 rounded-full ${
-                    orderDetail?.payment?.isPaid ? 'bg-green-500' : 'bg-amber-500'
-                  }`}
-                />
-                <span className={orderDetail?.payment?.isPaid ? 'text-green-700' : 'text-amber-700'}>
-                  {orderDetail?.payment?.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
-                </span>
-              </div>
+              {orderDetail?.payment?.method !== 'COD' && (
+                <div className='mt-2 flex items-center'>
+                  <span
+                    className={`mr-2 inline-block h-3 w-3 rounded-full ${
+                      orderDetail?.payment?.isPaid ? 'bg-green-500' : 'bg-amber-500'
+                    }`}
+                  />
+                  <span className={orderDetail?.payment?.isPaid ? 'text-green-700' : 'text-amber-700'}>
+                    {orderDetail?.payment?.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                  </span>
+                </div>
+              )}
 
               {orderDetail?.payment?.isPaid && orderDetail?.payment?.paidAt && (
                 <p className='text-sm text-gray-500'>Thanh toán lúc: {formatDate(orderDetail?.payment?.paidAt)}</p>
@@ -293,10 +295,10 @@ const OrderDetailPage = () => {
               )}
 
               {canBeReviewed && (
-                <Link to={`/user/order/review/${orderDetail._id}`}>
+                <Link to={`/user/order/review-products/${orderDetail._id}`}>
                   <Button className='w-full'>
                     <FileEdit className='mr-2 h-4 w-4' />
-                    Đánh giá đơn hàng
+                    Đánh giá sản phẩm
                   </Button>
                 </Link>
               )}

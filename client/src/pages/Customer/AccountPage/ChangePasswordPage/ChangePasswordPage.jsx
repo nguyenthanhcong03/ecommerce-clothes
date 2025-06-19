@@ -101,7 +101,7 @@ const ChangePasswordPage = () => {
   };
 
   const handleResetForm = () => {
-    // reset();
+    reset();
     dispatch(clearError());
     dispatch(clearSuccessMessage());
   };
@@ -260,7 +260,7 @@ const ChangePasswordPage = () => {
               }
             />
           </div>
-          {/* Password Requirements */}
+          {/* Các yêu cầu của mật khẩu */}
           <div className='rounded-sm border border-blue-200 bg-blue-50 p-4'>
             <h3 className='mb-2 text-sm font-medium text-blue-900'>Yêu cầu mật khẩu:</h3>
             <ul className='space-y-1 text-sm text-blue-700'>
@@ -310,7 +310,7 @@ const ChangePasswordPage = () => {
         </form>
       </div>
 
-      {/* Security Tips */}
+      {/* Các mẹo bảo mật */}
       <div className='mt-8 rounded-sm bg-gray-50 p-6'>
         <h3 className='mb-3 flex items-center space-x-2 text-lg font-medium text-gray-900'>
           <Shield className='h-4 w-4 text-blue-600' />

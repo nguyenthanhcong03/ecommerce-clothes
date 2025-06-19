@@ -21,6 +21,8 @@ import HomePage from '@/pages/customer/HomePage/HomePage.jsx';
 import NewsPage from '@/pages/customer/NewsPage/NewsPage.jsx';
 import ProductDetail from '@/pages/customer/ProductDetail/ProductDetail.jsx';
 import WishlistPage from '@/pages/customer/WishlistPage/WishlistPage.jsx';
+import UserReviewsPage from '@/pages/customer/AccountPage/UserReviewsPage/UserReviewsPage.jsx';
+import ReviewOrderProductsPage from '@/pages/customer/AccountPage/OrderPage/ReviewOrderProductsPage.jsx';
 
 import AccountLayout from '@/components/layout/AccountLayout';
 import AnalyticsPage from '@/pages/admin/AnalyticsPage/AnalyticsPage.jsx';
@@ -32,13 +34,12 @@ import ProductPage from '@/pages/admin/ProductPage/ProductPage.jsx';
 import SettingsPage from '@/pages/admin/SettingsPage/SettingsPage.jsx';
 import UserPage from '@/pages/admin/UserPage/UserPage.jsx';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
-import ChangePasswordPage from '@/pages/customer/AccountPage/ChangePasswordPage.jsx';
+import ChangePasswordPage from '@/pages/customer/AccountPage/ChangePasswordPage/ChangePasswordPage.jsx';
 import OrderDetailPage from '@/pages/customer/AccountPage/OrderPage/OrderDetailPage.jsx';
 import OrderPage from '@/pages/customer/AccountPage/OrderPage/OrderPage.jsx';
-import OrderReviewPage from '@/pages/customer/AccountPage/OrderPage/OrderReviewPage.jsx';
-import PrivacyPage from '@/pages/customer/AccountPage/PrivacyPage.jsx';
-import ProfilePage from '@/pages/customer/AccountPage/ProfilePage.jsx';
-import VoucherPage from '@/pages/customer/AccountPage/VoucherPage.jsx';
+import PrivacyPage from '@/pages/customer/AccountPage/PrivacyPage/PrivacyPage.jsx';
+import ProfilePage from '@/pages/customer/AccountPage/ProfilePage/ProfilePage.jsx';
+import VoucherPage from '@/pages/customer/AccountPage/VoucherPage/VoucherPage.jsx';
 import OurShopPage from '@/pages/customer/OurShopPage/OurShopPage';
 import PaymentSuccessPage from '@/pages/customer/PaymentSuccessPage/PaymentSuccessPage.jsx';
 import PaymentFailedPage from '@/pages/customer/PaymentFailedPage/PaymentFailedPage.jsx';
@@ -83,14 +84,10 @@ const authRoutes = [
         <ForgotPasswordPage />
       </ProtectedRoute>
     )
-  },
-  {
-    path: 'unauthorized',
-    element: <Unauthorized />
   }
 ];
 
-// Customer authenticated routes
+// Khách hàng đã đăng nhập
 const customerProtectedRoutes = [
   {
     path: 'cart',
@@ -151,14 +148,22 @@ const customerProtectedRoutes = [
         element: <OrderDetailPage />
       },
       {
-        path: 'order/review/:orderId',
-        element: <OrderReviewPage />
+        path: 'order/review-products/:orderId',
+        element: <ReviewOrderProductsPage />
+      },
+      {
+        path: 'reviews',
+        element: <UserReviewsPage />
       },
       {
         path: 'vouchers',
         element: <VoucherPage />
       }
     ]
+  },
+  {
+    path: 'unauthorized',
+    element: <Unauthorized />
   }
 ];
 

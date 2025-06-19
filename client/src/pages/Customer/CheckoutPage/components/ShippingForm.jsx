@@ -1,59 +1,163 @@
 import Input from '@/components/common/Input/Input';
 import Select from '@/components/common/Select/Select';
-import PropTypes from 'prop-types';
-import { memo } from 'react';
-import { useSelector } from 'react-redux';
+import { checkoutSchema } from '@/pages/customer/CheckoutPage/validationSchema';
+import { getDistrictsAPI, getProvincesAPI, getWardsAPI } from '@/services/mapService';
+import { calculateDistance, setShippingInfo } from '@/store/slices/orderSlice';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useDispatch, useSelector } from 'react-redux';
 
-const ShippingForm = ({ register, errors, provinces, districts, wards, watchProvince, watchDistrict, setValue }) => {
+const ShippingForm = () => {
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.account);
+  const { shippingInfo, note } = useSelector((state) => state.order);
 
-  const fillUserInfo = () => {
-    if (user) {
-      // Điền thông tin cá nhân
-      if (user.firstName && user.lastName) {
-        setValue('fullName', `${user.lastName} ${user.firstName}`);
-      }
-      if (user.email) {
-        setValue('email', user.email);
-      }
-      if (user.phone) {
-        setValue('phoneNumber', user.phone);
-      }
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
 
-      // Điền thông tin địa chỉ
-      if (user.address) {
-        if (user.address.street) {
-          setValue('street', user.address.street);
-        }
-        if (user.address.province) {
-          setValue('province', user.address.province);
-        }
-        if (user.address.district) {
-          setValue('district', user.address.district);
-        }
-        if (user.address.ward) {
-          setValue('ward', user.address.ward);
-        }
-      }
+  const [isProvinceLoaded, setIsProvinceLoaded] = useState(false);
+  const [isDistrictLoaded, setIsDistrictLoaded] = useState(false);
+  const [isWardLoaded, setIsWardLoaded] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    reset,
+    watch
+  } = useForm({
+    resolver: yupResolver(checkoutSchema),
+    mode: 'onChange',
+    defaultValues: {
+      fullName: shippingInfo?.fullName || '',
+      phoneNumber: shippingInfo?.phoneNumber || '',
+      email: shippingInfo?.email || '',
+      street: shippingInfo?.street || '',
+      ward: shippingInfo?.ward || '',
+      district: shippingInfo?.district || '',
+      province: shippingInfo?.province || '',
+      note: note || ''
     }
+  });
+
+  const watchProvince = watch('province');
+  const watchDistrict = watch('district');
+
+  // Xử lý khi submit form
+  const onSubmit = (data) => {
+    console.log('data', data);
+    // Lưu thông tin giao hàng
+    const shippingData = {
+      fullName: data.fullName,
+      phoneNumber: data.phoneNumber,
+      email: data.email,
+      street: data.street,
+      province: data.province,
+      district: data.district,
+      ward: data.ward,
+      note: data.note || ''
+    };
+    dispatch(setShippingInfo(shippingData));
   };
+
+  // Load danh sách tỉnh
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        const response = await getProvincesAPI();
+        setProvinces(response);
+        setIsProvinceLoaded(true);
+      } catch (error) {
+        console.error('Error loading provinces:', error);
+      }
+    };
+
+    fetchProvinces();
+  }, []);
+
+  // Khi chọn tỉnh → load huyện
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      try {
+        const response = await getDistrictsAPI(watchProvince);
+        setDistricts(response);
+        setIsDistrictLoaded(true);
+        setValue('district', '');
+        setWards([]);
+        setValue('ward', '');
+      } catch (error) {
+        console.error('Error loading district:', error);
+      }
+    };
+
+    if (watchProvince) {
+      fetchDistricts();
+    } else {
+      setDistricts([]);
+      setValue('district', '');
+      setWards([]);
+      setValue('ward', '');
+    }
+  }, [watchProvince, setValue]);
+
+  // Khi chọn quận => load phường/xã
+  useEffect(() => {
+    const fetchWards = async () => {
+      try {
+        const response = await getWardsAPI(watchDistrict);
+        setWards(response);
+        setIsWardLoaded(true);
+        setValue('ward', '');
+      } catch (error) {
+        console.error('Error loading ward:', error);
+      }
+    };
+    if (watchDistrict) {
+      fetchWards();
+
+      // Tính phí vận chuyển khi đã chọn quận/huyện
+      if (watchProvince && watchDistrict) {
+        const watchProvinceName = provinces.find((p) => p.value === +watchProvince)?.label || '';
+        const watchDistrictcode = districts.find((d) => d.value === +watchDistrict)?.label || '';
+
+        const customerLocation = `${watchDistrictcode}, ${watchProvinceName}, Việt Nam`;
+        console.log('customerLocation', customerLocation);
+        const storeLocation = '175 Tây Sơn, Trung Liệt, Đống Đa, Hà Nội, Việt Nam';
+        // Tính khoảng cách giữa hai địa điểm
+        dispatch(calculateDistance({ storeLocation, customerLocation }));
+      }
+    } else {
+      setWards([]);
+      setValue('ward', '');
+    }
+  }, [watchProvince, watchDistrict, provinces, districts, setValue, dispatch]);
+
+  // ✅ Nếu có user, điền dữ liệu mặc định
+  useEffect(() => {
+    if (!user) return;
+    reset({
+      fullName: user?.lastName + ' ' + user?.firstName,
+      email: user?.email,
+      phoneNumber: user?.phone,
+      street: user?.address?.street
+    });
+    if (user?.address && isProvinceLoaded) {
+      setValue('province', user?.address?.province || '');
+    }
+    if (user?.address && isDistrictLoaded) {
+      setValue('district', user?.address?.district || '');
+    }
+    if (user?.address && isWardLoaded) {
+      setValue('ward', user?.address?.ward || '');
+    }
+  }, [user, isProvinceLoaded, isDistrictLoaded, isWardLoaded, setValue, reset]);
 
   return (
     <div className='rounded-sm bg-white p-6'>
-      <div className='mb-6 flex items-center justify-between'>
-        <h2 className='text-xl font-bold'>Thông tin giao hàng</h2>
-        {user && (
-          <button
-            type='button'
-            onClick={fillUserInfo}
-            className='rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-100'
-          >
-            Dùng thông tin cá nhân
-          </button>
-        )}
-      </div>
-
-      <div className='space-y-6'>
+      <form id='form-order-shipping' onSubmit={handleSubmit(onSubmit)} noValidate className='space-y-6'>
         <div>
           {/* Họ tên */}
           <Input
@@ -140,28 +244,9 @@ const ShippingForm = ({ register, errors, provinces, districts, wards, watchProv
             rows={3}
           />
         </div>
-      </div>
+      </form>
     </div>
   );
-};
-
-ShippingForm.propTypes = {
-  register: PropTypes.func.isRequired,
-  errors: PropTypes.shape({
-    fullName: PropTypes.shape({ message: PropTypes.string }),
-    email: PropTypes.shape({ message: PropTypes.string }),
-    phoneNumber: PropTypes.shape({ message: PropTypes.string }),
-    province: PropTypes.shape({ message: PropTypes.string }),
-    district: PropTypes.shape({ message: PropTypes.string }),
-    ward: PropTypes.shape({ message: PropTypes.string }),
-    street: PropTypes.shape({ message: PropTypes.string })
-  }),
-  provinces: PropTypes.array.isRequired,
-  districts: PropTypes.array.isRequired,
-  wards: PropTypes.array.isRequired,
-  watchProvince: PropTypes.string,
-  watchDistrict: PropTypes.string,
-  setValue: PropTypes.func.isRequired
 };
 
 export default ShippingForm;
