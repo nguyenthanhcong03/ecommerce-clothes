@@ -1,10 +1,9 @@
 import Button from '@/components/common/Button';
 import PropTypes from 'prop-types';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Unauthorized = () => {
-  const location = useLocation();
-  console.log('Unauthorized component rendered, location:', location.state);
+  const navigate = useNavigate();
 
   return (
     <div className='flex min-h-screen flex-col items-center justify-center px-4 text-center'>
@@ -31,11 +30,9 @@ const Unauthorized = () => {
           lỗi.
         </p>{' '}
         <div className='flex flex-col space-y-4'>
-          <Link to={location.state?.from} className='w-full'>
-            <Button variant='secondary' className='w-full'>
-              Quay lại
-            </Button>
-          </Link>
+          <Button variant='secondary' className='w-full' onClick={() => navigate(-1)}>
+            Quay lại
+          </Button>
           <Link to='/'>
             <Button className='w-full'>Trở về trang chủ</Button>
           </Link>
