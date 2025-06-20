@@ -116,7 +116,7 @@ const customerProtectedRoutes = [
   {
     path: 'user',
     element: (
-      <ProtectedRoute roles={['customer']}>
+      <ProtectedRoute roles={['admin', 'customer']}>
         <AccountLayout />
       </ProtectedRoute>
     ),
@@ -141,23 +141,43 @@ const customerProtectedRoutes = [
       },
       {
         path: 'order',
-        element: <OrderPage />
+        element: (
+          <ProtectedRoute roles={['customer']}>
+            <OrderPage />
+          </ProtectedRoute>
+        )
       },
       {
         path: 'order/detail/:orderId',
-        element: <OrderDetailPage />
+        element: (
+          <ProtectedRoute roles={['customer']}>
+            <OrderDetailPage />
+          </ProtectedRoute>
+        )
       },
       {
         path: 'order/review-products/:orderId',
-        element: <ReviewOrderProductsPage />
+        element: (
+          <ProtectedRoute roles={['customer']}>
+            <ReviewOrderProductsPage />
+          </ProtectedRoute>
+        )
       },
       {
         path: 'reviews',
-        element: <UserReviewsPage />
+        element: (
+          <ProtectedRoute roles={['customer']}>
+            <UserReviewsPage />
+          </ProtectedRoute>
+        )
       },
       {
         path: 'vouchers',
-        element: <VoucherPage />
+        element: (
+          <ProtectedRoute roles={['customer']}>
+            <VoucherPage />
+          </ProtectedRoute>
+        )
       }
     ]
   },

@@ -1,9 +1,10 @@
 import avatarDefault from '@/assets/images/user.png';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const UserDropdown = ({ handleLogout }) => {
+  const location = useLocation();
   const { isAuthenticated, user } = useSelector((state) => state.account);
   const isAdmin = isAuthenticated && user?.role === 'admin';
   return (

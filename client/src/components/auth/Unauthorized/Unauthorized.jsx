@@ -1,11 +1,10 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import PropTypes from 'prop-types';
 import Button from '@/components/common/Button';
+import PropTypes from 'prop-types';
+import { Link, useLocation } from 'react-router-dom';
 
 const Unauthorized = () => {
   const location = useLocation();
-  const from = location.state?.from || '/';
+  console.log('Unauthorized component rendered, location:', location.state);
 
   return (
     <div className='flex min-h-screen flex-col items-center justify-center px-4 text-center'>
@@ -30,9 +29,9 @@ const Unauthorized = () => {
         <p className='mb-8 text-gray-600'>
           Bạn không có quyền truy cập trang này. Vui lòng liên hệ với quản trị viên của bạn nếu bạn tin rằng đây là một
           lỗi.
-        </p>
+        </p>{' '}
         <div className='flex flex-col space-y-4'>
-          <Link to={from}>
+          <Link to={location.state?.from} className='w-full'>
             <Button variant='secondary' className='w-full'>
               Quay lại
             </Button>

@@ -52,12 +52,12 @@ function RegisterPage() {
   const [emailCheck, setEmailCheck] = useState({ isChecking: false, message: '', error: false });
   // Lấy state từ Redux store
   const { isLoading, successMessage } = useSelector((state) => state.account);
-
   const {
     control,
     handleSubmit,
     watch,
     setError,
+    clearErrors,
     formState: { errors, isSubmitting }
   } = useForm({
     resolver: yupResolver(registerSchema),
@@ -92,42 +92,57 @@ function RegisterPage() {
         navigate('/login', { state: location.state });
       }, 2000);
     }
-  }, [successMessage, dispatch, navigate, location.state]);
-
-  // Kiểm tra username khi người dùng nhập
+  }, [successMessage, dispatch, navigate, location.state]); // Kiểm tra username khi người dùng nhập
   useEffect(() => {
     const checkUsername = async () => {
+      // Regex pattern cho username hợp lệ
+      const usernamePattern = /^[a-zA-Z0-9._-]+$/;
+
       if (debouncedUsername && debouncedUsername.length >= 3) {
-        setUsernameCheck({ isChecking: true, message: '', error: false });
+        // Chỉ kiểm tra API nếu username hợp lệ theo regex
+        if (usernamePattern.test(debouncedUsername)) {
+          setUsernameCheck({ isChecking: true, message: '', error: false });
 
-        try {
-          const result = await checkUsernameExistsAPI(debouncedUsername);
+          try {
+            const result = await checkUsernameExistsAPI(debouncedUsername);
 
-          if (result.success) {
+            if (result.success) {
+              setUsernameCheck({
+                isChecking: false,
+                message: result.message,
+                error: result.exists
+              });
+              // Chỉ setError khi username tồn tại, không xóa lỗi validation khác
+              if (result.exists) {
+                setError('username', {
+                  type: 'manual',
+                  message: 'Tên đăng nhập đã tồn tại'
+                });
+              } else {
+                // Clear manual error nếu username không tồn tại và hợp lệ
+                clearErrors('username');
+              }
+            }
+          } catch {
             setUsernameCheck({
               isChecking: false,
-              message: result.message,
-              error: result.exists
-            });
-            setError('username', {
-              type: 'manual',
-              message: result.exists ? 'Tên đăng nhập đã tồn tại' : ''
+              message: 'Không thể kiểm tra username',
+              error: false
             });
           }
-        } catch {
-          setUsernameCheck({
-            isChecking: false,
-            message: 'Không thể kiểm tra username',
-            error: false
-          });
+        } else {
+          // Username không hợp lệ theo regex, reset state nhưng không xóa lỗi validation
+          setUsernameCheck({ isChecking: false, message: '', error: false });
         }
       } else if (debouncedUsername === '') {
         setUsernameCheck({ isChecking: false, message: '', error: false });
+        // Clear manual errors khi username rỗng
+        clearErrors('username');
       }
     };
 
     checkUsername();
-  }, [debouncedUsername, setError]);
+  }, [debouncedUsername, setError, clearErrors]);
 
   // Xử lý khi submit form
   const onSubmit = async (data) => {
@@ -140,9 +155,7 @@ function RegisterPage() {
     } catch (error) {
       console.error('Lỗi đăng ký:', error);
     }
-  };
-
-  // Kiểm tra email khi người dùng nhập
+  }; // Kiểm tra email khi người dùng nhập
   useEffect(() => {
     const checkEmail = async () => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -159,10 +172,16 @@ function RegisterPage() {
               message: result.message,
               error: result.exists
             });
-            setError('email', {
-              type: 'manual',
-              message: result.exists ? 'Email đã tồn tại' : ''
-            });
+            // Chỉ setError khi email tồn tại, không xóa lỗi validation khác
+            if (result.exists) {
+              setError('email', {
+                type: 'manual',
+                message: 'Email đã tồn tại'
+              });
+            } else {
+              // Clear manual error nếu email không tồn tại và hợp lệ
+              clearErrors('email');
+            }
           }
         } catch {
           setEmailCheck({
@@ -172,12 +191,13 @@ function RegisterPage() {
           });
         }
       } else if (debouncedEmail === '') {
-        setEmailCheck({ isChecking: false, message: '', error: false });
+        setEmailCheck({ isChecking: false, message: '', error: false }); // Clear manual errors khi email rỗng
+        clearErrors('email');
       }
     };
 
     checkEmail();
-  }, [debouncedEmail, setError]);
+  }, [debouncedEmail, setError, clearErrors]);
 
   useEffect(() => {
     document.title = 'Outfitory - Đăng ký';

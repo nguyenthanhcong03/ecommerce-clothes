@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   ClipboardList,
   KeyRound,
@@ -12,13 +12,28 @@ import {
   UserRound,
   UserRoundCog
 } from 'lucide-react';
+import { logoutUser } from '@/store/slices/accountSlice';
+import { message } from 'antd';
 
 const AccountLayout = () => {
   const location = useLocation();
   const user = useSelector((state) => state.account?.user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  // Account navigation items
+  const handleLogout = async () => {
+    try {
+      dispatch(logoutUser());
+      message.success('Đăng xuất thành công');
+      // Chuyển hướng về trang chủ sau khi đăng xuất
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      message.error('Đăng xuất không thành công, vui lòng thử lại sau');
+      return;
+    }
+  };
+
   const navItems = [
     {
       title: 'Thông tin tài khoản',
@@ -27,16 +42,18 @@ const AccountLayout = () => {
         { name: 'Đổi mật khẩu', path: '/user/change-password', icon: <KeyRound width={18} /> },
         { name: 'Cài đặt quyền riêng tư', path: '/user/privacy-settings', icon: <UserRoundCog width={18} /> }
       ]
-    },
-    {
+    }
+  ];
+  if (user?.role === 'customer') {
+    navItems.push({
       title: 'Đơn hàng và ưu đãi',
       items: [
         { name: 'Đơn mua', path: '/user/order', icon: <ClipboardList width={18} /> },
         { name: 'Đánh giá của tôi', path: '/user/reviews', icon: <Star width={18} /> },
         { name: 'Kho Voucher', path: '/user/vouchers', icon: <Ticket width={18} /> }
       ]
-    }
-  ];
+    });
+  }
 
   // Check if the current path matches the item path
   const isActive = (path) => {
@@ -101,10 +118,13 @@ const AccountLayout = () => {
             </nav>
 
             <div className='mt-6 border-t border-gray-200 pt-6'>
-              <Link to='/logout' className='flex items-center text-sm font-medium text-red-500 hover:text-red-600'>
+              <button
+                onClick={handleLogout}
+                className='flex items-center text-sm font-medium text-red-500 hover:text-red-600'
+              >
                 <LogOut className='mr-2' />
                 Đăng xuất
-              </Link>
+              </button>
             </div>
           </div>
         </div>
