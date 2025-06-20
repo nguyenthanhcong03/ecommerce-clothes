@@ -13,7 +13,13 @@ const ProtectedRoute = ({
   const { user, isAuthenticated, isLoading } = useSelector((state) => state.account);
 
   if (isLoading) {
-    return fallbackComponent || <LoadingSpinner fullPage />;
+    return (
+      fallbackComponent || (
+        <div className='absolute inset-0 flex h-screen w-screen items-center justify-center bg-black/50'>
+          <div className='h-12 w-12 animate-spin rounded-full border-t-4 border-solid border-white'></div>
+        </div>
+      ) || <LoadingSpinner fullPage />
+    );
   }
 
   // Chuyển hướng người dùng không được xác thực đến trang đăng nhập với đường dẫn trở về

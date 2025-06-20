@@ -4,6 +4,7 @@ import { loginUser } from '@/store/slices/accountSlice';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { message } from 'antd';
+import { se } from 'date-fns/locale';
 import { Eye, EyeOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -26,7 +27,6 @@ function LoginPage() {
   const dispatch = useDispatch();
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { loading } = useSelector((state) => state.account);
 
   const {
     control,
