@@ -212,7 +212,7 @@ const ProfilePage = () => {
         setLoadingUpload(true);
         try {
           // Upload avatar trước bằng fileService
-          const uploadResponse = await fileService.uploadSingle(avatarFile, 'ecommerce/avatars');
+          const uploadResponse = await uploadFileAPI(avatarFile, 'ecommerce/avatars');
           // Lấy URL hình ảnh từ response
           if (uploadResponse?.data?.url) {
             // Thêm URL avatar vào dữ liệu cập nhật

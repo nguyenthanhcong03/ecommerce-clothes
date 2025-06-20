@@ -43,7 +43,7 @@ const SortSection = ({ currentCategory, viewMode, setViewMode, sortOptions, para
             if (sortBy === 'name') return `name_${sortOrder}`;
             if (sortBy === 'rating') return 'rating_desc';
             if (sortBy === 'popular') return 'popular';
-            if (sortBy === 'createdAt' && sortOrder === 'desc') return 'newest';
+            if (sortBy === 'createdAt' && sortOrder === 'desc') return 'default';
             return 'default';
           })()}
           onChange={(e) => onSortChange(e.target.value)}

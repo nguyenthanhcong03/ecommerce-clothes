@@ -129,7 +129,6 @@ const getAllProducts = async (req, res) => {
 
     const sort = {};
 
-    // Handle special sorts
     if (sortBy === "price") {
       sort["variants.price"] = sortOrder === "asc" ? 1 : -1;
     } else if (sortBy === "popular") {

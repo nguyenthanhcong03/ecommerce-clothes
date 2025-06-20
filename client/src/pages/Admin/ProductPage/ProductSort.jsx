@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 const { Option } = Select;
 
 const ProductSort = ({ onSortChange }) => {
-  const { products, pagination, filters, sort, loading, error } = useSelector((state) => state.adminProduct);
+  const { sort } = useSelector((state) => state.adminProduct);
 
   return (
     <div className='mb-4 flex items-center justify-end'>

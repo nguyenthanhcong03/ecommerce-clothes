@@ -13,34 +13,7 @@ import {
 // Định nghĩa async thunk để gọi API
 export const fetchProducts = createAsyncThunk('product/fetchProducts', async (params, { rejectWithValue }) => {
   try {
-    const {
-      page = 1,
-      limit = 8,
-      search = '',
-      category = '',
-      minPrice = '',
-      maxPrice = '',
-      sortBy = 'createdAt',
-      sortOrder = 'desc',
-      size = '',
-      color = '',
-      rating = ''
-    } = params;
-    console.log('params', params);
-
-    // const queryParams = new URLSearchParams({
-    //   page: page.toString(),
-    //   limit: limit.toString(),
-    //   ...(search && { search }),
-    //   ...(category && { category }),
-    //   ...(minPrice && { minPrice }),
-    //   ...(maxPrice && { maxPrice }),
-    //   ...(sortBy && { sortBy }),
-    //   ...(sortOrder && { sortOrder }),
-    //   ...(size && { size }),
-    //   ...(color && { color }),
-    //   ...(rating && { rating })
-    // });
+    console.log('Fetching products with params:', params);
     const response = await getAllProductsAPI(params);
     console.log('API Response:', response.data);
     return response.data;

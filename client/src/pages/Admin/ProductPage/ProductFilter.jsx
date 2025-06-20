@@ -7,8 +7,6 @@ import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 
 const ProductFilter = ({ onFilterChange, onResetFilter }) => {
-  const { products, pagination, filters, sort, loading, error } = useSelector((state) => state.adminProduct);
-
   const dispatch = useDispatch();
   const { categoriesTree } = useSelector((state) => state.category);
   const [expanded, setExpanded] = useState(false);

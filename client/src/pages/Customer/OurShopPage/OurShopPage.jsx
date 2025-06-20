@@ -20,8 +20,8 @@ const sortOptions = [
   { label: 'Mặc định', value: 'default' },
   { label: 'Giá: Thấp đến cao', value: 'price_asc' },
   { label: 'Giá: Cao đến thấp', value: 'price_desc' },
-  { label: 'Tên: A-Z', value: 'name_asc' },
-  { label: 'Tên: Z-A', value: 'name_desc' },
+  { label: 'Tên: A-Z', value: 'name_desc' },
+  { label: 'Tên: Z-A', value: 'name_asc' },
   { label: 'Mới nhất', value: 'latest' },
   { label: 'Bán chạy nhất', value: 'popular' },
   { label: 'Đánh giá cao', value: 'rating_desc' }
@@ -34,8 +34,11 @@ function OurShopPage() {
   const { catId } = useParams();
   const [params, setParams] = useSearchParams();
 
+  const [viewMode, setViewMode] = useState('grid');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
   const search = params.get('search') || '';
-  // Generate breadcrumb items
+
   const breadcrumbItems = useMemo(() => {
     const items = [
       {
@@ -53,7 +56,6 @@ function OurShopPage() {
       items.push(...pathItems);
     }
 
-    // Add search keyword to breadcrumb if there's a search query
     if (search) {
       items.push({
         label: `Tìm kiếm: "${search}"`,
@@ -70,9 +72,6 @@ function OurShopPage() {
     return findCategoryById(categoriesTree, catId);
   }, [catId, categoriesTree]);
 
-  const [viewMode, setViewMode] = useState('grid');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-
   const handlePageChange = (page) => {
     if (page === 1) {
       params.delete('page');
@@ -83,9 +82,46 @@ function OurShopPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSortChange = (value) => {
-    params.set('sortBy', value);
-    params.delete('page'); // Reset về trang 1 và xóa khỏi URL
+  const handleSortChange = (newSortOption) => {
+    switch (newSortOption) {
+      case 'default':
+        params.set('sortBy', 'createdAt');
+        params.set('sortOrder', 'desc');
+        break;
+      case 'popular':
+        params.set('sortBy', 'popular');
+        params.set('sortOrder', 'desc');
+        break;
+      case 'latest':
+        params.set('sortBy', 'createdAt');
+        params.set('sortOrder', 'desc');
+        break;
+      case 'price_asc':
+        params.set('sortBy', 'price');
+        params.set('sortOrder', 'asc');
+        break;
+      case 'price_desc':
+        params.set('sortBy', 'price');
+        params.set('sortOrder', 'desc');
+        break;
+      case 'name_asc':
+        params.set('sortBy', 'name');
+        params.set('sortOrder', 'asc');
+        break;
+      case 'name_desc':
+        params.set('sortBy', 'name');
+        params.set('sortOrder', 'desc');
+        break;
+      case 'rating_desc':
+        params.set('sortBy', 'rating');
+        params.set('sortOrder', 'desc');
+        break;
+      default:
+        params.set('sortBy', 'createdAt');
+        params.set('sortOrder', 'desc');
+        break;
+    }
+    params.delete('page');
     setParams(params);
   };
 
