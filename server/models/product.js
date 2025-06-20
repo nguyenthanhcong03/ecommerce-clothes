@@ -56,7 +56,8 @@ const productSchema = new mongoose.Schema(
     variants: [variantSchema],
     images: [
       {
-        type: String,
+        type: String, // URL của hình ảnh
+        required: true,
       },
     ],
     tags: [

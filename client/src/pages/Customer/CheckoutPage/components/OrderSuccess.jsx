@@ -1,13 +1,16 @@
-import React, { memo, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import boxIcon from '@/assets/icons/boxIcon.svg';
+import creditCardIcon from '@/assets/icons/debitCardIcon.svg';
+import truckIcon from '@/assets/icons/truckIcon.svg';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import { formatDate } from '@/utils/format/formatDate';
 import { translateOrderStatus } from '@/utils/helpers/orderStatusUtils';
 import { ArrowLeft, Clock, MapPin, Package, Printer } from 'lucide-react';
-import boxIcon from '@/assets/icons/boxIcon.svg';
-import creditCardIcon from '@/assets/icons/debitCardIcon.svg';
-import truckIcon from '@/assets/icons/truckIcon.svg';
+import { memo, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+
+import MomoLogo from '@/assets/images/momo_icon_square_pinkbg@3x.png';
+import VNPayLogo from '@/assets/images/vnpay-logo-vinadesign-25-12-59-16.jpg';
 
 // Component hiển thị thông tin từng sản phẩm trong đơn hàng
 const OrderProductItem = memo(({ product }) => {
@@ -65,29 +68,13 @@ const OrderSuccess = () => {
   // Chọn icon phù hợp với phương thức thanh toán
   const getPaymentIcon = (method) => {
     switch (method) {
-      case 'Credit Card':
-        return <img src={creditCardIcon} alt='Credit Card' className='mr-2 h-6 w-6' />;
       case 'COD':
         return <img src={boxIcon} alt='COD' className='mr-2 h-6 w-6' />;
-      case 'Bank Transfer':
-        return (
-          <span className='mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-blue-100'>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              className='h-4 w-4 text-blue-600'
-              fill='none'
-              viewBox='0 0 24 24'
-              stroke='currentColor'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-              />
-            </svg>
-          </span>
-        );
+      case 'VNPay':
+        return <img src={VNPayLogo} alt='Thanh toán trực tuyến qua cổng thanh toán VNPay' className='mr-2 h-6 w-6' />;
+
+      case 'Momo':
+        return <img src={MomoLogo} alt='Thanh toán trực tuyến an toàn qua Momo' className='mr-2 h-6 w-6' />;
       default:
         return <img src={creditCardIcon} alt='Payment' className='mr-2 h-6 w-6' />;
     }
@@ -109,7 +96,7 @@ const OrderSuccess = () => {
   }
 
   return (
-    <div className='mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8'>
+    <div className='mx-auto max-w-4xl px-4 py-[120px] sm:px-6 lg:px-8'>
       {/* Header thành công */}
       <div className='mb-8 text-center'>
         <div className='mb-6 flex items-center justify-center'>

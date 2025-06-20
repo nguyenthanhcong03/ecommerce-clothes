@@ -141,7 +141,6 @@ const adminProductSlice = createSlice({
       })
       .addCase(createProduct.fulfilled, (state, action) => {
         state.loading = false;
-        console.log('action.payload', action.payload);
         state.products.unshift(action.payload);
       })
       .addCase(createProduct.rejected, (state, action) => {
@@ -155,7 +154,6 @@ const adminProductSlice = createSlice({
         state.error = null;
       })
       .addCase(updateProductById.fulfilled, (state, action) => {
-        console.log('action.payload', action.payload);
         state.loading = false;
         const updatedProduct = action.payload.data;
         state.products = state.products.map((product) =>

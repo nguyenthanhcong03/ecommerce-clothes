@@ -28,14 +28,14 @@ export const uploadMultipleFilesAPI = (files, folder = 'uploads') => {
   });
 };
 
-export const deleteFileAPI = (fileIdentifier) => {
+export const deleteFileAPI = (url) => {
   return axios.delete(`${BASE_API}/cloud/delete`, {
-    data: fileIdentifier.includes('cloudinary.com') ? { url: fileIdentifier } : { publicId: fileIdentifier }
+    data: url.includes('cloudinary.com') ? { url: url } : { publicId: url }
   });
 };
 
-export const deleteMultipleFilesAPI = (fileIdentifiers) => {
+export const deleteMultipleFilesAPI = (urls) => {
   return axios.delete(`${BASE_API}/cloud/delete/multiple`, {
-    data: { files: fileIdentifiers }
+    data: { files: urls }
   });
 };

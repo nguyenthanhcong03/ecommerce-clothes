@@ -138,7 +138,7 @@ export const accountSlice = createSlice({
       .addCase(registerUser.fulfilled, (state) => {
         state.isLoading = false;
         state.error = null;
-        state.successMessage = 'Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản.';
+        state.successMessage = 'Đăng ký thành công!.';
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.error = action.payload || 'Đăng ký thất bại';
@@ -175,7 +175,6 @@ export const accountSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
-        console.log('first', action.payload);
         state.user = action.payload.data;
         state.isAuthenticated = true;
         state.isLoading = false;

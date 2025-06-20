@@ -12,12 +12,9 @@ import { useNavigate } from 'react-router-dom';
 function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowActionButtons = true }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [selectedSize, setSelectedSize] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
-  const [displayImage, setDisplayImage] = useState(item?.images[0]);
-  const [hoverImage, setHoverImage] = useState(item?.images[1] || item?.images[0]);
 
   const { variantOptions, getSelectedPrice } = useProductVariants(item);
+
   // Hàm xử lý sự kiện khi nhấn nút "Mua ngay"
   const handleBuyNow = () => {
     dispatch(openProductDetailModal(item._id));
@@ -33,10 +30,10 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
     <div className='flex h-full w-full flex-col items-start justify-start overflow-hidden rounded-sm border bg-white hover:opacity-95 hover:shadow-xl'>
       <div className='group relative max-h-[340px] w-full cursor-pointer'>
         <div onClick={handleNavigateToDetail}>
-          <img className='max-h-[340px] w-full object-cover' src={displayImage} alt={item?.name} />
+          <img className='max-h-[340px] w-full object-cover' src={item?.images[0]} alt={item?.name} />
           <img
             className='absolute bottom-0 left-0 right-0 top-0 max-h-[340px] w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:transition-opacity group-hover:duration-300'
-            src={hoverImage}
+            src={item?.images[1] || item?.images[0]}
           />
         </div>
 
@@ -54,12 +51,7 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
           <div className='flex w-full justify-center gap-1'>
             {variantOptions.colors.map((color) => {
               return (
-                <button
-                  key={color}
-                  className={`h-[25px] w-[25px] rounded-full border p-[2px] text-[10px] sm:text-xs ${
-                    selectedColor === color && 'border-black text-black'
-                  }`}
-                >
+                <button key={color} className='h-[25px] w-[25px] rounded-full border p-[2px] text-[10px] sm:text-xs'>
                   {COLOR_OPTIONS.map(
                     (option) =>
                       option.name === color && (

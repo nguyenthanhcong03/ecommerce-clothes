@@ -14,65 +14,8 @@ const categorySchema = yup.object({
   name: yup.string().required('Tên danh mục là bắt buộc').trim(),
   parentId: yup.string().nullable().default(null),
   description: yup.string().trim().optional(),
-  images: yup.array().of(yup.mixed()).min(1, 'Phải chọn ít nhất một ảnh'),
-  priority: yup.number().default(0).min(0, 'Ưu tiên phải là số không âm')
+  images: yup.array().of(yup.mixed()).min(1, 'Phải chọn ít nhất một ảnh')
 });
-
-// // Component tải lên hình ảnh có thể tái sử dụng
-// const ImageUpload = memo(({ value = [], onChange, disabled }) => {
-//   const handleChange = ({ fileList }) => {
-//     // Xử lý xem trước cho các file mới
-//     const newFileList = fileList.map((file) => {
-//       if (!file.url && !file.preview && file.originFileObj) {
-//         file.preview = URL.createObjectURL(file.originFileObj);
-//       }
-//       return file;
-//     });
-
-//     onChange(newFileList);
-//   };
-
-//   const onPreview = useCallback((file) => {
-//     const src = file.url || file.preview;
-//     const imgWindow = window.open(src);
-//     imgWindow?.document.write(`<img src="${src}" />`);
-//   }, []);
-
-//   // Xử lý danh sách file để hiển thị
-//   const fileList = Array.isArray(value)
-//     ? value.map((item) => {
-//         if (typeof item === 'string') {
-//           // Nếu item là một chuỗi URL
-//           return {
-//             uid: item,
-//             name: item.split('/').pop(),
-//             status: 'done',
-//             url: item
-//           };
-//         }
-//         return item;
-//       })
-//     : [];
-
-//   return (
-//     <Upload
-//       // multiple // Cho phép chọn nhiều file trong explorer
-//       listType='picture-card'
-//       beforeUpload={() => false} // Không tải lên ngay lập tức
-//       fileList={fileList} // danh sách file hiện tại
-//       onChange={handleChange}
-//       onPreview={onPreview}
-//       disabled={disabled}
-//     >
-//       {value?.length < 1 && !disabled && (
-//         <div>
-//           <UploadOutlined />
-//           <div style={{ marginTop: 8 }}>Chọn ảnh</div>
-//         </div>
-//       )}
-//     </Upload>
-//   );
-// });
 
 const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
   const dispatch = useDispatch();
@@ -138,8 +81,7 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
       name: '',
       parentId: null,
       description: '',
-      images: [],
-      priority: 0
+      images: []
     }
   });
 
@@ -151,8 +93,7 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
         name: selectedCategory?.name || '',
         parentId: selectedCategory?.parentId || null,
         description: selectedCategory?.description || '',
-        images: selectedCategory?.images || [],
-        priority: selectedCategory?.priority || 0
+        images: selectedCategory?.images || []
       });
       // Không gọi setLocalFiles ở đây để tránh render thừa
     }
@@ -197,7 +138,7 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
       }
 
       // Chuyển đổi kết quả tải lên thành định dạng phù hợp
-      const uploadedFiles = response.data.map((file) => ({
+      const uploadedFiles = response?.data?.detailedResults.map((file) => ({
         uid: file.public_id,
         name: file.public_id.split('/').pop(),
         status: 'done',
@@ -260,7 +201,6 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
         name: data.name,
         description: data.description || '',
         parentId: data.parentId || null,
-        priority: data.priority,
         images: processedImages.map((file) => (typeof file === 'string' ? file : file.url))
       };
 
@@ -407,30 +347,6 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
             )}
           />
         </Form.Item>
-
-        <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-          {/* Trường nhập mức độ ưu tiên */}
-          <Form.Item
-            label='Ưu tiên'
-            help={errors.priority?.message}
-            validateStatus={errors.priority ? 'error' : ''}
-            tooltip='Giá trị cao sẽ hiển thị trước'
-          >
-            <Controller
-              name='priority'
-              control={control}
-              render={({ field }) => (
-                <Input
-                  type='number'
-                  {...field}
-                  placeholder='Nhập mức ưu tiên'
-                  min={0}
-                  disabled={uploading || loading}
-                />
-              )}
-            />
-          </Form.Item>
-        </div>
       </Form>
     </Modal>
   );

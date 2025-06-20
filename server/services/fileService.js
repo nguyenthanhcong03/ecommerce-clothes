@@ -76,52 +76,85 @@ const uploadMultipleFilesService = async (files, folder = "uploads") => {
 };
 
 /**
- * Xóa một file từ Cloudinary theo public_id hoặc URL
- * @param {String|Object} file - public_id, URL hoặc đối tượng file
- * @returns {Promise} - Trả về kết quả xóa từ Cloudinary
+ * Trích xuất public_id từ URL Cloudinary
+ * @param {String} url - URL Cloudinary
+ * @returns {String} - public_id
  */
-const deleteFileService = async (file) => {
+const extractPublicIdFromUrl = (url) => {
   try {
-    let publicId;
+    // Regex để trích xuất public_id từ URL Cloudinary
+    // URL format: https://res.cloudinary.com/[cloud_name]/[resource_type]/upload/[version]/[public_id].[format]
+    // hoặc: https://res.cloudinary.com/[cloud_name]/[resource_type]/upload/[public_id].[format]
 
-    if (typeof file === "string") {
-      // Nếu đó là URL, trích xuất public_id
-      if (file.includes("cloudinary.com")) {
-        // Tách URL để lấy phần path sau upload/
-        const regex = /\/upload\/(.+)\.\w+$/;
-        const match = file.match(regex);
+    // Loại bỏ tham số query nếu có
+    const cleanUrl = url.split("?")[0];
 
-        if (match && match[1]) {
-          publicId = match[1];
-        } else {
-          // Phương pháp dự phòng nếu regex không khớp
-          const urlParts = file.split("/");
-          // Lấy vị trí của "upload" trong URL
-          const uploadIndex = urlParts.findIndex((part) => part === "upload");
+    // Tìm vị trí của "upload/" trong URL
+    const uploadPattern = /\/upload\/(?:v\d+\/)?([^\.]+)/;
+    const match = cleanUrl.match(uploadPattern);
 
-          if (uploadIndex !== -1 && uploadIndex < urlParts.length - 1) {
-            // Lấy phần sau "upload" đến trước phần mở rộng
-            const filenameParts = urlParts[urlParts.length - 1].split(".");
-            const filenameWithoutExt = filenameParts[0];
-
-            const folderPath = urlParts.slice(uploadIndex + 1, urlParts.length - 1).join("/");
-            publicId = folderPath ? `${folderPath}/${filenameWithoutExt}` : filenameWithoutExt;
-          } else {
-            throw new Error("URL không hợp lệ, không thể trích xuất public_id");
-          }
-        }
-      } else {
-        // Đã là public_id
-        publicId = file;
-      }
-    } else if (file && file.public_id) {
-      // Là đối tượng kết quả Cloudinary
-      publicId = file.public_id;
-    } else {
-      throw new Error("Tham chiếu file không hợp lệ");
+    if (match && match[1]) {
+      return match[1];
     }
 
-    return await cloudinary.uploader.destroy(publicId);
+    // Phương pháp dự phòng - tách URL thủ công
+    const urlParts = cleanUrl.split("/");
+    const uploadIndex = urlParts.findIndex((part) => part === "upload");
+
+    if (uploadIndex !== -1 && uploadIndex < urlParts.length - 1) {
+      // Bỏ qua version nếu có (vXXXX)
+      let startIndex = uploadIndex + 1;
+      if (urlParts[startIndex] && urlParts[startIndex].match(/^v\d+$/)) {
+        startIndex++;
+      }
+
+      // Lấy phần từ sau upload (và version nếu có) đến cuối, loại bỏ extension
+      const pathParts = urlParts.slice(startIndex);
+      const lastPart = pathParts[pathParts.length - 1];
+      const lastPartWithoutExt = lastPart.split(".")[0];
+
+      pathParts[pathParts.length - 1] = lastPartWithoutExt;
+      return pathParts.join("/");
+    }
+
+    throw new Error("Không thể trích xuất public_id từ URL");
+  } catch (error) {
+    throw new Error(`URL không hợp lệ: ${error.message}`);
+  }
+};
+
+/**
+ * Xóa một file từ Cloudinary theo URL
+ * @param {String} url - URL của file trên Cloudinary
+ * @returns {Promise} - Trả về kết quả xóa từ Cloudinary
+ */
+const deleteFileService = async (url) => {
+  try {
+    if (!url || typeof url !== "string") {
+      throw new Error("URL không hợp lệ");
+    }
+
+    // Kiểm tra xem có phải là URL Cloudinary không
+    if (!url.includes("cloudinary.com")) {
+      throw new Error("URL không phải từ Cloudinary");
+    }
+
+    // Trích xuất public_id từ URL
+    const publicId = extractPublicIdFromUrl(url);
+
+    console.log(`Đang xóa file với public_id: ${publicId}`);
+
+    // Xóa file từ Cloudinary
+    const result = await cloudinary.uploader.destroy(publicId);
+
+    // Kiểm tra kết quả xóa
+    if (result.result === "ok") {
+      console.log(`Đã xóa thành công file: ${publicId}`);
+    } else if (result.result === "not found") {
+      console.log(`File không tồn tại: ${publicId}`);
+    }
+
+    return result;
   } catch (error) {
     console.error("Lỗi xóa file:", error);
     throw error;
@@ -130,13 +163,33 @@ const deleteFileService = async (file) => {
 
 /**
  * Xóa nhiều files từ Cloudinary
- * @param {Array} files - Mảng các public_ids, URLs hoặc đối tượng file
+ * @param {Array} urls - Mảng các URLs của files cần xóa
  * @returns {Promise} - Trả về mảng kết quả xóa từ Cloudinary
  */
-const deleteMultipleFilesService = async (files) => {
+const deleteMultipleFilesService = async (urls) => {
   try {
-    const deletePromises = files.map((file) => deleteFileService(file));
-    return Promise.all(deletePromises);
+    if (!Array.isArray(urls) || urls.length === 0) {
+      throw new Error("Danh sách URLs không hợp lệ");
+    }
+
+    console.log(`Đang xóa ${urls.length} files...`);
+
+    const deletePromises = urls.map((url, index) =>
+      deleteFileService(url).catch((error) => {
+        console.error(`Lỗi xóa file ${index + 1}:`, error);
+        return { error: error.message, url };
+      })
+    );
+
+    const results = await Promise.all(deletePromises);
+
+    // Thống kê kết quả
+    const successful = results.filter((result) => !result.error);
+    const failed = results.filter((result) => result.error);
+
+    console.log(`Hoàn thành xóa files: ${successful.length} thành công, ${failed.length} thất bại`);
+
+    return results;
   } catch (error) {
     console.error("Lỗi xóa nhiều files:", error);
     throw error;
@@ -161,4 +214,5 @@ module.exports = {
   deleteFileService,
   deleteMultipleFilesService,
   formatImagesForDB,
+  extractPublicIdFromUrl,
 };

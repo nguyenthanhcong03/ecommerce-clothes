@@ -4,7 +4,7 @@ import { setPaymentMethod } from '@/store/slices/orderSlice';
 import { Truck } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 
-const paymentMethods = [
+const PAYMENT_METHODS = [
   {
     id: 'COD',
     label: 'Thanh toán khi nhận hàng (COD)',
@@ -40,7 +40,7 @@ const PaymentMethod = () => {
       <h2 className='mb-6 text-xl font-bold'>Phương thức thanh toán</h2>
 
       <div className='space-y-3'>
-        {paymentMethods.map((method) => (
+        {PAYMENT_METHODS.map((method) => (
           <label
             key={method.id}
             className={`flex cursor-pointer items-center gap-4 rounded-sm border p-4 transition-all ${

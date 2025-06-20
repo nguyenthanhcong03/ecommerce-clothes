@@ -16,8 +16,6 @@ const getAllUsers = catchAsync(async (req, res) => {
     sortBy: req.query.sortBy || "createdAt",
     sortOrder: req.query.sortOrder === "asc" ? 1 : -1,
   };
-  console.log("filters", filters);
-  console.log("options", options);
 
   const result = await userService.getAllUsers(filters, options);
   res.status(200).json(result);

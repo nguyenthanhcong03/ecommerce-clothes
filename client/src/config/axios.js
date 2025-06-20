@@ -8,7 +8,7 @@ let isRefreshing = false;
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
-  timeout: 10000,
+  // timeout: 10000,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -80,15 +80,8 @@ const handleSessionExpired = () => {
   if (!hasShownSessionExpiredMessage) {
     hasShownSessionExpiredMessage = true;
 
-    message.error('Phiên đăng nhập của bạn đã hết hạn, vui lòng đăng nhập lại.', {
-      position: 'top-right',
-      autoClose: 3000,
-      toastId: 'session-expired',
-      onClose: () => {
-        // Có thể gọi logout API để xóa cookie ở server
-        logoutAndRedirect();
-      }
-    });
+    message.error('Phiên đăng nhập của bạn đã hết hạn, vui lòng đăng nhập lại.');
+    logoutAndRedirect();
   }
 };
 

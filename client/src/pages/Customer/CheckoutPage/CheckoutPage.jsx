@@ -5,7 +5,7 @@ import CouponApply from '@/pages/customer/CheckoutPage/components/CouponApply';
 import OrderList from '@/pages/customer/CheckoutPage/components/OrderList';
 import { confirmUpdatedPrices, createNewOrder, resetOrder, setShowPriceChangeModal } from '@/store/slices/orderSlice';
 import { message } from 'antd';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import OrderSuccess from './components/OrderSuccess';
 import OrderSummary from './components/OrderSummary';
@@ -15,9 +15,16 @@ import ShippingForm from './components/ShippingForm';
 
 const CheckoutPage = () => {
   const dispatch = useDispatch();
+  const shippingFormRef = useRef();
 
   const { orderSuccess, loading, paymentUrl, showPriceChangeModal, changedPriceProducts, updatedProducts } =
     useSelector((state) => state.order);
+
+  const [orderData, setOrderData] = useState(null); // state để lưu dữ liệu đơn hàng
+
+  const handleSubmitFromOrderSummary = () => {
+    shippingFormRef.current?.submitForm(); // Gọi hàm submit từ OrderSummary
+  };
 
   // Xử lý khi đóng modal thay đổi giá
   const handleCancelPriceChange = () => {
@@ -32,7 +39,7 @@ const CheckoutPage = () => {
 
     // Thực hiện đặt hàng lại với giá mới
     const updatedOrderData = {
-      // ...orderData,
+      ...orderData,
       products: updatedProducts
     };
 
@@ -92,14 +99,14 @@ const CheckoutPage = () => {
           <div className='grid grid-cols-1 gap-6 lg:grid-cols-5'>
             {/* Thông tin đặt hàng - Left Column */}
             <div className='space-y-6 lg:col-span-3'>
-              <ShippingForm />
+              <ShippingForm ref={shippingFormRef} setOrderData={setOrderData} />
               <PaymentMethod />
             </div>
             {/* Danh sách đơn hàng và tóm tắt - Right Column */}
             <div className='space-y-6 lg:sticky lg:top-5 lg:col-span-2 lg:self-start'>
               <OrderList />
               <CouponApply />
-              <OrderSummary />
+              <OrderSummary onSubmitShipping={handleSubmitFromOrderSummary} />
             </div>
           </div>
         </div>

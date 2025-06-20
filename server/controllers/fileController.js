@@ -22,7 +22,9 @@ const uploadFile = async (req, res) => {
     // Upload lên Cloudinary
     const result = await uploadSingleFileService(req.files.file, folder);
 
-    // Trả về phản hồi thành công
+    console.log("Upload thành công:", result.public_id);
+
+    // Trả về phản hồi thành công với thông tin đầy đủ
     res.status(200).json({
       success: true,
       message: "Tải lên file thành công",
@@ -33,6 +35,8 @@ const uploadFile = async (req, res) => {
         height: result.height,
         format: result.format,
         resource_type: result.resource_type,
+        folder: folder,
+        created_at: result.created_at,
       },
     });
   } catch (error) {
@@ -54,18 +58,38 @@ const uploadMultipleFiles = async (req, res) => {
         message: "Không có files nào được tải lên",
       });
     }
+
     // Lấy tham số thư mục hoặc sử dụng giá trị mặc định
     const folder = req.query.folder || "uploads";
+
+    console.log("Đang upload nhiều files vào folder:", folder);
+
     // Upload lên Cloudinary
     const results = await uploadMultipleFilesService(req.files, folder);
+
     // Định dạng cho cơ sở dữ liệu nếu cần
     const formattedResults = formatImagesForDB(results);
-    // Trả về phản hồi thành công
+
+    console.log(`Upload thành công ${results.length} files`);
+
+    // Trả về phản hồi thành công với thông tin chi tiết
     res.status(200).json({
       success: true,
       message: `${results.length} files đã được tải lên thành công`,
-      data: formattedResults,
-      rawResults: results, // Bao gồm kết quả gốc để gỡ lỗi hoặc sử dụng khác
+      data: {
+        count: results.length,
+        folder: folder,
+        files: formattedResults,
+        detailedResults: results.map((result) => ({
+          url: result.secure_url,
+          public_id: result.public_id,
+          width: result.width,
+          height: result.height,
+          format: result.format,
+          resource_type: result.resource_type,
+          created_at: result.created_at,
+        })),
+      },
     });
   } catch (error) {
     console.error("DEBUG: Lỗi tải lên nhiều files:", error);
@@ -79,29 +103,43 @@ const uploadMultipleFiles = async (req, res) => {
 
 /**
  * Xóa một file từ Cloudinary
- * @route DELETE /api/file/delete
+ * @route DELETE /api/file/cloud/delete
  * @access Public/Private (tùy thuộc vào middleware)
  */
 const deleteFile = async (req, res) => {
   try {
-    const { publicId, url } = req.body;
+    const { url } = req.body;
 
-    if (!publicId && !url) {
+    if (!url) {
       return res.status(400).json({
         success: false,
-        message: "Cần cung cấp publicId hoặc URL để xóa file",
+        message: "Cần cung cấp URL để xóa file",
       });
     }
 
     // Xóa file từ Cloudinary
-    const result = await deleteFileService(publicId || url);
+    const result = await deleteFileService(url);
 
-    // Trả về phản hồi thành công
-    res.status(200).json({
-      success: true,
-      message: "File đã được xóa thành công",
-      data: result,
-    });
+    // Kiểm tra kết quả và trả về phản hồi phù hợp
+    if (result.result === "ok") {
+      res.status(200).json({
+        success: true,
+        message: "File đã được xóa thành công",
+        data: result,
+      });
+    } else if (result.result === "not found") {
+      res.status(404).json({
+        success: false,
+        message: "File không tồn tại hoặc đã được xóa trước đó",
+        data: result,
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: "Không thể xóa file",
+        data: result,
+      });
+    }
   } catch (error) {
     console.error("Lỗi khi xóa file:", error);
     res.status(500).json({
@@ -114,28 +152,42 @@ const deleteFile = async (req, res) => {
 
 /**
  * Xóa nhiều files từ Cloudinary
- * @route DELETE /api/file/delete/multiple
+ * @route DELETE /api/file/cloud/delete/multiple
  * @access Public/Private (tùy thuộc vào middleware)
  */
 const deleteMultipleFiles = async (req, res) => {
   try {
     const { files } = req.body;
+    console.log("req.body:", req.body);
 
     if (!files || !Array.isArray(files) || files.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "Cần cung cấp mảng files (publicIds hoặc URLs) để xóa",
+        message: "Cần cung cấp mảng URLs để xóa files",
       });
     }
+
+    console.log("Đang xóa nhiều files:", files);
 
     // Xóa nhiều files từ Cloudinary
     const results = await deleteMultipleFilesService(files);
 
-    // Trả về phản hồi thành công
+    // Thống kê kết quả
+    const successful = results.filter((result) => !result.error && result.result === "ok");
+    const notFound = results.filter((result) => !result.error && result.result === "not found");
+    const failed = results.filter((result) => result.error);
+
+    // Trả về phản hồi chi tiết
     res.status(200).json({
       success: true,
-      message: `${results.length} files đã được xóa thành công`,
-      data: results,
+      message: `Hoàn thành xử lý ${files.length} files: ${successful.length} xóa thành công, ${notFound.length} không tồn tại, ${failed.length} thất bại`,
+      data: {
+        total: files.length,
+        successful: successful.length,
+        notFound: notFound.length,
+        failed: failed.length,
+        results: results,
+      },
     });
   } catch (error) {
     console.error("Lỗi khi xóa nhiều files:", error);

@@ -175,7 +175,9 @@ const ProductPage = () => {
         </motion.div>
       </main>
 
-      {isOpenForm && <ProductForm selectedProduct={selectedProduct} onClose={handleCloseForm} />}
+      {isOpenForm && (
+        <ProductForm selectedProduct={selectedProduct} onClose={handleCloseForm} onRefresh={handleRefresh} />
+      )}
     </div>
   );
 };

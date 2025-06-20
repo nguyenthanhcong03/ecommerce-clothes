@@ -2,6 +2,7 @@ const Product = require("../models/product");
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 const { generateSKU } = require("../utils/generateSKU");
+const { deleteMultipleFilesService } = require("./fileService");
 
 const createProduct = async (productData) => {
   try {
@@ -25,6 +26,8 @@ const createProduct = async (productData) => {
             variant.size,
             variant.color
           );
+          console.log("variant.sku", variant.sku);
+          console.log("slug", productData.slug);
         }
       }
     }
@@ -49,7 +52,7 @@ const updateProduct = async (productId, updateData) => {
 
     const product = await Product.findById(productId);
     if (!product) {
-      throw new Error("Product not found");
+      throw new Error("Sản phẩm không tồn tại");
     }
 
     // Cập nhật thông tin sản phẩm
@@ -92,8 +95,16 @@ const deleteProduct = async (productId) => {
   try {
     const product = await Product.findByIdAndDelete(productId);
     if (!product) {
-      throw new Error("Product not found");
+      throw new Error("Sản phẩm không tồn tại");
     }
+
+    if (product.images && product.images.length > 0) {
+      const imagesToDelete = product.images;
+      if (imagesToDelete.length > 0) {
+        await deleteMultipleFilesService(imagesToDelete);
+      }
+    }
+
     return product;
   } catch (error) {
     throw error;
@@ -110,7 +121,7 @@ const getProductById = async (productId) => {
     const product = await Product.findById(productId).populate("categoryId", "name slug").select("-__v");
 
     if (!product) {
-      throw new Error("Product not found");
+      throw new Error("Sản phẩm không tồn tại");
     }
 
     return product;

@@ -14,6 +14,13 @@ import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import * as yup from 'yup';
 
+// Các tùy chọn cho select
+const genderOptions = [
+  { value: 'male', label: 'Nam' },
+  { value: 'female', label: 'Nữ' },
+  { value: 'other', label: 'Khác' }
+];
+
 // Schema xác thực cho form cập nhật thông tin cá nhân
 const profileSchema = yup.object({
   firstName: yup
@@ -41,7 +48,7 @@ const profileSchema = yup.object({
   gender: yup
     .string()
     .nullable()
-    .oneOf(['Nam', 'Nữ', 'Khác'], 'Giới tính phải là Nam, Nữ hoặc Khác')
+    .oneOf(['male', 'female', 'other'], 'Giới tính phải là Nam, Nữ hoặc Khác')
     .transform((value) => (value === '' ? null : value)),
   dateOfBirth: yup
     .string()
@@ -63,18 +70,9 @@ const profileSchema = yup.object({
     .nullable()
     .max(200, 'Địa chỉ đường không được quá 200 ký tự')
     .transform((value) => (value === '' ? null : value)),
-  ward: yup
-    .string()
-    .nullable()
-    .transform((value) => (value === '' ? null : value)),
-  district: yup
-    .string()
-    .nullable()
-    .transform((value) => (value === '' ? null : value)),
-  province: yup
-    .string()
-    .nullable()
-    .transform((value) => (value === '' ? null : value))
+  ward: yup.object().nullable(),
+  district: yup.object().nullable(),
+  province: yup.object().nullable()
 });
 
 const ProfilePage = () => {
@@ -82,18 +80,14 @@ const ProfilePage = () => {
   const { currentUser, loading } = useSelector((state) => state.user);
   const { user } = useSelector((state) => state.account);
   const [avatarFile, setAvatarFile] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatar || avatarDefault);
   const [avatarChanged, setAvatarChanged] = useState(false);
+  const [loadingUpload, setLoadingUpload] = useState(false);
 
   // State cho địa chỉ
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
-  const [selectedProvince, setSelectedProvince] = useState(null);
-  const [selectedDistrict, setSelectedDistrict] = useState(null);
-  const [isLoadingProvinces, setIsLoadingProvinces] = useState(false);
-  const [isLoadingDistricts, setIsLoadingDistricts] = useState(false);
-  const [isLoadingWards, setIsLoadingWards] = useState(false);
 
   const {
     control,
@@ -108,126 +102,39 @@ const ProfilePage = () => {
   } = useForm({
     resolver: yupResolver(profileSchema),
     defaultValues: {
-      firstName: '',
-      lastName: '',
-      username: '',
-      email: '',
-      phone: '',
-      gender: '',
-      dateOfBirth: '',
-      street: '',
-      ward: '',
-      district: '',
-      province: ''
+      avatar: user?.avatar,
+      firstName: user?.firstName || '',
+      lastName: user?.lastName || '',
+      username: user?.username || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      gender: user?.gender || '',
+      dateOfBirth: user?.dateOfBirth || '',
+      street: user?.address?.street || '',
+      ward: user?.address?.ward
+        ? {
+            value: user.address.ward.code,
+            label: user.address.ward.name
+          }
+        : null,
+      district: user?.address?.district
+        ? {
+            value: user.address.district.code,
+            label: user.address.district.name
+          }
+        : null,
+      province: user?.address?.province
+        ? {
+            value: user.address.province.code,
+            label: user.address.province.name
+          }
+        : null
     }
   });
 
-  const provinceName = watch('province');
-  const districtName = watch('district');
-
-  // Lấy thông tin người dùng khi component được tải
-  useEffect(() => {
-    if (user && user._id) {
-      dispatch(fetchUserById(user._id));
-    }
-  }, [dispatch, user]);
-  // Load provinces
-  useEffect(() => {
-    const fetchProvinces = async () => {
-      setIsLoadingProvinces(true);
-      try {
-        const response = await getProvincesAPI();
-        setProvinces(response);
-        if (currentUser?.address?.province) {
-          setValue('province', currentUser.address.province);
-        }
-      } catch (error) {
-        console.error('Lỗi khi tải tỉnh/thành phố:', error);
-      } finally {
-        setIsLoadingProvinces(false);
-      }
-    };
-    fetchProvinces();
-  }, [currentUser, setValue]);
-
-  // Load districts khi province thay đổi
-  useEffect(() => {
-    const selectedProvince = provinces.find((p) => p.label === provinceName);
-    const fetchDistricts = async (provinceCode) => {
-      setIsLoadingDistricts(true);
-      try {
-        const response = await getDistrictsAPI(provinceCode);
-        setDistricts(response);
-
-        // Nếu province thay đổi (không phải lần đầu load), reset district và ward
-        if (provinceName !== currentUser?.address?.province) {
-          setValue('district', '');
-          setValue('ward', '');
-        } else if (currentUser?.address?.district) {
-          // Chỉ set giá trị district từ currentUser nếu province không thay đổi
-          setValue('district', currentUser.address.district);
-        }
-      } catch (error) {
-        console.error('Lỗi khi tải quận/huyện:', error);
-      } finally {
-        setIsLoadingDistricts(false);
-      }
-    };
-
-    if (selectedProvince) {
-      fetchDistricts(selectedProvince.value);
-    } else {
-      setDistricts([]);
-      setValue('district', '');
-      setValue('ward', '');
-    }
-  }, [provinceName, provinces, currentUser, setValue]);
-
-  // Load wards khi district thay đổi
-  useEffect(() => {
-    const selectedDistrict = districts.find((d) => d.label === districtName);
-    const fetchWards = async (districtCode) => {
-      setIsLoadingWards(true);
-      try {
-        const response = await getWardsAPI(districtCode);
-        setWards(response);
-
-        // Nếu district thay đổi (không phải lần đầu load), reset ward
-        if (districtName !== currentUser?.address?.district) {
-          setValue('ward', '');
-        } else if (currentUser?.address?.ward) {
-          // Chỉ set giá trị ward từ currentUser nếu district không thay đổi
-          setValue('ward', currentUser.address.ward);
-        }
-      } catch (error) {
-        console.error('Lỗi khi tải phường/xã:', error);
-      } finally {
-        setIsLoadingWards(false);
-      }
-    };
-
-    if (selectedDistrict) {
-      fetchWards(selectedDistrict.value);
-    } else {
-      setWards([]);
-      setValue('ward', '');
-    }
-  }, [districtName, districts, currentUser, setValue]);
-
-  // Set các trường khác
-  useEffect(() => {
-    if (currentUser) {
-      console.log('currentUser', currentUser);
-      setValue('username', currentUser.username);
-      setValue('firstName', currentUser.firstName);
-      setValue('lastName', currentUser.lastName);
-      setValue('email', currentUser.email);
-      setValue('phone', currentUser.phone);
-      setValue('gender', currentUser.gender);
-      setValue('dateOfBirth', currentUser.dateOfBirth || '');
-      setValue('street', currentUser.address?.street || '');
-    }
-  }, [currentUser, setValue]);
+  const watchProvince = watch('province');
+  const watchDistrict = watch('district');
+  const watchWard = watch('ward');
 
   // Xử lý khi người dùng chọn ảnh đại diện mới
   const handleAvatarChange = (e) => {
@@ -257,10 +164,7 @@ const ProfilePage = () => {
       // Đánh dấu avatar đã thay đổi
       setAvatarChanged(true);
 
-      message.info('Đã chọn ảnh đại diện mới. Nhấn "Lưu thông tin" để cập nhật.', {
-        autoClose: 3000,
-        position: 'top-right'
-      });
+      message.info('Đã chọn ảnh đại diện mới. Nhấn "Lưu thông tin" để cập nhật.');
     }
   };
   // Xử lý cập nhật thông tin cá nhân
@@ -269,8 +173,10 @@ const ProfilePage = () => {
     if (!user || !user._id) {
       message.error('Không tìm thấy thông tin người dùng');
       return;
-    } // Reset form errors before submission
+    }
+
     clearErrors(['username', 'email', 'phone']);
+
     try {
       // Xử lý địa chỉ - tạo mảng address nếu có thông tin địa chỉ
       const { street, ward, district, province, ...otherData } = data;
@@ -278,33 +184,55 @@ const ProfilePage = () => {
       if (province && (!street || !ward || !district)) {
         // Nếu có tỉnh thành thì bắt buộc phải chọn đầy đủ địa chỉ
         if (!street) setError('street', { type: 'manual', message: 'Đường không được để trống.' });
-        if (!ward) setError('ward', { type: 'manual', message: 'Phường/xã không được để trống.' });
-        if (!district) setError('district', { type: 'manual', message: 'Quận/huyện không được để trống.' });
+        if (!ward) setError('ward', { type: 'manual', message: 'Vui lòng chọn Phường/Xã.' });
+        if (!district) setError('district', { type: 'manual', message: 'Vui lòng chọn Quận/Huyện.' });
         return;
       }
       if (street && ward && district && province) {
         userData.address = {
           street: street || '',
-          ward: ward || '',
-          district: district || '',
-          province: province || ''
+          province: {
+            code: province?.value,
+            name: province?.label
+          },
+          district: {
+            code: district?.value,
+            name: district?.label
+          },
+          ward: {
+            code: ward?.value,
+            name: ward?.label
+          }
         };
       } else if (!street && !ward && !district && !province) {
         userData.address = null;
       }
       // Xử lý upload avatar nếu có
       if (avatarFile) {
+        setLoadingUpload(true);
         try {
           // Upload avatar trước bằng fileService
-          const uploadResponse = await uploadFileAPI(avatarFile);
+          const uploadResponse = await fileService.uploadSingle(avatarFile, 'ecommerce/avatars');
           // Lấy URL hình ảnh từ response
           if (uploadResponse?.data?.url) {
             // Thêm URL avatar vào dữ liệu cập nhật
             userData.avatar = uploadResponse.data.url;
           }
+          setLoadingUpload(false);
         } catch (uploadError) {
+          setLoadingUpload(false);
           console.error('Lỗi khi upload avatar:', uploadError);
           message.error('Không thể tải lên ảnh đại diện. Vui lòng thử lại.');
+        }
+        if (currentUser?.avatar) {
+          // Xóa ảnh avatar cũ không còn được sử dụng
+          const oldAvatar = currentUser?.avatar || [];
+          try {
+            console.log('oldAvatar', oldAvatar);
+            await uploadFileAPI(oldAvatar);
+          } catch (deleteErr) {
+            console.error('Lỗi khi xóa ảnh:', deleteErr);
+          }
         }
       }
 
@@ -312,6 +240,7 @@ const ProfilePage = () => {
       await dispatch(updateUser({ userId: user._id, userData })).unwrap();
       // Cập nhật lại thông tin người dùng
       await dispatch(fetchUserById(user._id));
+      // await dispatch(fetchCurrentUser());
       // Xóa file avatar khỏi state sau khi đã upload thành công
       setAvatarFile(null);
       setAvatarChanged(false);
@@ -326,12 +255,96 @@ const ProfilePage = () => {
     }
   };
 
-  // Các tùy chọn cho select
-  const genderOptions = [
-    { value: 'male', label: 'Nam' },
-    { value: 'female', label: 'Nữ' },
-    { value: 'other', label: 'Khác' }
-  ];
+  // Lấy thông tin người dùng khi component được tải
+  useEffect(() => {
+    if (user && user._id) {
+      dispatch(fetchUserById(user._id));
+    }
+  }, [dispatch, user]);
+
+  // Load provinces
+  // Load danh sách tỉnh
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        const response = await getProvincesAPI();
+        setProvinces(response);
+      } catch (error) {
+        console.error('Error loading provinces:', error);
+      }
+    };
+
+    fetchProvinces();
+  }, []);
+
+  // Khi chọn tỉnh → load huyện
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      try {
+        const response = await getDistrictsAPI(watchProvince.value);
+        setDistricts(response);
+
+        // Chỉ reset district và ward nếu không phải là lần đầu load với thông tin user
+        const isUserInitialLoad = user?.address?.province?.code === watchProvince.value;
+        if (!isUserInitialLoad) {
+          setValue('district', '');
+          setWards([]);
+          setValue('ward', '');
+        }
+      } catch (error) {
+        console.error('Error loading district:', error);
+      }
+    };
+
+    if (watchProvince) {
+      fetchDistricts();
+    } else {
+      setDistricts([]);
+      setValue('district', '');
+      setWards([]);
+      setValue('ward', '');
+    }
+  }, [watchProvince, setValue, user]);
+
+  // Khi chọn quận => load phường/xã
+  useEffect(() => {
+    const fetchWards = async () => {
+      try {
+        const response = await getWardsAPI(watchDistrict.value);
+        setWards(response);
+
+        // Chỉ reset ward nếu không phải là lần đầu load với thông tin user
+        const isUserInitialLoad = user?.address?.district?.code === watchDistrict.value;
+        if (!isUserInitialLoad) {
+          setValue('ward', '');
+        }
+      } catch (error) {
+        console.error('Error loading ward:', error);
+      }
+    };
+
+    if (watchDistrict) {
+      fetchWards();
+    } else {
+      setWards([]);
+      setValue('ward', '');
+    }
+  }, [watchProvince, watchDistrict, setValue, dispatch, user]);
+
+  // // Set các trường khác
+  // useEffect(() => {
+  //   if (currentUser) {
+  //     console.log('currentUser', currentUser);
+  //     setValue('username', currentUser.username);
+  //     setValue('firstName', currentUser.firstName);
+  //     setValue('lastName', currentUser.lastName);
+  //     setValue('email', currentUser.email);
+  //     setValue('phone', currentUser.phone);
+  //     setValue('gender', currentUser.gender);
+  //     setValue('dateOfBirth', currentUser.dateOfBirth || '');
+  //     setValue('street', currentUser.address?.street || '');
+  //   }
+  // }, [currentUser, setValue]);
 
   // Render hiệu ứng loading
   if (loading && !currentUser) {
@@ -567,7 +580,6 @@ const ProfilePage = () => {
         </div>
 
         <div className='mb-6 grid grid-cols-1 gap-4 md:grid-cols-3'>
-          {' '}
           {/* Province */}
           <Controller
             name='province'
@@ -579,7 +591,11 @@ const ProfilePage = () => {
                 placeholder='-- Chọn Tỉnh/Thành phố --'
                 options={provinces}
                 error={errors.province?.message}
-                isLoading={isLoadingProvinces}
+                value={field.value?.value || ''}
+                onChange={(e) => {
+                  const selected = provinces.find((p) => p.value === +e.target.value);
+                  field.onChange(selected);
+                }}
               />
             )}
           />
@@ -594,8 +610,12 @@ const ProfilePage = () => {
                 placeholder='-- Chọn Quận/Huyện --'
                 options={districts}
                 error={errors.district?.message}
-                isLoading={isLoadingDistricts}
-                disabled={!provinceName || isLoadingDistricts}
+                disabled={!watchProvince}
+                value={field.value?.value || ''}
+                onChange={(e) => {
+                  const selected = districts.find((d) => d.value === +e.target.value);
+                  field.onChange(selected);
+                }}
               />
             )}
           />
@@ -610,8 +630,12 @@ const ProfilePage = () => {
                 placeholder='-- Chọn Phường/Xã --'
                 options={wards}
                 error={errors.ward?.message}
-                isLoading={isLoadingWards}
-                disabled={!districtName || isLoadingWards}
+                disabled={!watchDistrict}
+                value={field.value?.value || ''}
+                onChange={(e) => {
+                  const selected = wards.find((w) => w.value === +e.target.value);
+                  field.onChange(selected);
+                }}
               />
             )}
           />
@@ -648,17 +672,32 @@ const ProfilePage = () => {
 
                     // Reset form
                     reset({
-                      firstName: currentUser.firstName || '',
-                      lastName: currentUser.lastName || '',
-                      username: currentUser.username || '',
-                      email: currentUser.email || '',
-                      phone: currentUser.phone || '',
-                      gender: currentUser.gender || '',
-                      dateOfBirth: currentUser.dateOfBirth || '',
-                      street: currentUser.address?.street || '',
-                      province: currentUser.address?.province || '',
-                      district: currentUser.address?.district || '',
-                      ward: currentUser.address?.ward || ''
+                      firstName: currentUser?.firstName || '',
+                      lastName: currentUser?.lastName || '',
+                      username: currentUser?.username || '',
+                      email: currentUser?.email || '',
+                      phone: currentUser?.phone || '',
+                      gender: currentUser?.gender || '',
+                      dateOfBirth: currentUser?.dateOfBirth || '',
+                      street: currentUser?.address?.street || '',
+                      ward: currentUser?.address?.ward
+                        ? {
+                            value: currentUser.address.ward.code,
+                            label: currentUser.address.ward.name
+                          }
+                        : null,
+                      district: currentUser?.address?.district
+                        ? {
+                            value: currentUser.address.district.code,
+                            label: currentUser.address.district.name
+                          }
+                        : null,
+                      province: currentUser?.address?.province
+                        ? {
+                            value: currentUser.address.province.code,
+                            label: currentUser.address.province.name
+                          }
+                        : null
                     });
 
                     // Reset avatar về giá trị ban đầu
@@ -666,10 +705,7 @@ const ProfilePage = () => {
                     setAvatarPreview(currentUser.avatar || null);
                     setAvatarChanged(false);
 
-                    message.info('Đã khôi phục thông tin ban đầu', {
-                      autoClose: 2000,
-                      position: 'top-right'
-                    });
+                    message.info('Đã khôi phục thông tin ban đầu');
                   }
                 }}
               >
@@ -690,7 +726,7 @@ const ProfilePage = () => {
             <Button
               type='submit'
               variant='primary'
-              isLoading={loading}
+              isLoading={loading || loadingUpload}
               className='px-6 py-2.5 transition-all duration-200 hover:shadow-md hover:shadow-primaryColor/20 focus:ring-2 focus:ring-primaryColor focus:ring-offset-2'
             >
               <span className='flex items-center gap-2'>

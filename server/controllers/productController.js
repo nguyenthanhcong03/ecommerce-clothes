@@ -177,7 +177,6 @@ const getAllProducts = async (req, res) => {
 const createProduct = async (req, res) => {
   try {
     const productData = req.body;
-    console.log("productData", productData);
 
     if (!productData.images || !Array.isArray(productData.images) || productData.images.length === 0) {
       return res.status(400).json({
@@ -209,6 +208,7 @@ const createProduct = async (req, res) => {
         message: "Sản phẩm với slug hoặc SKU đã tồn tại",
       });
     }
+    console.log("error", error);
 
     res.status(500).json({
       success: false,

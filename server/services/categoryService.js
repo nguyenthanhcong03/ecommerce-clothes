@@ -45,11 +45,11 @@ const getCategories = async (options = {}) => {
 
 const getCategoryTree = async () => {
   try {
-    // Fetch all categories or only active ones
+    // Lấy tất cả danh mục từ cơ sở dữ liệu
     const query = {};
-    const categories = await Category.find(query).sort({ priority: -1 });
+    const categories = await Category.find(query);
 
-    // Create a map for quick lookup
+    // Tạo map để lưu trữ danh mục theo ID
     const categoryMap = {};
     categories.forEach((category) => {
       categoryMap[category._id] = {
@@ -58,23 +58,23 @@ const getCategoryTree = async () => {
       };
     });
 
-    // Build the tree
+    // Tạo cây
     const rootCategories = [];
     categories.forEach((category) => {
       const categoryWithChildren = categoryMap[category._id];
 
       if (category.parentId && categoryMap[category.parentId]) {
-        // Add to parent's children if parent exists
+        // Thêm danh mục vào danh sách con của danh mục cha
         categoryMap[category.parentId].children.push(categoryWithChildren);
       } else {
-        // Add to root if no parent or parent doesn't exist
+        // Nếu không có parentId, thêm vào danh sách gốc
         rootCategories.push(categoryWithChildren);
       }
     });
 
     return rootCategories;
   } catch (error) {
-    throw new Error(`Error getting category tree: ${error.message}`);
+    throw new Error(`Lỗi khi tạo cây danh mục: ${error.message}`);
   }
 };
 
@@ -134,25 +134,22 @@ const getProductCountsByCategories = async (categoryIds = []) => {
 
 const deleteCategory = async (categoryId) => {
   try {
-    // Check if category exists
     const category = await Category.findById(categoryId);
     if (!category) {
       throw new Error("Category not found");
     }
 
-    // Delete category images from Cloudinary if they have public_id
     if (category.images && category.images.length > 0) {
-      const imagesToDelete = category.images.filter((img) => img.public_id);
+      const imagesToDelete = category.images;
       if (imagesToDelete.length > 0) {
         await deleteMultipleFiles(imagesToDelete);
       }
     }
 
-    // Remove the category
     const deletedCategory = await Category.findByIdAndDelete(categoryId);
     return deletedCategory;
   } catch (error) {
-    throw new Error(`Failed to delete category: ${error.message}`);
+    throw new Error(`Lỗi khi xóa danh mục: ${error.message}`);
   }
 };
 
@@ -167,13 +164,12 @@ const createCategory = async (categoryData) => {
       locale: "vi",
     });
 
-    // Check if category with slug already exists
     const existingCategory = await Category.findOne({ slug });
     if (existingCategory) {
       throw new Error("Danh mục với tên này đã tồn tại");
     }
 
-    // Validate parent ID if provided
+    // Validate parent ID
     if (parentId && mongoose.Types.ObjectId.isValid(parentId)) {
       const parentExists = await Category.exists({ _id: parentId });
       if (!parentExists) {
@@ -191,12 +187,10 @@ const createCategory = async (categoryData) => {
       priority: priority || 0,
     });
 
-    // Save to database
     const savedCategory = await newCategory.save();
 
     return savedCategory;
   } catch (error) {
-    // Handle duplicate key error specially
     if (error.code === 11000) {
       throw new Error("Danh mục với tên này đã tồn tại");
     }
@@ -215,7 +209,7 @@ const getCategoryById = async (categoryId) => {
     }
     return category;
   } catch (error) {
-    throw new Error(`Error fetching category: ${error.message}`);
+    throw new Error(`Lỗi khi lấy danh mục: ${error.message}`);
   }
 };
 

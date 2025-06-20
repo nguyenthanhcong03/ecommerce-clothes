@@ -3,12 +3,14 @@ const authService = require("../services/authService");
 const register = async (req, res) => {
   try {
     const { username, password, email, phone, firstName, lastName } = req.body;
+    console.log("req.body", req.body);
     if (!username || !password || !email || !phone || !firstName || !lastName) {
       return res.status(400).json({
         success: false,
         message: "Tất cả các trường là bắt buộc",
       });
     }
+
     await authService.registerUser({
       username,
       password,
@@ -19,6 +21,7 @@ const register = async (req, res) => {
     });
     res.status(201).json({ success: true, message: "Đăng ký tài khoản thành công" });
   } catch (error) {
+    console.log("error", error);
     res.status(400).json({ success: false, message: error.message });
   }
 };
@@ -158,7 +161,6 @@ const checkUsernameExists = async (req, res) => {
         message: "Username là bắt buộc",
       });
     }
-    console.log("Username:", username);
     const exists = await authService.checkUsernameExists(username);
 
     res.status(200).json({

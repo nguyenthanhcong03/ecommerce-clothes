@@ -7,22 +7,12 @@ import { formatCurrency } from '../../../../utils/format/formatCurrency';
 import { useState } from 'react';
 import { createNewOrder } from '@/store/slices/orderSlice';
 
-const OrderSummary = () => {
+const OrderSummary = ({ onSubmitShipping }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const {
-    loading,
-    orderItems,
-    shippingInfo,
-    paymentMethod,
-    coupon,
-    distance,
-    shippingCost,
-    couponDiscount,
-    calculatingDistance
-  } = useSelector((state) => state.order);
-
-  const [orderData, setOrderData] = useState(null); // state để lưu dữ liệu đơn hàng
+  const { loading, orderItems, shippingCost, couponDiscount, calculatingDistance } = useSelector(
+    (state) => state.order
+  );
 
   // Tính toán tổng tiền
   const subtotal = orderItems.reduce((total, item) => {
@@ -31,42 +21,6 @@ const OrderSummary = () => {
   }, 0);
 
   const totalPrice = Math.max(0, subtotal - couponDiscount + shippingCost);
-
-  const handleCreateOrder = async (newOrderData) => {
-    try {
-      const response = await dispatch(createNewOrder(newOrderData));
-      message.success('Đặt hàng thành công!');
-    } catch (error) {
-      console.log('Lỗi khi tạo đơn hàng:', error);
-      message.error('Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại sau.');
-    }
-  };
-
-  const handleSubmit = () => {
-    // Chuẩn bị dữ liệu đơn hàng
-    const newOrderData = {
-      products: orderItems,
-      shippingAddress: {
-        fullName: shippingInfo?.fullName,
-        street: shippingInfo?.street,
-        province: shippingInfo?.province,
-        district: shippingInfo?.district,
-        ward: shippingInfo?.ward,
-        phoneNumber: shippingInfo?.phoneNumber,
-        email: shippingInfo?.email
-      },
-      paymentMethod: paymentMethod,
-      note: shippingInfo?.note || '',
-      couponCode: coupon?.code || '',
-      distance: distance || 0
-    };
-
-    // Lưu lại orderData để có thể sử dụng khi xác nhận giá mới
-    setOrderData(newOrderData);
-    console.log('orderData', newOrderData);
-    // 3. Tạo đơn hàng (COD sẽ tạo ngay, VNPay/Momo sẽ trả về paymentUrl)
-    handleCreateOrder(newOrderData);
-  };
 
   return (
     <div className='rounded-sm bg-white p-6'>
@@ -108,7 +62,7 @@ const OrderSummary = () => {
         <Button
           type='submit'
           form='form-order-shipping'
-          onClick={handleSubmit}
+          onClick={onSubmitShipping}
           width='full'
           size='lg'
           isLoading={loading}

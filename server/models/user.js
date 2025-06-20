@@ -4,9 +4,18 @@ const crypto = require("crypto-js");
 
 const addressSchema = new mongoose.Schema({
   street: { type: String, required: true },
-  ward: { type: String, required: true },
-  district: { type: String, required: true },
-  province: { type: String, required: true },
+  ward: {
+    code: { type: String, required: true }, // Mã phường/xã
+    name: { type: String, required: true }, // Tên phường/xã
+  },
+  district: {
+    code: { type: String, required: true }, // Mã quận/huyện
+    name: { type: String, required: true }, // Tên quận/huyện
+  },
+  province: {
+    code: { type: String, required: true }, // Mã tỉnh/thành phố
+    name: { type: String, required: true }, // Tên tỉnh/thành phố
+  },
 });
 
 const userSchema = new mongoose.Schema(
@@ -44,7 +53,7 @@ const userSchema = new mongoose.Schema(
     avatar: { type: String, default: null, required: false },
     gender: {
       type: String,
-      enum: ["Nam", "Nữ", "Khác"],
+      enum: ["male", "female", "other"],
       default: null,
       required: false,
     },
@@ -59,15 +68,6 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ["customer", "admin"], default: "customer" },
     isBlocked: { type: Boolean, default: false },
     lastLogin: { type: Date, default: Date.now },
-
-    // Preferences
-    language: { type: String, enum: ["en", "vi"], default: "vi" },
-
-    // Authentication and security
-    verificationToken: { type: String },
-    verificationStatus: { type: String, enum: ["pending", "verified"], default: "pending" },
-    resetPasswordToken: { type: String },
-    resetPasswordExpires: { type: Date },
   },
   {
     timestamps: true,

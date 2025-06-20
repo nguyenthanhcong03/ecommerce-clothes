@@ -46,7 +46,6 @@ const registerUser = async (userData) => {
   // Mã hóa mật khẩu
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-
   // Tạo người dùng mới
   const newUser = await User.create({
     username,
@@ -55,7 +54,6 @@ const registerUser = async (userData) => {
     password: hashedPassword,
     firstName,
     lastName,
-    verificationToken,
   });
 
   return newUser;
@@ -204,10 +202,13 @@ const refreshUserToken = async (refreshToken) => {
  * Lấy thông tin người dùng hiện tại
  */
 const getCurrentUserById = async (userId) => {
-  const user = await User.findById(userId).select("-password -refreshToken");
+  const user = await User.findById(userId).select(
+    "-password -refreshToken -resetPasswordToken -resetPasswordExpires -verificationToken -createdAt -updatedAt"
+  );
   if (!user) {
     throw new Error("Không tìm thấy người dùng");
   }
+
   return user;
 };
 

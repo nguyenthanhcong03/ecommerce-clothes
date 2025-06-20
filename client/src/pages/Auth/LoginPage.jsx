@@ -7,7 +7,7 @@ import { message } from 'antd';
 import { Eye, EyeOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
 
@@ -26,6 +26,7 @@ function LoginPage() {
   const dispatch = useDispatch();
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const { loading } = useSelector((state) => state.account);
 
   const {
     control,

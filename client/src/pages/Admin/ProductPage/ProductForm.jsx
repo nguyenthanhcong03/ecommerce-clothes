@@ -1,6 +1,6 @@
 import ImageUpload from '@/pages/admin/ProductPage/ImageUpload';
 import { deleteMultipleFilesAPI, uploadMultipleFilesAPI } from '@/services/fileService';
-import { createProduct, fetchProducts, updateProductById } from '@/store/slices/adminProductSlice';
+import { createProduct, updateProductById } from '@/store/slices/adminProductSlice';
 import { fetchCategories } from '@/store/slices/categorySlice';
 import { COLOR_OPTIONS } from '@/utils/constants';
 import { formatTree } from '@/utils/format/formatTree';
@@ -15,7 +15,6 @@ import * as yup from 'yup';
 
 const { Option } = Select;
 
-// Schema validation với Yup - SKU sẽ được tạo tự động ở backend
 const variantSchema = yup.object({
   size: yup.string().required('Kích thước là bắt buộc'),
   color: yup.string().required('Màu sắc là bắt buộc'),
@@ -34,207 +33,118 @@ const productSchema = yup.object({
   tags: yup.array().of(yup.string()).optional()
 });
 
-// // Component tải lên hình ảnh có thể tái sử dụng
-// const ImageUpload = memo(({ value = [], onChange, disabled }) => {
-//   const handleChange = useCallback(
-//     ({ fileList }) => {
-//       // Xử lý xem trước cho các file mới
-//       const newFileList = fileList.map((file) => {
-//         if (!file.url && !file.preview && file.originFileObj) {
-//           file.preview = URL.createObjectURL(file.originFileObj);
-//         }
-//         return file;
-//       });
+const SIZES_BY_TYPE = {
+  áo: [
+    { label: 'S', value: 'S' },
+    { label: 'M', value: 'M' },
+    { label: 'L', value: 'L' },
+    { label: 'XL', value: 'XL' },
+    { label: 'XXL', value: 'XXL' }
+  ],
+  quần: [
+    { label: '28', value: '28' },
+    { label: '29', value: '29' },
+    { label: '30', value: '30' },
+    { label: '31', value: '31' },
+    { label: '32', value: '32' },
+    { label: '33', value: '33' },
+    { label: '34', value: '34' },
+    { label: '35', value: '35' },
+    { label: '36', value: '36' }
+  ]
+};
 
-//       onChange(newFileList);
-//     },
-//     [onChange]
-//   );
+const FORM_DEFAULT_VALUES = {
+  name: '',
+  description: '',
+  categoryId: '',
+  brand: '',
+  variants: [],
+  images: [],
+  tags: []
+};
 
-//   const onPreview = useCallback((file) => {
-//     const src = file.url || file.preview;
-//     const imgWindow = window.open(src);
-//     if (imgWindow) {
-//       imgWindow.document.write(`<img src="${src}" style="max-width: 100%; height: auto;" />`);
-//     }
-//   }, []);
+// Helper functions
+const determineProductType = (variants) => {
+  if (!variants || variants.length === 0) return 'áo';
+  const firstVariant = variants[0];
+  const size = firstVariant.size;
+  const isNumeric = /^\d+$/.test(size);
+  return isNumeric ? 'quần' : 'áo';
+};
 
-//   // Xử lý danh sách file để hiển thị
-//   const fileList = Array.isArray(value)
-//     ? value.map((item) => {
-//         if (typeof item === 'string') {
-//           // Nếu item là một chuỗi URL
-//           return {
-//             uid: item,
-//             name: item.split('/').pop(),
-//             status: 'done',
-//             url: item
-//           };
-//         } else if (item.url) {
-//           // Nếu item là một đối tượng có URL
-//           return {
-//             uid: item.public_id || item.uid || item.url,
-//             name: (item.public_id || item.url).split('/').pop(),
-//             status: 'done',
-//             url: item.url,
-//             public_id: item.public_id
-//           };
-//         }
-//         return item;
-//       })
-//     : [];
+const formatProductForForm = (product) => ({
+  name: product.name || '',
+  description: product.description || '',
+  categoryId: product.categoryId?._id || '',
+  brand: product.brand || '',
+  variants: product.variants && product.variants.length > 0 ? product.variants.map((v) => ({ ...v })) : [],
+  images: product.images ? product.images.map((url) => ({ url })) : [],
+  tags: product.tags || []
+});
 
-//   return (
-//     <Upload
-//       multiple
-//       listType='picture-card'
-//       beforeUpload={() => false} // Không tải lên ngay lập tức
-//       fileList={fileList}
-//       onChange={handleChange}
-//       onPreview={onPreview}
-//       disabled={disabled}
-//     >
-//       {value?.length < 8 && !disabled && (
-//         <div>
-//           <UploadOutlined />
-//           <div style={{ marginTop: 8 }}>Chọn ảnh</div>
-//         </div>
-//       )}
-//     </Upload>
-//   );
-// });
-
-const ProductForm = ({ selectedProduct, onClose }) => {
+const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
   const dispatch = useDispatch();
-  const { categoriesTree } = useSelector((state) => state.category); // Lấy danh sách danh mục
-  const { loading } = useSelector((state) => state.adminProduct); // Trạng thái loading từ Redux
-  const [uploading, setUploading] = useState(false); // Trạng thái đang tải file
-  const [localFiles, setLocalFiles] = useState([]); // Lưu trữ danh sách file mới cho ảnh sản phẩm
-  const [productType, setProductType] = useState('áo'); // Mặc định là áo
+  const { categoriesTree } = useSelector((state) => state.category);
+  const { loading } = useSelector((state) => state.adminProduct);
 
-  // State cho modal thêm biến thể
+  // State management
+  const [uploading, setUploading] = useState(false);
+  const [localFiles, setLocalFiles] = useState([]);
+  const [productType, setProductType] = useState('áo');
   const [variantModalVisible, setVariantModalVisible] = useState(false);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
 
   const categoryTreeFormatted = formatTree(categoriesTree);
-
-  // Size options based on product type
-  const SIZES_BY_TYPE = useMemo(
-    () => ({
-      áo: [
-        { label: 'S', value: 'S' },
-        { label: 'M', value: 'M' },
-        { label: 'L', value: 'L' },
-        { label: 'XL', value: 'XL' },
-        { label: 'XXL', value: 'XXL' }
-      ],
-      quần: [
-        { label: '28', value: '28' },
-        { label: '29', value: '29' },
-        { label: '30', value: '30' },
-        { label: '31', value: '31' },
-        { label: '32', value: '32' },
-        { label: '33', value: '33' },
-        { label: '34', value: '34' },
-        { label: '35', value: '35' },
-        { label: '36', value: '36' }
-      ]
-    }),
-    []
-  );
-
-  // Lấy danh sách size dựa trên loại sản phẩm hiện tại
-  const currentSizeOptions = useMemo(() => SIZES_BY_TYPE[productType] || [], [SIZES_BY_TYPE, productType]);
+  const currentSizeOptions = useMemo(() => SIZES_BY_TYPE[productType] || [], [productType]);
   const {
     control,
     handleSubmit,
-    getValues,
     formState: { errors, isDirty },
     reset
   } = useForm({
     resolver: yupResolver(productSchema),
-    defaultValues: {
-      name: '',
-      description: '',
-      categoryId: '',
-      brand: '',
-      variants: [{ size: '', color: '', price: 0, originalPrice: null, stock: 0 }],
-      images: [],
-      tags: []
-    }
+    defaultValues: FORM_DEFAULT_VALUES
   });
   const {
     fields: variantFields,
     append: appendVariant,
-    remove: removeVariant,
-    replace: replaceVariant
+    remove: removeVariant
   } = useFieldArray({
     control,
     name: 'variants'
-  }); // Khởi tạo giá trị form khi chỉnh sửa hoặc thêm mới
+  });
 
+  // Initialize form when product changes
   useEffect(() => {
     dispatch(fetchCategories({}));
-    if (selectedProduct) {
-      // Điền thông tin sản phẩm được chọn vào form
-      reset({
-        name: selectedProduct.name || '',
-        description: selectedProduct.description || '',
-        categoryId: selectedProduct.categoryId?._id || '',
-        brand: selectedProduct.brand || '',
-        variants:
-          selectedProduct.variants && selectedProduct.variants.length > 0
-            ? selectedProduct.variants.map((v) => ({ ...v }))
-            : [],
-        images: selectedProduct.images ? selectedProduct.images.map((url) => ({ url })) : [],
-        tags: selectedProduct.tags || []
-      });
 
-      // Nếu có biến thể, xác định loại sản phẩm (áo hoặc quần)
-      if (selectedProduct.variants && selectedProduct.variants.length > 0) {
-        const firstVariant = selectedProduct.variants[0];
-        // Kiểm tra size để xác định loại sản phẩm
-        // Nếu size là số -> quần, nếu là chữ -> áo
-        const size = firstVariant.size;
-        const isNumeric = /^\d+$/.test(size);
-        setProductType(isNumeric ? 'quần' : 'áo');
-      }
+    if (selectedProduct) {
+      const formData = formatProductForForm(selectedProduct);
+      reset(formData);
+      setProductType(determineProductType(selectedProduct.variants));
     } else {
-      // Khởi tạo form trống khi thêm mới sản phẩm
-      reset({
-        name: '',
-        description: '',
-        categoryId: '',
-        brand: '',
-        variants: [],
-        images: [],
-        tags: []
-      });
+      reset(FORM_DEFAULT_VALUES);
+      setProductType('áo');
     }
-    // Làm mới localFiles khi đóng/mở form
+
     setLocalFiles([]);
   }, [selectedProduct, reset, dispatch]);
-
-  // Xử lý khi có thay đổi trong input files
+  // File handling
   const handleFilesChange = useCallback((files) => {
-    // Lọc ra các file mới (có thuộc tính originFileObj)
     const newFiles = files.filter((file) => file.originFileObj);
-
-    // Cập nhật danh sách file chung cho sản phẩm
     setLocalFiles(newFiles);
   }, []);
 
-  // Tải file lên Cloudinary
   const uploadFiles = useCallback(async (files) => {
-    if (!files || files.length === 0) return [];
+    if (!files?.length) return [];
 
     setUploading(true);
     try {
       const filesToUpload = files.filter((file) => file.originFileObj).map((file) => file.originFileObj);
-      if (filesToUpload.length === 0) {
-        return files; // Nếu không có file mới nào cần tải lên
-      }
+
+      if (!filesToUpload.length) return files;
 
       const response = await uploadMultipleFilesAPI(filesToUpload);
 
@@ -242,16 +152,13 @@ const ProductForm = ({ selectedProduct, onClose }) => {
         throw new Error('Tải lên ảnh thất bại');
       }
 
-      // Chuyển đổi kết quả tải lên thành định dạng phù hợp
-      const uploadedFiles = response.data.map((file) => ({
+      return response.data.detailedResults.map((file) => ({
         uid: file.public_id,
         name: file.public_id.split('/').pop(),
         status: 'done',
         url: file.url,
         public_id: file.public_id
       }));
-
-      return [...uploadedFiles];
     } catch (error) {
       console.error('Error uploading files:', error);
       message.error('Tải lên ảnh thất bại: ' + error.message);
@@ -259,54 +166,88 @@ const ProductForm = ({ selectedProduct, onClose }) => {
     } finally {
       setUploading(false);
     }
-  }, []); // Không có dependencies vì không phụ thuộc vào state
-
-  // Thêm sản phẩm mới
-
+  }, []); // Không có dependencies vì không phụ thuộc vào state  // Product operations
   const handleAddProduct = useCallback(
-    (formData) => {
-      dispatch(createProduct(formData))
-        .unwrap()
-        .then(() => message.success('Thêm sản phẩm thành công!'))
-        .catch((err) => message.error('Có lỗi xảy ra khi thêm sản phẩm: ' + err));
+    async (formData) => {
+      const resultAction = await dispatch(createProduct(formData));
+
+      if (createProduct.fulfilled.match(resultAction)) {
+        message.success('Thêm sản phẩm thành công!');
+        return true;
+      } else if (createProduct.rejected.match(resultAction)) {
+        message.error('Có lỗi xảy ra khi thêm sản phẩm: ' + (resultAction.payload || 'Lỗi không xác định'));
+        return false;
+      }
+      return false;
     },
     [dispatch]
   );
 
-  // Cập nhật sản phẩm hiện có
   const handleUpdateProduct = useCallback(
     async (formData) => {
-      if (!selectedProduct?._id) return;
+      if (!selectedProduct?._id) return false;
 
-      const resultAction = await dispatch(updateProductById({ productId: selectedProduct._id, payload: formData }));
+      const resultAction = await dispatch(
+        updateProductById({
+          productId: selectedProduct._id,
+          payload: formData
+        })
+      );
+
       if (updateProductById.fulfilled.match(resultAction)) {
         message.success('Cập nhật sản phẩm thành công!');
+        return true;
       } else if (updateProductById.rejected.match(resultAction)) {
         message.error(resultAction.payload || 'Có lỗi xảy ra khi cập nhật sản phẩm');
+        return false;
       }
+      return false;
     },
-    [dispatch, selectedProduct?._id] // Chỉ phụ thuộc vào ID
+    [dispatch, selectedProduct?._id]
+  );
+  // Form submission
+  const processImages = useCallback(
+    async (data) => {
+      let processedImages = [...data.images.filter((img) => !img.originFileObj)];
+
+      if (localFiles.length > 0) {
+        const uploadImages = await uploadFiles(localFiles);
+        if (uploadImages.length > 0) {
+          processedImages = [...processedImages, ...uploadImages];
+        }
+      }
+
+      return processedImages;
+    },
+    [localFiles, uploadFiles]
   );
 
-  // Xử lý submission form với upload files
+  const handleImageCleanup = useCallback(
+    async (processedImages) => {
+      if (!selectedProduct) return;
+
+      const oldImages = selectedProduct.images || [];
+      const currentImageUrls = processedImages.map((img) => (typeof img === 'string' ? img : img.url));
+      const deletedImages = oldImages.filter((img) => !currentImageUrls.includes(img));
+
+      if (deletedImages.length > 0) {
+        try {
+          await deleteMultipleFilesAPI(deletedImages.map((img) => img.public_id || img));
+        } catch (deleteErr) {
+          console.error('Lỗi khi xóa ảnh:', deleteErr);
+        }
+      }
+    },
+    [selectedProduct]
+  );
+
   const onSubmit = useCallback(
     async (data) => {
       try {
         setUploading(true);
 
-        // Lọc ra các ảnh đã tải lên từ trước
-        let processedImages = [...data.images.filter((img) => !img.originFileObj)];
+        const processedImages = await processImages(data);
 
-        if (localFiles.length > 0) {
-          // Tải lên cloud các file mới
-          const uploadImages = await uploadFiles(localFiles);
-          // Thêm các file đã tải lên vào danh sách ảnh
-          if (uploadImages.length > 0) {
-            processedImages = [...processedImages, ...uploadImages];
-          }
-        }
-
-        // Chuẩn bị dữ liệu để gửi
         const formData = {
           name: data.name,
           description: data.description || '',
@@ -315,52 +256,52 @@ const ProductForm = ({ selectedProduct, onClose }) => {
           variants: data.variants,
           images: processedImages.map((file) => (typeof file === 'string' ? file : file.url)),
           tags: data.tags || [],
-          productType: productType // Thêm thông tin loại sản phẩm
+          productType: productType
         };
 
-        // Xử lý xóa hình ảnh khi cập nhật
+        let success = false;
+
         if (selectedProduct) {
-          // Xóa ảnh sản phẩm chính không còn được sử dụng
-          const oldImages = selectedProduct.images || [];
-          const currentImageUrls = processedImages.map((img) => (typeof img === 'string' ? img : img.url));
-          const deletedImages = oldImages.filter((img) => !currentImageUrls.includes(img));
-
-          if (deletedImages.length > 0) {
-            try {
-              await deleteMultipleFilesAPI(deletedImages.map((img) => img.public_id || img));
-            } catch (deleteErr) {
-              console.error('Lỗi khi xóa ảnh:', deleteErr);
-            }
-          }
-
-          await handleUpdateProduct(formData);
+          await handleImageCleanup(processedImages);
+          success = await handleUpdateProduct(formData);
         } else {
-          await handleAddProduct(formData);
+          success = await handleAddProduct(formData);
+        }
+
+        if (success) {
+          setLocalFiles([]);
+          onClose();
+          onRefresh();
         }
       } catch (error) {
         console.error('Error:', error);
         message.error('Có lỗi xảy ra khi xử lý sản phẩm.');
       } finally {
         setUploading(false);
-        // Đặt lại local files sau khi gửi thành công
-        setLocalFiles([]);
-        onClose(); // Đóng form sau khi hoàn tất
-        dispatch(fetchProducts({ page: 1, limit: 5 }));
       }
     },
-    [localFiles, selectedProduct, dispatch, handleUpdateProduct, handleAddProduct, uploadFiles, onClose, productType]
-  );
-  // Xử lý hủy form
+    [
+      processImages,
+      productType,
+      selectedProduct,
+      handleImageCleanup,
+      handleUpdateProduct,
+      handleAddProduct,
+      onClose,
+      onRefresh
+    ]
+  ); // Modal and variant management
   const handleCancel = useCallback(() => {
-    if (isDirty || localFiles.length > 0) {
-      // Hiện dialog xác nhận nếu có thay đổi chưa lưu
+    const hasChanges = isDirty || localFiles.length > 0;
+
+    if (hasChanges) {
       Modal.confirm({
         title: 'Xác nhận hủy',
         content: 'Bạn có chắc muốn hủy? Các thay đổi sẽ không được lưu.',
         okText: 'Hủy thay đổi',
         cancelText: 'Tiếp tục chỉnh sửa',
         onOk: () => {
-          onClose(); // Đóng form
+          onClose();
           setLocalFiles([]);
         }
       });
@@ -369,10 +310,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
       setLocalFiles([]);
     }
   }, [isDirty, localFiles.length, onClose]);
-  // Tạo SKU tự động - xóa vì sẽ được xử lý ở backend
-  // const generateSKU = useCallback(...)
 
-  // Kiểm tra xem biến thể đã tồn tại chưa true/false
   const variantExists = useCallback(
     (size, color) => {
       return variantFields.some((variant) => variant.size === size && variant.color === color);
@@ -380,7 +318,6 @@ const ProductForm = ({ selectedProduct, onClose }) => {
     [variantFields]
   );
 
-  // Thêm biến thể mới
   const addVariant = useCallback(() => {
     if (!selectedSize) {
       message.warning('Vui lòng chọn kích thước');
@@ -392,13 +329,11 @@ const ProductForm = ({ selectedProduct, onClose }) => {
       return;
     }
 
-    // Kiểm tra nếu biến thể đã tồn tại
     if (variantExists(selectedSize, selectedColor)) {
       message.error(`Biến thể với kích thước ${selectedSize} và màu ${selectedColor} đã tồn tại!`);
       return;
     }
 
-    // Tạo biến thể mới - SKU sẽ được tạo ở backend
     const newVariant = {
       color: selectedColor,
       size: selectedSize,
@@ -407,36 +342,35 @@ const ProductForm = ({ selectedProduct, onClose }) => {
       stock: 0
     };
 
-    // Thêm biến thể mới vào danh sách
     appendVariant(newVariant);
-
-    // Đóng modal và reset giá trị
     setVariantModalVisible(false);
     setSelectedSize('');
     setSelectedColor('');
-
-    // Hiển thị thông báo thành công
     message.success('Đã thêm biến thể mới!');
   }, [selectedSize, selectedColor, appendVariant, variantExists]);
 
-  // Mở modal thêm biến thể
   const openVariantModal = useCallback(() => {
     setSelectedSize('');
     setSelectedColor('');
     setVariantModalVisible(true);
   }, []);
+  // Memoized values
+  const isEditMode = Boolean(selectedProduct);
+  const modalTitle = isEditMode ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới';
+  const submitButtonText = isEditMode ? 'Cập nhật' : 'Tạo mới';
+  const isFormDisabled = uploading || loading;
 
   return (
     <Modal
       width={800}
       open={true}
-      title={selectedProduct ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
-      okText={selectedProduct ? 'Cập nhật' : 'Tạo mới'}
+      title={modalTitle}
+      okText={submitButtonText}
       cancelText='Hủy'
       okButtonProps={{
         autoFocus: true,
         htmlType: 'submit',
-        loading: uploading || loading,
+        loading: isFormDisabled,
         disabled: !isDirty && !localFiles.length
       }}
       onCancel={handleCancel}
@@ -444,8 +378,9 @@ const ProductForm = ({ selectedProduct, onClose }) => {
       onOk={handleSubmit(onSubmit)}
       maskClosable={false}
     >
+      {' '}
       <Form layout='vertical' onFinish={handleSubmit(onSubmit)}>
-        {/* Trường tên sản phẩm */}
+        {/* Product Name */}
         <Form.Item
           label='Tên sản phẩm'
           help={errors.name?.message}
@@ -455,10 +390,10 @@ const ProductForm = ({ selectedProduct, onClose }) => {
           <Controller
             name='name'
             control={control}
-            render={({ field }) => <Input {...field} placeholder='Nhập tên sản phẩm' disabled={uploading || loading} />}
+            render={({ field }) => <Input {...field} placeholder='Nhập tên sản phẩm' disabled={isFormDisabled} />}
           />
         </Form.Item>
-        {/* Trường chọn danh mục */}
+        {/* Category */}
         <Form.Item
           label='Danh mục'
           help={errors.categoryId?.message}
@@ -475,20 +410,16 @@ const ProductForm = ({ selectedProduct, onClose }) => {
                 dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                 treeData={categoryTreeFormatted}
                 placeholder='Chọn danh mục'
-                // treeDefaultExpandAll // Mặc định mở rộng tất cả danh mục
                 allowClear={true}
-                disabled={uploading || loading}
-                onChange={(value) => {
-                  // Chuyển đổi undefined thành null để phù hợp với schema
-                  field.onChange(value === undefined ? null : value);
-                }}
+                disabled={isFormDisabled}
+                onChange={(value) => field.onChange(value === undefined ? null : value)}
                 value={field.value || undefined}
                 notFoundContent='Không có danh mục phù hợp'
               />
             )}
           />
         </Form.Item>
-        {/* Trường thương hiệu */}
+        {/* Brand */}
         <Form.Item
           label='Thương hiệu'
           help={errors.brand?.message}
@@ -498,20 +429,20 @@ const ProductForm = ({ selectedProduct, onClose }) => {
           <Controller
             name='brand'
             control={control}
-            render={({ field }) => <Input {...field} placeholder='Nhập thương hiệu' disabled={uploading || loading} />}
+            render={({ field }) => <Input {...field} placeholder='Nhập thương hiệu' disabled={isFormDisabled} />}
           />
-        </Form.Item>{' '}
-        {/* Trường nhập mô tả */}
+        </Form.Item>
+        {/* Description */}
         <Form.Item label='Mô tả' help={errors.description?.message} validateStatus={errors.description ? 'error' : ''}>
           <Controller
             name='description'
             control={control}
             render={({ field }) => (
-              <Input.TextArea {...field} placeholder='Nhập mô tả' rows={3} disabled={uploading || loading} />
+              <Input.TextArea {...field} placeholder='Nhập mô tả' rows={3} disabled={isFormDisabled} />
             )}
           />
         </Form.Item>
-        {/* Trường tải lên hình ảnh */}
+        {/* Product Images */}
         <Form.Item
           label='Ảnh sản phẩm'
           help={errors.images?.message}
@@ -528,18 +459,14 @@ const ProductForm = ({ selectedProduct, onClose }) => {
                   field.onChange(fileList);
                   handleFilesChange(fileList);
                 }}
-                disabled={uploading || loading}
+                disabled={isFormDisabled}
               />
             )}
           />
         </Form.Item>
-        {/* Loại sản phẩm: Áo hoặc Quần */}
+        {/* Product Type */}
         <Form.Item label='Loại sản phẩm'>
-          <Radio.Group
-            value={productType}
-            onChange={(e) => setProductType(e.target.value)}
-            disabled={uploading || loading}
-          >
+          <Radio.Group value={productType} onChange={(e) => setProductType(e.target.value)} disabled={isFormDisabled}>
             <Radio.Button value='áo'>Áo</Radio.Button>
             <Radio.Button value='quần'>Quần</Radio.Button>
           </Radio.Group>
@@ -547,17 +474,16 @@ const ProductForm = ({ selectedProduct, onClose }) => {
             {productType === 'áo' ? 'Size áo: S, M, L, XL, XXL' : 'Size quần: 28, 29, 30, 31, 32,...'}
           </div>
         </Form.Item>{' '}
-        {/* Biến thể sản phẩm */}
+        {/* Product Variants */}
         <Form.Item
           label='Biến thể sản phẩm'
           help={errors.variants?.message}
           validateStatus={errors.variants ? 'error' : ''}
           required
         >
-          {/* Hiển thị bảng biến thể */}
           {variantFields.length > 0 ? (
             <div className='mb-4'>
-              <div className='mb-2 font-medium'>Bảng biến thể đã tạo:</div>{' '}
+              <div className='mb-2 font-medium'>Bảng biến thể đã tạo:</div>
               <Table
                 dataSource={variantFields.map((field, index) => ({
                   key: field.id,
@@ -579,7 +505,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
                         <Controller
                           name={`variants[${index}].price`}
                           control={control}
-                          render={({ field }) => <Input type='number' {...field} disabled={uploading || loading} />}
+                          render={({ field }) => <Input type='number' {...field} disabled={isFormDisabled} />}
                         />
                       </Form.Item>
                     )
@@ -592,7 +518,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
                         <Controller
                           name={`variants[${index}].originalPrice`}
                           control={control}
-                          render={({ field }) => <Input type='number' {...field} disabled={uploading || loading} />}
+                          render={({ field }) => <Input type='number' {...field} disabled={isFormDisabled} />}
                         />
                       </Form.Item>
                     )
@@ -605,7 +531,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
                         <Controller
                           name={`variants[${index}].stock`}
                           control={control}
-                          render={({ field }) => <Input type='number' {...field} disabled={uploading || loading} />}
+                          render={({ field }) => <Input type='number' {...field} disabled={isFormDisabled} />}
                         />
                       </Form.Item>
                     )
@@ -614,7 +540,7 @@ const ProductForm = ({ selectedProduct, onClose }) => {
                     title: 'Hành động',
                     dataIndex: 'index',
                     render: (index) => (
-                      <Button type='text' danger onClick={() => removeVariant(index)} disabled={uploading || loading}>
+                      <Button type='text' danger onClick={() => removeVariant(index)} disabled={isFormDisabled}>
                         Xóa
                       </Button>
                     )
@@ -629,40 +555,36 @@ const ProductForm = ({ selectedProduct, onClose }) => {
                 onClick={openVariantModal}
                 className='mt-4'
                 icon={<PlusOutlined />}
-                disabled={uploading || loading}
+                disabled={isFormDisabled}
               >
                 Thêm biến thể
-              </Button>{' '}
+              </Button>
               <div className='mt-2 text-xs text-gray-500'>
                 SKU sẽ được tạo tự động dựa trên loại sản phẩm, thương hiệu, tên, size và màu.
               </div>
             </div>
           ) : (
             <div className='rounded border border-dashed border-gray-300 bg-gray-50 p-4 text-center'>
-              <p className='mb-4 text-gray-500'>Chưa có biến thể nào. Nhấn "Thêm biến thể" để tạo một biến thể mới.</p>
-              <Button type='primary' onClick={openVariantModal} icon={<PlusOutlined />} disabled={uploading || loading}>
+              <p className='mb-4 text-gray-500'>
+                Chưa có biến thể nào. Nhấn &quot;Thêm biến thể&quot; để tạo một biến thể mới.
+              </p>
+              <Button type='primary' onClick={openVariantModal} icon={<PlusOutlined />} disabled={isFormDisabled}>
                 Thêm biến thể
               </Button>
             </div>
           )}
         </Form.Item>
-        {/* Trường tags */}
+        {/* Tags */}
         <Form.Item label='Tags'>
           <Controller
             name='tags'
             control={control}
             render={({ field }) => (
-              <Select
-                mode='tags'
-                {...field}
-                placeholder='Nhập tags (ấn Enter để thêm)'
-                disabled={uploading || loading}
-              />
+              <Select mode='tags' {...field} placeholder='Nhập tags (ấn Enter để thêm)' disabled={isFormDisabled} />
             )}
           />
         </Form.Item>
-      </Form>
-
+      </Form>{' '}
       {/* Modal thêm biến thể */}
       <Modal
         title='Thêm biến thể mới'
@@ -674,40 +596,46 @@ const ProductForm = ({ selectedProduct, onClose }) => {
         okButtonProps={{ disabled: !selectedSize || !selectedColor }}
       >
         <Form layout='vertical'>
-          <Form.Item label='Chọn màu sắc' required>
-            <Select
-              placeholder='Chọn màu sắc'
-              value={selectedColor}
-              onChange={setSelectedColor}
-              style={{ width: '100%' }}
-            >
-              {COLOR_OPTIONS.map((color) => (
-                <Option key={color.name} value={color.name}>
-                  <div className='flex items-center'>
-                    <span
-                      className='mr-2 inline-block h-4 w-4 rounded-full border border-gray-300'
-                      style={{ backgroundColor: color.hex }}
-                    ></span>
-                    {color.name}
-                  </div>
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item label='Chọn kích thước' required>
-            <Select
-              placeholder='Chọn kích thước'
-              value={selectedSize}
-              onChange={setSelectedSize}
-              style={{ width: '100%' }}
-            >
-              {currentSizeOptions.map((option) => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ flex: 1 }}>
+              <Form.Item label='Chọn màu sắc' required style={{ marginBottom: 0 }}>
+                <Select
+                  placeholder='Chọn màu sắc'
+                  value={selectedColor}
+                  onChange={setSelectedColor}
+                  style={{ width: '100%' }}
+                >
+                  {COLOR_OPTIONS.map((color) => (
+                    <Option key={color.name} value={color.name}>
+                      <div className='flex items-center'>
+                        <span
+                          className='mr-2 inline-block h-4 w-4 rounded-full border border-gray-300'
+                          style={{ backgroundColor: color.hex }}
+                        ></span>
+                        {color.name}
+                      </div>
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </div>
+            <div style={{ flex: 1 }}>
+              <Form.Item label='Chọn kích thước' required style={{ marginBottom: 0 }}>
+                <Select
+                  placeholder='Chọn kích thước'
+                  value={selectedSize}
+                  onChange={setSelectedSize}
+                  style={{ width: '100%' }}
+                >
+                  {currentSizeOptions.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </div>
+          </div>
         </Form>
       </Modal>
     </Modal>
@@ -716,7 +644,8 @@ const ProductForm = ({ selectedProduct, onClose }) => {
 
 ProductForm.propTypes = {
   selectedProduct: PropTypes.object, // Sản phẩm được chọn để chỉnh sửa
-  onClose: PropTypes.func.isRequired // Hàm callback khi đóng form
+  onClose: PropTypes.func.isRequired, // Hàm callback khi đóng form
+  onRefresh: PropTypes.func.isRequired // Hàm callback để refresh danh sách sản phẩm
 };
 
 export default memo(ProductForm);

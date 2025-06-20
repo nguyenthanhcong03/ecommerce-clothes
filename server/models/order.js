@@ -58,9 +58,18 @@ const orderSchema = new mongoose.Schema(
       fullName: { type: String, required: true },
       phoneNumber: { type: String, required: true },
       street: { type: String, required: true },
-      ward: { type: String, required: true },
-      district: { type: String, required: true },
-      province: { type: String, required: true },
+      ward: {
+        code: { type: String, required: true }, // Mã phường/xã
+        name: { type: String, required: true }, // Tên phường/xã
+      },
+      district: {
+        code: { type: String, required: true }, // Mã quận/huyện
+        name: { type: String, required: true }, // Tên quận/huyện
+      },
+      province: {
+        code: { type: String, required: true }, // Mã tỉnh/thành phố
+        name: { type: String, required: true }, // Tên tỉnh/thành phố
+      },
       note: { type: String },
     },
     payment: {

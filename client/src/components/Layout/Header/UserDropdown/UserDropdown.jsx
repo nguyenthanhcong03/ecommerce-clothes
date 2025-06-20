@@ -10,7 +10,9 @@ const UserDropdown = ({ handleLogout }) => {
     <div>
       <ul className='absolute right-0 top-8 z-10 flex h-fit w-[275px] flex-col rounded-lg bg-white px-3 py-2 shadow-lg transition-all duration-300 ease-in after:absolute after:right-2 after:top-[-8px] after:w-3 after:cursor-pointer after:border-b-[15px] after:border-l-[25px] after:border-r-[25px] after:border-transparent after:border-b-white'>
         <Link to={'/user/profile'} className='flex items-center gap-4'>
-          <img src={avatarDefault} alt='' className='h-[50px] w-[50px] rounded-full' />
+          <div>
+            <img src={user?.avatar || avatarDefault} alt='' className='h-[50px] w-[50px] rounded-full' />
+          </div>
           <div className='flex flex-col justify-center'>
             <p className='text-base font-medium text-primaryColor'>
               {user?.lastName + ' ' + user?.firstName || 'Nguyen Van A'}
