@@ -80,7 +80,7 @@ const UserTable = ({
         key: 'isBlocked',
         render: (isBlocked) => {
           let color = isBlocked ? 'red' : 'green';
-          return <Tag color={color}>{isBlocked ? 'Bị cấm' : 'Hoạt động'}</Tag>;
+          return <Tag color={color}>{isBlocked ? 'Bị khóa' : 'Hoạt động'}</Tag>;
         }
       },
       {

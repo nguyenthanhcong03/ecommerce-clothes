@@ -111,6 +111,7 @@ const useProductVariants = (product) => {
       }
     }
 
+    // Nếu không chọn variant nào thì trả về giá nhỏ nhất
     const defaultVariant = product?.variants.reduce((min, variant) =>
       !min || variant.price < min.price ? variant : min
     );

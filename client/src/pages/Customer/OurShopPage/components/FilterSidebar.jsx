@@ -103,11 +103,14 @@ export function FilterSidebar({ isFilterOpen, setIsFilterOpen, onFilterChange, o
       onFilterChange('rating', ratingValue.toString());
     }
   };
-
   const handleClearFilter = (filterType) => {
     switch (filterType) {
       case 'price':
         onFilterChange('priceRange', null);
+        // Reset custom price
+        setShowCustomPrice(false);
+        setTempMinPrice('');
+        setTempMaxPrice('');
         break;
       case 'color':
         colors.forEach((color) => onFilterChange('color', color));

@@ -13,6 +13,7 @@ const ProtectedRoute = ({
   const { user, isAuthenticated, isLoading } = useSelector((state) => state.account);
 
   if (isLoading) {
+    console.log('có bapf');
     return (
       fallbackComponent || (
         <div className='absolute inset-0 flex h-screen w-screen items-center justify-center bg-black/50'>

@@ -6,7 +6,6 @@ import {
 } from '@/services/reviewService';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-// Định nghĩa async thunk để gọi API
 export const createReview = createAsyncThunk('review/createReview', async (reviewData, { rejectWithValue }) => {
   try {
     const response = await createReviewAPI(reviewData);

@@ -1,60 +1,46 @@
 import { getCategoriesTree } from '@/store/slices/categorySlice';
 import { CaretRightOutlined } from '@ant-design/icons';
 import { Skeleton } from 'antd';
-import { ca } from 'date-fns/locale';
-import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const CategoryItem = ({ category, level = 0, selectedCategoryId }) => {
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
   const hasChildren = category.children && category.children.length > 0;
   const isSelected = category._id === selectedCategoryId;
-  const navigate = useNavigate();
 
   return (
     <div className='category-item'>
       <div
-        className={`group flex cursor-pointer items-center py-3 ${
+        className={`group flex items-center py-3 ${
           isSelected ? 'bg-gray-100' : ''
         } ${level === 0 ? 'px-4' : level === 1 ? 'px-4 pl-8' : 'px-4 pl-12'}`}
       >
         <div className='flex flex-1 items-center'>
-          <div className={`flex-1 text-sm font-semibold transition-colors`}>
-            <span className='hover:underline' onClick={() => navigate(`/shop/${category.slug}/${category._id}`)}>
-              {category.name}
-            </span>
-            {category.productsCount > 0 && (
-              <span className='ml-2 text-xs text-gray-400'>({category.productsCount})</span>
-            )}
+          <div
+            className={`flex flex-1 cursor-pointer items-center gap-2 text-sm font-semibold transition-colors`}
+            onClick={() => navigate(`/shop/${category.slug}/${category._id}`)}
+          >
+            <img src={category?.images[0]} alt={category?.name} width={40} />
+            <span className='hover:underline'>{category?.name}</span>
           </div>
           {hasChildren && (
             <CaretRightOutlined
-              className={`mr-2 text-xs transition-transform ${isExpanded ? 'rotate-90' : ''} ${
-                isSelected || (hasChildren && findSelectedInChildren(category.children, selectedCategoryId))
-                  ? 'text-primaryColor'
-                  : 'text-gray-400'
-              }`}
+              className={`rounded-full p-2 text-xs transition-transform hover:bg-slate-100 ${isExpanded ? 'rotate-90' : ''} `}
               onClick={(e) => {
                 e.stopPropagation();
                 setIsExpanded(!isExpanded);
               }}
             />
           )}
-          {/* {!hasChildren && <span className='mr-2 w-4' />} */}
         </div>
       </div>
       {hasChildren && isExpanded && (
         <div className='category-children flex flex-col gap-2 pb-4'>
           {category.children.map((child) => (
             <div key={child._id}>
-              {/* <CategoryItem
-                category={child}
-                level={level + 1}
-                selectedCategoryId={selectedCategoryId}
-                setSearchParams={setSearchParams}
-              /> */}
               <div
                 className='cursor-pointer pl-6 pr-4 text-sm hover:underline'
                 onClick={() => navigate(`/shop/${child.slug}/${child._id}`)}
@@ -69,8 +55,7 @@ const CategoryItem = ({ category, level = 0, selectedCategoryId }) => {
   );
 };
 
-// Helper function to find selected category and its children
-const findSelectedCategoryBranch = (categories, categoryId) => {
+const findSelectedCategory = (categories, categoryId) => {
   if (!categories || !categoryId) return null;
 
   for (let category of categories) {
@@ -78,17 +63,11 @@ const findSelectedCategoryBranch = (categories, categoryId) => {
       return category;
     }
     if (category.children) {
-      const found = findSelectedCategoryBranch(category.children, categoryId);
+      const found = findSelectedCategory(category.children, categoryId);
       if (found) return found;
     }
   }
   return null;
-};
-
-// Helper function to find if a category is selected in the children
-const findSelectedInChildren = (children, selectedId) => {
-  if (!children || !selectedId) return false;
-  return children.some((child) => child._id === selectedId || findSelectedInChildren(child.children, selectedId));
 };
 
 export function CategorySidebar() {
@@ -109,7 +88,7 @@ export function CategorySidebar() {
   }
 
   // Tìm danh mục được chọn và các danh mục con của nó
-  const selectedCategory = findSelectedCategoryBranch(categoriesTree, catId);
+  const selectedCategory = findSelectedCategory(categoriesTree, catId);
   const categoriesToShow = selectedCategory
     ? selectedCategory.children || [] // Nếu có danh mục được chọn, chỉ hiện các con của nó
     : categoriesTree; // Nếu không, hiện tất cả danh mục gốc

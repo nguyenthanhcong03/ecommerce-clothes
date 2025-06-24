@@ -46,7 +46,7 @@ const Breadcrumb = ({ items, separator, showHome = true }) => {
   );
 };
 
-// Helper function để tạo breadcrumb items từ URL
+// function để tạo breadcrumb items từ URL
 function generateBreadcrumbFromURL(pathname) {
   // Bỏ qua query params và hash
   const path = pathname.split('?')[0].split('#')[0];

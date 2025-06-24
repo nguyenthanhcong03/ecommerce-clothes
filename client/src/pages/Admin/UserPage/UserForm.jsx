@@ -44,7 +44,7 @@ const UserForm = ({ selectedUser, onClose }) => {
       onClose();
     } catch (error) {
       // Hiển thị thông báo lỗi từ server
-      message.error(error.message || 'Thêm người dùng thất bại!');
+      message.error(error.message || 'Có lỗi xảy ra khi thêm tài khoản.');
 
       // Xử lý lỗi từ server (các trường lỗi)
       if (error?.errors) {
@@ -64,7 +64,7 @@ const UserForm = ({ selectedUser, onClose }) => {
     } catch (error) {
       console.log('error', error);
       // Hiển thị thông báo lỗi từ server
-      message.error(error.message || 'Cập nhật người dùng thất bại!');
+      message.error(error.message || 'Có lỗi xảy ra khi cập nhật tài khoản.');
 
       // Xử lý lỗi từ server (các trường lỗi)
       if (error?.errors) {

@@ -66,16 +66,16 @@ const CategoryPage = () => {
   const handleCloseForm = () => {
     setIsOpenForm(false);
     setSelectedCategory(null);
-    // Làm mới danh sách danh mục sau khi đóng form
-    // fetchAllCategories();
   };
+
   const handleDeleteCategory = async (id) => {
     try {
       await dispatch(deleteCategory(id)).unwrap();
       message.success('Xóa danh mục thành công');
       dispatch(fetchCategories());
     } catch (error) {
-      message.error(`Lỗi khi xóa danh mục: ${error.message}`);
+      console.error('Xóa danh mục thất bại:', error);
+      message.error(`Xóa danh mục thất bại. Vui lòng thử lại sau.`);
     }
   };
   const handleRefresh = () => {

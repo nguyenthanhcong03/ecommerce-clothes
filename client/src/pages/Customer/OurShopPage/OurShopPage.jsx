@@ -12,9 +12,10 @@ import { fetchProducts } from '@/store/slices/shopSlice';
 import { findCategoryById } from '@/utils/helpers/findCategoryById';
 import { getCategoryPath } from '@/utils/helpers/getCategoryPath';
 import { AppstoreOutlined, BarsOutlined, FilterOutlined } from '@ant-design/icons';
+import { ChevronLeft } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 const sortOptions = [
   { label: 'Mặc định', value: 'default' },
@@ -29,6 +30,7 @@ const sortOptions = [
 
 function OurShopPage() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { products, loading, pagination } = useSelector((state) => state.shop);
   const { categoriesTree } = useSelector((state) => state.category);
   const { catId } = useParams();
@@ -201,12 +203,27 @@ function OurShopPage() {
     params.delete('page'); // Reset về trang 1 và xóa khỏi URL
     setParams(params);
   };
-
   const handleResetFilter = () => {
     const newParams = new URLSearchParams();
     // Giữ lại search
     if (params.get('search')) newParams.set('search', params.get('search'));
     setParams(newParams);
+  };
+
+  const handleGoBack = () => {
+    // Nếu có breadcrumb items và có ít nhất 2 items (Cửa hàng + current)
+    if (breadcrumbItems.length >= 2) {
+      const previousItem = breadcrumbItems[breadcrumbItems.length - 2];
+      if (previousItem.path) {
+        navigate(previousItem.path);
+      } else {
+        // Nếu không có path, trở về trang shop chính
+        navigate('/shop');
+      }
+    } else {
+      // Mặc định trở về trang shop chính
+      navigate('/shop');
+    }
   };
 
   // Fetch products when filters change
@@ -291,19 +308,25 @@ function OurShopPage() {
         {/* Main content */}
         <div className='lg:w-3/4'>
           {currentCategory ? (
-            <h1 className='mb-4 rounded-md bg-white p-4 text-2xl font-bold'>{currentCategory.name}</h1>
-          ) : search ? (
-            <div className='mb-4 text-center'>
-              <h2 className='text-xl font-medium text-gray-600'>
-                Kết quả tìm kiếm cho &ldquo;{search}&rdquo; - {pagination?.total || 0} sản phẩm
-              </h2>
+            <div className='mb-4 flex items-center gap-2 rounded-md bg-white p-4'>
+              <ChevronLeft
+                className='cursor-pointer transition-colors hover:text-blue-600'
+                onClick={handleGoBack}
+                title='Trở về'
+              />
+              <h1 className='text-2xl font-bold'>{currentCategory.name}</h1>
             </div>
           ) : (
-            <h1 className='mb-4 rounded-md bg-white p-4 text-2xl font-bold'>Tất cả sản phẩm</h1>
+            search && (
+              <div className='mb-4 text-center'>
+                <h2 className='text-xl font-medium text-gray-600'>
+                  Kết quả tìm kiếm cho &ldquo;{search}&rdquo; - {pagination?.total || 0} sản phẩm
+                </h2>
+              </div>
+            )
           )}
-
           {!search && (
-            <div className='mb-4 h-[280px] w-full'>
+            <div className='mb-4 h-[280px] w-full rounded-md bg-white p-4'>
               <CountDownBanner backgroundImage={countdownBanner2} />
             </div>
           )}

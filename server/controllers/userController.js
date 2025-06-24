@@ -85,7 +85,7 @@ const updateUserByAdmin = catchAsync(async (req, res) => {
 const deleteUser = catchAsync(async (req, res) => {
   // Kiểm tra quyền: chỉ admin mới có thể xóa user
   if (req.user.role !== "admin") {
-    throw new ApiError(403, "Permission denied");
+    throw new ApiError(403, "Truy cập bị từ chối");
   }
 
   const result = await userService.deleteUser(req.params.id);

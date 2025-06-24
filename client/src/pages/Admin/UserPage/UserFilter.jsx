@@ -103,7 +103,7 @@ const UserFilter = ({ onFilterChange, onResetFilter }) => {
                       style={{ width: '100%' }}
                       options={[
                         { value: 'false', label: 'Hoạt đông' },
-                        { value: 'true', label: 'Bị cấm' }
+                        { value: 'true', label: 'Bị khóa' }
                       ]}
                     />
                   )}

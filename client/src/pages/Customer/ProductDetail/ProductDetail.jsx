@@ -420,7 +420,7 @@ const DetailProduct = () => {
                   <span className='text-sm'>Thêm vào giỏ hàng</span>
                 </Button>
                 <Button variant='primary' onClick={handleBuyNow} className='xs:flex-1 w-full'>
-                  <span className='text-sm'>Mua ngay với giá {price || 0}</span>
+                  <span className='text-sm'>Mua ngay với giá {price || 0} đ</span>
                 </Button>
               </div>
             )}

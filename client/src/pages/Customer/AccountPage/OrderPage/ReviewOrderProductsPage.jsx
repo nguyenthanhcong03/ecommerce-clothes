@@ -18,7 +18,7 @@ const ReviewOrderProductsPage = () => {
   const { reviewableProducts, loading, submitting, success } = useSelector((state) => state.review);
   const [activeProduct, setActiveProduct] = useState(null);
   const [rating, setRating] = useState(5);
-  // React Hook Form setup
+
   const {
     register,
     handleSubmit,
@@ -68,7 +68,7 @@ const ReviewOrderProductsPage = () => {
       orderId,
       ...data
     };
-    console.log('react reviewData', reviewData);
+
     dispatch(createReview(reviewData));
   };
 
@@ -189,7 +189,7 @@ const ReviewOrderProductsPage = () => {
                     {...register('comment', { required: 'Vui lòng nhập nội dung đánh giá' })}
                   />
                   {errors.comment && <p className='mt-1 text-sm text-red-500'>{errors.comment.message}</p>}
-                </div>{' '}
+                </div>
                 <div className='form-group'>
                   <Button type='submit' loading={submitting}>
                     Gửi đánh giá

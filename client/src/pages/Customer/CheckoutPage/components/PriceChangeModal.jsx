@@ -58,7 +58,7 @@ const PriceChangeModal = ({ visible, changedProducts, onCancel, onConfirm }) => 
       width={700}
     >
       <div className='mb-4'>
-        <p className='font-medium text-red-500'>Giá một số sản phẩm đã thay đổi kể từ khi bạn thêm vào giỏ hàng.</p>
+        <p className='font-medium text-red-500'>Giá một số sản phẩm đã thay đổi.</p>
         <p>Vui lòng xem lại và xác nhận nếu bạn muốn tiếp tục đặt hàng với giá mới.</p>
       </div>
 
