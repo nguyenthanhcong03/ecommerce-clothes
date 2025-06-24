@@ -18,9 +18,7 @@ const AuthHeader = () => {
           </Link>
           <span className='text-2xl font-normal'>{isLoginPage ? 'Đăng nhập' : 'Đăng ký'}</span>
         </div>
-        <Link to='/help' className='text-sm hover:opacity-90'>
-          Bạn cần giúp đỡ?
-        </Link>
+        <Link className='text-sm hover:opacity-90'>Bạn cần giúp đỡ?</Link>
       </div>
     </header>
   );

@@ -26,7 +26,7 @@ const syncCartItemSnapshots = async (cart) => {
     item.snapshot.color = variant.color;
     item.snapshot.size = variant.size;
     item.snapshot.stock = variant.stock;
-    item.isAvailable = variant.stock >= item.quantity;
+    // item.isAvailable = variant.stock >= item.quantity;
   }
 
   await cart.save();
