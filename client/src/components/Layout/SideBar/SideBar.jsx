@@ -36,7 +36,7 @@ function SideBar() {
       ></div>
       {/* SideBar Left (Menu & Search) */}
       <div
-        className={`fixed top-0 z-[51] h-full bg-white transition-all duration-300 ease-in-out ${
+        className={`fixed top-0 z-[51] h-screen bg-white transition-all duration-300 ease-in-out ${
           type === 'menu' && isOpen ? 'left-0' : '-left-full'
         }`}
       >
@@ -54,7 +54,7 @@ function SideBar() {
 
       {/* SideBar Right (Cart) */}
       <div
-        className={`fixed top-0 z-[51] h-full bg-white transition-all duration-300 ease-in-out ${
+        className={`fixed z-[51] h-screen bg-white transition-all duration-300 ease-in-out ${
           (type === 'cart' || type === 'search') && isOpen ? 'right-0' : '-right-full'
         }`}
       >

@@ -1,19 +1,8 @@
-import React, { useState } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  ClipboardList,
-  KeyRound,
-  LogOut,
-  MapPinHouse,
-  Star,
-  Ticket,
-  UserPen,
-  UserRound,
-  UserRoundCog
-} from 'lucide-react';
 import { logoutUser } from '@/store/slices/accountSlice';
 import { message } from 'antd';
+import { ClipboardList, KeyRound, LogOut, Star, Ticket, UserPen, UserRound, UserRoundCog } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 const AccountLayout = () => {
   const location = useLocation();
@@ -63,10 +52,9 @@ const AccountLayout = () => {
   return (
     <div className='mt-[80px] min-h-screen pt-8'>
       {/* Main Content */}
-      {/* <div className='mx-auto w-full max-w-[1280px] px-4 py-8 md:px-8'> */}
-      <div className='flex flex-col gap-6 md:flex-row'>
+      <div className='flex flex-col gap-6 lg:flex-row'>
         {/* Sidebar */}
-        <div className='w-full md:w-1/4'>
+        <div className='w-full lg:w-1/4'>
           <div className='mb-6 rounded-lg bg-white p-6 shadow'>
             <div className='mb-6 flex items-center space-x-4'>
               <div className='flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-gray-200'>
@@ -130,13 +118,12 @@ const AccountLayout = () => {
         </div>
 
         {/* Content Area */}
-        <div className='w-full md:w-3/4'>
+        <div className='w-full lg:w-3/4'>
           <div className='rounded-lg bg-white p-6 shadow'>
             <Outlet />
           </div>
         </div>
       </div>
-      {/* </div> */}
     </div>
   );
 };

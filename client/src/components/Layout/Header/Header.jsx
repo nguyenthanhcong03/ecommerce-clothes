@@ -148,7 +148,7 @@ function Header() {
             <Menu fontSize={26} cursor={'pointer'} />
           </div>
           {/* Logo */}
-          <Link to={'/'}>
+          <Link to={'/'} className='absolute left-1/2 -translate-x-1/2 transform lg:static lg:transform-none'>
             <img src={Logo} alt='Logo' className='h-[80px] transition-transform duration-300 hover:scale-110' />
           </Link>
 
@@ -162,51 +162,52 @@ function Header() {
           </div>
 
           {/* Function icon */}
-          <div className='flex gap-4'>
-            {/* Search */}
-            <div className='flex items-center'>
-              {/* Search mobile */}
-              <Search
-                className='lg:hidden'
-                fontSize={20}
-                cursor={'pointer'}
-                onClick={() => handleToggleSideBar('search')}
-              />
-              {/* Search Desktop */}
-              <div className='flex items-center gap-2' onClick={() => handleToggleSearchModal()}>
-                <Search className='hidden lg:block' fontSize={20} cursor={'pointer'} />
-              </div>
-            </div>
+          <div className='flex items-center gap-4'>
+            {/* Search mobile */}
+            <Search
+              className='lg:hidden'
+              fontSize={20}
+              cursor={'pointer'}
+              onClick={() => handleToggleSideBar('search')}
+            />
+            {/* Search Desktop */}
+            <Search
+              className='hidden lg:block'
+              fontSize={20}
+              cursor={'pointer'}
+              onClick={() => handleToggleSearchModal()}
+            />
 
             {/*  Cart, Account  */}
-            <div className='flex items-center gap-2'>
-              {isCustomer && (
-                <Tooltip
-                  title={
-                    totalCartItems >= 1 ? (
-                      <span className='font-robotoMono'>Có {totalCartItems} sản phẩm trong giỏ hàng</span>
-                    ) : (
-                      <span className='font-robotoMono'>Không có sản phẩm nào trong giỏ hàng</span>
-                    )
-                  }
-                  placement='bottom'
+            {isCustomer && (
+              <Tooltip
+                title={
+                  totalCartItems >= 1 ? (
+                    <span className='font-robotoMono'>Có {totalCartItems} sản phẩm trong giỏ hàng</span>
+                  ) : (
+                    <span className='font-robotoMono'>Không có sản phẩm nào trong giỏ hàng</span>
+                  )
+                }
+                placement='bottom'
+              >
+                <div
+                  className='relative cursor-pointer'
+                  onClick={() => {
+                    handleToggleSideBar('cart');
+                  }}
                 >
-                  <div
-                    className='relative cursor-pointer'
-                    onClick={() => {
-                      handleToggleSideBar('cart');
-                    }}
-                  >
-                    <ShoppingCart />
-                    {totalCartItems >= 1 && (
-                      <div className='absolute bottom-3 left-3 h-5 w-5 rounded-full bg-primaryColor text-center text-xs leading-5 text-white'>
-                        {totalCartItems}
-                      </div>
-                    )}
-                  </div>
-                </Tooltip>
-              )}
-            </div>
+                  <ShoppingCart />
+                  {totalCartItems >= 1 && (
+                    <div className='absolute bottom-3 left-3 h-5 w-5 rounded-full bg-primaryColor text-center text-xs leading-5 text-white'>
+                      {totalCartItems}
+                    </div>
+                  )}
+                </div>
+              </Tooltip>
+            )}
+            <Link to={'user/profile'} className='lg:hidden'>
+              <img src={user?.avatar ? user.avatar : avatarDefault} alt='' className='h-[25px] w-[25px] rounded-full' />
+            </Link>
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@ import { getCart } from '@/store/slices/cartSlice';
 import { setOrderItems } from '@/store/slices/orderSlice';
 import { toggleSidebar } from '@/store/slices/sidebarSlice';
 import { ShoppingCart } from 'lucide-react';
-import { use, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -42,84 +42,78 @@ function SideBarCart() {
   }, [dispatch]);
 
   return (
-    <div>
-      <div className='flex h-full w-[300px] flex-col items-center gap-4 px-8 py-5 md:w-[400px]'>
-        <div className='flex flex-col items-center text-lg text-secondaryColor'>
-          <ShoppingCart fontSize={24} cursor={'pointer'} onClick={handleNavigateToCart} />
-          <MenuItem
-            text={'GIỎ HÀNG'}
-            // href={'/cart'}
-            onClick={handleNavigateToCart}
-          />
-        </div>
-        {isAuthenticated ? (
-          items && items.length > 0 ? (
-            <div className='flex w-full flex-1 flex-col justify-between gap-4'>
-              <div>
-                {items?.map((item) => (
-                  <SidebarCartItem key={item._id} item={item} />
-                ))}
-              </div>
-              <div className='flex w-full flex-col gap-4'>
-                <div className='flex items-center justify-between text-sm text-secondaryColor'>
-                  <p>SUBTOTAL:</p>
-                  <p>$199.76</p>
-                </div>
-                <div className='flex flex-col gap-2'>
-                  <Button
-                    onClick={() => {
-                      dispatch(toggleSidebar());
-                      navigate('/cart');
-                    }}
-                  >
-                    XEM TẤT CẢ
-                  </Button>
-                  <Button
-                    variant='secondary'
-                    onClick={() => {
-                      dispatch(toggleSidebar());
-                      handleProceedToCheckout();
-                    }}
-                  >
-                    ĐẶT HÀNG
-                  </Button>
-                </div>
-              </div>
+    <div className='flex h-full w-[300px] flex-col items-center gap-4 px-8 py-5 md:w-[400px]'>
+      <div className='flex flex-col items-center text-lg text-secondaryColor' onClick={handleNavigateToCart}>
+        <ShoppingCart fontSize={24} cursor={'pointer'} />
+        <MenuItem text={'GIỎ HÀNG'} />
+      </div>
+      {isAuthenticated ? (
+        items && items.length > 0 ? (
+          <div className='flex w-full flex-1 flex-col justify-between gap-4'>
+            <div>
+              {items?.map((item) => (
+                <SidebarCartItem key={item._id} item={item} />
+              ))}
             </div>
-          ) : (
-            <div className='flex w-full flex-1 flex-col items-center justify-center gap-2'>
-              <div className='text-center'>Không có sản phẩm nào trong giỏ hàng.</div>
-              <Button onClick={handleNavigateToShop}>Mua sắm ngay</Button>
-            </div>
-          )
-        ) : (
-          <div className='flex w-full flex-1 flex-col items-center justify-center gap-4'>
-            <div className='flex w-full flex-col gap-8'>
-              <div className='text-center'>Hãy đăng nhập để xem giỏ hàng của bạn.</div>
-
+            <div className='flex w-full flex-col gap-4'>
+              <div className='flex items-center justify-between text-sm text-secondaryColor'>
+                <p>SUBTOTAL:</p>
+                <p>$199.76</p>
+              </div>
               <div className='flex flex-col gap-2'>
                 <Button
                   onClick={() => {
                     dispatch(toggleSidebar());
-                    navigate('/login');
+                    navigate('/cart');
                   }}
                 >
-                  ĐĂNG NHẬP
+                  XEM TẤT CẢ
                 </Button>
                 <Button
                   variant='secondary'
                   onClick={() => {
                     dispatch(toggleSidebar());
-                    navigate('/register');
+                    handleProceedToCheckout();
                   }}
                 >
-                  ĐĂNG KÝ
+                  ĐẶT HÀNG
                 </Button>
               </div>
             </div>
           </div>
-        )}
-      </div>
+        ) : (
+          <div className='flex w-full flex-1 flex-col items-center justify-center gap-2'>
+            <div className='text-center'>Không có sản phẩm nào trong giỏ hàng.</div>
+            <Button onClick={handleNavigateToShop}>Mua sắm ngay</Button>
+          </div>
+        )
+      ) : (
+        <div className='flex w-full flex-1 flex-col items-center justify-center gap-4'>
+          <div className='flex w-full flex-col gap-8'>
+            <div className='text-center'>Hãy đăng nhập để xem giỏ hàng của bạn.</div>
+
+            <div className='flex flex-col gap-2'>
+              <Button
+                onClick={() => {
+                  dispatch(toggleSidebar());
+                  navigate('/login');
+                }}
+              >
+                ĐĂNG NHẬP
+              </Button>
+              <Button
+                variant='secondary'
+                onClick={() => {
+                  dispatch(toggleSidebar());
+                  navigate('/register');
+                }}
+              >
+                ĐĂNG KÝ
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
