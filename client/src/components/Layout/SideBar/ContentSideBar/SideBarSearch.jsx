@@ -6,7 +6,7 @@ import useDebounce from '@/hooks/useDebounce';
 import { getAllProductsAPI } from '@/services/productService';
 import { toggleSidebar } from '@/store/slices/sidebarSlice';
 import { CircleX, Search } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -92,7 +92,7 @@ function SideBarSearch() {
       {loading ? (
         <div>Đang tìm kiếm...</div>
       ) : searchResults.length > 0 ? (
-        <div className='grid w-full max-w-[1280px] grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4'>
+        <div className='grid w-full max-w-[1280px] grid-cols-2 gap-2'>
           {searchResults.map((product) => (
             <Link to={`/product/${product._id}`} onClick={() => dispatch(toggleSidebar())} key={product._id}>
               <ProductCard

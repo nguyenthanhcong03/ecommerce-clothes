@@ -1,9 +1,6 @@
 import { message } from 'antd';
 import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL;
-import Cookies from 'js-cookie';
-
-let hasShownSessionExpiredMessage = false;
 let isRefreshing = false;
 
 const axiosInstance = axios.create({
@@ -36,8 +33,6 @@ axiosInstance.interceptors.request.use(
 // Response interceptor cho httpOnly cookies
 axiosInstance.interceptors.response.use(
   (response) => {
-    // Reset flag khi có response thành công
-    hasShownSessionExpiredMessage = false;
     return response?.data || response;
   },
   async (error) => {
@@ -57,10 +52,9 @@ axiosInstance.interceptors.response.use(
           await axiosInstanceWithCredentials.post(`${API_URL}/api/auth/refresh-token`);
           // Refresh thành công, retry request gốc
           isRefreshing = false;
-          hasShownSessionExpiredMessage = false;
           return axiosInstance(originalRequest);
         } catch (refreshError) {
-          // Refresh thất bại - session thực sự hết hạn
+          // Refresh thất bại - token thực sự hết hạn
           isRefreshing = false;
           handleSessionExpired();
           return Promise.reject(refreshError);
@@ -77,12 +71,9 @@ axiosInstance.interceptors.response.use(
 
 // Xử lý session hết hạn
 const handleSessionExpired = () => {
-  if (!hasShownSessionExpiredMessage) {
-    hasShownSessionExpiredMessage = true;
-
-    message.error('Phiên đăng nhập của bạn đã hết hạn, vui lòng đăng nhập lại.');
-    logoutAndRedirect();
-  }
+  console.log('Session expired, redirecting to login...');
+  message.error('Phiên đăng nhập của bạn đã hết hạn, vui lòng đăng nhập lại.');
+  logoutAndRedirect();
 };
 
 const logoutAndRedirect = async () => {
@@ -92,7 +83,7 @@ const logoutAndRedirect = async () => {
   } catch (error) {
     console.error('Logout error:', error);
   } finally {
-    window.location.href = '/login';
+    // window.location.href = '/login';
   }
 };
 
@@ -101,7 +92,7 @@ const redirectToLoginIfNeeded = () => {
   const publicPaths = ['/login', '/register', '/forgot-password', '/'];
 
   if (!publicPaths.includes(currentPath)) {
-    // window.location.href = '/login';
+    window.location.href = '/login';
   }
 };
 

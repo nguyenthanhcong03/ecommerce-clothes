@@ -5,7 +5,6 @@ import { Copy, CopyCheck } from 'lucide-react';
 import { useState } from 'react';
 
 const ShareButtons = ({ product }) => {
-  const [isCopied, setIsCopied] = useState(false);
   // Lấy URL hiện tại
   const currentUrl = window.location.href;
 
@@ -61,9 +60,9 @@ const ShareButtons = ({ product }) => {
           /> */}
         <button
           onClick={copyProductLink}
-          className='ml-2 flex items-center text-[#333] transition-colors hover:text-blue-500'
+          className='ml-2 flex items-center text-[#333] transition-colors hover:text-blue-500 active:scale-90'
         >
-          {isCopied ? <CopyCheck /> : <Copy />}
+          <Copy />
         </button>
         {/* </div> */}
       </div>

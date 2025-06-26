@@ -31,6 +31,7 @@ export const updateCartItem = createAsyncThunk(
   async ({ itemId, quantity }, { rejectWithValue }) => {
     try {
       const response = await updateCartItemAPI(itemId, quantity);
+      console.log('response', response);
       return response;
     } catch (error) {
       console.log('cartSlice.js error', error);
@@ -106,7 +107,6 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(addToCart.fulfilled, (state, action) => {
-        console.log('accountSlice.js', action.payload);
         state.items = action.payload.data.items;
         state.totalCartItems = action.payload.data.totalCartItems;
         state.loading = false;
@@ -125,7 +125,6 @@ const cartSlice = createSlice({
       })
       .addCase(updateCartItem.fulfilled, (state, action) => {
         state.loadingUpdate = false;
-        // state.items = action.payload.data.items;
         state.totalCartItems = action.payload.data.totalCartItems;
         state.totalPrice = action.payload.data.totalPrice;
         state.itemUpdate = null;
@@ -159,7 +158,6 @@ const cartSlice = createSlice({
       })
       .addCase(removeMultipleCartItems.fulfilled, (state, action) => {
         state.loadingRemove = false;
-        state.items = action.payload.data.items;
         state.totalCartItems = action.payload.data.totalCartItems;
         state.totalPrice = action.payload.data.totalPrice;
       })

@@ -2,7 +2,7 @@ import avatarDefault from '@/assets/images/user.png';
 import Button from '@/components/common/Button/Button';
 import Input from '@/components/common/Input/Input';
 import Select from '@/components/common/Select/Select';
-import { uploadFileAPI } from '@/services/fileService';
+import { deleteFileAPI, uploadFileAPI } from '@/services/fileService';
 import { getDistrictsAPI, getProvincesAPI, getWardsAPI } from '@/services/mapService';
 import { fetchUserById, updateUser } from '@/store/slices/userSlice';
 import { CalendarOutlined, MailOutlined, PhoneOutlined, UserOutlined } from '@ant-design/icons';
@@ -82,7 +82,7 @@ const ProfilePage = () => {
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar || avatarDefault);
   const [avatarChanged, setAvatarChanged] = useState(false);
-  const [loadingUpload, setLoadingUpload] = useState(false);
+  const [loadingUpdateProfile, setLoadingUpdateProfile] = useState(false);
 
   // State cho địa chỉ
   const [provinces, setProvinces] = useState([]);
@@ -94,7 +94,6 @@ const ProfilePage = () => {
     handleSubmit,
     formState: { errors, isDirty },
     reset,
-    register,
     watch,
     setError,
     clearErrors,
@@ -207,9 +206,10 @@ const ProfilePage = () => {
       } else if (!street && !ward && !district && !province) {
         userData.address = null;
       }
+
+      setLoadingUpdateProfile(true);
       // Xử lý upload avatar nếu có
       if (avatarFile) {
-        setLoadingUpload(true);
         try {
           // Upload avatar trước bằng fileService
           const uploadResponse = await uploadFileAPI(avatarFile, 'ecommerce/avatars');
@@ -218,9 +218,7 @@ const ProfilePage = () => {
             // Thêm URL avatar vào dữ liệu cập nhật
             userData.avatar = uploadResponse.data.url;
           }
-          setLoadingUpload(false);
         } catch (uploadError) {
-          setLoadingUpload(false);
           console.error('Lỗi khi upload avatar:', uploadError);
           message.error('Không thể tải lên ảnh đại diện. Vui lòng thử lại.');
         }
@@ -229,12 +227,14 @@ const ProfilePage = () => {
           const oldAvatar = currentUser?.avatar || [];
           try {
             console.log('oldAvatar', oldAvatar);
-            await uploadFileAPI(oldAvatar);
+            await deleteFileAPI(oldAvatar);
           } catch (deleteErr) {
             console.error('Lỗi khi xóa ảnh:', deleteErr);
           }
         }
       }
+
+      console.log('userData', userData);
 
       // Cập nhật thông tin người dùng với dữ liệu bao gồm avatar URL (nếu có)
       await dispatch(updateUser({ userId: user._id, userData })).unwrap();
@@ -244,6 +244,7 @@ const ProfilePage = () => {
       // Xóa file avatar khỏi state sau khi đã upload thành công
       setAvatarFile(null);
       setAvatarChanged(false);
+      setLoadingUpdateProfile(false);
       message.success('Thông tin cá nhân đã được cập nhật thành công!');
     } catch (error) {
       console.log('error', error);
@@ -252,6 +253,7 @@ const ProfilePage = () => {
           setError(field, { type: 'server', message });
         });
       }
+      setLoadingUpdateProfile(false);
     }
   };
 
@@ -287,9 +289,9 @@ const ProfilePage = () => {
         // Chỉ reset district và ward nếu không phải là lần đầu load với thông tin user
         const isUserInitialLoad = user?.address?.province?.code === watchProvince.value;
         if (!isUserInitialLoad) {
-          setValue('district', '');
+          setValue('district', null);
           setWards([]);
-          setValue('ward', '');
+          setValue('ward', null);
         }
       } catch (error) {
         console.error('Error loading district:', error);
@@ -300,9 +302,9 @@ const ProfilePage = () => {
       fetchDistricts();
     } else {
       setDistricts([]);
-      setValue('district', '');
+      setValue('district', null);
       setWards([]);
-      setValue('ward', '');
+      setValue('ward', null);
     }
   }, [watchProvince, setValue, user]);
 
@@ -316,7 +318,7 @@ const ProfilePage = () => {
         // Chỉ reset ward nếu không phải là lần đầu load với thông tin user
         const isUserInitialLoad = user?.address?.district?.code === watchDistrict.value;
         if (!isUserInitialLoad) {
-          setValue('ward', '');
+          setValue('ward', null);
         }
       } catch (error) {
         console.error('Error loading ward:', error);
@@ -327,7 +329,7 @@ const ProfilePage = () => {
       fetchWards();
     } else {
       setWards([]);
-      setValue('ward', '');
+      setValue('ward', null);
     }
   }, [watchProvince, watchDistrict, setValue, dispatch, user]);
 
@@ -347,7 +349,7 @@ const ProfilePage = () => {
   // }, [currentUser, setValue]);
 
   // Render hiệu ứng loading
-  if (loading && !currentUser) {
+  if (loading || loadingUpdateProfile) {
     return (
       <div className='flex h-[60vh] w-full flex-col items-center justify-center p-8'>
         <div className='mb-4 h-12 w-12 animate-spin rounded-full border-4 border-primaryColor border-t-transparent shadow-md'></div>
@@ -726,7 +728,7 @@ const ProfilePage = () => {
             <Button
               type='submit'
               variant='primary'
-              isLoading={loading || loadingUpload}
+              isLoading={loading}
               className='px-6 py-2.5 transition-all duration-200 hover:shadow-md hover:shadow-primaryColor/20 focus:ring-2 focus:ring-primaryColor focus:ring-offset-2'
             >
               <span className='flex items-center gap-2'>

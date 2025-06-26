@@ -4,7 +4,7 @@ import { message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import CartItem from './CartItem';
+import CartPageItem from './CartPageItem';
 import CartSummary from './CartSummary';
 
 const CartTable = () => {
@@ -128,7 +128,7 @@ const CartTable = () => {
         </div>
         <div className='space-y-4 lg:space-y-0'>
           {items?.map((item) => (
-            <CartItem
+            <CartPageItem
               key={item._id}
               item={item}
               onSelect={handleSelectItem}

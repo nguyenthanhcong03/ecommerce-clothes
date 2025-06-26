@@ -22,7 +22,6 @@ const getCart = async (req, res) => {
 
     // Cập nhật snapshot sản phẩm/variant trong giỏ hàng
     await syncCartItemSnapshots(cart);
-
     const totalCartItems = cart?.items?.length || 0;
 
     // Tính tổng
@@ -72,7 +71,7 @@ const addToCart = async (req, res) => {
     const variant = product.variants.id(variantId);
     if (!variant) return res.status(404).json({ message: "Variant not found" });
 
-    if (variant.stock < quantity) return res.status(400).json({ message: "Not enough stock" });
+    if (variant.stock < quantity) return res.status(400).json({ message: "Số lượng sản phẩm trong kho không đủ" });
 
     // 2. Tìm hoặc tạo giỏ hàng cho user
     let cart = await Cart.findOne({ userId });
@@ -145,7 +144,8 @@ const updateCartItem = async (req, res) => {
     } else {
       const cartItem = cart.items[itemIndex];
       // Kiểm tra tồn kho
-      if (cartItem.snapshot.stock < quantity) return res.status(400).json({ message: "Not enough stock" });
+      if (cartItem.snapshot.stock < quantity)
+        return res.status(400).json({ message: "Số lượng sản phẩm trong kho không đủ" });
 
       // Cập nhật số lượng
       cartItem.quantity = quantity;
@@ -170,7 +170,7 @@ const updateCartItem = async (req, res) => {
       message: "Cập nhật giỏ hàng thành công",
       success: true,
       data: {
-        items: cart.items,
+        item: cart.items[itemIndex],
         totalCartItems,
         totalPrice: summary.totalPrice,
       },

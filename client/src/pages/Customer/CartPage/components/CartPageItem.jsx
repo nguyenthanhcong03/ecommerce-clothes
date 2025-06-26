@@ -1,4 +1,5 @@
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
+import useCartItem from '@/hooks/useCartItem';
 import useDebounce from '@/hooks/useDebounce';
 import { removeCartItem, updateCartItem } from '@/store/slices/cartSlice';
 import { formatCurrency } from '@/utils/format/formatCurrency';
@@ -9,54 +10,15 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 const CartPageItem = ({ item, onSelect, isSelected }) => {
-  const { loadingUpdate, itemUpdate } = useSelector((state) => state.cart);
-
-  const [localQuantity, setLocalQuantity] = useState(item.quantity);
-  const debouncedQuantity = useDebounce(localQuantity, 500);
-  const isUpdating = loadingUpdate && itemUpdate?._id === item._id;
-  const isAvailable = item?.isAvailable !== false; // Mặc định là true nếu không có giá trị
-  const dispatch = useDispatch();
-
-  // Sync local quantity với item quantity
-  useEffect(() => {
-    setLocalQuantity(item.quantity);
-  }, [item.quantity]);
-
-  // Effect để gọi API khi debouncedQuantity thay đổi
-  useEffect(() => {
-    if (debouncedQuantity !== item.quantity && isAvailable) {
-      dispatch(updateCartItem({ itemId: item._id, quantity: debouncedQuantity }))
-        .unwrap()
-        .then(() => {
-          // message.success('Cập nhật số lượng thành công');
-        })
-        .catch((err) => {
-          message.error('Cập nhật số lượng thất bại: ' + err.message);
-          // Reset về giá trị ban đầu nếu thất bại
-          setLocalQuantity(item.quantity);
-        });
-    }
-  }, [debouncedQuantity, item.quantity, item._id, dispatch, isAvailable]);
-
-  const handleQuantityChange = useCallback(
-    async (newQuantity) => {
-      if (!isAvailable) {
-        message.error('Sản phẩm này hiện không khả dụng');
-        return;
-      }
-
-      // Chỉ cập nhật local state, không gọi API ngay lập tức
-      setLocalQuantity(newQuantity);
-    },
-    [isAvailable]
-  );
-
-  const handleRemoveItem = (itemId) => {
-    dispatch(removeCartItem(itemId))
-      .unwrap()
-      .then(() => message.success('Xóa sản phẩm thành công'))
-      .catch((err) => message.error('Xóa sản phẩm thất bại: ' + err));
-  };
+  const {
+    localQuantity,
+    setLocalQuantity,
+    debouncedQuantity,
+    isUpdating,
+    isAvailable,
+    handleQuantityChange,
+    handleRemoveItem
+  } = useCartItem(item);
   return (
     <div className={`flex flex-col gap-4 border-b px-2 py-4 ${!isAvailable ? 'bg-gray-50' : ''}`}>
       {/* Mobile view - cart item */}

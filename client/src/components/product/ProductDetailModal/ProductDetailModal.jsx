@@ -41,9 +41,11 @@ const ProductDetailModal = () => {
     currentImageIndex,
     setCurrentImageIndex,
     allImages,
-    setAllImages,
-    colorImageIndexMap,
     variantOptions,
+    isProductOutOfStock,
+    isSizeOutOfStock,
+    isColorOutOfStock,
+    isVariantOutOfStock,
     getAvailableColors,
     getAvailableSizes,
     handleSizeSelect,
@@ -311,6 +313,11 @@ const ProductDetailModal = () => {
                     })}
                   </span>
                 )}
+                {isProductOutOfStock && (
+                  <span className='ml-2 rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-600 sm:text-sm'>
+                    Hết hàng
+                  </span>
+                )}
               </div>
 
               {/* Size và color */}
@@ -325,17 +332,19 @@ const ProductDetailModal = () => {
                     selectedColor={selectedColor}
                     getAvailableSizes={getAvailableSizes}
                     onSizeSelect={handleSizeSelect}
+                    isSizeOutOfStock={isSizeOutOfStock}
                   />
                 </div>
 
                 <div>
-                  <h3 className='text-sm font-medium'>Màu sắc: {selectedColor}</h3>
+                  <h3 className='text-sm font-medium'>Màu sắc</h3>
                   <ColorSelector
                     colors={variantOptions?.colors}
                     selectedColor={selectedColor}
                     selectedSize={selectedSize}
                     getAvailableColors={getAvailableColors}
                     onColorSelect={handleColorSelect}
+                    isColorOutOfStock={isColorOutOfStock}
                   />
                 </div>
 
@@ -347,6 +356,7 @@ const ProductDetailModal = () => {
                       min={1}
                       max={stock}
                       onChange={(newQuantity) => handleQuantityChange(newQuantity)}
+                      disabled={isProductOutOfStock || !selectedColor || !selectedSize}
                     />
 
                     {selectedSize && selectedColor && stock ? (

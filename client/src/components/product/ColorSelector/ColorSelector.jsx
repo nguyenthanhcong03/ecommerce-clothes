@@ -1,37 +1,48 @@
 import { COLOR_OPTIONS } from '@/utils/constants';
-import React from 'react';
 
-const ColorSelector = ({ colors = [], selectedColor, selectedSize, getAvailableColors, onColorSelect }) => {
+const ColorSelector = ({
+  colors = [],
+  selectedColor,
+  selectedSize,
+  getAvailableColors,
+  onColorSelect,
+  isColorOutOfStock
+}) => {
   return (
     <div className='mt-1 flex flex-wrap gap-1 sm:mt-2 sm:gap-2'>
       {colors &&
         colors.length > 0 &&
         colors.map((color) => {
           const isAvailable = !selectedSize || getAvailableColors(selectedSize).includes(color);
-          const colorObj = COLOR_OPTIONS.find((c) => c.name === color);
-          const hex = colorObj?.hex || '#ccc';
+          const isOutOfStock = isColorOutOfStock ? isColorOutOfStock(color) : false;
+          const isDisabled = !isAvailable || isOutOfStock;
 
           return (
             <div key={color} className='group relative'>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onColorSelect(color);
+                  if (!isDisabled) {
+                    onColorSelect(color);
+                  }
                 }}
-                disabled={!isAvailable}
-                className={`flex h-6 w-6 transform items-center justify-center rounded-full border transition hover:scale-125 ${
+                disabled={isDisabled}
+                className={`relative flex items-center justify-center rounded-sm border px-2 py-1 text-sm transition ${
                   selectedColor === color
-                    ? 'ring-2 ring-primaryColor'
-                    : isAvailable
-                      ? 'bg-white text-gray-600 ring-1 ring-primaryColor hover:bg-gray-100'
-                      : 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400 opacity-50'
+                    ? 'border-primaryColor bg-primaryColor font-medium text-white'
+                    : !isDisabled
+                      ? 'border-gray-300 bg-white text-gray-700 hover:border-primaryColor hover:bg-gray-50'
+                      : 'cursor-not-allowed border-gray-200 bg-gray-50 opacity-50'
                 }`}
               >
-                <div className='h-5 w-5 rounded-full' style={{ backgroundColor: hex }}></div>
+                <span className='text-sm'>{color}</span>
               </button>
-              <div className='pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 -translate-y-1 transform rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100'>
-                {color}
-              </div>
+              {isOutOfStock && (
+                <div className='pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 -translate-y-1 transform rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100'>
+                  Hết hàng
+                </div>
+              )}
+
               {selectedColor === color && (
                 <div className='absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primaryColor text-xs text-white'>
                   ✓

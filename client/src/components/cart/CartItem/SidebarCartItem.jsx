@@ -1,69 +1,30 @@
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
-import useDebounce from '@/hooks/useDebounce';
-import { removeCartItem, updateCartItem } from '@/store/slices/cartSlice';
+import useCartItem from '@/hooks/useCartItem';
 import { toggleSidebar } from '@/store/slices/sidebarSlice';
-import { message } from 'antd';
 import { X } from 'lucide-react';
 import PropTypes from 'prop-types';
-import { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 function SidebarCartItem({ item }) {
-  const { loadingUpdate, itemUpdate } = useSelector((state) => state.cart);
-  const isUpdating = loadingUpdate && itemUpdate?._id === item._id;
-  const isAvailable = item?.isAvailable !== false; // Mặc định là true nếu không có giá trị
-  const [localQuantity, setLocalQuantity] = useState(item.quantity);
-  const debouncedQuantity = useDebounce(localQuantity, 500);
-  console.log(loadingUpdate);
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleItemClick = useCallback(() => {
     dispatch(toggleSidebar());
     navigate(`/product/${item?.productId}`);
   }, [item, navigate, dispatch]);
 
-  // Sync local quantity với item quantity
-  useEffect(() => {
-    setLocalQuantity(item.quantity);
-  }, [item.quantity]);
-
-  // Effect để gọi API khi debouncedQuantity thay đổi
-  useEffect(() => {
-    if (debouncedQuantity !== item.quantity && isAvailable) {
-      dispatch(updateCartItem({ itemId: item._id, quantity: debouncedQuantity }))
-        .unwrap()
-        .then(() => {
-          // message.success('Cập nhật số lượng thành công');
-        })
-        .catch((err) => {
-          message.error('Cập nhật số lượng thất bại: ' + err.message);
-          // Reset về giá trị ban đầu nếu thất bại
-          setLocalQuantity(item.quantity);
-        });
-    }
-  }, [debouncedQuantity, item.quantity, item._id, dispatch, isAvailable]);
-
-  const handleQuantityChange = useCallback(
-    async (newQuantity) => {
-      if (!isAvailable) {
-        message.error('Sản phẩm này hiện không khả dụng');
-        return;
-      }
-
-      // Chỉ cập nhật local state, không gọi API ngay lập tức
-      setLocalQuantity(newQuantity);
-    },
-    [isAvailable]
-  );
-
-  const handleRemoveItem = (itemId) => {
-    dispatch(removeCartItem(itemId))
-      .unwrap()
-      .then(() => message.success('Xóa sản phẩm thành công'))
-      .catch((err) => message.error('Xóa sản phẩm thất bại: ' + err));
-  };
+  const {
+    localQuantity,
+    setLocalQuantity,
+    debouncedQuantity,
+    isUpdating,
+    isAvailable,
+    handleQuantityChange,
+    handleRemoveItem
+  } = useCartItem(item);
   return (
     <div
       className={`group relative flex items-center justify-between gap-2 overflow-hidden p-4 transition-colors duration-200 ease-in hover:bg-[#f7f7f7] ${!isAvailable ? 'bg-gray-100 opacity-70' : ''}`}

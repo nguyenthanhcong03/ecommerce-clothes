@@ -13,6 +13,7 @@ import { setOrderItems } from '@/store/slices/orderSlice';
 import { fetchProductById } from '@/store/slices/productSlice';
 import { getCategoryPath } from '@/utils/helpers/getCategoryPath';
 import { message } from 'antd';
+import dayjs from 'dayjs';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -20,6 +21,20 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 const getImageUrl = (image) => {
   return typeof image === 'string' ? image : image?.url || '';
+};
+
+const getDeliveryDateRange = () => {
+  const today = dayjs();
+  const startDate = today.add(2, 'day');
+  const endDate = today.add(4, 'day');
+
+  const formatDate = (date) => {
+    const day = date.date();
+    const month = date.month() + 1;
+    return `${day} Th${month.toString().padStart(2, '0')}`;
+  };
+
+  return `${formatDate(startDate)} - ${formatDate(endDate)}`;
 };
 
 const DetailProduct = () => {
@@ -41,8 +56,11 @@ const DetailProduct = () => {
     currentImageIndex,
     setCurrentImageIndex,
     allImages,
-    setAllImages,
     variantOptions,
+    isProductOutOfStock,
+    isSizeOutOfStock,
+    isColorOutOfStock,
+    isVariantOutOfStock,
     getAvailableColors,
     getAvailableSizes,
     handleSizeSelect,
@@ -88,9 +106,22 @@ const DetailProduct = () => {
       navigate('/login', { state: { from: `/product/${id}` } });
       return;
     }
+
+    // Kiểm tra sản phẩm có hết hàng không
+    if (isProductOutOfStock) {
+      message.error('Sản phẩm hiện tại đã hết hàng');
+      return;
+    }
+
     try {
       if (!selectedSize || !selectedColor) {
         setShowValidation(true);
+        return;
+      }
+
+      // Kiểm tra variant có hết hàng không
+      if (isVariantOutOfStock(selectedSize, selectedColor)) {
+        message.error('Phân loại sản phẩm này đã hết hàng');
         return;
       }
 
@@ -113,7 +144,7 @@ const DetailProduct = () => {
       await dispatch(addToCart(cartItem)).unwrap();
       message.success('Thêm sản phẩm vào giỏ hàng thành công');
     } catch (error) {
-      message.error('Thêm sản phẩm vào giỏ hàng thất bại');
+      message.error('Thêm sản phẩm vào giỏ hàng thất bại: ' + error.message);
       console.log(error);
     }
     setShowValidation(false);
@@ -126,8 +157,21 @@ const DetailProduct = () => {
       navigate('/login', { state: { from: `/product/${id}` } });
       return;
     }
+
+    // Kiểm tra sản phẩm có hết hàng không
+    if (isProductOutOfStock) {
+      message.error('Sản phẩm hiện tại đã hết hàng');
+      return;
+    }
+
     if (!selectedSize || !selectedColor) {
       setShowValidation(true);
+      return;
+    }
+
+    // Kiểm tra variant có hết hàng không
+    if (isVariantOutOfStock(selectedSize, selectedColor)) {
+      message.error('Phân loại sản phẩm này đã hết hàng');
       return;
     }
 
@@ -339,11 +383,16 @@ const DetailProduct = () => {
                   })}
                 </span>
               )}
+              {isProductOutOfStock && (
+                <span className='ml-2 rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-600 sm:text-sm'>
+                  Hết hàng
+                </span>
+              )}
             </div>
 
             <div className='flex flex-col gap-2 p-2 sm:flex-row sm:p-4'>
               <h3 className='min-w-[80px] text-xs text-[#757575] sm:text-sm'>Vận chuyển</h3>
-              <div className='text-xs sm:text-sm'>Nhận từ 19 Th04 - 21 Th04 Miễn phí vận chuyển</div>
+              <div className='text-xs sm:text-sm'>Nhận từ {getDeliveryDateRange()} Miễn phí vận chuyển</div>
             </div>
 
             <div className='flex flex-col gap-2 p-2 sm:flex-row sm:p-4'>
@@ -364,18 +413,20 @@ const DetailProduct = () => {
                     selectedColor={selectedColor}
                     getAvailableSizes={getAvailableSizes}
                     onSizeSelect={handleSizeSelect}
+                    isSizeOutOfStock={isSizeOutOfStock}
                   />
                 </div>
 
                 {variantOptions && variantOptions.colors && (
                   <div>
-                    <h3 className='text-xs text-[#757575] sm:text-sm'>Màu sắc: {selectedColor}</h3>
+                    <h3 className='text-xs text-[#757575] sm:text-sm'>Màu sắc</h3>
                     <ColorSelector
                       colors={variantOptions?.colors}
                       selectedColor={selectedColor}
                       selectedSize={selectedSize}
                       getAvailableColors={getAvailableColors}
                       onColorSelect={handleColorSelect}
+                      isColorOutOfStock={isColorOutOfStock}
                     />
                   </div>
                 )}
@@ -388,10 +439,13 @@ const DetailProduct = () => {
                       min={1}
                       max={stock}
                       onChange={(newQuantity) => handleQuantityChange(newQuantity)}
+                      disabled={isProductOutOfStock || !selectedColor || !selectedSize}
                     />
 
                     {selectedSize && selectedColor && stock ? (
-                      <span className='text-xs text-gray-500 sm:text-sm'>{stock} sản phẩm có sẵn</span>
+                      <span className={`text-xs sm:text-sm ${stock === 0 ? 'text-red-500' : 'text-gray-500'}`}>
+                        {stock === 0 ? 'Hết hàng' : `${stock} sản phẩm có sẵn`}
+                      </span>
                     ) : (
                       <span className='text-xs text-gray-500 sm:text-sm'>
                         {product.variants.reduce((sum, variant) => sum + variant.stock, 0)} sản phẩm có sẵn
@@ -415,13 +469,22 @@ const DetailProduct = () => {
               <></>
             ) : (
               <div className='m-2 flex flex-col gap-3 sm:m-4 sm:gap-4 lg:flex-row'>
-                <Button variant='secondary' onClick={handleAddToCart} className='xs:flex-1 w-full'>
-                  <ShoppingCart strokeWidth={1} className='mr-1 h-4 w-4 sm:mr-2 sm:h-5 sm:w-5' />
-                  <span className='text-sm'>Thêm vào giỏ hàng</span>
-                </Button>
-                <Button variant='primary' onClick={handleBuyNow} className='xs:flex-1 w-full'>
-                  <span className='text-sm'>Mua ngay với giá {price || 0} đ</span>
-                </Button>
+                {isProductOutOfStock ? (
+                  <div className='w-full rounded-lg bg-gray-100 p-4 text-center'>
+                    <p className='font-medium text-gray-600'>Sản phẩm hiện tại đã hết hàng</p>
+                    <p className='mt-1 text-sm text-gray-500'>Vui lòng quay lại sau hoặc liên hệ với chúng tôi</p>
+                  </div>
+                ) : (
+                  <>
+                    <Button variant='secondary' onClick={handleAddToCart} className='xs:flex-1 w-full'>
+                      <ShoppingCart strokeWidth={1} className='mr-1 h-4 w-4 sm:mr-2 sm:h-5 sm:w-5' />
+                      Thêm vào giỏ hàng
+                    </Button>
+                    <Button variant='primary' onClick={handleBuyNow} className='xs:flex-1 w-full'>
+                      Mua ngay với giá ${price || 0} đ
+                    </Button>
+                  </>
+                )}
               </div>
             )}
           </div>

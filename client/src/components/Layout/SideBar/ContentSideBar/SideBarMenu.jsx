@@ -44,10 +44,6 @@ function SideBarMenu() {
             <ShoppingCart fontSize={26} />
             <p>Giỏ hàng</p>
           </div>
-          <div className='flex items-center gap-2'>
-            <Heart fontSize={26} />
-            <p>Yêu thích</p>
-          </div>
         </div>
       )}
     </div>

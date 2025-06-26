@@ -290,7 +290,8 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
       onClose,
       onRefresh
     ]
-  ); // Modal and variant management
+  );
+
   const handleCancel = useCallback(() => {
     const hasChanges = isDirty || localFiles.length > 0;
 
