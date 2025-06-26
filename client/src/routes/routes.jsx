@@ -2,8 +2,8 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 // Layouts
 import AdminLayout from '@/routes/layouts/AdminLayout.jsx';
-import MainLayout from '@/routes/layouts/MainLayout.jsx';
 import AuthLayout from '@/routes/layouts/AuthLayout.jsx';
+import MainLayout from '@/routes/layouts/MainLayout.jsx';
 
 // Components
 import NotFound from '@/components/auth/NotFound/NotFound.jsx';
@@ -14,15 +14,14 @@ import Unauthorized from '@/components/auth/Unauthorized/Unauthorized.jsx';
 import LoginPage from '@/pages/auth/LoginPage.jsx';
 import RegisterPage from '@/pages/auth/RegisterPage.jsx';
 import AboutPage from '@/pages/customer/AboutPage/AboutPage.jsx';
+import ReviewOrderProductsPage from '@/pages/customer/AccountPage/OrderPage/ReviewOrderProductsPage.jsx';
+import UserReviewsPage from '@/pages/customer/AccountPage/UserReviewsPage/UserReviewsPage.jsx';
 import CartPage from '@/pages/customer/CartPage/CartPage.jsx';
 import CheckoutPage from '@/pages/customer/CheckoutPage/CheckoutPage.jsx';
 import ContactPage from '@/pages/customer/ContactPage/ContactPage.jsx';
 import HomePage from '@/pages/customer/HomePage/HomePage.jsx';
 import NewsPage from '@/pages/customer/NewsPage/NewsPage.jsx';
 import ProductDetail from '@/pages/customer/ProductDetail/ProductDetail.jsx';
-import WishlistPage from '@/pages/customer/WishlistPage/WishlistPage.jsx';
-import UserReviewsPage from '@/pages/customer/AccountPage/UserReviewsPage/UserReviewsPage.jsx';
-import ReviewOrderProductsPage from '@/pages/customer/AccountPage/OrderPage/ReviewOrderProductsPage.jsx';
 
 import AccountLayout from '@/components/layout/AccountLayout';
 import AnalyticsPage from '@/pages/admin/AnalyticsPage/AnalyticsPage.jsx';
@@ -41,8 +40,8 @@ import PrivacyPage from '@/pages/customer/AccountPage/PrivacyPage/PrivacyPage.js
 import ProfilePage from '@/pages/customer/AccountPage/ProfilePage/ProfilePage.jsx';
 import VoucherPage from '@/pages/customer/AccountPage/VoucherPage/VoucherPage.jsx';
 import OurShopPage from '@/pages/customer/OurShopPage/OurShopPage';
-import PaymentSuccessPage from '@/pages/customer/PaymentSuccessPage/PaymentSuccessPage.jsx';
 import PaymentFailedPage from '@/pages/customer/PaymentFailedPage/PaymentFailedPage.jsx';
+import PaymentSuccessPage from '@/pages/customer/PaymentSuccessPage/PaymentSuccessPage.jsx';
 import Example from '../components/examples/Example';
 
 const publicRoutes = [
@@ -94,14 +93,6 @@ const customerProtectedRoutes = [
     element: (
       <ProtectedRoute roles={['customer']}>
         <CartPage />
-      </ProtectedRoute>
-    )
-  },
-  {
-    path: 'wishlist',
-    element: (
-      <ProtectedRoute roles={['customer']}>
-        <WishlistPage />
       </ProtectedRoute>
     )
   },

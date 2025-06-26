@@ -3,12 +3,12 @@ import avatarDefault from '@/assets/images/user.png';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher/LanguageSwitcher';
 import MenuItem from '@/components/common/MenuItem/MenuItem';
 import UserDropdown from '@/components/layout/Header/UserDropdown/UserDropdown';
-import { logoutUser } from '@/store/slices/accountSlice';
+import { fetchCurrentUser, logoutUser } from '@/store/slices/accountSlice';
 import { toggleSearchModal } from '@/store/slices/searchSlice';
 import { setType, toggleSidebar } from '@/store/slices/sidebarSlice';
 import { SHOP_EMAIL } from '@/utils/constants';
 import { message, Tooltip } from 'antd';
-import { CircleUserRound, Facebook, Heart, Instagram, Menu, Search, ShoppingCart } from 'lucide-react';
+import { CircleUserRound, Facebook, Heart, Instagram, Mail, Menu, Search, ShoppingCart } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -24,7 +24,7 @@ function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
 
   const isHomePage = location.pathname === '/';
-  const isCustomer = isAuthenticated && user?.role === 'customer';
+  const isAdmin = isAuthenticated && user?.role === 'admin';
 
   const handleToggleSideBar = (type) => {
     if (
@@ -47,6 +47,8 @@ function Header() {
       dispatch(logoutUser());
       message.success('Đăng xuất thành công');
       // Chuyển hướng về trang chủ sau khi đăng xuất
+      // Reset toàn bộ Redux state
+      dispatch({ type: 'RESET_ALL' });
       navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
@@ -75,20 +77,7 @@ function Header() {
         <div className='mx-auto flex h-full max-w-[1280px] items-center justify-between px-5'>
           <div className='flex items-center gap-4'>
             <div className='flex items-center gap-2'>
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                fill='none'
-                viewBox='0 0 24 24'
-                strokeWidth='1.5'
-                stroke='currentColor'
-                className='size-4'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  d='M21.75 9v.906a2.25 2.25 0 0 1-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 0 0 1.183 1.981l6.478 3.488m8.839 2.51-4.66-2.51m0 0-1.023-.55a2.25 2.25 0 0 0-2.134 0l-1.022.55m0 0-4.661 2.51m16.5 1.615a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V8.844a2.25 2.25 0 0 1 1.183-1.981l7.5-4.039a2.25 2.25 0 0 1 2.134 0l7.5 4.039a2.25 2.25 0 0 1 1.183 1.98V19.5Z'
-                />
-              </svg>
+              <Mail width={18} />
               <a href={`mailto:${SHOP_EMAIL}`}>{SHOP_EMAIL}</a>
             </div>
             <span>|</span>
@@ -179,7 +168,7 @@ function Header() {
             />
 
             {/*  Cart, Account  */}
-            {isCustomer && (
+            {!isAdmin && (
               <Tooltip
                 title={
                   totalCartItems >= 1 ? (

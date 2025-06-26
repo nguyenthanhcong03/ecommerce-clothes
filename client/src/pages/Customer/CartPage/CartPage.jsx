@@ -74,7 +74,7 @@ function CartPage() {
         // }
       })
       .catch((error) => {
-        message.error('Không thể tải giỏ hàng: ' + error);
+        message.error('Không thể tải giỏ hàng: ' + error.message);
       });
   }, [dispatch]);
 

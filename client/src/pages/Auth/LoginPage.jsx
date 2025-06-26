@@ -1,6 +1,6 @@
 import Button from '@/components/common/Button/Button';
 import Input from '@/components/common/Input';
-import { loginUser } from '@/store/slices/accountSlice';
+import { fetchCurrentUser, loginUser } from '@/store/slices/accountSlice';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { message } from 'antd';
@@ -62,6 +62,7 @@ function LoginPage() {
             // Nếu không có trang trước đó, điều hướng theo role
             redirectPath = userRole === 'admin' ? '/admin' : '/';
           }
+          dispatch(fetchCurrentUser());
 
           navigate(redirectPath, { replace: true });
         })

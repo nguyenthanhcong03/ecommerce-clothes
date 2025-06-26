@@ -11,8 +11,6 @@ const ReviewList = ({ productId }) => {
   const { productReviewsByStar, pagination, loading } = useSelector((state) => state.review);
   const [filter, setFilter] = useState('all'); // 'all', '5', '4', '3', '2', '1'
 
-  console.log('productReviewsByStar:', productReviewsByStar);
-
   useEffect(() => {
     if (productId) {
       dispatch(

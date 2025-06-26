@@ -98,7 +98,7 @@ const ShippingForm = forwardRef((props, ref) => {
       },
       note: data.note || ''
     };
-    console.log('shippingData', shippingData);
+    // Cập nhật thông tin giao hàng vào Redux
     dispatch(setShippingInfo(shippingData));
 
     // Chuẩn bị dữ liệu đơn hàng
@@ -124,40 +124,40 @@ const ShippingForm = forwardRef((props, ref) => {
     handleCreateOrder(newOrderData);
   };
 
-  // Điền thông tin người dùng vào form khi component mount hoặc user thay đổi
-  useEffect(() => {
-    if (user) {
-      setValue('fullName', `${user.firstName} ${user.lastName}`);
-      setValue('phoneNumber', user.phone || '');
-      setValue('email', user.email || '');
+  // // Điền thông tin người dùng vào form khi component mount hoặc user thay đổi
+  // useEffect(() => {
+  //   if (user) {
+  //     setValue('fullName', `${user.firstName} ${user.lastName}`);
+  //     setValue('phoneNumber', user.phone || '');
+  //     setValue('email', user.email || '');
 
-      if (user.address) {
-        setValue('street', user.address.street || '');
+  //     if (user.address) {
+  //       setValue('street', user.address.street || '');
 
-        // Nếu có địa chỉ đầy đủ, set các giá trị địa điểm
-        if (user.address.province) {
-          setValue('province', {
-            value: user.address.province.code,
-            label: user.address.province.name
-          });
-        }
+  //       // Nếu có địa chỉ đầy đủ, set các giá trị địa điểm
+  //       if (user.address.province) {
+  //         setValue('province', {
+  //           value: user.address.province.code,
+  //           label: user.address.province.name
+  //         });
+  //       }
 
-        if (user.address.district) {
-          setValue('district', {
-            value: user.address.district.code,
-            label: user.address.district.name
-          });
-        }
+  //       if (user.address.district) {
+  //         setValue('district', {
+  //           value: user.address.district.code,
+  //           label: user.address.district.name
+  //         });
+  //       }
 
-        if (user.address.ward) {
-          setValue('ward', {
-            value: user.address.ward.code,
-            label: user.address.ward.name
-          });
-        }
-      }
-    }
-  }, [user, setValue]);
+  //       if (user.address.ward) {
+  //         setValue('ward', {
+  //           value: user.address.ward.code,
+  //           label: user.address.ward.name
+  //         });
+  //       }
+  //     }
+  //   }
+  // }, [user, setValue]);
 
   // Load danh sách tỉnh
   useEffect(() => {
@@ -183,9 +183,9 @@ const ShippingForm = forwardRef((props, ref) => {
         // Chỉ reset district và ward nếu không phải là lần đầu load với thông tin user
         const isUserInitialLoad = user?.address?.province?.code === watchProvince.value;
         if (!isUserInitialLoad) {
-          setValue('district', '');
+          setValue('district', null);
           setWards([]);
-          setValue('ward', '');
+          setValue('ward', null);
         }
       } catch (error) {
         console.error('Error loading district:', error);
@@ -196,9 +196,9 @@ const ShippingForm = forwardRef((props, ref) => {
       fetchDistricts();
     } else {
       setDistricts([]);
-      setValue('district', '');
+      setValue('district', null);
       setWards([]);
-      setValue('ward', '');
+      setValue('ward', null);
     }
   }, [watchProvince, setValue, user]);
 
@@ -212,7 +212,7 @@ const ShippingForm = forwardRef((props, ref) => {
         // Chỉ reset ward nếu không phải là lần đầu load với thông tin user
         const isUserInitialLoad = user?.address?.district?.code === watchDistrict.value;
         if (!isUserInitialLoad) {
-          setValue('ward', '');
+          setValue('ward', null);
         }
       } catch (error) {
         console.error('Error loading ward:', error);
@@ -224,13 +224,12 @@ const ShippingForm = forwardRef((props, ref) => {
       if (watchProvince && watchDistrict) {
         const storeLocation = '175 Tây Sơn, Trung Liệt, Đống Đa, Hà Nội, Việt Nam';
         const customerLocation = `${watchDistrict.label}, ${watchProvince.label}, Việt Nam`;
-        console.log('customerLocation', customerLocation);
         // Tính khoảng cách giữa hai địa điểm
         dispatch(calculateDistance({ storeLocation, customerLocation }));
       }
     } else {
       setWards([]);
-      setValue('ward', '');
+      setValue('ward', null);
     }
   }, [watchProvince, watchDistrict, setValue, dispatch, user]);
 

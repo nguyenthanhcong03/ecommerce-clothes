@@ -68,6 +68,11 @@ const ProductDetailModal = () => {
   };
 
   const handleAddToCart = async () => {
+    if (!selectedSize || !selectedColor) {
+      setShowValidation(true);
+      return;
+    }
+
     if (!isAuthenticated) {
       message.error('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
       handleCloseModal();
@@ -75,11 +80,6 @@ const ProductDetailModal = () => {
       return;
     }
     try {
-      if (!selectedSize || !selectedColor) {
-        setShowValidation(true);
-        return;
-      }
-
       const selectedVariant = product.variants.find((v) => v.size === selectedSize && v.color === selectedColor);
 
       const cartItem = {

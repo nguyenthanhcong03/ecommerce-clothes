@@ -1,4 +1,5 @@
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import Modal from '@/components/common/Modal/Modal';
 import { useSelector } from 'react-redux';
 import { Navigate, useLocation } from 'react-router-dom';
 
@@ -13,7 +14,6 @@ const ProtectedRoute = ({
   const { user, isAuthenticated, isLoading } = useSelector((state) => state.account);
 
   if (isLoading) {
-    console.log('có bapf');
     return (
       fallbackComponent || (
         <div className='absolute inset-0 flex h-screen w-screen items-center justify-center bg-black/50'>
@@ -27,10 +27,11 @@ const ProtectedRoute = ({
   // Chỉ khi đã hoàn thành việc kiểm tra xác thực (isLoading = false) và user thực sự chưa đăng nhập
   if (requireAuth && !isAuthenticated && !isLoading) {
     return <Navigate to={redirectPath} state={{ from: location.pathname }} replace />;
-  } // Kiểm tra quyền truy cập dựa trên vai trò người dùng
+  }
+  // Kiểm tra quyền truy cập dựa trên vai trò người dùng
   if (roles.length > 0 && user && !roles.includes(user.role)) {
     // Chuyển hướng đến trang unauthorized nếu người dùng không có quyền truy cập
-    return <Navigate to='/unauthorized' state={{ from: location.pathname }} replace />;
+    return <Navigate to='/unauthorized' replace />;
   }
 
   // Chuyển hướng người dùng đã đăng nhập khi họ cố gắng truy cập trang đăng nhập/đăng ký
@@ -46,7 +47,6 @@ const ProtectedRoute = ({
   return children;
 };
 
-// Đặt tên hiển thị cho component (hữu ích cho React DevTools)
 ProtectedRoute.displayName = 'ProtectedRoute';
 
 export default ProtectedRoute;

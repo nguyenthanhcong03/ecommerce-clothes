@@ -63,7 +63,6 @@ export const refreshToken = createAsyncThunk('auth/refreshToken', async (_, { re
 export const updateUserPassword = createAsyncThunk(
   'auth/updatePassword',
   async ({ oldPassword, newPassword }, { rejectWithValue }) => {
-    console.log('first', oldPassword, newPassword);
     try {
       const data = await changePasswordAPI(oldPassword, newPassword);
       return data;

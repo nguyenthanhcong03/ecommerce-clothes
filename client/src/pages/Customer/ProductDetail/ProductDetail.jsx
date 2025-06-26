@@ -1,5 +1,6 @@
 import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import Button from '@/components/common/Button/Button';
+import Modal from '@/components/common/Modal/Modal';
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
 import ColorSelector from '@/components/product/ColorSelector/ColorSelector';
 import ShareButtons from '@/components/product/ShareButtons/ShareButtons';
@@ -15,7 +16,7 @@ import { getCategoryPath } from '@/utils/helpers/getCategoryPath';
 import { message } from 'antd';
 import dayjs from 'dayjs';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -45,6 +46,7 @@ const DetailProduct = () => {
   const { categoriesTree } = useSelector((state) => state.category);
   const { isAuthenticated, user } = useSelector((state) => state.account);
   const isAdmin = isAuthenticated && user?.role === 'admin';
+  const [isOpenModalLogin, setIsOpenModalLogin] = useState(false);
 
   const {
     selectedSize,
@@ -101,9 +103,14 @@ const DetailProduct = () => {
   }, [product, categoriesTree]);
 
   const handleAddToCart = async () => {
+    if (!selectedSize || !selectedColor) {
+      setShowValidation(true);
+      return;
+    }
     if (!isAuthenticated) {
-      message.error('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
-      navigate('/login', { state: { from: `/product/${id}` } });
+      // message.error('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
+      // navigate('/login', { state: { from: `/product/${id}` } });
+      setIsOpenModalLogin(true);
       return;
     }
 
@@ -114,11 +121,6 @@ const DetailProduct = () => {
     }
 
     try {
-      if (!selectedSize || !selectedColor) {
-        setShowValidation(true);
-        return;
-      }
-
       // Kiểm tra variant có hết hàng không
       if (isVariantOutOfStock(selectedSize, selectedColor)) {
         message.error('Phân loại sản phẩm này đã hết hàng');
@@ -152,20 +154,21 @@ const DetailProduct = () => {
 
   // Hàm xử lý sự kiện khi nhấn nút "Mua ngay"
   const handleBuyNow = () => {
+    if (!selectedSize || !selectedColor) {
+      setShowValidation(true);
+      return;
+    }
+
     if (!isAuthenticated) {
-      message.error('Bạn cần đăng nhập để mua sản phẩm');
-      navigate('/login', { state: { from: `/product/${id}` } });
+      // message.error('Bạn cần đăng nhập để mua sản phẩm');
+      // navigate('/login', { state: { from: `/product/${id}` } });
+      setIsOpenModalLogin(true);
       return;
     }
 
     // Kiểm tra sản phẩm có hết hàng không
     if (isProductOutOfStock) {
       message.error('Sản phẩm hiện tại đã hết hàng');
-      return;
-    }
-
-    if (!selectedSize || !selectedColor) {
-      setShowValidation(true);
       return;
     }
 
@@ -493,6 +496,34 @@ const DetailProduct = () => {
       <ProductDescription product={product} />
       <ProductReview product={product} />
       <RelatedProducts productId={product._id} />
+      {isOpenModalLogin && (
+        <Modal
+          isOpen={isOpenModalLogin}
+          onClose={() => setIsOpenModalLogin(false)}
+          title='Đăng nhập để tiếp tục'
+          description='Bạn cần đăng nhập để thực hiện hành động này.'
+        >
+          <div className='flex justify-end gap-2'>
+            <Button
+              variant='secondary'
+              onClick={() => {
+                setIsOpenModalLogin(false);
+              }}
+            >
+              Hủy
+            </Button>
+            <Button
+              variant='primary'
+              onClick={() => {
+                setIsOpenModalLogin(false);
+                navigate('/login', { state: { from: `/product/${id}` } });
+              }}
+            >
+              Đăng nhập
+            </Button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

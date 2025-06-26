@@ -57,6 +57,7 @@ const orderSchema = new mongoose.Schema(
     shippingAddress: {
       fullName: { type: String, required: true },
       phoneNumber: { type: String, required: true },
+      email: { type: String, required: true },
       street: { type: String, required: true },
       ward: {
         code: { type: String, required: true }, // Mã phường/xã

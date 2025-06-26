@@ -92,7 +92,7 @@ const redirectToLoginIfNeeded = () => {
   const publicPaths = ['/login', '/register', '/forgot-password', '/'];
 
   if (!publicPaths.includes(currentPath)) {
-    window.location.href = '/login';
+    // window.location.href = '/login';
   }
 };
 

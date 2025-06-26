@@ -16,25 +16,8 @@ import shopReducer from './slices/shopSlice';
 import sidebarReducer from './slices/sidebarSlice';
 import userOrderReducer from './slices/userOrderSlice';
 import userReducer from './slices/userSlice';
+import rootReducer from '@/store/slices/rootReducer';
 
 export const store = configureStore({
-  reducer: {
-    account: accountReducer,
-    sidebar: sidebarReducer,
-    search: searchReducer,
-    cart: cartReducer,
-    product: productReducer,
-    shop: shopReducer,
-    user: userReducer,
-    category: categoryReducer,
-    coupon: couponReducer,
-    order: orderReducer,
-    userOrder: userOrderReducer,
-    review: reviewReducer,
-    adminProduct: adminProductReducer,
-    adminOrder: adminOrderReducer,
-    adminUser: adminUserReducer,
-    adminCoupon: adminCouponReducer,
-    adminReview: adminReviewReducer
-  }
+  reducer: rootReducer
 });
