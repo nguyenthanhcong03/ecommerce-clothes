@@ -1,3 +1,4 @@
+import { generateNameId } from '@/utils/helpers/fn';
 import { useSelector } from 'react-redux';
 import { NavLink, useNavigate } from 'react-router-dom';
 
@@ -40,7 +41,7 @@ function MenuItem({ href, text, isMenuDropDown = false, onClick }) {
                 <div
                   key={category._id}
                   className={`cursor-pointer p-3 hover:bg-[#F1F1F1] hover:text-secondaryColor`}
-                  onClick={() => navigate(`/shop/${category.slug}/${category._id}`)}
+                  onClick={() => navigate(`/shop/${generateNameId({ name: category.name, id: category._id })}`)}
                 >
                   {category.name}
                 </div>

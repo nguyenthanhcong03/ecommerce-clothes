@@ -4,6 +4,7 @@ import { openProductDetailModal } from '@/store/slices/productSlice';
 import { closeSearchModal } from '@/store/slices/searchSlice';
 import { COLOR_OPTIONS } from '@/utils/constants';
 import { formatCurrency } from '@/utils/format/formatCurrency';
+import { generateNameId } from '@/utils/helpers/fn';
 import { Eye, Heart, ShoppingCart, Star } from 'lucide-react';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -22,7 +23,7 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
 
   // Hàm navigate đến trang chi tiết sản phẩm
   const handleNavigateToDetail = () => {
-    navigate(`/product/${item._id}`);
+    navigate(`/product/${generateNameId({ name: item.name, id: item._id })}`);
     dispatch(closeSearchModal());
   };
 

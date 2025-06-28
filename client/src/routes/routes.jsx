@@ -48,10 +48,10 @@ const publicRoutes = [
   { index: true, element: <HomePage /> },
   { path: 'about', element: <AboutPage /> },
   { path: 'shop', element: <OurShopPage /> },
-  { path: 'shop/:slug/:catId', element: <OurShopPage /> },
+  { path: 'shop/:nameId', element: <OurShopPage /> },
   { path: 'news', element: <NewsPage /> },
   { path: 'contact', element: <ContactPage /> },
-  { path: 'product/:id', element: <ProductDetail /> },
+  { path: 'product/:nameId', element: <ProductDetail /> },
   { path: 'payment-success', element: <PaymentSuccessPage /> },
   { path: 'payment-failed', element: <PaymentFailedPage /> },
 

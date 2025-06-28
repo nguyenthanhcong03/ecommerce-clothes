@@ -1,19 +1,9 @@
 const Product = require("../models/product");
-const mongoose = require("mongoose");
-const slugify = require("slugify");
 const { generateSKU } = require("../utils/generateSKU");
 const { deleteMultipleFilesService } = require("./fileService");
 
 const createProduct = async (productData) => {
   try {
-    // Tạo slug từ tên sản phẩm
-    if (!productData.slug && productData.name) {
-      productData.slug = slugify(productData.name, {
-        lower: true,
-        strict: true,
-      });
-    }
-
     // Xử lý SKU cho tất cả các biến thể
     if (productData.variants && productData.variants.length > 0) {
       for (const variant of productData.variants) {
@@ -26,8 +16,6 @@ const createProduct = async (productData) => {
             variant.size,
             variant.color
           );
-          console.log("variant.sku", variant.sku);
-          console.log("slug", productData.slug);
         }
       }
     }
@@ -42,14 +30,6 @@ const createProduct = async (productData) => {
 
 const updateProduct = async (productId, updateData) => {
   try {
-    // Tạo slug mới nếu tên thay đổi và không cung cấp slug
-    if (updateData.name && !updateData.slug) {
-      updateData.slug = slugify(updateData.name, {
-        lower: true,
-        strict: true,
-      });
-    }
-
     const product = await Product.findById(productId);
     if (!product) {
       throw new Error("Sản phẩm không tồn tại");
@@ -77,7 +57,6 @@ const updateProduct = async (productId, updateData) => {
         product[key] = updateData[key];
       }
     });
-    console.log("product.variants", product.variants);
 
     await product.save();
     return product;
@@ -118,7 +97,7 @@ const deleteProduct = async (productId) => {
  */
 const getProductById = async (productId) => {
   try {
-    const product = await Product.findById(productId).populate("categoryId", "name slug").select("-__v");
+    const product = await Product.findById(productId).populate("categoryId", "name").select("-__v");
 
     if (!product) {
       throw new Error("Sản phẩm không tồn tại");
@@ -141,7 +120,7 @@ const getFeaturedProducts = async (limit = 8) => {
       featured: true,
     })
       .limit(Number(limit))
-      .populate("categoryId", "name slug")
+      .populate("categoryId", "name")
       .select("-__v");
 
     return products;

@@ -195,7 +195,7 @@ const getReviewableProducts = async (userId, orderId) => {
     status: "Delivered",
   }).populate({
     path: "products.productId",
-    select: "name images slug averageRating totalReviews",
+    select: "name images averageRating totalReviews",
   });
 
   if (!order) {

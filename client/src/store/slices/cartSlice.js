@@ -125,6 +125,8 @@ const cartSlice = createSlice({
       })
       .addCase(updateCartItem.fulfilled, (state, action) => {
         state.loadingUpdate = false;
+        const updatedItem = action.payload.data.item;
+        state.items = state.items.map((item) => (item._id === updatedItem._id ? updatedItem : item));
         state.totalCartItems = action.payload.data.totalCartItems;
         state.totalPrice = action.payload.data.totalPrice;
         state.itemUpdate = null;

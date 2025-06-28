@@ -65,7 +65,7 @@ const getUserReviews = catchAsync(async (req, res) => {
     sort: "-createdAt",
     populate: {
       path: "productId",
-      select: "name images slug",
+      select: "name images",
     },
   };
 

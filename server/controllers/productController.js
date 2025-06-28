@@ -2,7 +2,6 @@ const { response } = require("express");
 const Product = require("../models/product");
 const productService = require("../services/productService");
 const categoryService = require("../services/categoryService");
-const slugify = require("slugify");
 const { default: mongoose } = require("mongoose");
 
 // Get all products
@@ -140,7 +139,7 @@ const getAllProducts = async (req, res) => {
     }
 
     const products = await Product.find(query)
-      .populate("categoryId", "name slug") // Populate category data
+      .populate("categoryId", "name") // Populate category data
       .sort(sort)
       .skip(skip)
       .limit(limitNumber)
@@ -201,14 +200,6 @@ const createProduct = async (req, res) => {
       data: newProduct,
     });
   } catch (error) {
-    if (error.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        message: "Sản phẩm với slug hoặc SKU đã tồn tại",
-      });
-    }
-    console.log("error", error);
-
     res.status(500).json({
       success: false,
       message: "Lỗi server",
@@ -522,7 +513,7 @@ const getRelatedProducts = async (req, res) => {
       _id: { $ne: pid },
     })
       .limit(Number(limit))
-      .populate("categoryId", "name slug")
+      .populate("categoryId", "name")
       .select("-__v");
 
     res.status(200).json({

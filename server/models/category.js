@@ -9,12 +9,6 @@ const categorySchema = new Schema(
       required: true, // Tên danh mục là bắt buộc
       trim: true, // Loại bỏ khoảng trắng thừa
     },
-    slug: {
-      type: String,
-      required: true, // Slug là bắt buộc cho SEO
-      unique: true, // Đảm bảo slug là duy nhất, this implicitly creates an index
-      lowercase: true, // Chuyển slug thành chữ thường
-    },
     parentId: {
       type: Schema.Types.ObjectId,
       ref: "Category", // Tham chiếu đến chính model Category

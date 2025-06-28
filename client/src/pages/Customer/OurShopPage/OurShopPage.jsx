@@ -10,6 +10,7 @@ import { FilterSidebar } from '@/pages/customer/OurShopPage/components/FilterSid
 import SortSection from '@/pages/customer/OurShopPage/components/SortSection';
 import { fetchProducts } from '@/store/slices/shopSlice';
 import { findCategoryById } from '@/utils/helpers/findCategoryById';
+import { generateNameId, getIdFromNameId } from '@/utils/helpers/fn';
 import { getCategoryPath } from '@/utils/helpers/getCategoryPath';
 import { AppstoreOutlined, BarsOutlined, FilterOutlined } from '@ant-design/icons';
 import { ChevronLeft } from 'lucide-react';
@@ -33,7 +34,8 @@ function OurShopPage() {
   const navigate = useNavigate();
   const { products, loading, pagination } = useSelector((state) => state.shop);
   const { categoriesTree } = useSelector((state) => state.category);
-  const { catId } = useParams();
+  const { nameId } = useParams();
+  const catId = getIdFromNameId(nameId);
   const [params, setParams] = useSearchParams();
 
   const [viewMode, setViewMode] = useState('grid');
@@ -53,7 +55,7 @@ function OurShopPage() {
       const categoryPath = getCategoryPath(categoriesTree, catId);
       const pathItems = categoryPath.map((cat, index) => ({
         label: cat.name,
-        path: index === categoryPath.length - 1 ? null : `/shop/${cat.slug}/${cat._id}`
+        path: index === categoryPath.length - 1 ? null : `/shop/${generateNameId({ name: cat.name, id: cat._id })}`
       }));
       items.push(...pathItems);
     }
@@ -337,7 +339,7 @@ function OurShopPage() {
                 {currentCategory.children.map((category) => (
                   <Link
                     key={category._id}
-                    to={`/shop/${category.slug}/${category._id}`}
+                    to={`/shop/${generateNameId({ name: category.name, id: category._id })}`}
                     className='flex flex-col items-center rounded-lg bg-white p-4 hover:opacity-90'
                   >
                     {category.images[0] && (

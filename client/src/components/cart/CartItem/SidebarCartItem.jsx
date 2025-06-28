@@ -1,6 +1,7 @@
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
 import useCartItem from '@/hooks/useCartItem';
 import { toggleSidebar } from '@/store/slices/sidebarSlice';
+import { generateNameId } from '@/utils/helpers/fn';
 import { X } from 'lucide-react';
 import PropTypes from 'prop-types';
 import { useCallback } from 'react';
@@ -13,7 +14,7 @@ function SidebarCartItem({ item }) {
 
   const handleItemClick = useCallback(() => {
     dispatch(toggleSidebar());
-    navigate(`/product/${item?.productId}`);
+    navigate(`/product/${generateNameId({ name: item.name, id: item._id })}`);
   }, [item, navigate, dispatch]);
 
   const {

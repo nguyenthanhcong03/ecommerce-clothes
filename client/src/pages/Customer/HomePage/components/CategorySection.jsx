@@ -1,5 +1,6 @@
 import Headline from '@/components/common/Headline/Headline';
 import { getCategoriesTree } from '@/store/slices/categorySlice';
+import { generateNameId } from '@/utils/helpers/fn';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -7,7 +8,7 @@ import { Link } from 'react-router-dom';
 function CategoryCard({ category }) {
   return (
     <Link
-      to={`/shop/${category.slug}/${category._id}`}
+      to={`/shop/${generateNameId(category.name)}`}
       className='flex flex-col items-center rounded-lg bg-white p-4 shadow-sm transition-shadow hover:shadow-md'
     >
       {category.images[0] && (

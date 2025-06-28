@@ -2,6 +2,7 @@ import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
 import useDebounce from '@/hooks/useDebounce';
 import { removeCartItem, updateCartItem } from '@/store/slices/cartSlice';
 import { toggleSidebar } from '@/store/slices/sidebarSlice';
+import { generateNameId } from '@/utils/helpers/fn';
 import { message } from 'antd';
 import { X } from 'lucide-react';
 import PropTypes from 'prop-types';
@@ -21,7 +22,7 @@ function SidebarCartItem({ item }) {
 
   const handleItemClick = useCallback(() => {
     dispatch(toggleSidebar());
-    navigate(`/product/${item?.productId}`);
+    navigate(`/product/${generateNameId({ name: item.name, id: item._id })}`);
   }, [item, navigate, dispatch]);
 
   // Sync local quantity với item quantity

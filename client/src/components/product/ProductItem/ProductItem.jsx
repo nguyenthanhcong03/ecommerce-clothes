@@ -1,6 +1,7 @@
 import Button from '@/components/common/Button';
 import useProductVariants from '@/hooks/useProductVariants';
 import { formatCurrency } from '@/utils/format/formatCurrency';
+import { generateNameId } from '@/utils/helpers/fn';
 import { StarFilled } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
@@ -42,7 +43,10 @@ const ProductItem = ({ product }) => {
             )}
             <span className='text-primary-600 text-lg font-bold'>{formatCurrency(price)}</span>
           </div>
-          <Button variant='ghost' onClick={() => navigate(`/product/${product?._id}`)}>
+          <Button
+            variant='ghost'
+            onClick={() => navigate(`/product/${generateNameId({ name: product.name, id: product._id })}`)}
+          >
             Xem chi tiết
           </Button>
         </div>

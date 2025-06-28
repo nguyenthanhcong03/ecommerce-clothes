@@ -1,5 +1,6 @@
 import Rate from '@/components/common/Rate/Rate';
 import { getUserReviews, setLimit, setPage } from '@/store/slices/reviewSlice';
+import { generateNameId } from '@/utils/helpers/fn';
 import { Card, Empty, Pagination, Spin } from 'antd';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -69,7 +70,7 @@ const UserReviewsPage = () => {
                   </div>
 
                   <div className='flex-1'>
-                    <Link to={`/product/${review.productId?.slug}`} className='text-lg font-medium'>
+                    <Link to={`/product/${generateNameId(review.productId?.name)}`} className='text-lg font-medium'>
                       {review.productId?.name}
                     </Link>
 

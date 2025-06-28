@@ -12,6 +12,7 @@ import RelatedProducts from '@/pages/customer/ProductDetail/components/RelatedPr
 import { addToCart } from '@/store/slices/cartSlice';
 import { setOrderItems } from '@/store/slices/orderSlice';
 import { fetchProductById } from '@/store/slices/productSlice';
+import { generateNameId, getIdFromNameId } from '@/utils/helpers/fn';
 import { getCategoryPath } from '@/utils/helpers/getCategoryPath';
 import { message } from 'antd';
 import dayjs from 'dayjs';
@@ -41,7 +42,8 @@ const getDeliveryDateRange = () => {
 const DetailProduct = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { id } = useParams();
+  const { nameId } = useParams();
+  const id = getIdFromNameId(nameId);
   const { currentProduct: product, loadingFetchProductById, error } = useSelector((state) => state.product);
   const { categoriesTree } = useSelector((state) => state.category);
   const { isAuthenticated, user } = useSelector((state) => state.account);
@@ -90,7 +92,7 @@ const DetailProduct = () => {
       const categoryPath = getCategoryPath(categoriesTree, product.categoryId._id);
       const pathItems = categoryPath.map((cat, index) => ({
         label: cat.name,
-        path: index === categoryPath.length - 1 ? null : `/shop/${cat.slug}/${cat._id}`
+        path: index === categoryPath.length - 1 ? null : `/shop/${generateNameId({ name: cat.name, id: cat._id })}`
       }));
       items.push(...pathItems);
     }
@@ -109,7 +111,7 @@ const DetailProduct = () => {
     }
     if (!isAuthenticated) {
       // message.error('Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng');
-      // navigate('/login', { state: { from: `/product/${id}` } });
+      // navigate('/login', { state: { from: `/product/${generateNameId({ name: product.name, id: product._id })}` } });
       setIsOpenModalLogin(true);
       return;
     }
@@ -161,7 +163,7 @@ const DetailProduct = () => {
 
     if (!isAuthenticated) {
       // message.error('Bạn cần đăng nhập để mua sản phẩm');
-      // navigate('/login', { state: { from: `/product/${id}` } });
+      // navigate('/login', { state: { from: `/product/${generateNameId({ name: product.name, id: product._id })}` } });
       setIsOpenModalLogin(true);
       return;
     }
@@ -516,7 +518,9 @@ const DetailProduct = () => {
               variant='primary'
               onClick={() => {
                 setIsOpenModalLogin(false);
-                navigate('/login', { state: { from: `/product/${id}` } });
+                navigate('/login', {
+                  state: { from: `/product/${generateNameId({ name: product.name, id: product._id })}` }
+                });
               }}
             >
               Đăng nhập

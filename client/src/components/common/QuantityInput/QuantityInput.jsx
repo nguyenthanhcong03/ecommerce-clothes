@@ -36,7 +36,8 @@ const QuantityInput = ({
   };
 
   const handleBlur = () => {
-    let newValue = parseInt(inputValue) || min;
+    // let newValue = parseInt(inputValue) || min;
+    let newValue = parseInt(inputValue) || value;
     if (newValue < min) newValue = min;
     if (newValue > max) newValue = max;
     setInputValue(newValue);

@@ -24,18 +24,18 @@ const CartPageItem = ({ item, onSelect, isSelected }) => {
 
   // Effect để gọi API khi debouncedQuantity thay đổi
   useEffect(() => {
-    if (debouncedQuantity !== item.quantity && isAvailable) {
-      dispatch(updateCartItem({ itemId: item._id, quantity: debouncedQuantity }))
-        .unwrap()
-        .then(() => {
-          // message.success('Cập nhật số lượng thành công');
-        })
-        .catch((err) => {
-          message.error('Cập nhật số lượng thất bại: ' + err.message);
-          // Reset về giá trị ban đầu nếu thất bại
-          setLocalQuantity(item.quantity);
-        });
-    }
+    // if (debouncedQuantity !== item.quantity && isAvailable) {
+    dispatch(updateCartItem({ itemId: item._id, quantity: debouncedQuantity }))
+      .unwrap()
+      .then(() => {
+        // message.success('Cập nhật số lượng thành công');
+      })
+      .catch((err) => {
+        message.error('Cập nhật số lượng thất bại: ' + err.message);
+        // Reset về giá trị ban đầu nếu thất bại
+        setLocalQuantity(item.quantity);
+      });
+    // }
   }, [debouncedQuantity, item.quantity, item._id, dispatch, isAvailable]);
 
   const handleQuantityChange = useCallback(

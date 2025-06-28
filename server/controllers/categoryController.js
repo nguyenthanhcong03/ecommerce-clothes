@@ -1,8 +1,3 @@
-const slugify = require("slugify");
-const Category = require("../models/category");
-const qs = require("qs");
-const { formatImagesForDB } = require("../services/fileService");
-const { default: mongoose } = require("mongoose");
 const categoryService = require("../services/categoryService");
 
 const getAllCategories = async (req, res) => {
@@ -54,13 +49,6 @@ const createCategory = async (req, res) => {
       data: savedCategory,
     });
   } catch (error) {
-    if (error.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        message: "Danh mục với slug này đã tồn tại",
-      });
-    }
-
     res.status(500).json({
       success: false,
       message: "Lỗi server",

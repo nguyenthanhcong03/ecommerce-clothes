@@ -5,6 +5,7 @@ import ProductCard from '@/components/product/ProductCard/ProductCard';
 import useDebounce from '@/hooks/useDebounce';
 import { getAllProductsAPI } from '@/services/productService';
 import { toggleSidebar } from '@/store/slices/sidebarSlice';
+import { generateNameId } from '@/utils/helpers/fn';
 import { CircleX, Search } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -94,7 +95,11 @@ function SideBarSearch() {
       ) : searchResults.length > 0 ? (
         <div className='grid w-full max-w-[1280px] grid-cols-2 gap-2'>
           {searchResults.map((product) => (
-            <Link to={`/product/${product._id}`} onClick={() => dispatch(toggleSidebar())} key={product._id}>
+            <Link
+              to={`/product/${generateNameId({ name: product.name, id: product._id })}`}
+              onClick={() => dispatch(toggleSidebar())}
+              key={product._id}
+            >
               <ProductCard
                 item={product}
                 isShowButton={false}

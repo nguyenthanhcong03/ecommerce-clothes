@@ -29,18 +29,16 @@ const useCartItem = (item) => {
     }
   }, [debouncedQuantity, item.quantity, item._id, dispatch, isAvailable]);
 
-  const handleQuantityChange = useCallback(
-    async (newQuantity) => {
-      if (!isAvailable) {
-        message.error('Sản phẩm này hiện không khả dụng');
-        return;
-      }
+  const handleQuantityChange = useCallback(async (newQuantity) => {
+    if (!isAvailable) {
+      message.error('Sản phẩm này hiện không khả dụng');
+      return;
+    }
+    console.log('handleQuantityChange called with newQuantity:', newQuantity);
 
-      // Chỉ cập nhật local state, không gọi API ngay lập tức
-      setLocalQuantity(newQuantity);
-    },
-    [isAvailable]
-  );
+    // Chỉ cập nhật local state, không gọi API ngay lập tức
+    setLocalQuantity(newQuantity);
+  });
 
   const handleRemoveItem = (itemId) => {
     dispatch(removeCartItem(itemId))

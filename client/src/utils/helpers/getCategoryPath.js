@@ -7,8 +7,7 @@ export function getCategoryPath(categories, targetId) {
       return [
         {
           _id: category._id,
-          name: category.name,
-          slug: category.slug
+          name: category.name
         }
       ];
     }
@@ -19,8 +18,7 @@ export function getCategoryPath(categories, targetId) {
         return [
           {
             _id: category._id,
-            name: category.name,
-            slug: category.slug
+            name: category.name
           },
           ...path
         ];

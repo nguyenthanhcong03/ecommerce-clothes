@@ -1,7 +1,6 @@
 const Category = require("../models/category");
 const mongoose = require("mongoose");
 const { deleteFile, deleteMultipleFiles } = require("./fileService");
-const slugify = require("slugify");
 
 const getCategories = async (options = {}) => {
   try {
@@ -157,18 +156,6 @@ const createCategory = async (categoryData) => {
   try {
     const { name, parentId, description, priority, images } = categoryData;
 
-    // Generate slug
-    const slug = slugify(name, {
-      lower: true,
-      strict: true,
-      locale: "vi",
-    });
-
-    const existingCategory = await Category.findOne({ slug });
-    if (existingCategory) {
-      throw new Error("Danh mục với tên này đã tồn tại");
-    }
-
     // Validate parent ID
     if (parentId && mongoose.Types.ObjectId.isValid(parentId)) {
       const parentExists = await Category.exists({ _id: parentId });
@@ -180,7 +167,6 @@ const createCategory = async (categoryData) => {
     // Create new category
     const newCategory = new Category({
       name,
-      slug,
       parentId: parentId && mongoose.Types.ObjectId.isValid(parentId) ? parentId : null,
       description,
       images: images,
@@ -225,21 +211,6 @@ const updateCategory = async (categoryId, updateData) => {
 
     // Prepare data for update
     const dataToUpdate = {};
-
-    if (name && name !== category.name) {
-      dataToUpdate.name = name;
-      dataToUpdate.slug = slugify(name.trim(), { lower: true, strict: true, locale: "vi" });
-
-      // Check if the new slug would create a duplicate
-      const duplicateCheck = await Category.findOne({
-        slug: dataToUpdate.slug,
-        _id: { $ne: categoryId }, // Exclude current category
-      });
-
-      if (duplicateCheck) {
-        throw new Error("Danh mục với tên này đã tồn tại");
-      }
-    }
 
     if (description !== undefined) dataToUpdate.description = description;
     if (priority !== undefined) dataToUpdate.priority = priority;

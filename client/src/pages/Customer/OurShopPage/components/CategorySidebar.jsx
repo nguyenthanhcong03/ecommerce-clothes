@@ -1,4 +1,5 @@
 import { getCategoriesTree } from '@/store/slices/categorySlice';
+import { generateNameId } from '@/utils/helpers/fn';
 import { CaretRightOutlined } from '@ant-design/icons';
 import { Skeleton } from 'antd';
 import PropTypes from 'prop-types';
@@ -22,7 +23,7 @@ const CategoryItem = ({ category, level = 0, selectedCategoryId }) => {
         <div className='flex flex-1 items-center'>
           <div
             className={`flex flex-1 cursor-pointer items-center gap-2 text-sm font-semibold transition-all duration-200 hover:text-blue-600`}
-            onClick={() => navigate(`/shop/${category.slug}/${category._id}`)}
+            onClick={() => navigate(`/shop/${generateNameId({ name: category.name, id: category._id })}`)}
           >
             <img
               src={category?.images[0]}
@@ -64,7 +65,7 @@ const CategoryItem = ({ category, level = 0, selectedCategoryId }) => {
               >
                 <div
                   className='cursor-pointer pl-6 pr-4 text-sm transition-colors duration-200 hover:text-blue-600 hover:underline'
-                  onClick={() => navigate(`/shop/${child.slug}/${child._id}`)}
+                  onClick={() => navigate(`/shop/${generateNameId({ name: child.name, id: child._id })}`)}
                 >
                   {child.name}
                 </div>
@@ -81,17 +82,11 @@ CategoryItem.propTypes = {
   category: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    slug: PropTypes.string.isRequired,
     images: PropTypes.arrayOf(PropTypes.string),
     children: PropTypes.arrayOf(PropTypes.object)
   }).isRequired,
   level: PropTypes.number,
   selectedCategoryId: PropTypes.string
-};
-
-CategoryItem.defaultProps = {
-  level: 0,
-  selectedCategoryId: null
 };
 
 const findSelectedCategory = (categories, categoryId) => {
