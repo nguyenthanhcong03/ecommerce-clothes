@@ -67,7 +67,6 @@ const userOrderSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchUserOrders.fulfilled, (state, action) => {
-        console.log('action.payload', action.payload);
         state.loading = false;
         state.orders = action.payload.orders;
         state.totalOrders = action.payload.totalItems;
@@ -85,7 +84,6 @@ const userOrderSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchOrderDetail.fulfilled, (state, action) => {
-        console.log('action.payload', action.payload);
         state.loading = false;
         state.orderDetail = action.payload;
       })

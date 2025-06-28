@@ -1,10 +1,10 @@
-import React, { memo, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { getProductReviews, setPage, setLimit } from '@/store/slices/reviewSlice';
-import { Avatar, Pagination, Empty, Spin } from 'antd';
+import Rate from '@/components/common/Rate/Rate';
+import { getProductReviews, setLimit, setPage } from '@/store/slices/reviewSlice';
+import { Avatar, Empty, Pagination, Spin } from 'antd';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import Rate from '@/components/common/Rate/Rate';
+import { memo, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 const ReviewList = ({ productId }) => {
   const dispatch = useDispatch();
@@ -86,7 +86,7 @@ const ReviewList = ({ productId }) => {
                       </h4>
                       <span className='ml-2 text-xs text-gray-400'>
                         {formatDistanceToNow(new Date(review.createdAt), {
-                          addSuffix: true,
+                          addSuffix: true, // khoảng 1 giờ trước
                           locale: vi
                         })}
                       </span>
@@ -96,8 +96,7 @@ const ReviewList = ({ productId }) => {
                       <Rate disabled value={review.rating} size={16} />
                     </div>
 
-                    <h5 className='mt-2 font-medium'>{review.title}</h5>
-                    <p className='mt-1 whitespace-pre-line text-sm text-gray-700'>{review.content}</p>
+                    <p className='mt-1 whitespace-pre-line text-sm text-gray-700'>{review?.comment}</p>
 
                     {review.reply && (
                       <div className='mt-3 rounded-md bg-gray-50 p-3'>

@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 const OrderItem = ({ order, onCancel }) => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
+  const allReviewed = order.products.every((item) => item.isReviewed);
 
   const handleCreatePaymentUrl = async (orderId) => {
     try {
@@ -105,7 +106,18 @@ const OrderItem = ({ order, onCancel }) => {
                 Hủy đơn hàng
               </Button>
             )}
-            {canBeReviewed && (
+            {/* {canBeReviewed && (
+              <Link to={`/user/order/review-products/${order._id}`}>
+                <Button size='sm' leftIcon={<FileEdit className='h-4 w-4' />}>
+                  Đánh giá
+                </Button>
+              </Link>
+            )} */}
+            {canBeReviewed && allReviewed ? (
+              <Button size='sm' variant='secondary'>
+                Mua lại
+              </Button>
+            ) : (
               <Link to={`/user/order/review-products/${order._id}`}>
                 <Button size='sm' leftIcon={<FileEdit className='h-4 w-4' />}>
                   Đánh giá

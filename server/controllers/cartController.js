@@ -86,6 +86,10 @@ const addToCart = async (req, res) => {
 
     if (existingItem) {
       existingItem.quantity += quantity;
+      // Kiểm tra tồn kho
+      if (existingItem.quantity > variant.stock) {
+        existingItem.quantity = variant.stock; // Giới hạn số lượng theo tồn kho
+      }
     } else {
       cart.items.push({
         productId,

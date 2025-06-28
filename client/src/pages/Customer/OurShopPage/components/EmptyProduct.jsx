@@ -4,7 +4,7 @@ import Button from '@/components/common/Button/Button';
 
 const EmptyProduct = ({ onResetFilter }) => {
   return (
-    <div className='animate-fade-in flex flex-col items-center justify-center rounded-lg rounded-md bg-gray-50 py-16'>
+    <div className='animate-fade-in flex flex-col items-center justify-center rounded-md bg-gray-50 py-16'>
       <div className='mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100'>
         <TagOutlined style={{ fontSize: 32 }} className='text-gray-300' />
       </div>

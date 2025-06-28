@@ -12,8 +12,7 @@ const UserReviewsPage = () => {
   const dispatch = useDispatch();
   const { userReviews, pagination, loading } = useSelector((state) => state.review);
   const { isAuthenticated } = useSelector((state) => state.account);
-  console.log('userReviews:', userReviews);
-  console.log('pagination:', pagination);
+  console.log('userReviews.reviews:', userReviews.reviews);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -70,7 +69,10 @@ const UserReviewsPage = () => {
                   </div>
 
                   <div className='flex-1'>
-                    <Link to={`/product/${generateNameId(review.productId?.name)}`} className='text-lg font-medium'>
+                    <Link
+                      to={`/product/${generateNameId({ name: review.productId.name, id: review.productId._id })}`}
+                      className='text-lg font-medium'
+                    >
                       {review.productId?.name}
                     </Link>
 

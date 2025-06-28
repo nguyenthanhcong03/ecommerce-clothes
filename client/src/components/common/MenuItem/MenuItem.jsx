@@ -7,7 +7,7 @@ function MenuItem({ href, text, isMenuDropDown = false, onClick }) {
   const navigate = useNavigate();
 
   return (
-    <div className='group'>
+    <div className='group relative'>
       <NavLink
         to={href}
         onClick={onClick}
@@ -35,7 +35,6 @@ function MenuItem({ href, text, isMenuDropDown = false, onClick }) {
       <div className='relative'>
         {isMenuDropDown && (
           <ul className='absolute left-0 top-2 z-[100] hidden h-fit min-w-[220px] flex-col rounded bg-white py-2 shadow-xl transition-all duration-300 ease-in after:absolute after:left-6 after:top-[-18px] after:w-3 after:border-b-[15px] after:border-l-[40px] after:border-r-[40px] after:border-t-[10px] after:border-transparent after:border-b-white group-hover:flex'>
-            {/* <ul className='absolute top-[2px] hidden w-[200px] cursor-pointer flex-col overflow-hidden rounded bg-white text-sm text-primaryColor shadow-md group-hover:flex'> */}
             {!treeLoading &&
               categoriesTree.map((category) => (
                 <div
