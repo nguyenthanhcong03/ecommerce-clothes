@@ -1,7 +1,6 @@
-import React from 'react';
-import { Modal, Form, Input, Button } from 'antd';
-import { useSelector } from 'react-redux';
+import { Button, Form, Input, Modal } from 'antd';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 
 const BanUserModal = ({ isOpenBanModal, onCloseBanModal, onBan }) => {
   const { actionLoading } = useSelector((state) => state.adminUser);

@@ -16,14 +16,12 @@ const initialState = {
     totalPages: 0
   },
   filters: {
-    search: '',
-    status: undefined,
-    paymentStatus: undefined,
-    paymentMethod: undefined,
-    startDate: undefined,
-    endDate: undefined,
-    minAmount: undefined,
-    maxAmount: undefined
+    status: null,
+    paymentStatus: null,
+    paymentMethod: null,
+    minAmount: null,
+    maxAmount: null,
+    dateRange: null
   },
   loading: false,
   error: null
@@ -66,8 +64,22 @@ const adminOrderSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
-    setFilters: (state, action) => {
-      state.filters = { ...state.filters, ...action.payload };
+    setFilter: (state, action) => {
+      state.filters = {
+        ...state.filters,
+        ...action.payload
+      };
+    },
+    resetFilter: (state) => {
+      state.filters = {
+        status: null,
+        paymentStatus: null,
+        paymentMethod: null,
+        minAmount: null,
+        maxAmount: null,
+        starDate: null,
+        endDate: null
+      };
     }
   },
   extraReducers: (builder) => {
@@ -113,6 +125,6 @@ const adminOrderSlice = createSlice({
   }
 });
 
-export const { clearError, setFilters, setPage, setLimit } = adminOrderSlice.actions;
+export const { clearError, setFilter, resetFilter, setPage, setLimit } = adminOrderSlice.actions;
 
 export default adminOrderSlice.reducer;

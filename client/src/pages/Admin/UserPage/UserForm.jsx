@@ -1,12 +1,12 @@
+import { createUserByAdmin, updateUserAdmin } from '@/store/slices/adminUserSlice';
 import { userAdminSchema } from '@/utils/validate/userValidationSchema';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { unwrapResult } from '@reduxjs/toolkit';
 import { Col, Form, Input, message, Modal, Row, Select, Spin } from 'antd';
+import propTypes from 'prop-types';
 import { useCallback, useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import propTypes from 'prop-types';
-import { createUserByAdmin, updateUserAdmin } from '@/store/slices/adminUserSlice';
 
 const { Option } = Select;
 

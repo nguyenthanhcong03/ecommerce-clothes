@@ -3,7 +3,7 @@ import useDebounce from '@/hooks/useDebounce';
 import { deleteCategory, fetchCategories } from '@/store/slices/categorySlice';
 import { message } from 'antd';
 import { motion } from 'framer-motion';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import CategoryForm from './CategoryForm';
 import CategoryTable from './CategoryTable';

@@ -1,31 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer
-} from 'recharts';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
-import * as statisticsService from '@/services/statisticsService';
-import { Select, Tabs } from 'antd';
-import {
-  DollarOutlined,
-  ShoppingOutlined,
-  UserOutlined,
-  AppstoreOutlined,
-  SkinOutlined,
-  HddOutlined
-} from '@ant-design/icons';
 import AdminHeader from '@/components/AdminComponents/common/AdminHeader';
+import * as statisticsService from '@/services/statisticsService';
+import {
+  AppstoreOutlined,
+  DollarOutlined,
+  HddOutlined,
+  ShoppingOutlined,
+  SkinOutlined,
+  UserOutlined
+} from '@ant-design/icons';
+import { Select, Tabs } from 'antd';
+import { endOfMonth, format, startOfMonth } from 'date-fns';
+import { useEffect, useState } from 'react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from 'recharts';
 
 const AnalyticsPage = () => {
   // State cho chọn khoảng thời gian

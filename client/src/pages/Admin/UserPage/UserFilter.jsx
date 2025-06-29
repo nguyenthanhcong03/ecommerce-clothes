@@ -3,7 +3,7 @@ import { Button, Card, Col, Form, Row, Select, Space } from 'antd';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 const UserFilter = ({ onFilterChange, onResetFilter }) => {
   const { users, pagination, filters, sort, loading, error } = useSelector((state) => state.adminUser);
@@ -11,6 +11,7 @@ const UserFilter = ({ onFilterChange, onResetFilter }) => {
 
   const headerStyle = {
     padding: '8px 16px',
+    marginBottom: 14,
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -112,12 +113,12 @@ const UserFilter = ({ onFilterChange, onResetFilter }) => {
             </Col>
             <Col xs={24}>
               <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
-                <Space>
+                <Space size='middle'>
                   <Button icon={<ClearOutlined />} onClick={handleReset}>
                     Xóa bộ lọc
                   </Button>
                   <Button loading={loading} type='primary' htmlType='submit' icon={<SearchOutlined />}>
-                    Lọc
+                    Áp dụng
                   </Button>
                 </Space>
               </Form.Item>

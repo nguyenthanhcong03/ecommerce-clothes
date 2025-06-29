@@ -1,12 +1,6 @@
 import AdminHeader from '@/components/AdminComponents/common/AdminHeader';
 import useDebounce from '@/hooks/useDebounce';
-import { Card, message } from 'antd';
-import { motion } from 'framer-motion';
-import { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import BanUserModal from './BanUserModal';
-import UserForm from './UserForm';
-import UserTable from './UserTable';
+import UserFilter from '@/pages/admin/UserPage/UserFilter';
 import {
   banUser,
   deleteUser,
@@ -17,7 +11,13 @@ import {
   setPage,
   unbanUser
 } from '@/store/slices/adminUserSlice';
-import UserFilter from '@/pages/admin/UserPage/UserFilter';
+import { Card, message } from 'antd';
+import { motion } from 'framer-motion';
+import { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import BanUserModal from './BanUserModal';
+import UserForm from './UserForm';
+import UserTable from './UserTable';
 
 const UserPage = () => {
   const dispatch = useDispatch();

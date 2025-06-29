@@ -12,7 +12,6 @@ const UserReviewsPage = () => {
   const dispatch = useDispatch();
   const { userReviews, pagination, loading } = useSelector((state) => state.review);
   const { isAuthenticated } = useSelector((state) => state.account);
-  console.log('userReviews.reviews:', userReviews.reviews);
 
   useEffect(() => {
     if (isAuthenticated) {

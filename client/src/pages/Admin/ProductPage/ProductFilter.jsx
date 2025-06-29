@@ -13,6 +13,7 @@ const ProductFilter = ({ onFilterChange, onResetFilter }) => {
 
   const headerStyle = {
     padding: '8px 16px',
+    marginBottom: 14,
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -57,6 +58,7 @@ const ProductFilter = ({ onFilterChange, onResetFilter }) => {
   const handleFormSubmit = (data) => {
     onFilterChange(data);
   };
+
   const handleReset = () => {
     // Đặt lại tất cả các giá trị form về mặc định
     reset({
@@ -92,9 +94,10 @@ const ProductFilter = ({ onFilterChange, onResetFilter }) => {
 
       {expanded && (
         <Form layout='vertical' onFinish={handleSubmit(handleFormSubmit)}>
+          {/* Hàng 1: Danh mục và Giá */}
           <Row gutter={[16, 16]}>
-            <Col xs={24} sm={12} md={6}>
-              <Form.Item label='Danh mục'>
+            <Col xs={24} sm={12} lg={8}>
+              <Form.Item label='Danh mục sản phẩm'>
                 <Controller
                   name='category'
                   control={control}
@@ -117,8 +120,8 @@ const ProductFilter = ({ onFilterChange, onResetFilter }) => {
                 />
               </Form.Item>
             </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Form.Item label='Giá từ'>
+            <Col xs={24} sm={12} lg={8}>
+              <Form.Item label='Giá tối thiểu'>
                 <Controller
                   name='minPrice'
                   control={control}
@@ -126,17 +129,17 @@ const ProductFilter = ({ onFilterChange, onResetFilter }) => {
                     <InputNumber
                       {...field}
                       style={{ width: '100%' }}
-                      placeholder='Giá tối thiểu'
+                      placeholder='Nhập giá tối thiểu'
                       min={0}
-                      formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                      formatter={(value) => `₫ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      parser={(value) => value.replace(/₫\s?|(,*)/g, '')}
                     />
                   )}
                 />
               </Form.Item>
-            </Col>{' '}
-            <Col xs={24} sm={12} md={6}>
-              <Form.Item label='Giá đến'>
+            </Col>
+            <Col xs={24} sm={12} lg={8}>
+              <Form.Item label='Giá tối đa'>
                 <Controller
                   name='maxPrice'
                   control={control}
@@ -144,16 +147,20 @@ const ProductFilter = ({ onFilterChange, onResetFilter }) => {
                     <InputNumber
                       {...field}
                       style={{ width: '100%' }}
-                      placeholder='Giá tối đa'
+                      placeholder='Nhập giá tối đa'
                       min={0}
-                      formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                      parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                      formatter={(value) => `₫ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      parser={(value) => value.replace(/₫\s?|(,*)/g, '')}
                     />
                   )}
                 />
               </Form.Item>
             </Col>
-            <Col xs={24} sm={12} md={6}>
+          </Row>
+
+          {/* Hàng 2: Thuộc tính sản phẩm */}
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item label='Màu sắc'>
                 <Controller
                   name='color'
@@ -165,6 +172,7 @@ const ProductFilter = ({ onFilterChange, onResetFilter }) => {
                       allowClear
                       placeholder='Chọn màu sắc'
                       style={{ width: '100%' }}
+                      maxTagCount='responsive'
                       options={[
                         { value: 'Đen', label: 'Đen' },
                         { value: 'Trắng', label: 'Trắng' },
@@ -182,7 +190,7 @@ const ProductFilter = ({ onFilterChange, onResetFilter }) => {
                 />
               </Form.Item>
             </Col>
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item label='Kích thước'>
                 <Controller
                   name='size'
@@ -194,6 +202,7 @@ const ProductFilter = ({ onFilterChange, onResetFilter }) => {
                       allowClear
                       placeholder='Chọn kích thước'
                       style={{ width: '100%' }}
+                      maxTagCount='responsive'
                       options={[
                         { value: 'XS', label: 'XS' },
                         { value: 'S', label: 'S' },
@@ -215,8 +224,8 @@ const ProductFilter = ({ onFilterChange, onResetFilter }) => {
                   )}
                 />
               </Form.Item>
-            </Col>{' '}
-            <Col xs={24} sm={12} md={6}>
+            </Col>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item label='Tình trạng hàng'>
                 <Controller
                   name='stockStatus'
@@ -238,14 +247,18 @@ const ProductFilter = ({ onFilterChange, onResetFilter }) => {
                 />
               </Form.Item>
             </Col>
+          </Row>
+
+          {/* Hàng 3: Nút điều khiển */}
+          <Row>
             <Col xs={24}>
-              <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
-                <Space>
+              <Form.Item style={{ textAlign: 'right', marginBottom: 0, marginTop: 8 }}>
+                <Space size='middle'>
                   <Button icon={<ClearOutlined />} onClick={handleReset}>
                     Xóa bộ lọc
                   </Button>
                   <Button type='primary' htmlType='submit' icon={<SearchOutlined />}>
-                    Lọc
+                    Áp dụng
                   </Button>
                 </Space>
               </Form.Item>

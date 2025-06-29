@@ -1,7 +1,7 @@
-import { Image, Upload } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import { Image, Upload } from 'antd';
 import PropTypes from 'prop-types';
+import { useState } from 'react';
 
 const ImageUpload = ({ value = [], onChange, disabled, maxImages = 8 }) => {
   // State for Antd Image preview

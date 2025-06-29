@@ -18,7 +18,7 @@ import { useDispatch } from 'react-redux';
 import { NavLink, useNavigate } from 'react-router-dom';
 
 const SIDEBAR_ITEMS = [
-  { name: 'Tổng quan', icon: BarChart2, color: '#333', href: '/admin' },
+  // { name: 'Tổng quan', icon: BarChart2, color: '#333', href: '/admin' },
   { name: 'Sản phẩm', icon: ShoppingBag, color: '#333', href: '/admin/products' },
   { name: 'Danh mục', icon: ChartBarStacked, color: '#333', href: '/admin/categories' },
   { name: 'Người dùng', icon: Users, color: '#333', href: '/admin/users' },

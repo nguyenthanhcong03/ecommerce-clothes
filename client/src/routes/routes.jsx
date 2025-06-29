@@ -180,7 +180,7 @@ const customerProtectedRoutes = [
 
 // Admin
 const adminRoutes = [
-  { index: true, element: <OverviewPage /> },
+  { index: true, element: <Navigate to='products' replace /> },
   { path: 'products', element: <ProductPage /> },
   { path: 'categories', element: <CategoryPage /> },
   { path: 'users', element: <UserPage /> },

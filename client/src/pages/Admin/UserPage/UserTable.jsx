@@ -5,7 +5,7 @@ import UnbanIcon from '@/components/AdminComponents/common/icon/UnbanIcon';
 import { formatDate } from '@/utils/format/formatDate';
 import { UserOutlined } from '@ant-design/icons';
 import { Button, Card, Input, Popconfirm, Space, Table, Tag, Tooltip } from 'antd';
-import { Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
+import { Plus, RefreshCw, Search } from 'lucide-react';
 import PropTypes from 'prop-types';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';

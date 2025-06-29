@@ -1,11 +1,11 @@
+import DeleteIcon from '@/components/AdminComponents/common/icon/DeleteIcon';
+import EditIcon from '@/components/AdminComponents/common/icon/EditIcon';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import { Button, Card, Image, Input, Popconfirm, Space, Table, Tag, Tooltip } from 'antd';
-import { Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
-import { useMemo } from 'react';
+import { Plus, RefreshCw, Search } from 'lucide-react';
 import PropTypes from 'prop-types';
+import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import EditIcon from '@/components/AdminComponents/common/icon/EditIcon';
-import DeleteIcon from '@/components/AdminComponents/common/icon/DeleteIcon';
 
 const ProductTable = ({ searchText, onSearch, onPageChange, onRefresh, onDelete, onEdit, onAdd }) => {
   const { products, pagination, filters, sort, loading, error } = useSelector((state) => state.adminProduct);

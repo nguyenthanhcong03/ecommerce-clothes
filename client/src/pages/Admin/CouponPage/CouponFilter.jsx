@@ -13,6 +13,7 @@ const CouponFilter = ({ onFilterChange, onResetFilter }) => {
 
   const headerStyle = {
     padding: '8px 16px',
+    marginBottom: 14,
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -23,7 +24,7 @@ const CouponFilter = ({ onFilterChange, onResetFilter }) => {
 
   const { control, handleSubmit, reset, setValue } = useForm({
     defaultValues: {
-      discountRange: '', // Chọn ngày tháng #cách 2
+      // discountRange: '', // Chọn ngày tháng #cách 2
       isActive: '',
       startDate: null,
       endDate: null
@@ -31,21 +32,12 @@ const CouponFilter = ({ onFilterChange, onResetFilter }) => {
   });
 
   const handleFormSubmit = (data) => {
-    const [startDate, endDate] = data.discountRange || [];
-    console.log('startDate', startDate.toDate());
-    console.log('endDate', endDate);
-
+    // const [startDate, endDate] = data.discountRange || [];
+    // console.log('startDate', startDate.toDate());
+    // console.log('endDate', endDate);
     // // Convert dayjs to JS Date if needed
-    // const formattedData = {
-    //   ...data,
-    //   // startDate: data.startDate?.toDate(),
-    //   // endDate: data.endDate?.toDate()
-    //   // #cách 2
-    //   startDate: startDate ? startDate.toDate() : null,
-    //   endDate: endDate ? endDate.toDate() : null
-    // };
 
-    // onFilterChange(formattedData);
+    onFilterChange(data);
   };
 
   const handleReset = () => {
@@ -103,11 +95,10 @@ const CouponFilter = ({ onFilterChange, onResetFilter }) => {
             </Col>
 
             <Col xs={24} sm={12} md={6}>
-              <Form.Item label='Đến ngày'>
+              <Form.Item label='Từ ngày'>
                 <Controller
                   control={control}
                   name='startDate'
-                  rules={{ required: 'Chọn ngày bắt đầu' }}
                   render={({ field }) => (
                     <DatePicker
                       // showTime
@@ -121,10 +112,9 @@ const CouponFilter = ({ onFilterChange, onResetFilter }) => {
                   )}
                 />
               </Form.Item>
-              <Controller
+              {/* <Controller
                 control={control}
                 name='discountRange'
-                rules={{ required: 'Chọn khoảng thời gian' }}
                 render={({ field }) => (
                   <RangePicker
                     showTime
@@ -134,7 +124,7 @@ const CouponFilter = ({ onFilterChange, onResetFilter }) => {
                     style={{ width: '100%' }}
                   />
                 )}
-              />
+              /> */}
             </Col>
 
             <Col xs={24} sm={12} md={6}>
@@ -142,7 +132,6 @@ const CouponFilter = ({ onFilterChange, onResetFilter }) => {
                 <Controller
                   control={control}
                   name='endDate'
-                  rules={{ required: 'Chọn ngày kết thúc' }}
                   render={({ field }) => (
                     <DatePicker
                       // showTime
@@ -160,12 +149,12 @@ const CouponFilter = ({ onFilterChange, onResetFilter }) => {
 
             <Col xs={24}>
               <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
-                <Space>
+                <Space size='middle'>
                   <Button icon={<ClearOutlined />} onClick={handleReset}>
                     Xóa bộ lọc
                   </Button>
                   <Button type='primary' htmlType='submit' icon={<SearchOutlined />}>
-                    Lọc
+                    Áp dụng
                   </Button>
                 </Space>
               </Form.Item>
