@@ -185,7 +185,7 @@ const updateProductRatingStats = async (productId, session) => {
 };
 
 /**
- * Get products that can be reviewed from a delivered order
+ * Lấy các sản phẩm có thể được đánh giá từ một đơn hàng đã giao.
  */
 const getReviewableProducts = async (userId, orderId) => {
   // Find the order and check if it's valid and delivered
@@ -202,7 +202,7 @@ const getReviewableProducts = async (userId, orderId) => {
     throw new ApiError(404, "Đơn hàng không tồn tại hoặc chưa giao hàng thành công");
   }
 
-  // Filter products that haven't been reviewed yet
+  // Lọc các sản phẩm chưa được đánh giá.
   const reviewableProducts = order.products
     .filter((product) => !product.isReviewed)
     .map((product) => ({
@@ -216,14 +216,14 @@ const getReviewableProducts = async (userId, orderId) => {
       },
       orderId: order._id,
       orderDate: order.createdAt,
-      deliveredDate: order.deliveredAt,
+      deliveredDate: order.statusUpdatedAt?.delivered || order.createdAt,
     }));
 
   return reviewableProducts;
 };
 
 /**
- * Get all reviews (Admin only)
+ * Get all reviews (Admin)
  */
 const getAllReviews = async (options = {}) => {
   const reviews = await Review.find()

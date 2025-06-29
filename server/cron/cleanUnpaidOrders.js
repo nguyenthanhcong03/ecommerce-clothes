@@ -3,9 +3,10 @@ const Order = require("../models/order");
 const Product = require("../models/product");
 const Coupon = require("../models/coupon");
 
-// Tự động xóa sau 10 phút
+// Tự động xóa sau 30 phút
 cron.schedule("*/30 * * * *", async () => {
   try {
+    const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
@@ -33,8 +34,12 @@ cron.schedule("*/30 * * * *", async () => {
       }
 
       // 2. Giảm lượt dùng mã giảm giá nếu có
-      if (order.couponCode) {
-        await Coupon.findOneAndUpdate({ code: order.couponApplied }, { $inc: { usedCount: -1 } });
+      if (order?.couponId) {
+        const coupon = await Coupon.findById(order?.couponId);
+        if (coupon && coupon.usageLimit) {
+          coupon.usedCount = Math.max(0, (coupon.usedCount || 0) - 1);
+          await coupon.save();
+        }
       }
 
       // 3. Xoá đơn hàng

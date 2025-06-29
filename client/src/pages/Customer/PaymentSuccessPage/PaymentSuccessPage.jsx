@@ -1,5 +1,6 @@
 import Button from '@/components/common/Button';
 import { formatCurrency } from '@/utils/format/formatCurrency';
+import { getPaymentMethodText } from '@/utils/helpers/fn';
 import { ArrowRight, CheckCircle, Home, Package } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -13,17 +14,6 @@ const PaymentSuccessPage = () => {
   const amount = searchParams.get('amount');
   const paymentMethod = searchParams.get('paymentMethod');
   const transactionNo = searchParams.get('transactionNo');
-
-  const getPaymentMethodText = (method) => {
-    switch (method) {
-      case 'VNPay':
-        return 'VNPay';
-      case 'Momo':
-        return 'Ví MoMo';
-      default:
-        return method;
-    }
-  };
 
   return (
     <div className='flex min-h-screen items-center justify-center'>

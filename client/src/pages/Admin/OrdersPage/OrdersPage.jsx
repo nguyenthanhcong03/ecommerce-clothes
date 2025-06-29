@@ -10,10 +10,9 @@ import { ClockCircleOutlined, DollarOutlined, EyeOutlined, ReloadOutlined } from
 import { Button, Card, message, Modal, Select, Space, Table, Tooltip } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import MomoLogo from '../../../assets/images/momo_icon_square_pinkbg@3x.png';
-import VNPayLogo from '../../../assets/images/vnpay-logo-vinadesign-25-12-59-16.jpg';
-import { updateOrderStatus } from '../../../store/slices/adminOrderSlice';
-import { getValidStatusTransitions } from '../../../utils/helpers/orderStatusUtils';
+import VNPayLogo from '@/assets/images/vnpay-logo-vinadesign-25-12-59-16.jpg';
+import { updateOrderStatus } from '@/store/slices/adminOrderSlice';
+import { getValidStatusTransitions } from '@/utils/helpers/orderStatusUtils';
 import OrderDetails from './OrderDetails';
 import OrderFilters from './OrderFilters';
 import './OrdersPage.scss';
@@ -152,7 +151,7 @@ const OrdersPage = () => {
         user ? (
           <div>
             <span className='font-semibold'>
-              {user.firstName} {user.lastName}
+              {user.lastName} {user.firstName}
             </span>
           </div>
         ) : (
@@ -186,16 +185,6 @@ const OrdersPage = () => {
         switch (payment.method) {
           case 'COD':
             return '💵 Thanh toán khi nhận hàng';
-          case 'Momo':
-            return (
-              <div className='flex items-center gap-1'>
-                <img src={MomoLogo} className='h-5 w-5' alt='Ví Momo' />
-                Ví Momo
-                {/* <Tag color={payment.isPaid ? 'green' : 'volcano'}>
-                  {payment.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
-                </Tag> */}
-              </div>
-            );
           case 'VNPay':
             return (
               <div className='flex items-center gap-1'>

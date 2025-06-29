@@ -40,6 +40,10 @@ const orderSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    couponId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Coupon",
+    },
     products: {
       type: [orderProductSchema],
       validate: [(arr) => arr.length > 0, "At least one product is required"],
@@ -77,7 +81,7 @@ const orderSchema = new mongoose.Schema(
       method: {
         type: String,
         required: true,
-        enum: ["COD", "Momo", "VNPay"],
+        enum: ["COD", "VNPay"],
       },
       isPaid: {
         type: Boolean,
@@ -85,18 +89,10 @@ const orderSchema = new mongoose.Schema(
       },
       paidAt: Date,
     },
-    deliveredAt: {
-      type: Date,
-      default: null,
-    },
     trackingNumber: {
       type: String,
       unique: true,
       sparse: true, // Cho phép giá trị null hoặc không có
-    },
-    couponApplied: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Coupon",
     },
     discountAmount: {
       type: Number,
@@ -116,14 +112,17 @@ const orderSchema = new mongoose.Schema(
       type: String,
       maxlength: 1000,
     },
-    cancelTime: {
-      type: Date,
-    },
     // Lưu trữ thời gian cập nhật trạng thái đơn hàng
-    statusUpdates: {
-      processing: {
+    statusUpdatedAt: {
+      unpaid: {
+        type: Date,
+      },
+      pending: {
         type: Date,
         default: Date.now,
+      },
+      processing: {
+        type: Date,
       },
       shipping: {
         type: Date,
@@ -143,8 +142,8 @@ const orderSchema = new mongoose.Schema(
 orderSchema.pre("save", function (next) {
   if (this.isModified("status")) {
     const status = this.status.toLowerCase();
-    if (this.statusUpdates && status in this.statusUpdates) {
-      this.statusUpdates[status] = Date.now();
+    if (this.statusUpdatedAt && status in this.statusUpdatedAt) {
+      this.statusUpdatedAt[status] = Date.now();
     }
   }
   next();

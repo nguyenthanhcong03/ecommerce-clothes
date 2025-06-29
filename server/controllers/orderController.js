@@ -4,7 +4,7 @@ const Cart = require("../models/cart");
 const Coupon = require("../models/coupon");
 const Product = require("../models/product");
 const orderService = require("../services/orderService");
-const { createVnpayPaymentUrl, createMomoPaymentUrl } = require("../services/paymentService");
+const { createVnpayPaymentUrl } = require("../services/paymentService");
 const mongoose = require("mongoose");
 const catchAsync = require("../utils/catchAsync");
 const ApiError = require("../utils/ApiError");
@@ -117,7 +117,7 @@ const getAllOrders = catchAsync(async (req, res) => {
 
   // Lấy đơn hàng với populate để lấy thông tin user
   const orders = await Order.find(query)
-    .populate("userId", "username email firstName lastName")
+    .populate("userId couponId", "username email firstName lastName code")
     .sort(sortObj)
     .skip(skip)
     .limit(parseInt(limit))
@@ -155,7 +155,7 @@ const createOrder = catchAsync(async (req, res) => {
   if (!products || !products.length || !shippingAddress || !paymentMethod) {
     await session.abortTransaction();
     session.endSession();
-    throw new ApiError(400, "Missing required order details");
+    throw new ApiError(400, "Thiếu các trường thông tin chi tiết của đơn hàng.");
   }
 
   // Kiểm tra giá sản phẩm hiện tại
@@ -279,7 +279,7 @@ const createOrder = catchAsync(async (req, res) => {
         paidAt: null,
       },
       trackingNumber,
-      couponApplied,
+      couponId: couponApplied ? couponApplied._id : null,
       discountAmount,
       shippingFee,
       note: note || "",
@@ -318,7 +318,7 @@ const createOrder = catchAsync(async (req, res) => {
 
     // Cập nhật coupon usage
     if (couponApplied && couponApplied.usageLimit) {
-      couponApplied.usageCount = (couponApplied.usageCount || 0) + 1;
+      couponApplied.usedCount = (couponApplied.usedCount || 0) + 1;
       await couponApplied.save({ session });
     }
 
@@ -331,8 +331,8 @@ const createOrder = catchAsync(async (req, res) => {
       data: savedOrder,
     });
   }
-  // Nếu là thanh toán online (VNPay hoặc Momo), tạo link thanh toán
-  else if (paymentMethod === "VNPay" || paymentMethod === "Momo") {
+  // Nếu là thanh toán online (VNPay), tạo link thanh toán
+  else if (paymentMethod === "VNPay") {
     // Tạo đơn hàng tạm thời với trạng thái Unpaid
     const trackingNumber = orderService.generateTrackingNumber();
 
@@ -342,13 +342,16 @@ const createOrder = catchAsync(async (req, res) => {
       totalPrice: totalPrice,
       shippingAddress,
       status: "Unpaid",
+      statusUpdatedAt: {
+        unpaid: new Date(),
+      },
       payment: {
         method: paymentMethod,
         isPaid: false,
         paidAt: null,
       },
       trackingNumber,
-      couponApplied,
+      couponId: couponApplied ? couponApplied._id : null,
       discountAmount,
       shippingFee,
       note: note || "",
@@ -387,7 +390,7 @@ const createOrder = catchAsync(async (req, res) => {
 
     // Cập nhật coupon usage
     if (couponApplied && couponApplied.usageLimit) {
-      couponApplied.usageCount = (couponApplied.usageCount || 0) + 1;
+      couponApplied.usedCount = (couponApplied.usedCount || 0) + 1;
       await couponApplied.save({ session });
     }
 
@@ -405,8 +408,6 @@ const createOrder = catchAsync(async (req, res) => {
 
     if (paymentMethod === "VNPay") {
       paymentUrl = createVnpayPaymentUrl(paymentData);
-    } else if (paymentMethod === "Momo") {
-      paymentUrl = await createMomoPaymentUrl(paymentData);
     }
 
     return res.status(200).json({
@@ -475,7 +476,7 @@ const getOrderById = catchAsync(async (req, res) => {
   // Build query based on user role
   let query = { _id: id };
 
-  // If user is not admin, they can only see their own orders
+  // Nếu người dùng không phải là admin, chỉ lấy đơn hàng của họ
   if (userRole !== "admin") {
     query.userId = userId;
   }
@@ -483,12 +484,12 @@ const getOrderById = catchAsync(async (req, res) => {
   const order = await Order.findOne(query).populate("userId", "fullName email").lean();
 
   if (!order) {
-    throw new ApiError(404, "Order not found or you don't have permission to view this order");
+    throw new ApiError(404, "Đơn hàng không tồn tại hoặc bạn không có quyền truy cập");
   }
 
   res.status(200).json({
     success: true,
-    message: "Order retrieved successfully",
+    message: "Lấy thông tin đơn hàng thành công",
     data: order,
   });
 });
@@ -512,15 +513,42 @@ const updateOrderStatus = catchAsync(async (req, res) => {
   // Update status
   order.status = status;
 
-  // Cập nhật thời gian giao hàng nếu trạng thái là Delivered
   if (status === "Delivered") {
-    order.deliveredAt = new Date();
     // Cập nhật số lượng đã bán cho sản phẩm
     for (const item of order.products) {
       const product = await Product.findById(item.productId);
       if (product) {
         product.salesCount = (product.salesCount || 0) + item.quantity;
         await product.save();
+      }
+    }
+  }
+
+  if (status === "Cancelled") {
+    // Khôi phục số lượng sản phẩm trong kho
+    for (const item of order.products) {
+      const product = await Product.findById(item.productId);
+
+      if (product) {
+        if (item.variantId) {
+          const variantIndex = product.variants.findIndex((v) => v._id.toString() === item.variantId);
+          if (variantIndex !== -1) {
+            product.variants[variantIndex].stock += item.quantity;
+          }
+        } else {
+          product.stock += item.quantity;
+        }
+
+        await product.save();
+      }
+    }
+
+    // Khôi phục số lượng đã sử dụng của mã giảm giá nếu có
+    if (order.couponId) {
+      const coupon = await Coupon.findById(order.couponId);
+      if (coupon && coupon.usageLimit) {
+        coupon.usedCount = Math.max(0, (coupon.usedCount || 0) - 1);
+        await coupon.save();
       }
     }
   }
@@ -571,22 +599,21 @@ const cancelOrder = catchAsync(async (req, res) => {
   const order = await Order.findOne({ _id: id, userId: userId });
 
   if (!order) {
-    throw new ApiError(404, "Order not found");
+    throw new ApiError(404, "Không tìm thấy đơn hàng hoặc bạn không có quyền truy cập");
   }
 
-  // Check if order can be cancelled
+  // Nếu đơn hàng đã được giao hoặc hủy, không cho phép hủy
   if (order.status === "Delivered" || order.status === "Cancelled") {
-    throw new ApiError(400, "Cannot cancel this order");
+    throw new ApiError(400, "Không thể hủy đơn hàng đã giao hoặc đã hủy");
   }
 
-  // Update order status and add cancel reason
+  // Cập nhật trạng thái đơn hàng và lý do hủy
   order.status = "Cancelled";
-  order.cancelReason = reason || "Customer requested cancellation";
-  order.cancelTime = new Date();
+  order.cancelReason = reason || "Khách hàng yêu cầu hủy";
 
   const updatedOrder = await order.save();
 
-  // Restore product stock
+  // Khôi phục số lượng sản phẩm trong kho
   for (const item of order.products) {
     const product = await Product.findById(item.productId);
 
@@ -604,9 +631,18 @@ const cancelOrder = catchAsync(async (req, res) => {
     }
   }
 
+  // Khôi phục số lượng đã sử dụng của mã giảm giá nếu có
+  if (order.couponId) {
+    const coupon = await Coupon.findById(order.couponId);
+    if (coupon && coupon.usageLimit) {
+      coupon.usedCount = Math.max(0, (coupon.usedCount || 0) - 1);
+      await coupon.save();
+    }
+  }
+
   res.status(200).json({
     success: true,
-    message: "Order cancelled successfully",
+    message: "Đơn hàng đã được hủy thành công",
     data: updatedOrder,
   });
 });

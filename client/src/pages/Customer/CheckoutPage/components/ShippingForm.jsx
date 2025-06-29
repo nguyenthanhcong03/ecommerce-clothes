@@ -120,7 +120,7 @@ const ShippingForm = forwardRef((props, ref) => {
     }; // Lưu lại orderData để có thể sử dụng khi xác nhận giá mới
     props.setOrderData(newOrderData);
     console.log('orderData', newOrderData);
-    // Tạo đơn hàng (COD sẽ tạo ngay, VNPay/Momo sẽ trả về paymentUrl)
+    // Tạo đơn hàng (COD sẽ tạo ngay, VNPay sẽ trả về paymentUrl)
     handleCreateOrder(newOrderData);
   };
 

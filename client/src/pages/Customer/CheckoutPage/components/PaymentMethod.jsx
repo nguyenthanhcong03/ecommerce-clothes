@@ -1,4 +1,3 @@
-import MomoLogo from '@/assets/images/momo_icon_square_pinkbg@3x.png';
 import VNPayLogo from '@/assets/images/vnpay-logo-vinadesign-25-12-59-16.jpg';
 import { setPaymentMethod } from '@/store/slices/orderSlice';
 import { Truck } from 'lucide-react';
@@ -18,13 +17,6 @@ const PAYMENT_METHODS = [
     description: 'Thanh toán trực tuyến qua cổng thanh toán VNPay',
     icon: <img width={24} src={VNPayLogo} alt='VNPay Logo' />,
     value: 'VNPay'
-  },
-  {
-    id: 'Momo',
-    label: 'Ví Momo',
-    description: 'Thanh toán trực tuyến an toàn qua Momo>',
-    icon: <img width={24} src={MomoLogo} alt=' Momo Logo' />,
-    value: 'Momo'
   }
 ];
 

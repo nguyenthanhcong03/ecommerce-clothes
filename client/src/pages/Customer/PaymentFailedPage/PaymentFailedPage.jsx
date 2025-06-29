@@ -1,5 +1,6 @@
 import Button from '@/components/common/Button';
 import { createVnpayPaymentAPI } from '@/services/paymentService';
+import { getPaymentMethodText } from '@/utils/helpers/fn';
 import { message } from 'antd';
 import { AlertTriangle, ClipboardList, Home, RotateCcw, XCircle } from 'lucide-react';
 import { useEffect } from 'react';
@@ -27,28 +28,14 @@ const PaymentFailedPage = () => {
   };
 
   useEffect(() => {
-    // Đơn hàng chưa được tạo nên không cần cancel
-    // Chỉ xóa thông tin tạm thời đã được xử lý ở backend
     message.error('Thanh toán thất bại! Vui lòng thử lại.');
   }, []);
-
-  const getPaymentMethodText = (method) => {
-    switch (method) {
-      case 'VNPay':
-        return 'VNPay';
-      case 'Momo':
-        return 'Ví MoMo';
-      default:
-        return method;
-    }
-  };
 
   const getReasonText = (reason) => {
     if (!reason) return 'Lỗi không xác định';
 
     const decodedReason = decodeURIComponent(reason);
 
-    // Map common error reasons to user-friendly Vietnamese
     const reasonMap = {
       server_error: 'Lỗi hệ thống, vui lòng thử lại sau',
       user_cancelled: 'Bạn đã hủy giao dịch',

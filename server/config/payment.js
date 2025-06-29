@@ -6,17 +6,7 @@ const vnpayConfig = {
   returnUrl: "http://localhost:5000/api/payment/vnpay/return", // URL nhận kết quả trả về từ VNPay
 };
 
-// Cấu hình Momo
-const momoConfig = {
-  partnerCode: "YOUR_PARTNER_CODE", // Mã đối tác trên hệ thống của MoMo
-  accessKey: "YOUR_ACCESS_KEY", // Khóa truy cập MoMo cấp
-  secretKey: "YOUR_SECRET_KEY", // Khóa bí mật để tạo chữ ký
-  redirectUrl: "http://localhost:5000/api/payment/momo/return", // URL nhận kết quả trả về từ MoMo
-  ipnUrl: "http://localhost:5000/api/payment/momo/ipn", // URL nhận thông báo kết quả giao dịch từ MoMo
-  endpoint: "https://test-payment.momo.vn/v2/gateway/api/create", // URL tạo giao dịch thanh toán MoMo
-};
-
 // Cấu hình client URL
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
-module.exports = { vnpayConfig, momoConfig, CLIENT_URL };
+module.exports = { vnpayConfig, CLIENT_URL };

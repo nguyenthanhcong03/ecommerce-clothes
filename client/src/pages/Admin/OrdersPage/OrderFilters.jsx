@@ -117,7 +117,6 @@ const OrderFilters = ({ onSearch, onFilterChange, onClear, searchText, loading }
             allowClear
           >
             <Option value='COD'>Thanh toán khi nhận hàng (COD)</Option>
-            <Option value='Momo'>Thanh toán qua MoMo</Option>
             <Option value='VNPay'>Thanh toán qua VNPay</Option>
           </Select>
         </Col>

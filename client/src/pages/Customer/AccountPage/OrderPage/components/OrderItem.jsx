@@ -106,18 +106,12 @@ const OrderItem = ({ order, onCancel }) => {
                 Hủy đơn hàng
               </Button>
             )}
-            {/* {canBeReviewed && (
-              <Link to={`/user/order/review-products/${order._id}`}>
-                <Button size='sm' leftIcon={<FileEdit className='h-4 w-4' />}>
-                  Đánh giá
-                </Button>
-              </Link>
-            )} */}
-            {canBeReviewed && allReviewed ? (
+            {((canBeReviewed && allReviewed) || order?.status === 'Cancelled') && (
               <Button size='sm' variant='secondary'>
                 Mua lại
               </Button>
-            ) : (
+            )}
+            {canBeReviewed && allReviewed === false && (
               <Link to={`/user/order/review-products/${order._id}`}>
                 <Button size='sm' leftIcon={<FileEdit className='h-4 w-4' />}>
                   Đánh giá

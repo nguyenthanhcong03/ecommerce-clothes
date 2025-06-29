@@ -22,14 +22,14 @@ const errorConverter = (err, req, res, next) => {
 };
 
 const errorHandler = (err, req, res, next) => {
-  console.log("ERROR LOG ", new Date().toLocaleString());
-  console.log("Request:", req.method, req.originalUrl);
-  console.log("Params:", req.params);
-  console.log("Body:", req.body);
-  console.log("Query:", req.query);
-  console.log("Error: ", err);
-  console.log("Error stack: ", err.stack);
-  console.log("--------------------------------------------------------------------------------------");
+  // console.log("ERROR LOG ", new Date().toLocaleString());
+  // console.log("Request:", req.method, req.originalUrl);
+  // console.log("Params:", req.params);
+  // console.log("Body:", req.body);
+  // console.log("Query:", req.query);
+  // console.log("Error: ", err);
+  // console.log("Error stack: ", err.stack);
+  // console.log("--------------------------------------------------------------------------------------");
   const statusCode = err.statusCode || 500;
 
   res.status(statusCode).json({

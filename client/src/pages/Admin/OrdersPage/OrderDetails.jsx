@@ -26,7 +26,8 @@ const OrderDetails = ({ order }) => {
           <strong>Tên:</strong> {order.shippingAddress?.fullName}
         </p>
         <p>
-          <strong>Địa chỉ:</strong> {order.shippingAddress?.address}
+          <strong>Địa chỉ:</strong> {order.shippingAddress?.street}, {order.shippingAddress?.ward?.name},{' '}
+          {order.shippingAddress?.district?.name}, {order.shippingAddress?.province?.name}
         </p>
         <p>
           <strong>Số điện thoại:</strong> {order.shippingAddress?.phoneNumber}
@@ -57,14 +58,14 @@ const OrderDetails = ({ order }) => {
         <p>
           <strong>Ngày đặt hàng:</strong> {formatDate(order.createdAt)}
         </p>
-        {order.deliveredAt && (
+        {order?.statusUpdatedAt?.delivered && (
           <p>
-            <strong>Ngày giao hàng:</strong> {formatDate(order.deliveredAt)}
+            <strong>Ngày giao hàng:</strong> {formatDate(order?.statusUpdatedAt?.delivered)}
           </p>
         )}
-        {order.cancelTime && (
+        {order?.statusUpdatedAt?.cancelled && (
           <p>
-            <strong>Ngày hủy:</strong> {formatDate(order.cancelTime)}
+            <strong>Ngày hủy:</strong> {formatDate(order?.statusUpdatedAt?.cancelled)}
           </p>
         )}
         {order.cancelReason && (
@@ -144,7 +145,7 @@ const OrderDetails = ({ order }) => {
                 <Table.Summary.Row>
                   <Table.Summary.Cell colSpan={3} index={0}>
                     <strong>Giảm giá</strong>
-                    {order.couponApplied && <span className='ml-2 text-sm'>({order.couponApplied.code})</span>}
+                    {order.couponId && <span className='ml-2 text-sm'>({order.couponId.code})</span>}
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={1} align='right'>
                     <strong className='text-red-500'>-{formatCurrency(order.discountAmount)}</strong>

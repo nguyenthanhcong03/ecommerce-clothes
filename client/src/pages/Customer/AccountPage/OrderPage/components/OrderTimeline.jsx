@@ -91,8 +91,8 @@ const OrderTimeline = ({ orderDetail }) => {
               >
                 Đơn hàng đã được xác nhận
               </p>
-              {orderDetail?.statusUpdates?.pending && (
-                <p className='text-sm text-gray-500'>{formatDate(orderDetail?.statusUpdates?.pending)}</p>
+              {orderDetail?.statusUpdatedAt?.pending && (
+                <p className='text-sm text-gray-500'>{formatDate(orderDetail?.statusUpdatedAt?.pending)}</p>
               )}
             </div>
           </div>
@@ -120,8 +120,8 @@ const OrderTimeline = ({ orderDetail }) => {
               >
                 Đơn hàng đang được xử lý
               </p>
-              {orderDetail?.statusUpdates?.processing && (
-                <p className='text-sm text-gray-500'>{formatDate(orderDetail?.statusUpdates?.processing)}</p>
+              {orderDetail?.statusUpdatedAt?.processing && (
+                <p className='text-sm text-gray-500'>{formatDate(orderDetail?.statusUpdatedAt?.processing)}</p>
               )}
             </div>
           </div>
@@ -143,8 +143,8 @@ const OrderTimeline = ({ orderDetail }) => {
               <p className={['Shipping', 'Delivered'].includes(orderDetail?.status) ? 'font-medium' : 'text-gray-500'}>
                 Đơn hàng đang được giao
               </p>
-              {orderDetail?.statusUpdates?.shipping && (
-                <p className='text-sm text-gray-500'>{formatDate(orderDetail?.statusUpdates?.shipping)}</p>
+              {orderDetail?.statusUpdatedAt?.shipping && (
+                <p className='text-sm text-gray-500'>{formatDate(orderDetail?.statusUpdatedAt?.shipping)}</p>
               )}
             </div>
           </div>
@@ -162,8 +162,8 @@ const OrderTimeline = ({ orderDetail }) => {
               <p className={orderDetail?.status === 'Delivered' ? 'font-medium' : 'text-gray-500'}>
                 Đơn hàng đã được giao thành công
               </p>
-              {orderDetail?.statusUpdates?.delivered && (
-                <p className='text-sm text-gray-500'>{formatDate(orderDetail?.statusUpdates?.delivered)}</p>
+              {orderDetail?.statusUpdatedAt?.delivered && (
+                <p className='text-sm text-gray-500'>{formatDate(orderDetail?.statusUpdatedAt?.delivered)}</p>
               )}
             </div>
           </div>
@@ -176,8 +176,8 @@ const OrderTimeline = ({ orderDetail }) => {
               </div>
               <div>
                 <p className='font-medium text-red-600'>Đơn hàng đã bị hủy</p>
-                {orderDetail?.statusUpdates?.cancelled && (
-                  <p className='text-sm text-gray-500'>{formatDate(orderDetail?.statusUpdates?.cancelled)}</p>
+                {orderDetail?.statusUpdatedAt?.cancelled && (
+                  <p className='text-sm text-gray-500'>{formatDate(orderDetail?.statusUpdatedAt?.cancelled)}</p>
                 )}
                 {orderDetail?.cancelReason && (
                   <p className='mt-1 text-sm text-red-500'>Lý do: {orderDetail?.cancelReason}</p>

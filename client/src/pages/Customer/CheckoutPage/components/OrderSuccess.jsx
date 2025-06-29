@@ -9,7 +9,6 @@ import { memo, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 
-import MomoLogo from '@/assets/images/momo_icon_square_pinkbg@3x.png';
 import VNPayLogo from '@/assets/images/vnpay-logo-vinadesign-25-12-59-16.jpg';
 
 // Component hiển thị thông tin từng sản phẩm trong đơn hàng
@@ -72,9 +71,6 @@ const OrderSuccess = () => {
         return <img src={boxIcon} alt='COD' className='mr-2 h-6 w-6' />;
       case 'VNPay':
         return <img src={VNPayLogo} alt='Thanh toán trực tuyến qua cổng thanh toán VNPay' className='mr-2 h-6 w-6' />;
-
-      case 'Momo':
-        return <img src={MomoLogo} alt='Thanh toán trực tuyến an toàn qua Momo' className='mr-2 h-6 w-6' />;
       default:
         return <img src={creditCardIcon} alt='Payment' className='mr-2 h-6 w-6' />;
     }

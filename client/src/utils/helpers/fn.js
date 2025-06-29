@@ -13,3 +13,16 @@ export const getIdFromNameId = (nameId) => {
   const arr = nameId.split('-i,');
   return arr[arr.length - 1];
 };
+
+export const getPaymentMethodText = (method) => {
+  switch (method) {
+    case 'VNPay':
+      return 'Thanh toán trực tuyến qua VNPay';
+    case 'Momo':
+      return 'Thanh toán trực tuyến qua Ví MoMo';
+    case 'COD':
+      return 'Thanh toán khi nhận hàng (COD)';
+    default:
+      return method;
+  }
+};

@@ -68,10 +68,7 @@ function AboutPage() {
           </Collapse>
           <Collapse title={'7. Phương thức thanh toán nào được chấp nhận?'}>
             <div className='flex flex-col gap-2 text-sm'>
-              <p>
-                Chúng tôi hỗ trợ thanh toán khi nhận hàng (COD), chuyển khoản ngân hàng, và thanh toán qua ví điện tử
-                như Momo, ZaloPay.
-              </p>
+              <p>Chúng tôi hỗ trợ thanh toán khi nhận hàng (COD), và thanh toán qua ví điện tử VNPay.</p>
             </div>
           </Collapse>
           <Collapse title={'8. Làm sao để tôi kiểm tra tình trạng đơn hàng?'}>

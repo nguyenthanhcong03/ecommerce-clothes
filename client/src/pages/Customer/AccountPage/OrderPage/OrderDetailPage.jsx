@@ -20,6 +20,7 @@ const OrderDetailPage = () => {
   const { orderDetail, loading, error } = useSelector((state) => state.userOrder);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
+  console.log('orderDetail', orderDetail);
 
   // Xử lý tạo URL thanh toán
   const handleCreatePaymentUrl = async (orderId) => {
@@ -190,10 +191,10 @@ const OrderDetailPage = () => {
                     <span className='text-gray-600'>Phí vận chuyển:</span>
                     <span>{formatCurrency(orderDetail.shippingFee || 0)}</span>
                   </div>
-                  {orderDetail.discount > 0 && (
+                  {orderDetail.discountAmount > 0 && (
                     <div className='flex justify-between py-1'>
                       <span className='text-gray-600'>Giảm giá:</span>
-                      <span>-{formatCurrency(orderDetail.discount || 0)}</span>
+                      <span>-{formatCurrency(orderDetail.discountAmount || 0)}</span>
                     </div>
                   )}
                   <div className='mt-1 flex justify-between border-t border-gray-200 py-1 pt-2'>
@@ -234,28 +235,23 @@ const OrderDetailPage = () => {
               <div className='flex items-start'>
                 <MapPin className='mr-2 mt-0.5 h-5 w-5 flex-shrink-0 text-gray-400' />
                 <p>
-                  {orderDetail?.shippingAddress?.street}, {orderDetail?.shippingAddress?.ward},{' '}
-                  {orderDetail?.shippingAddress?.district}, {orderDetail?.shippingAddress?.province}
+                  {orderDetail?.shippingAddress?.street}, {orderDetail?.shippingAddress?.ward?.name},{' '}
+                  {orderDetail?.shippingAddress?.district?.name}, {orderDetail?.shippingAddress?.province?.name}
                 </p>
               </div>
             </div>
           </div>
           {/* Thông tin thanh toán */}
           <div className='mb-6 rounded-sm border border-gray-200 bg-white p-4 shadow-sm'>
-            <h2 className='mb-4 flex items-center text-lg font-medium'>
-              {/* <CreditCard className='mr-2 h-5 w-5 text-blue-500' /> */}
-              Phương thức thanh toán
-            </h2>
+            <h2 className='mb-4 flex items-center text-lg font-medium'>Phương thức thanh toán</h2>
 
             <div className='space-y-2'>
               <p>
                 {orderDetail?.payment?.method === 'COD'
                   ? 'Thanh toán khi nhận hàng (COD)'
-                  : orderDetail?.payment?.method === 'Momo'
-                    ? 'Thanh toán qua Momo'
-                    : orderDetail?.payment?.method === 'VNPay'
-                      ? 'Thanh toán qua VNPay'
-                      : ''}
+                  : orderDetail?.payment?.method === 'VNPay'
+                    ? 'Thanh toán qua VNPay'
+                    : 'Khác'}
               </p>
 
               {orderDetail?.payment?.method !== 'COD' && (
@@ -275,7 +271,7 @@ const OrderDetailPage = () => {
                 <p className='text-sm text-gray-500'>Thanh toán lúc: {formatDate(orderDetail?.payment?.paidAt)}</p>
               )}
             </div>
-          </div>{' '}
+          </div>
           {/* Các hành động */}
           <div className='rounded-sm border border-gray-200 bg-white p-4 shadow-sm'>
             <h2 className='mb-4 text-lg font-medium'>Hành động</h2>

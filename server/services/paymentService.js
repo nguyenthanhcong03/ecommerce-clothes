@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const querystring = require("qs");
 const dayjs = require("dayjs");
 const axios = require("axios");
-const { vnpayConfig, momoConfig } = require("../config/payment");
+const { vnpayConfig } = require("../config/payment");
 
 /**
  * Tạo URL thanh toán VNPay
@@ -84,109 +84,6 @@ const verifyVnpayReturn = (vnpayParams) => {
 };
 
 /**
- * Tạo URL thanh toán MoMo
- * @param {Object} orderInfo - Thông tin đơn hàng gồm amount, orderId, orderInfo
- * @returns {String} - URL thanh toán để chuyển hướng người dùng
- */
-const createMomoPaymentUrl = async (orderInfo) => {
-  try {
-    const requestId = `REQ-${Date.now()}`; // Mã yêu cầu thanh toán
-    const orderId = orderInfo.orderId || `ORDER-${Date.now()}`; // Mã đơn hàng
-    const amount = parseInt(orderInfo.amount); // Số tiền thanh toán
-    const orderDescription = orderInfo.orderInfo || `Payment for order ${orderId}`; // Mô tả đơn hàng
-
-    // Chuẩn bị chuỗi dữ liệu để tạo chữ ký
-    const rawSignature =
-      `partnerCode=${momoConfig.partnerCode}&` +
-      `accessKey=${momoConfig.accessKey}&` +
-      `requestId=${requestId}&` +
-      `amount=${amount}&` +
-      `orderId=${orderId}&` +
-      `orderInfo=${orderDescription}&` +
-      `redirectUrl=${momoConfig.redirectUrl}&` +
-      `ipnUrl=${momoConfig.ipnUrl}&` +
-      `extraData=`;
-
-    // Tạo chữ ký
-    const signature = crypto.createHmac("sha256", momoConfig.secretKey).update(rawSignature).digest("hex");
-
-    // Tạo body request
-    const requestBody = {
-      partnerCode: momoConfig.partnerCode, // Mã đối tác
-      accessKey: momoConfig.accessKey, // Khóa truy cập
-      requestId: requestId, // Mã yêu cầu
-      amount: amount, // Số tiền
-      orderId: orderId, // Mã đơn hàng
-      orderInfo: orderDescription, // Thông tin đơn hàng
-      redirectUrl: momoConfig.redirectUrl, // URL redirect
-      ipnUrl: momoConfig.ipnUrl, // URL nhận thông báo
-      extraData: "", // Dữ liệu thêm (để trống)
-      requestType: "captureWallet", // Loại yêu cầu
-      signature: signature, // Chữ ký
-      lang: "vi", // Ngôn ngữ
-    };
-
-    // Gửi request đến MoMo
-    const response = await axios.post(momoConfig.endpoint, requestBody);
-
-    // Trả về URL thanh toán nếu thành công
-    if (response.data && response.data.payUrl) {
-      return response.data.payUrl;
-    } else {
-      throw new Error("Không nhận được URL thanh toán từ MoMo");
-    }
-  } catch (error) {
-    console.error("Lỗi khi tạo URL thanh toán MoMo:", error);
-    throw new Error("Không thể tạo URL thanh toán MoMo");
-  }
-};
-
-/**
- * Xác minh kết quả thanh toán từ MoMo
- * @param {Object} momoParams - Tham số trả về từ MoMo
- * @returns {Object} - Kết quả xác minh
- */
-const verifyMomoReturn = (momoParams) => {
-  try {
-    // Tạo chuỗi raw signature từ tham số trả về
-    const rawSignature =
-      `accessKey=${momoConfig.accessKey}&` +
-      `amount=${momoParams.amount}&` +
-      `extraData=${momoParams.extraData || ""}&` +
-      `message=${momoParams.message}&` +
-      `orderId=${momoParams.orderId}&` +
-      `orderInfo=${momoParams.orderInfo}&` +
-      `orderType=${momoParams.orderType}&` +
-      `partnerCode=${momoParams.partnerCode}&` +
-      `payType=${momoParams.payType}&` +
-      `requestId=${momoParams.requestId}&` +
-      `responseTime=${momoParams.responseTime}&` +
-      `resultCode=${momoParams.resultCode}&` +
-      `transId=${momoParams.transId}`;
-
-    // Tạo chữ ký
-    const signature = crypto.createHmac("sha256", momoConfig.secretKey).update(rawSignature).digest("hex");
-
-    // So sánh chữ ký
-    const isValid = signature === momoParams.signature;
-
-    return {
-      isValid, // Kết quả xác thực chữ ký
-      orderId: momoParams.orderId, // Mã đơn hàng
-      amount: parseInt(momoParams.amount), // Số tiền
-      transId: momoParams.transId, // Mã giao dịch tại MoMo
-      resultCode: momoParams.resultCode, // Mã kết quả
-      message: momoParams.message, // Thông báo
-      payType: momoParams.payType, // Phương thức thanh toán
-      responseTime: momoParams.responseTime, // Thời gian phản hồi
-    };
-  } catch (error) {
-    console.error("Lỗi khi xác minh kết quả thanh toán MoMo:", error);
-    throw new Error("Không thể xác minh thanh toán MoMo");
-  }
-};
-
-/**
  * Hàm tiện ích để sắp xếp đối tượng theo khóa
  * @param {Object} obj - Đối tượng cần sắp xếp
  * @returns {Object} - Đối tượng đã sắp xếp
@@ -210,6 +107,4 @@ function sortObject(obj) {
 module.exports = {
   createVnpayPaymentUrl,
   verifyVnpayReturn,
-  createMomoPaymentUrl,
-  verifyMomoReturn,
 };
