@@ -5,8 +5,7 @@ import { closeSearchModal } from '@/store/slices/searchSlice';
 import { COLOR_OPTIONS } from '@/utils/constants';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import { generateNameId } from '@/utils/helpers/fn';
-import { Eye, Heart, ShoppingCart, Star } from 'lucide-react';
-import { useState } from 'react';
+import { Eye, ShoppingCart, Star } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -40,9 +39,9 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
 
         {isShowActionButtons && (
           <div className='absolute right-3 top-3 flex flex-col gap-2 bg-transparent transition-all duration-300 group-hover:right-3 group-hover:opacity-100 group-hover:transition-all group-hover:duration-300 lg:right-0 lg:opacity-0'>
-            <button className='flex h-[40px] w-[40px] items-center justify-center rounded-full border-2 bg-white hover:bg-primaryColor hover:text-white'>
+            {/* <button className='flex h-[40px] w-[40px] items-center justify-center rounded-full border-2 bg-white hover:bg-primaryColor hover:text-white'>
               <Heart strokeWidth={1.5} width={20} />
-            </button>
+            </button> */}
           </div>
         )}
       </div>

@@ -8,7 +8,7 @@ const useCartItem = (item) => {
   const { loadingUpdate, itemUpdate } = useSelector((state) => state.cart);
 
   const [localQuantity, setLocalQuantity] = useState(item.quantity);
-  const debouncedQuantity = useDebounce(localQuantity, 500);
+  let debouncedQuantity = useDebounce(localQuantity, 500);
   const isUpdating = loadingUpdate && itemUpdate?._id === item._id;
   const isAvailable = item?.isAvailable !== false; // Mặc định là true nếu không có giá trị
   const dispatch = useDispatch();
@@ -34,7 +34,6 @@ const useCartItem = (item) => {
       message.error('Sản phẩm này hiện không khả dụng');
       return;
     }
-    console.log('handleQuantityChange called with newQuantity:', newQuantity);
 
     // Chỉ cập nhật local state, không gọi API ngay lập tức
     setLocalQuantity(newQuantity);

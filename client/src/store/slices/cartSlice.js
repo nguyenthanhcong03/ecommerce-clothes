@@ -31,7 +31,7 @@ export const updateCartItem = createAsyncThunk(
   async ({ itemId, quantity }, { rejectWithValue }) => {
     try {
       const response = await updateCartItemAPI(itemId, quantity);
-      console.log('response', response);
+      console.log('response', response.data);
       return response;
     } catch (error) {
       console.log('cartSlice.js error', error);
@@ -118,7 +118,6 @@ const cartSlice = createSlice({
 
       // Update Cart Item
       .addCase(updateCartItem.pending, (state, action) => {
-        console.log('action', action.meta.arg);
         state.loadingUpdate = true;
         state.error = null;
         state.itemUpdate = state.items.find((item) => item._id === action.meta.arg.itemId);

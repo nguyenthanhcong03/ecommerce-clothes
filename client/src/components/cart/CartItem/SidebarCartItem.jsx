@@ -14,7 +14,7 @@ function SidebarCartItem({ item }) {
 
   const handleItemClick = useCallback(() => {
     dispatch(toggleSidebar());
-    navigate(`/product/${generateNameId({ name: item.name, id: item._id })}`);
+    navigate(`/product/${generateNameId({ name: item.snapshot.name, id: item.productId })}`);
   }, [item, navigate, dispatch]);
 
   const {
@@ -60,10 +60,10 @@ function SidebarCartItem({ item }) {
           className='h-5'
           inputClassName='text-xs w-6'
           buttonClassName='!w-5'
-          value={localQuantity}
+          value={debouncedQuantity}
           min={1}
-          onChange={(newQuantity) => handleQuantityChange(newQuantity)}
-          disabled={!isAvailable || isUpdating}
+          onChange={handleQuantityChange}
+          disabled={!isAvailable || isUpdating || debouncedQuantity !== item.quantity}
         />
       </div>
       <div className='absolute right-2 top-2 z-40 translate-x-6 cursor-pointer text-sm text-secondaryColor opacity-0 transition-all duration-200 ease-in hover:scale-110 hover:text-primaryColor active:scale-95 group-hover:-translate-x-0 group-hover:opacity-100'>

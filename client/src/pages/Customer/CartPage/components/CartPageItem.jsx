@@ -1,13 +1,8 @@
 import QuantityInput from '@/components/common/QuantityInput/QuantityInput';
 import useCartItem from '@/hooks/useCartItem';
-import useDebounce from '@/hooks/useDebounce';
-import { removeCartItem, updateCartItem } from '@/store/slices/cartSlice';
 import { formatCurrency } from '@/utils/format/formatCurrency';
-import { message } from 'antd';
 import { Trash2 } from 'lucide-react';
 import PropTypes from 'prop-types';
-import { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
 const CartPageItem = ({ item, onSelect, isSelected }) => {
   const {
@@ -19,6 +14,7 @@ const CartPageItem = ({ item, onSelect, isSelected }) => {
     handleQuantityChange,
     handleRemoveItem
   } = useCartItem(item);
+
   return (
     <div className={`flex flex-col gap-4 border-b px-2 py-4 ${!isAvailable ? 'bg-gray-50' : ''}`}>
       {/* Mobile view - cart item */}
@@ -63,11 +59,10 @@ const CartPageItem = ({ item, onSelect, isSelected }) => {
 
             <div className={`${isUpdating || !isAvailable ? 'opacity-50' : ''} relative`}>
               <QuantityInput
-                value={localQuantity}
+                value={debouncedQuantity}
                 min={1}
-                // max={item.snapshot.stock}
                 onChange={handleQuantityChange}
-                disabled={!isAvailable || isUpdating}
+                disabled={!isAvailable || isUpdating || debouncedQuantity !== item.quantity}
               />
             </div>
           </div>
@@ -107,10 +102,10 @@ const CartPageItem = ({ item, onSelect, isSelected }) => {
           className={`relative col-span-2 flex items-center justify-center ${isUpdating || !isAvailable ? 'opacity-50' : ''}`}
         >
           <QuantityInput
-            value={localQuantity}
+            value={debouncedQuantity}
             min={1}
             onChange={handleQuantityChange}
-            disabled={!isAvailable || isUpdating}
+            disabled={!isAvailable || isUpdating || debouncedQuantity !== item.quantity}
           />
         </div>
         <div className={`col-span-2 text-right text-sm font-medium ${isUpdating ? 'opacity-50' : ''}`}>

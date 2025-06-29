@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from 'react-redux';
 const ProductReview = ({ product }) => {
   const dispatch = useDispatch();
   const { productReviews } = useSelector((state) => state.review);
-  console.log('first');
   useEffect(() => {
     if (product?._id) {
       dispatch(

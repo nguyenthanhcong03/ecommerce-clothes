@@ -131,7 +131,7 @@ const getAllOrders = catchAsync(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Orders retrieved successfully",
+    message: "Lấy danh sách đơn hàng thành công",
     data: {
       orders,
       pagination: {

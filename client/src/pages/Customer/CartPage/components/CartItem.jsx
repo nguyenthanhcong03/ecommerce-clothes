@@ -57,6 +57,7 @@ const CartPageItem = ({ item, onSelect, isSelected }) => {
       .then(() => message.success('Xóa sản phẩm thành công'))
       .catch((err) => message.error('Xóa sản phẩm thất bại: ' + err));
   };
+
   return (
     <div className={`flex flex-col gap-4 border-b px-2 py-4 ${!isAvailable ? 'bg-gray-50' : ''}`}>
       {/* Mobile view - cart item */}
