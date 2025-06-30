@@ -8,7 +8,7 @@ function CategoryCard({ category }) {
   return (
     <Link
       to={`/shop/${generateNameId({ name: category.name, id: category._id })}`}
-      className='flex flex-col items-center rounded-lg bg-white p-4 shadow-sm transition-shadow hover:shadow-md'
+      className='flex flex-col items-center rounded-lg bg-white p-4 shadow-sm transition-shadow duration-300 hover:shadow-md'
     >
       {category.images[0] && (
         <img src={category.images[0]} alt={category.name} className='mb-3 h-16 w-16 object-contain' />

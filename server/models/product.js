@@ -5,7 +5,7 @@ const variantSchema = new mongoose.Schema(
     sku: {
       type: String,
       required: true,
-      // Loại bỏ unique: true vì chúng ta sẽ đảm bảo tính duy nhất thông qua logic
+      unique: true,
     },
     size: {
       type: String,
@@ -101,9 +101,5 @@ productSchema.index({ brand: 1 });
 // 6. Index cho featured products
 productSchema.index({ featured: 1 });
 // Hỗ trợ query sản phẩm nổi bật
-
-// // 7. Index cho productType
-// productSchema.index({ productType: 1 });
-// // Hỗ trợ filter theo loại sản phẩm (áo/quần)
 
 module.exports = mongoose.model("Product", productSchema);

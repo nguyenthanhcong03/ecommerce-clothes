@@ -27,7 +27,7 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
   };
 
   return (
-    <div className='flex h-full w-full flex-col items-start justify-start overflow-hidden rounded-sm border bg-white hover:opacity-95 hover:shadow-xl'>
+    <div className='flex h-full w-full flex-col items-start justify-start overflow-hidden rounded-sm border bg-white transition-all duration-300 hover:opacity-95 hover:shadow-xl'>
       <div className='group relative max-h-[340px] w-full cursor-pointer'>
         <div onClick={handleNavigateToDetail}>
           <img className='max-h-[340px] w-full object-cover' src={item?.images[0]} alt={item?.name} />
@@ -38,16 +38,19 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
         </div>
 
         {isShowActionButtons && (
-          <div className='absolute right-3 top-3 flex flex-col gap-2 bg-transparent transition-all duration-300 group-hover:right-3 group-hover:opacity-100 group-hover:transition-all group-hover:duration-300 lg:right-0 lg:opacity-0'>
-            {/* <button className='flex h-[40px] w-[40px] items-center justify-center rounded-full border-2 bg-white hover:bg-primaryColor hover:text-white'>
-              <Heart strokeWidth={1.5} width={20} />
-            </button> */}
+          <div className='absolute bottom-0 left-1/2 flex -translate-x-1/2 transform flex-col gap-2 bg-transparent opacity-0 transition-all duration-300 group-hover:bottom-3 group-hover:opacity-100 group-hover:transition-all group-hover:duration-300'>
+            <button
+              onClick={handleBuyNow}
+              className='flex h-10 w-10 items-center justify-center rounded-full border-2 bg-white hover:bg-primaryColor hover:text-white'
+            >
+              <Eye strokeWidth={1.5} width={20} />
+            </button>
           </div>
         )}
       </div>
       <div className={`flex h-full w-full flex-col items-start justify-between p-2 sm:px-3`}>
         {/* Color Selection */}
-        {isShowVariant && (
+        {/* {isShowVariant && (
           <div className='flex w-full justify-center gap-1'>
             {variantOptions.colors.map((color) => {
               return (
@@ -66,10 +69,22 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
               );
             })}
           </div>
-        )}
-        <div className='mt-1 w-full cursor-pointer text-sm text-primaryColor' onClick={handleNavigateToDetail}>
+        )} */}
+        <div
+          className='mt-1 line-clamp-2 w-full cursor-pointer text-sm text-primaryColor md:text-base'
+          onClick={handleNavigateToDetail}
+        >
           {item?.name}
         </div>
+
+        {/* Rating section */}
+        <div className='mt-1 flex items-center gap-1'>
+          <Star className='h-3 w-3 fill-yellow-400 text-yellow-400 sm:h-4 sm:w-4' />
+          <span className='text-[10px] text-gray-600 sm:text-xs'>
+            {item?.averageRating === 0 ? 'Chưa có đánh giá' : item?.averageRating?.toFixed(1)}
+          </span>
+        </div>
+
         <div className='flex w-full justify-between'>
           {/* Hiển thị giá */}
           <div className='my-1 text-[10px] font-normal text-secondaryColor sm:my-2 sm:text-sm'>
@@ -86,12 +101,10 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
             })()}
           </div>
 
-          {/* Rating section */}
-          <div className='mt-1 flex items-center gap-1'>
-            <Star className='h-3 w-3 fill-yellow-400 text-yellow-400 sm:h-4 sm:w-4' />
-            <span className='text-[10px] text-gray-600 sm:text-xs'>
-              {item?.averageRating?.toFixed(1) || '0.0'} ({item?.totalReviews || 0})
-            </span>
+          {/* Lượt bán section */}
+          <div className='mt-1 flex items-center gap-1 text-[10px] sm:text-xs'>
+            <span className='text-secondaryColor'>Đã bán</span>
+            <span className='text-gray-600'>{item?.salesCount || 0}</span>
           </div>
         </div>
       </div>
@@ -99,7 +112,7 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
       {/* Button  */}
       {isShowButton && (
         <div className='grid w-full grid-cols-2 items-center justify-between gap-1'>
-          <Button onClick={handleBuyNow} className='transition-all duration-200 active:scale-[0.98]'>
+          {/* <Button onClick={handleBuyNow} className='transition-all duration-200 active:scale-[0.98]'>
             <ShoppingCart strokeWidth={1} width={16} height={16} className='mr-1' />
             <span className='hidden lg:inline'>Mua nhanh</span>
             <span className='lg:hidden'>Mua</span>
@@ -108,7 +121,7 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
             <Eye strokeWidth={1} width={15} height={15} className='mr-1' />
             <span className='hidden lg:inline'>Chi tiết</span>
             <span className='lg:hidden'>Xem</span>
-          </Button>
+          </Button> */}
         </div>
       )}
     </div>

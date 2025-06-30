@@ -386,7 +386,7 @@ const ProductDetailModal = () => {
                 <div className='mt-6 flex gap-4'>
                   <Button variant='secondary' onClick={handleAddToCart} className='flex-1'>
                     <ShoppingCart strokeWidth={1} className='mr-2' />
-                    Thêm vào giỏ hàng
+                    Thêm vào giỏ
                   </Button>
                   <Button
                     variant='primary'

@@ -6,29 +6,29 @@ import ProductCard from '@/components/product/ProductCard/ProductCard';
 import CategorySection from '@/pages/customer/HomePage/components/CategorySection';
 import Info from '@/pages/customer/HomePage/components/Info';
 import { fetchProducts, setPage } from '@/store/slices/productSlice';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 function HomePage() {
   const dispatch = useDispatch();
-  const { products, pagination } = useSelector((state) => state.product);
-  const [hasMore, setHasMore] = useState(true);
-
-  const handleLoadMore = async () => {
-    const nextPage = pagination.page + 1;
-
-    const resultAction = await dispatch(fetchProducts({ page: nextPage, limit: 10 }));
-    // Nếu kết quả trả về ít hơn limit, thì không còn sản phẩm
-    if (resultAction.payload.products.length < 10) {
-      setHasMore(false);
-    }
-
-    dispatch(setPage(nextPage));
-  };
+  const { products, pagination, loading } = useSelector((state) => state.product);
 
   useEffect(() => {
     dispatch(fetchProducts({ page: 1, limit: 10 }));
   }, [dispatch]);
+
+  const handleLoadMore = () => {
+    if (pagination.page < pagination.totalPages && !loading) {
+      dispatch(setPage(pagination.page + 1));
+      dispatch(
+        fetchProducts({
+          page: pagination.page + 1,
+          limit: 10
+        })
+      );
+    }
+  };
+
   return (
     <div>
       <Info />
@@ -46,11 +46,14 @@ function HomePage() {
         {products.map((item) => (
           <ProductCard item={item} key={item._id} />
         ))}
-        {hasMore && (
-          <div className='col-span-full my-10'>
-            <Button onClick={handleLoadMore}>Xem thêm</Button>
-          </div>
-        )}
+        {/* Hiển thị nút "Xem thêm" chỉ khi còn sản phẩm để tải */}
+        <div className='col-span-full my-10'>
+          {pagination.page < pagination.totalPages && (
+            <Button onClick={handleLoadMore} disabled={loading} loading={loading}>
+              {loading ? 'Đang tải...' : 'Xem thêm'}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -199,10 +199,6 @@ function RegisterPage() {
     checkEmail();
   }, [debouncedEmail, setError, clearErrors]);
 
-  useEffect(() => {
-    document.title = 'Outfitory - Đăng ký';
-  }, []);
-
   return (
     <div className='w-full rounded-lg bg-white p-8 shadow-sm'>
       <h2 className='mb-6 text-center text-2xl font-bold text-gray-800'>Đăng ký tài khoản</h2>
