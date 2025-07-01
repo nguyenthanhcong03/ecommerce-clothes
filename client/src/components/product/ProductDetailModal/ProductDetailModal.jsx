@@ -288,13 +288,15 @@ const ProductDetailModal = () => {
             <div>
               <div>
                 <h1 className='text-xl font-medium'>{product.name}</h1>
-                <div className='mt-2 flex items-center gap-2'>
+                <div className='mt-2 flex items-center space-x-2'>
                   <div className='flex items-center'>
-                    <Star className='h-4 w-4 fill-yellow-400 text-yellow-400' />
-                    <span className='ml-1 text-sm text-gray-600'>
-                      {product.averageRating} ({product.totalReviews} đánh giá) | {product.salesCount} lượt bán
+                    <Star className='h-4 w-4 fill-yellow-400 text-yellow-400 sm:h-5 sm:w-5' />
+                    <span className='ml-1 text-xs text-gray-600 sm:text-sm'>
+                      {product?.averageRating === 0 ? 'Chưa có đánh giá' : product?.averageRating?.toFixed(1)}
                     </span>
                   </div>
+                  <span className='text-gray-300'>|</span>
+                  <span className='text-xs text-gray-600 sm:text-sm'>Đã bán: {product?.salesCount}</span>
                 </div>
               </div>
 

@@ -1,3 +1,5 @@
+const Joi = require("joi");
+
 /**
  * Middleware for validating request data using Joi schemas
  * @param {Object} schema - Joi validation schema
@@ -25,4 +27,20 @@ const validator = (schema, property = "body") => {
   };
 };
 
-module.exports = validator;
+// Schema validation cho tin nhắn chat
+const chatMessageSchema = Joi.object({
+  message: Joi.string().trim().min(1).max(500).required().messages({
+    "string.empty": "Tin nhắn không được để trống",
+    "string.min": "Tin nhắn phải có ít nhất 1 ký tự",
+    "string.max": "Tin nhắn không được vượt quá 500 ký tự",
+    "any.required": "Tin nhắn là bắt buộc",
+  }),
+});
+
+// Middleware validate tin nhắn chat
+const validateChatMessage = validator(chatMessageSchema, "body");
+
+module.exports = {
+  validator,
+  validateChatMessage,
+};

@@ -9,6 +9,7 @@ const orderRoutes = require("./orderRoutes");
 const paymentRoutes = require("./paymentRoutes");
 const statisticsRoutes = require("./statisticsRoutes");
 const reviewRoutes = require("./reviewRoutes");
+const chatbotRoutes = require("./chatbotRoutes");
 const ApiError = require("../utils/ApiError");
 
 const initRoutes = (app) => {
@@ -23,6 +24,7 @@ const initRoutes = (app) => {
   app.use("/api/payment", paymentRoutes);
   app.use("/api/statistics", statisticsRoutes);
   app.use("/api/reviews", reviewRoutes);
+  app.use("/api/chatbot", chatbotRoutes);
 
   // Xử lý 404
   app.use((req, res, next) => {

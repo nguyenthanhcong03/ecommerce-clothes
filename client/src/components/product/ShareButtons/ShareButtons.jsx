@@ -1,15 +1,15 @@
 import facebookIcon from '@/assets/icons/facebook.png';
 import instagramIcon from '@/assets/icons/instagram.png';
 import messengerIcon from '@/assets/icons/messenger.png';
-import { Copy, CopyCheck } from 'lucide-react';
-import { useState } from 'react';
+import { generateNameId } from '@/utils/helpers/fn';
+import { Copy } from 'lucide-react';
 
 const ShareButtons = ({ product }) => {
   // Lấy URL hiện tại
   const currentUrl = window.location.href;
 
   // Nếu bạn muốn thêm path cụ thể cho sản phẩm
-  const productUrl = `${window.location.origin}/product/${product._id}`;
+  const productUrl = `${window.location.origin}/product/${generateNameId({ name: product.name, id: product._id })}`;
   // Hoặc sử dụng URL hiện tại nếu đang ở trang sản phẩm
   const shareUrl = currentUrl;
 
@@ -34,7 +34,6 @@ const ShareButtons = ({ product }) => {
   // Copy link sản phẩm
   const copyProductLink = () => {
     navigator.clipboard.writeText(productUrl);
-    setIsCopied(true);
   };
 
   return (

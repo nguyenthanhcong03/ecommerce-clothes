@@ -365,11 +365,11 @@ const DetailProduct = () => {
                 <div className='flex items-center'>
                   <Star className='h-4 w-4 fill-yellow-400 text-yellow-400 sm:h-5 sm:w-5' />
                   <span className='ml-1 text-xs text-gray-600 sm:text-sm'>
-                    {product.averageRating} ({product.totalReviews} đánh giá)
+                    {product?.averageRating === 0 ? 'Chưa có đánh giá' : product?.averageRating?.toFixed(1)}
                   </span>
                 </div>
                 <span className='text-gray-300'>|</span>
-                <span className='text-xs text-gray-600 sm:text-sm'>{product?.salesCount} Lượt bán</span>
+                <span className='text-xs text-gray-600 sm:text-sm'>Đã bán: {product?.salesCount}</span>
               </div>
             </div>
 

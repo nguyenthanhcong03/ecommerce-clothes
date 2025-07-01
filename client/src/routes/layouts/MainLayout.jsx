@@ -1,4 +1,3 @@
-import React from 'react';
 import Header from '@/components/layout/Header/Header';
 import Footer from '@/components/Layout/Footer/Footer';
 import { Outlet, useLocation } from 'react-router-dom';
@@ -8,6 +7,7 @@ import ProductDetailModal from '@/components/product/ProductDetailModal/ProductD
 import Banner from '@/pages/customer/HomePage/components/Banner';
 import SaleHomePage from '@/pages/customer/HomePage/components/SaleHomePage';
 import ScrollToTop from '@/components/common/ScrollToTop/ScrollToTop';
+import ChatBot from '@/components/common/ChatBot/ChatBot';
 import PropTypes from 'prop-types';
 import { POLICIES } from '@/utils/constants';
 
@@ -52,6 +52,7 @@ function MainLayout() {
           {isHomePage && <SaleHomePage />}
         </div>
         <Footer />
+        <ChatBot />
       </div>
     </ScrollToTop>
   );

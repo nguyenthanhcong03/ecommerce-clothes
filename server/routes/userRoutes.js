@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/userController");
 const { verifyToken, checkRole } = require("../middlewares/auth");
-const validator = require("../middlewares/validator");
+const { validator } = require("../middlewares/validator");
 const { updateSchema, idSchema, passwordUpdateSchema, registerSchema } = require("../validation/userValidation");
 
 // Lấy thông tin của người dùng hiện tại

@@ -15,6 +15,10 @@ export default {
       },
       boxShadow: {
         shadowHeader: '2px 0px 12px 0px rgba(0, 0, 0, 0.15)'
+      },
+      animation: {
+        'bounce-delayed-1': 'bounce 1s infinite 0.1s',
+        'bounce-delayed-2': 'bounce 1s infinite 0.2s'
       }
     }
   },
