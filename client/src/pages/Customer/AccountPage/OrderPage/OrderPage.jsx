@@ -59,6 +59,10 @@ const OrderPage = () => {
     dispatch(fetchUserOrders({ status: selectedTab?.status || '' }));
   }, [dispatch, activeTab, tabs]);
 
+  useEffect(() => {
+    document.title = 'Đơn mua | Outfitory';
+  }, []);
+
   return (
     <div className='container mx-auto p-4'>
       <div className='mb-8'>

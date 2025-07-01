@@ -106,7 +106,7 @@ const ChangePasswordPage = () => {
     dispatch(clearSuccessMessage());
   };
 
-  // Password strength checker
+  // Kiểm tra độ mạnh của mật khẩu
   const getPasswordStrength = (password) => {
     if (!password) return { score: 0, text: '', color: '' };
 
@@ -122,6 +122,10 @@ const ChangePasswordPage = () => {
     if (score <= 4) return { score, text: 'Trung bình', color: 'text-yellow-600 bg-yellow-100' };
     return { score, text: 'Mạnh', color: 'text-green-600 bg-green-100' };
   };
+
+  useEffect(() => {
+    document.title = 'Đổi mật khẩu | Outfitory';
+  }, []);
 
   return (
     <div className='mx-auto max-w-7xl bg-white p-4'>

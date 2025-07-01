@@ -250,6 +250,10 @@ function OurShopPage() {
     dispatch(fetchProducts(queryParams));
   }, [dispatch, catId, params]);
 
+  useEffect(() => {
+    document.title = 'Cửa hàng | Outfitory';
+  }, []);
+
   return (
     <div className='pt-[60px] lg:pt-[80px]'>
       <div className='my-5'>

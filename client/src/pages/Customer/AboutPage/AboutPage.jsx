@@ -4,9 +4,12 @@ import Headline from '@/components/common/Headline/Headline';
 import AboutStory from '@/pages/customer/AboutPage/components/AboutStory/AboutStory';
 import { cardData1, cardData2 } from '@/pages/customer/AboutPage/components/AboutStory/constant';
 import BrandSwiper from '@/pages/customer/AboutPage/components/BrandSwiper/BrandSwiper';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 function AboutPage() {
+  useEffect(() => {
+    document.title = 'Về chúng tôi | Outfitory';
+  }, []);
   return (
     <div className='px-5 pt-[60px] lg:pt-[80px]'>
       <div className='my-5'>

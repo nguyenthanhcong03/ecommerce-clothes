@@ -209,6 +209,10 @@ const DetailProduct = () => {
     setQuantity(newQuantity);
   };
 
+  useEffect(() => {
+    document.title = `${product?.name || 'Chi tiết sản phẩm'} | Outfitory`;
+  }, [product.name]);
+
   if (loadingFetchProductById) {
     return (
       <div className='flex h-screen items-center justify-center'>

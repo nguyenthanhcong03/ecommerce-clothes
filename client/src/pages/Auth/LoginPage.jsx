@@ -76,6 +76,10 @@ function LoginPage() {
     }
   };
 
+  useEffect(() => {
+    document.title = 'Đăng nhập | Outfitory';
+  }, []);
+
   return (
     <div className='w-full rounded-lg bg-white p-8 shadow-sm'>
       <h2 className='mb-6 text-center text-2xl font-bold text-gray-800'>Đăng nhập tài khoản</h2>

@@ -100,6 +100,11 @@ function CartPage() {
     setShowUnavailableModal(false);
     message.info('Bạn vẫn giữ các sản phẩm không khả dụng trong giỏ hàng');
   };
+
+  useEffect(() => {
+    document.title = 'Giỏ hàng | Outfitory';
+  }, []);
+
   return (
     <div className='px-5 pt-[60px] lg:pt-[80px]'>
       <div className='my-5'>

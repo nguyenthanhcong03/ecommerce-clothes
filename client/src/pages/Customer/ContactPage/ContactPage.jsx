@@ -2,9 +2,12 @@ import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import ContactForm from '@/pages/customer/ContactPage/components/ContactForm';
 import ContactInfo from '@/pages/customer/ContactPage/components/ContactInfo';
 import ContactMap from '@/pages/customer/ContactPage/components/ContactMap';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 function ContactPage() {
+  useEffect(() => {
+    document.title = 'Liên hệ | Outfitory';
+  }, []);
   return (
     <div className='pt-[60px] lg:pt-[80px]'>
       <div className='my-5'>

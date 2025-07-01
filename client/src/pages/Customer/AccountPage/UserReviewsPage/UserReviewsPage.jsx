@@ -32,6 +32,10 @@ const UserReviewsPage = () => {
     dispatch(setLimit(size));
   };
 
+  useEffect(() => {
+    document.title = 'Đánh giá của tôi | Outfitory';
+  }, []);
+
   if (!isAuthenticated) {
     return (
       <div className='py-10 text-center'>

@@ -66,6 +66,10 @@ const CheckoutPage = () => {
     }
   }, [paymentUrl]);
 
+  useEffect(() => {
+    document.title = 'Thanh toán | Outfitory';
+  }, []);
+
   // Nếu đơn hàng đã hoàn tất, hiển thị trang thành công
   if (orderSuccess) {
     return <OrderSuccess />;

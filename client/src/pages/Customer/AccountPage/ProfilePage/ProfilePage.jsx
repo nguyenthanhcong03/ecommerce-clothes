@@ -348,6 +348,10 @@ const ProfilePage = () => {
   //   }
   // }, [currentUser, setValue]);
 
+  useEffect(() => {
+    document.title = 'Thông tin cá nhân | Outfitory';
+  }, []);
+
   // Render hiệu ứng loading
   if (loading || loadingUpdateProfile) {
     return (

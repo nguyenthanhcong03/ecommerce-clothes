@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Breadcrumb from '@/components/common/Breadcrumb/Breadcrumb';
 import Headline from '@/components/common/Headline/Headline';
 import Button from '@/components/common/Button/Button';
@@ -122,6 +122,9 @@ const popularTags = [
 
 function NewsPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
+  useEffect(() => {
+    document.title = 'Tin tức | Outfitory';
+  }, []);
 
   // Featured Article Component
   const FeaturedArticle = ({ article }) => (

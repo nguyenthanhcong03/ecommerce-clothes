@@ -29,6 +29,10 @@ function HomePage() {
     }
   };
 
+  useEffect(() => {
+    document.title = 'Trang chủ | Outfitory';
+  }, []);
+
   return (
     <div>
       <Info />

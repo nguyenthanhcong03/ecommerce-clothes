@@ -27,7 +27,7 @@ function ProductCard({ item, isShowVariant = true, isShowButton = true, isShowAc
   };
 
   return (
-    <div className='flex h-full w-full flex-col items-start justify-start overflow-hidden rounded-sm border bg-white transition-all duration-300 hover:opacity-95 hover:shadow-xl'>
+    <div className='flex h-full w-full flex-col items-start justify-start overflow-hidden rounded-md border bg-white transition-all duration-300 hover:opacity-95 hover:shadow-xl'>
       <div className='group relative max-h-[340px] w-full cursor-pointer'>
         <div onClick={handleNavigateToDetail}>
           <img className='max-h-[340px] w-full object-cover' src={item?.images[0]} alt={item?.name} />
