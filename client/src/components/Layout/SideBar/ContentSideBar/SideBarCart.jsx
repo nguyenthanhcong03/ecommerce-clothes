@@ -4,13 +4,14 @@ import MenuItem from '@/components/common/MenuItem/MenuItem';
 import { getCart } from '@/store/slices/cartSlice';
 import { setOrderItems } from '@/store/slices/orderSlice';
 import { toggleSidebar } from '@/store/slices/sidebarSlice';
+import { formatCurrency } from '@/utils/format/formatCurrency';
 import { ShoppingCart } from 'lucide-react';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 function SideBarCart() {
-  const { items } = useSelector((state) => state.cart);
+  const { items, totalPrice } = useSelector((state) => state.cart);
   const { isAuthenticated } = useSelector((state) => state.account);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -57,8 +58,8 @@ function SideBarCart() {
             </div>
             <div className='flex w-full flex-col gap-4'>
               <div className='flex items-center justify-between text-sm text-secondaryColor'>
-                <p>SUBTOTAL:</p>
-                <p>$199.76</p>
+                <p>TỔNG TIỀN:</p>
+                <p>{formatCurrency(totalPrice)}</p>
               </div>
               <div className='flex flex-col gap-2'>
                 <Button

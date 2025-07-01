@@ -103,6 +103,15 @@ export function FilterSidebar({ isFilterOpen, setIsFilterOpen, onFilterChange, o
       onFilterChange('rating', ratingValue.toString());
     }
   };
+
+  const handleResetFilter = () => {
+    setShowCustomPrice(false);
+    setTempMinPrice('');
+    setTempMaxPrice('');
+    onResetFilter();
+    setIsFilterOpen(false);
+  };
+
   const handleClearFilter = (filterType) => {
     switch (filterType) {
       case 'price':
@@ -144,7 +153,10 @@ export function FilterSidebar({ isFilterOpen, setIsFilterOpen, onFilterChange, o
       <div className='mb-4 hidden items-center justify-between lg:flex'>
         <h2 className='flex items-center text-lg font-semibold'>Bộ lọc sản phẩm {caculateFilterCounter()} </h2>
         {filterCounter > 0 && (
-          <button onClick={onResetFilter} className='rounded-sm px-2 py-1 text-sm text-gray-600 hover:bg-neutral-100'>
+          <button
+            onClick={handleResetFilter}
+            className='rounded-sm px-2 py-1 text-sm text-gray-600 hover:bg-neutral-100'
+          >
             Xóa
           </button>
         )}
