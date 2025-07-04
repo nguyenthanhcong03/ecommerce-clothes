@@ -18,7 +18,7 @@ export const COLOR_OPTIONS = [
   { name: 'Cam', hex: '#fd7e14' },
   { name: 'Tím', hex: '#6f42c1' }
 ];
-// Size options for clothing (áo)
+
 export const CLOTHING_SIZE_OPTIONS = [
   { name: 'S', value: 'S' },
   { name: 'M', value: 'M' },
@@ -27,7 +27,6 @@ export const CLOTHING_SIZE_OPTIONS = [
   { name: 'XXL', value: 'XXL' }
 ];
 
-// Size options for pants (quần)
 export const PANTS_SIZE_OPTIONS = [
   { name: '28', value: '28' },
   { name: '29', value: '29' },
@@ -42,13 +41,11 @@ export const PANTS_SIZE_OPTIONS = [
   { name: '40', value: '40' }
 ];
 
-// Product type options
 export const PRODUCT_TYPE_OPTIONS = [
   { name: 'Áo', value: 'clothing' },
   { name: 'Quần', value: 'pants' }
 ];
 
-// Backward compatibility
 export const SIZE_OPTIONS = CLOTHING_SIZE_OPTIONS;
 
 export const PRICE_RANGES = [

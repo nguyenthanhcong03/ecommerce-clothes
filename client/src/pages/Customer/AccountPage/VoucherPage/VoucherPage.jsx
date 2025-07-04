@@ -133,7 +133,6 @@ const VoucherPage = () => {
             >
               {/* Header gradient section with clip-path */}
               <div className='relative'>
-                {' '}
                 <div
                   className={`relative p-4 text-white ${
                     coupon.discountType === 'percentage'

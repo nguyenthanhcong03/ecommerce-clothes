@@ -1,6 +1,6 @@
 const Category = require("../models/category");
 const mongoose = require("mongoose");
-const { deleteFile, deleteMultipleFiles } = require("./fileService");
+const { deleteFileService, deleteMultipleFilesService } = require("./fileService");
 
 const getCategories = async (options = {}) => {
   try {
@@ -141,7 +141,8 @@ const deleteCategory = async (categoryId) => {
     if (category.images && category.images.length > 0) {
       const imagesToDelete = category.images;
       if (imagesToDelete.length > 0) {
-        await deleteMultipleFiles(imagesToDelete);
+        console.log("category", categoryId);
+        await deleteMultipleFilesService(imagesToDelete);
       }
     }
 
@@ -177,9 +178,6 @@ const createCategory = async (categoryData) => {
 
     return savedCategory;
   } catch (error) {
-    if (error.code === 11000) {
-      throw new Error("Danh mục với tên này đã tồn tại");
-    }
     throw new Error(`Failed to create category: ${error.message}`);
   }
 };
@@ -203,39 +201,32 @@ const updateCategory = async (categoryId, updateData) => {
   try {
     const { name, parentId, description, priority, images } = updateData;
 
-    // Check if category exists
     const category = await Category.findById(categoryId);
     if (!category) {
       throw new Error("Danh mục không tồn tại");
     }
 
-    // Prepare data for update
     const dataToUpdate = {};
 
+    if (name !== undefined) dataToUpdate.name = name;
     if (description !== undefined) dataToUpdate.description = description;
     if (priority !== undefined) dataToUpdate.priority = priority;
 
-    // Handle new images if provided
     if (images && Array.isArray(images) && images.length > 0) {
-      // Add new images to existing ones
       dataToUpdate.images = images;
     }
 
-    // Handle parentId update with validation
     if (parentId !== undefined) {
-      // Can't set category as its own parent
       if (parentId === categoryId) {
         throw new Error("Không thể đặt danh mục làm cha của chính nó");
       }
 
-      // Validate parent ID if not null
       if (parentId && mongoose.Types.ObjectId.isValid(parentId)) {
         const parentExists = await Category.exists({ _id: parentId });
         if (!parentExists) {
           throw new Error("Danh mục cha không tồn tại");
         }
 
-        // Prevent cyclic parent relationships
         let currentParent = parentId;
         while (currentParent) {
           if (currentParent.toString() === categoryId) {
@@ -252,21 +243,15 @@ const updateCategory = async (categoryId, updateData) => {
       }
     }
 
-    // Update the category
     const updatedCategory = await Category.findByIdAndUpdate(categoryId, dataToUpdate, { new: true });
     return updatedCategory;
   } catch (error) {
-    if (error.code === 11000) {
-      throw new Error("Danh mục với tên này đã tồn tại");
-    }
     throw new Error(`Failed to update category: ${error.message}`);
   }
 };
 
 /**
  * Lấy tất cả ID của danh mục con (bao gồm cả cháu, chắt...) của một danh mục cha
- * @param {String} categoryId - ID của danh mục cha
- * @returns {Promise<Array>} - Mảng chứa ID của danh mục cha và tất cả con cháu
  */
 async function getAllChildCategoryIds(categoryId) {
   try {
@@ -308,5 +293,5 @@ module.exports = {
   createCategory,
   getCategoryById,
   updateCategory,
-  getAllChildCategoryIds, // Thêm export function mới
+  getAllChildCategoryIds,
 };

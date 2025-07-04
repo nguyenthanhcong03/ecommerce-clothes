@@ -64,6 +64,10 @@ const OrdersPage = () => {
     fetchAllOrders();
   }, [fetchAllOrders]);
 
+  useEffect(() => {
+    document.title = 'Đơn hàng | Outfitory';
+  }, []);
+
   // Hiển thị lỗi nếu có
   useEffect(() => {
     if (error) {

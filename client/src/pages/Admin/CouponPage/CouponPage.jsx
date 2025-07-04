@@ -115,6 +115,10 @@ const CouponPage = () => {
   };
 
   useEffect(() => {
+    document.title = 'Mã giảm giá | Outfitory';
+  }, []);
+
+  useEffect(() => {
     fetchCouponList();
   }, [fetchCouponList]);
 

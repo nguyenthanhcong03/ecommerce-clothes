@@ -1,6 +1,6 @@
 import AdminHeader from '@/components/AdminComponents/common/AdminHeader';
 import useDebounce from '@/hooks/useDebounce';
-import { deleteCategory, fetchCategories } from '@/store/slices/categorySlice';
+import { deleteCategory, fetchCategories, getCategoriesTree } from '@/store/slices/categorySlice';
 import { message } from 'antd';
 import { motion } from 'framer-motion';
 import { memo, useEffect, useState } from 'react';
@@ -9,7 +9,7 @@ import CategoryForm from './CategoryForm';
 import CategoryTable from './CategoryTable';
 const CategoryPage = () => {
   const dispatch = useDispatch();
-  const { categories, loading, error, pagination, filters } = useSelector((state) => state.category);
+  const { loading, treeLoading, error, pagination, filters } = useSelector((state) => state.category);
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchText, setSearchText] = useState('');
@@ -21,7 +21,7 @@ const CategoryPage = () => {
   const debouncedSearchText = useDebounce(searchText, 500);
 
   useEffect(() => {
-    dispatch(fetchCategories());
+    dispatch(getCategoriesTree());
   }, [dispatch]);
 
   // Hiển thị lỗi nếu có
@@ -31,7 +31,6 @@ const CategoryPage = () => {
     }
   }, [error]);
 
-  // Handlers for table actions
   const handleTableChange = (pagination, filters, sorter) => {
     const params = {
       page: pagination.current,
@@ -79,8 +78,12 @@ const CategoryPage = () => {
     }
   };
   const handleRefresh = () => {
-    dispatch(fetchCategories());
+    dispatch(getCategoriesTree());
   };
+
+  useEffect(() => {
+    document.title = 'Danh mục | Outfitory';
+  }, []);
 
   return (
     <div className='relative z-10 flex-1 overflow-auto'>
@@ -96,8 +99,6 @@ const CategoryPage = () => {
         >
           <CategoryTable
             onRefresh={handleRefresh}
-            categories={categories}
-            loading={loading}
             pagination={pagination}
             onChange={handleTableChange}
             onSearch={handleSearch}
@@ -109,14 +110,7 @@ const CategoryPage = () => {
           />
         </motion.div>
       </main>
-      {isOpenForm && (
-        <CategoryForm
-          categories={categories}
-          loading={loading}
-          selectedCategory={selectedCategory}
-          onClose={handleCloseForm}
-        />
-      )}
+      {isOpenForm && <CategoryForm selectedCategory={selectedCategory} onClose={handleCloseForm} />}
     </div>
   );
 };

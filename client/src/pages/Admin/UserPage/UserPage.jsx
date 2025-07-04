@@ -179,6 +179,10 @@ const UserPage = () => {
   };
 
   useEffect(() => {
+    document.title = 'Người dùng | Outfitory';
+  }, []);
+
+  useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 

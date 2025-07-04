@@ -154,10 +154,18 @@ const updateCoupon = async (couponId, updateData) => {
 
 const deleteCoupon = async (couponId) => {
   try {
-    const result = await Coupon.findByIdAndDelete(couponId);
-    if (!result) {
+    // Kiểm tra coupon có tồn tại không
+    const coupon = await Coupon.findById(couponId);
+    if (!coupon) {
       throw new Error("Không tìm thấy coupon");
     }
+
+    // Kiểm tra coupon đã được sử dụng chưa
+    if (coupon.usedCount > 0) {
+      throw new Error("Không thể xóa coupon đã được sử dụng");
+    }
+
+    const result = await Coupon.findByIdAndDelete(couponId);
     return { success: true, message: "Đã xóa coupon thành công" };
   } catch (error) {
     throw error;
@@ -204,7 +212,6 @@ const incrementCouponUsage = async (couponId) => {
 const getActiveCoupons = async () => {
   try {
     const now = new Date();
-    // Sửa: Không thể so sánh trường này bằng $lt trong truy vấn
     // Lấy tất cả coupon hoạt động trong ngày và lọc thêm sau
     const coupons = await Coupon.find({
       isActive: true,
@@ -212,11 +219,11 @@ const getActiveCoupons = async () => {
       endDate: { $gte: now },
     }).sort({ createdAt: -1 });
 
-    // // Lọc những coupon còn lượt sử dụng
-    // const filteredCoupons = coupons.filter((coupon) => coupon.usageLimit === 0 || coupon.usedCount < coupon.usageLimit);
+    // Lọc những coupon còn lượt sử dụng
+    const filteredCoupons = coupons.filter((coupon) => coupon.usageLimit === 0 || coupon.usedCount < coupon.usageLimit);
 
-    // return filteredCoupons;
-    return coupons;
+    return filteredCoupons;
+    // return coupons;
   } catch (error) {
     throw error;
   }

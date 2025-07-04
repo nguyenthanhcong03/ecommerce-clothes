@@ -135,6 +135,10 @@ const ProductPage = () => {
   );
 
   useEffect(() => {
+    document.title = 'Sản phẩm | Outfitory';
+  }, []);
+
+  useEffect(() => {
     fetchAllProducts();
   }, [fetchAllProducts]);
 

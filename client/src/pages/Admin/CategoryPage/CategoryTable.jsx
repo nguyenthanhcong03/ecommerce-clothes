@@ -6,19 +6,9 @@ import { Plus, RefreshCw, Search } from 'lucide-react';
 import { memo, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import './hihi.css';
+import { formatTreeData } from '@/utils/helpers/fn';
 
-const CategoryTable = ({
-  categories,
-  pagination,
-  onChange,
-  onSearch,
-  onRefresh,
-  onDelete,
-  onEdit,
-  onAdd,
-  searchText,
-  filters
-}) => {
+const CategoryTable = ({ pagination, onChange, onSearch, onRefresh, onDelete, onEdit, onAdd, searchText, filters }) => {
   const columns = useMemo(
     () => [
       {
@@ -110,9 +100,9 @@ const CategoryTable = ({
     ],
     [onEdit, onDelete]
   );
-  const { categoriesTree, error, loading } = useSelector((state) => state.category);
+  const { categoriesTree, error, loading, treeLoading } = useSelector((state) => state.category);
 
-  const treeData = useMemo(() => buildTree(categories), [categories]);
+  const treeData = formatTreeData(categoriesTree);
 
   return (
     <Card className='bg-white shadow'>
@@ -121,7 +111,12 @@ const CategoryTable = ({
           <Button type='primary' icon={<Plus size={16} />} onClick={() => onAdd()} className='flex items-center'>
             Thêm danh mục mới
           </Button>
-          <Button loading={loading} icon={<RefreshCw size={16} />} onClick={onRefresh} className='flex items-center'>
+          <Button
+            loading={loading || treeLoading}
+            icon={<RefreshCw size={16} />}
+            onClick={onRefresh}
+            className='flex items-center'
+          >
             Làm mới
           </Button>
         </div>
@@ -144,7 +139,7 @@ const CategoryTable = ({
         rowKey='_id'
         columns={columns}
         dataSource={treeData}
-        loading={loading}
+        loading={loading || treeLoading}
         pagination={false}
         // pagination={{
         //   current: pagination.page,
@@ -156,11 +151,12 @@ const CategoryTable = ({
         //   showTotal: (total) => `Tổng số ${total} danh mục`
         // }}
         locale={{
-          emptyText: loading
-            ? 'Đang tải dữ liệu...'
-            : searchText
-              ? 'Không tìm thấy kết quả phù hợp'
-              : 'Không có dữ liệu'
+          emptyText:
+            loading || treeLoading
+              ? 'Đang tải dữ liệu...'
+              : searchText
+                ? 'Không tìm thấy kết quả phù hợp'
+                : 'Không có dữ liệu'
         }}
         title={() => (
           <div className='flex items-center justify-between rounded-t-lg'>

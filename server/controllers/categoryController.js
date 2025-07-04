@@ -40,7 +40,6 @@ const createCategory = async (req, res) => {
       });
     }
 
-    // Create category using service
     const savedCategory = await categoryService.createCategory(categoryData);
 
     res.status(201).json({
@@ -150,8 +149,8 @@ const deleteCategory = async (req, res) => {
 
       return res.status(200).json({
         success: true,
-        message: "Xóa danh mục thành công",
         data: deletedCategory,
+        message: "Xóa danh mục thành công",
       });
     } catch (err) {
       if (err.message === "Category not found") {

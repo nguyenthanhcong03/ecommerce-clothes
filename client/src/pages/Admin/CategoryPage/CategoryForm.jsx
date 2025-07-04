@@ -6,8 +6,13 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Form, Input, message, Modal, TreeSelect } from 'antd';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import * as yup from 'yup';
+import PropTypes from 'prop-types';
+import { use } from 'react';
+import { getCategoriesTree } from '@/store/slices/adminCategorySlice';
+import { se } from 'date-fns/locale';
+import { convertToTreeSelectFormat } from '@/utils/helpers/fn';
 
 // Định nghĩa schema xác thực cho form danh mục sử dụng Yup
 const categorySchema = yup.object({
@@ -17,56 +22,15 @@ const categorySchema = yup.object({
   images: yup.array().of(yup.mixed()).min(1, 'Phải chọn ít nhất một ảnh')
 });
 
-const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
+const CategoryForm = ({ selectedCategory, onClose }) => {
   const dispatch = useDispatch();
   const [uploading, setUploading] = useState(false); // Trạng thái đang tải file
   const [localFiles, setLocalFiles] = useState([]); // Lưu trữ danh sách file mới
+  const { categoriesTree, loading } = useSelector((state) => state.category);
 
-  // Tối ưu hóa việc tìm tất cả ID con bằng useMemo
-  const allChildIds = useMemo(() => {
-    if (!selectedCategory) return [];
+  const filteredCategories = categoriesTree.filter((cat) => cat._id !== selectedCategory?._id);
 
-    // Hàm đệ quy để tìm tất cả ID con
-    const findAllChildIds = (categoryId) => {
-      const directChildren = categories.filter((cat) => cat.parentId === categoryId).map((cat) => cat._id);
-      const allChildren = [...directChildren];
-
-      directChildren.forEach((childId) => {
-        allChildren.push(...findAllChildIds(childId));
-      });
-
-      return allChildren;
-    };
-
-    // Chỉ tính toán khi selectedCategory thay đổi
-    return findAllChildIds(selectedCategory._id);
-  }, [categories, selectedCategory]);
-
-  // Logic để lọc các danh mục hợp lệ làm danh mục cha
-  const filteredCategories = useMemo(() => {
-    // Nếu đang thêm mới, sử dụng tất cả danh mục
-    if (!selectedCategory) return categories;
-
-    // Loại bỏ danh mục hiện tại và tất cả danh mục con của nó
-    return categories.filter((cat) => cat._id !== selectedCategory._id && !allChildIds.includes(cat._id));
-  }, [categories, selectedCategory, allChildIds]);
-
-  // Chuyển đổi danh mục đã lọc thành cấu trúc cây cho TreeSelect - sử dụng useMemo
-  const categoriesArray = useMemo(() => {
-    const treeData = buildTree(filteredCategories);
-    return treeData.map((item) => ({
-      title: item.name,
-      value: item._id,
-      children: item?.children?.map((child) => ({
-        title: child.name,
-        value: child._id,
-        children: child?.children?.map((grandchild) => ({
-          title: grandchild.name,
-          value: grandchild._id
-        }))
-      }))
-    }));
-  }, [filteredCategories]);
+  const treeSelectData = convertToTreeSelectFormat(filteredCategories);
 
   // Khởi tạo React Hook Form
   const {
@@ -299,7 +263,7 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
                 {...field}
                 style={{ width: '100%' }}
                 dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
-                treeData={categoriesArray}
+                treeData={treeSelectData}
                 placeholder='Chọn danh mục cha'
                 treeDefaultExpandAll
                 allowClear={true}
@@ -350,6 +314,20 @@ const CategoryForm = ({ categories, loading, selectedCategory, onClose }) => {
       </Form>
     </Modal>
   );
+};
+
+// PropTypes validation
+CategoryForm.propTypes = {
+  categories: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired,
+  selectedCategory: PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    parentId: PropTypes.string,
+    description: PropTypes.string,
+    images: PropTypes.array.isRequired
+  }),
+  onClose: PropTypes.func.isRequired
 };
 
 export default memo(CategoryForm);

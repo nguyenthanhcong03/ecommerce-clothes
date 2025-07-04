@@ -12,6 +12,7 @@ import RelatedProducts from '@/pages/customer/ProductDetail/components/RelatedPr
 import { addToCart } from '@/store/slices/cartSlice';
 import { setOrderItems } from '@/store/slices/orderSlice';
 import { fetchProductById } from '@/store/slices/productSlice';
+import { formatCurrency } from '@/utils/format/formatCurrency';
 import { generateNameId, getIdFromNameId } from '@/utils/helpers/fn';
 import { getCategoryPath } from '@/utils/helpers/getCategoryPath';
 import { message } from 'antd';
@@ -211,7 +212,7 @@ const DetailProduct = () => {
 
   useEffect(() => {
     document.title = `${product?.name || 'Chi tiết sản phẩm'} | Outfitory`;
-  }, [product.name]);
+  }, [product?.name]);
 
   if (loadingFetchProductById) {
     return (
@@ -490,7 +491,7 @@ const DetailProduct = () => {
                       Thêm vào giỏ hàng
                     </Button>
                     <Button variant='primary' onClick={handleBuyNow} className='xs:flex-1 w-full'>
-                      Mua ngay với giá ${price || 0} đ
+                      Mua ngay với giá {formatCurrency(price) || 0}
                     </Button>
                   </>
                 )}

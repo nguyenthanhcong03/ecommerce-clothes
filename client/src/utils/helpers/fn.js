@@ -26,3 +26,18 @@ export const getPaymentMethodText = (method) => {
       return method;
   }
 };
+
+export const convertToTreeSelectFormat = (nodes) => {
+  return nodes.map((node) => ({
+    title: node.name,
+    value: node._id,
+    children: node.children && node.children.length > 0 ? convertToTreeSelectFormat(node.children) : undefined
+  }));
+};
+
+export const formatTreeData = (nodes) => {
+  return nodes.map((node) => ({
+    ...node,
+    children: node.children && node.children.length > 0 ? formatTreeData(node.children) : undefined
+  }));
+};
