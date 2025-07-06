@@ -290,7 +290,7 @@ function OurShopPage() {
 
         {/* Sidebar */}
         <div className='hidden lg:block lg:w-1/4'>
-          <CategorySidebar />
+          <CategorySidebar breadcrumbItems={breadcrumbItems} currentCategory={currentCategory} />
           <FilterSidebar
             isFilterOpen={isFilterOpen}
             setIsFilterOpen={setIsFilterOpen}
@@ -315,11 +315,11 @@ function OurShopPage() {
         <div className='lg:w-3/4'>
           {currentCategory ? (
             <div className='mb-4 flex items-center gap-2 rounded-md bg-white p-4'>
-              <ChevronLeft
+              {/* <ChevronLeft
                 className='cursor-pointer transition-colors hover:text-blue-600'
                 onClick={handleGoBack}
                 title='Trở về'
-              />
+              /> */}
               <h1 className='text-2xl font-bold'>{currentCategory.name}</h1>
             </div>
           ) : (

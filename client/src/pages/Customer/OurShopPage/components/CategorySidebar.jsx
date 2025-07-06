@@ -1,7 +1,8 @@
 import { getCategoriesTree } from '@/store/slices/categorySlice';
-import { generateNameId } from '@/utils/helpers/fn';
+import { generateNameId, getIdFromNameId } from '@/utils/helpers/fn';
 import { CaretRightOutlined } from '@ant-design/icons';
 import { Skeleton } from 'antd';
+import { ChevronLeft } from 'lucide-react';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -104,22 +105,32 @@ const findSelectedCategory = (categories, categoryId) => {
   return null;
 };
 
-export function CategorySidebar() {
+export function CategorySidebar({ breadcrumbItems = [], currentCategory }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { categoriesTree, treeLoading } = useSelector((state) => state.category);
-  const { catId } = useParams();
+  const { nameId } = useParams();
+  const catId = getIdFromNameId(nameId);
 
   useEffect(() => {
     dispatch(getCategoriesTree());
   }, [dispatch]);
 
-  if (treeLoading) {
-    return (
-      <div className='rounded-md bg-white p-4'>
-        <Skeleton active paragraph={{ rows: 6 }} />
-      </div>
-    );
-  }
+  const handleGoBack = () => {
+    // Nếu có breadcrumb items và có ít nhất 2 items (Cửa hàng + current)
+    if (breadcrumbItems.length >= 2) {
+      const previousItem = breadcrumbItems[breadcrumbItems.length - 2];
+      if (previousItem.path) {
+        navigate(previousItem.path);
+      } else {
+        // Nếu không có path, trở về trang shop chính
+        navigate('/shop');
+      }
+    } else {
+      // Mặc định trở về trang shop chính
+      navigate('/shop');
+    }
+  };
 
   // Tìm danh mục được chọn và các danh mục con của nó
   const selectedCategory = findSelectedCategory(categoriesTree, catId);
@@ -131,23 +142,43 @@ export function CategorySidebar() {
     return <div className='p-4 text-center text-gray-500'>Không có danh mục nào</div>;
   }
 
+  if (treeLoading) {
+    return (
+      <div className='rounded-md bg-white p-4'>
+        <Skeleton active paragraph={{ rows: 6 }} />
+      </div>
+    );
+  }
+
   return (
     <div>
-      {categoriesToShow.length > 0 && (
-        <div className='mb-6 overflow-hidden rounded-md bg-white'>
-          <div className='p-4'>
+      {/* {categoriesToShow.length > 0 && ( */}
+      <div className='mb-6 overflow-hidden rounded-md bg-white'>
+        <div className='p-4'>
+          {currentCategory ? (
+            <div className='flex items-center gap-2'>
+              <ChevronLeft
+                className='cursor-pointer transition-colors hover:text-blue-600'
+                onClick={handleGoBack}
+                title='Trở về'
+              />
+              <h2 className='text-lg font-medium'>{currentCategory.name}</h2>
+            </div>
+          ) : (
             <h2 className='text-lg font-medium'>Khám phá theo danh mục</h2>
-          </div>
-          {/* Render danh sách danh mục */}
-          <div className=''>
-            {categoriesToShow.map((category) => (
+          )}
+        </div>
+        {/* Render danh sách danh mục */}
+        <div>
+          {categoriesToShow &&
+            categoriesToShow.map((category) => (
               <div className='border-t' key={category._id}>
                 <CategoryItem category={category} selectedCategoryId={catId} />
               </div>
             ))}
-          </div>
         </div>
-      )}
+      </div>
+      {/* )} */}
     </div>
   );
 }

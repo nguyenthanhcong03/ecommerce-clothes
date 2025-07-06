@@ -96,7 +96,7 @@ const getOverviewStatistics = async () => {
     {
       $match: {
         createdAt: { $gte: today },
-        "payment.isPaid": true,
+        // "payment.isPaid": true,
       },
     },
     { $group: { _id: null, total: { $sum: "$totalPrice" } } },
