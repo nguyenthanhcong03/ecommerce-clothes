@@ -114,12 +114,17 @@ const getProductById = async (productId) => {
  * @param {Number} limit Số lượng sản phẩm muốn lấy
  * @returns {Promise<Array>} Danh sách sản phẩm nổi bật
  */
-const getFeaturedProducts = async (limit = 8) => {
+const getFeaturedProducts = async (limit = 8, page = 1) => {
   try {
+    const limitNumber = Number(limit);
+    const pageNumber = Number(page);
+    const skip = (pageNumber - 1) * limitNumber;
+
     const products = await Product.find({
       featured: true,
     })
-      .limit(Number(limit))
+      .skip(skip)
+      .limit(limitNumber)
       .populate("categoryId", "name")
       .select("-__v");
 

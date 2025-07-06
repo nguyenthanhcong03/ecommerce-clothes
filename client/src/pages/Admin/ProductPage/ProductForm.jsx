@@ -6,7 +6,7 @@ import { COLOR_OPTIONS } from '@/utils/constants';
 import { formatTree } from '@/utils/format/formatTree';
 import { PlusOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, Form, Input, message, Modal, Radio, Select, Table, TreeSelect } from 'antd';
+import { Button, Form, Input, message, Modal, Radio, Select, Switch, Table, TreeSelect } from 'antd';
 import PropTypes from 'prop-types';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
@@ -30,7 +30,8 @@ const productSchema = yup.object({
   brand: yup.string().required('Thương hiệu là bắt buộc'),
   variants: yup.array().of(variantSchema).min(1, 'Phải có ít nhất một biến thể'),
   images: yup.array().of(yup.mixed()).min(1, 'Phải chọn ít nhất một ảnh'),
-  tags: yup.array().of(yup.string()).optional()
+  tags: yup.array().of(yup.string()).optional(),
+  featured: yup.boolean().optional()
 });
 
 const SIZES_BY_TYPE = {
@@ -61,10 +62,11 @@ const FORM_DEFAULT_VALUES = {
   brand: '',
   variants: [],
   images: [],
-  tags: []
+  tags: [],
+  featured: false
 };
 
-// Helper functions
+// Hàm tiện ích
 const determineProductType = (variants) => {
   if (!variants || variants.length === 0) return 'áo';
   const firstVariant = variants[0];
@@ -80,7 +82,8 @@ const formatProductForForm = (product) => ({
   brand: product.brand || '',
   variants: product.variants && product.variants.length > 0 ? product.variants.map((v) => ({ ...v })) : [],
   images: product.images ? product.images.map((url) => ({ url })) : [],
-  tags: product.tags || []
+  tags: product.tags || [],
+  featured: product.featured || false
 });
 
 const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
@@ -88,7 +91,6 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
   const { categoriesTree } = useSelector((state) => state.category);
   const { loading } = useSelector((state) => state.adminProduct);
 
-  // State management
   const [uploading, setUploading] = useState(false);
   const [localFiles, setLocalFiles] = useState([]);
   const [productType, setProductType] = useState('áo');
@@ -116,7 +118,6 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
     name: 'variants'
   });
 
-  // Initialize form when product changes
   useEffect(() => {
     dispatch(fetchCategories({}));
 
@@ -131,7 +132,7 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
 
     setLocalFiles([]);
   }, [selectedProduct, reset, dispatch]);
-  // File handling
+
   const handleFilesChange = useCallback((files) => {
     const newFiles = files.filter((file) => file.originFileObj);
     setLocalFiles(newFiles);
@@ -166,7 +167,8 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
     } finally {
       setUploading(false);
     }
-  }, []); // Không có dependencies vì không phụ thuộc vào state  // Product operations
+  }, []); // Không có dependencies vì không phụ thuộc vào state
+
   const handleAddProduct = useCallback(
     async (formData) => {
       const resultAction = await dispatch(createProduct(formData));
@@ -205,7 +207,7 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
     },
     [dispatch, selectedProduct?._id]
   );
-  // Form submission
+
   const processImages = useCallback(
     async (data) => {
       let processedImages = [...data.images.filter((img) => !img.originFileObj)];
@@ -256,7 +258,8 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
           variants: data.variants,
           images: processedImages.map((file) => (typeof file === 'string' ? file : file.url)),
           tags: data.tags || [],
-          productType: productType
+          productType: productType,
+          featured: data.featured || false
         };
 
         let success = false;
@@ -355,7 +358,7 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
     setSelectedColor('');
     setVariantModalVisible(true);
   }, []);
-  // Memoized values
+
   const isEditMode = Boolean(selectedProduct);
   const modalTitle = isEditMode ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới';
   const submitButtonText = isEditMode ? 'Cập nhật' : 'Tạo mới';
@@ -584,6 +587,24 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
               <Select mode='tags' {...field} placeholder='Nhập tags (ấn Enter để thêm)' disabled={isFormDisabled} />
             )}
           />
+        </Form.Item>
+        {/* Featured */}
+        <Form.Item label='Sản phẩm nổi bật'>
+          <Controller
+            name='featured'
+            control={control}
+            render={({ field }) => (
+              <Switch
+                {...field}
+                checked={field.value}
+                onChange={(checked) => field.onChange(checked)}
+                disabled={isFormDisabled}
+                checkedChildren='Nổi bật'
+                unCheckedChildren='Thường'
+              />
+            )}
+          />
+          <div className='mt-1 text-xs text-gray-500'>Sản phẩm nổi bật sẽ được hiển thị ưu tiên trên trang chủ</div>
         </Form.Item>
       </Form>{' '}
       {/* Modal thêm biến thể */}

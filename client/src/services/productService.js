@@ -35,9 +35,9 @@ export const deleteProductByIdAPI = (id) => {
 };
 
 // Lấy sản phẩm nổi bật
-export const getFeaturedProductsAPI = (limit = 8) => {
-  return axios.get('/product/featured', { params: { limit } }).then((response) => {
-    return response.data;
+export const getFeaturedProductsAPI = (limit = 8, page = 1) => {
+  return axios.get(`${BASE_API}/featured`, { params: { limit, page } }).then((response) => {
+    return response;
   });
 };
 

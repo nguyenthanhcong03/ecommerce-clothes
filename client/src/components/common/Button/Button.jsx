@@ -3,13 +3,10 @@ import PropTypes from 'prop-types';
 import { cva } from 'class-variance-authority';
 import { cn } from '../../../utils/helpers/cn';
 
-// Button variants using class-variance-authority for better organization
 const buttonVariants = cva(
-  // Base styles applied to all button variants
   'inline-flex items-center justify-center rounded-sm transition-all relative disabled:pointer-events-none disabled:opacity-50 focus:outline-none',
   {
     variants: {
-      // Different visual variants
       variant: {
         primary: 'bg-primaryColor hover:bg-opacity-90 transition duration-300 text-white',
         secondary: 'bg-white border border-primaryColor transition duration-300 hover:bg-neutral-100 text-text1',
@@ -19,7 +16,6 @@ const buttonVariants = cva(
         danger: 'bg-red-600 hover:bg-red-700 text-white',
         success: 'bg-green-600 hover:bg-green-700 text-white'
       },
-      // Different sizing options
       size: {
         xs: 'h-7 px-2.5 text-xs',
         sm: 'h-8 px-3 text-sm',
@@ -28,17 +24,15 @@ const buttonVariants = cva(
         xl: 'h-14 px-6 py-3 text-lg',
         icon: 'h-9 w-9'
       },
-      // Different width options
       width: {
         auto: 'w-auto',
         full: 'w-full'
       },
-      // Loading state appearance
       isLoading: {
-        true: 'relative text-transparent transition-none hover:text-transparent'
+        true: 'relative  transition-none '
       }
     },
-    // Default variant combinations
+
     defaultVariants: {
       variant: 'primary',
       size: 'md',

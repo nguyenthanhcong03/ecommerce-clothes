@@ -1,5 +1,5 @@
 import axios from '@/config/axios';
-import Cookies from 'js-cookie';
+// import Cookies from 'js-cookie';
 
 const BASE_API = '/api/auth';
 

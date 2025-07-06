@@ -28,10 +28,10 @@ export const fetchProductById = createAsyncThunk('product/fetchProductById', asy
 
 export const fetchFeaturedProducts = createAsyncThunk(
   'product/fetchFeaturedProducts',
-  async (limit = 8, { rejectWithValue }) => {
+  async ({ limit = 8, page = 1 }, { rejectWithValue }) => {
     try {
-      const response = await getFeaturedProductsAPI(limit);
-      return response;
+      const response = await getFeaturedProductsAPI(limit, page);
+      return { ...response, page };
     } catch (error) {
       return rejectWithValue(error.response?.data || { message: error.message });
     }
@@ -54,6 +54,7 @@ const productSlice = createSlice({
   name: 'product',
   initialState: {
     products: [],
+    featuredProducts: [],
     pagination: {
       page: 1,
       limit: 5,
@@ -67,6 +68,7 @@ const productSlice = createSlice({
     isDetailModalOpen: false,
     modalProductId: null,
     loading: false,
+    loadingFeatured: false,
     loadingFetchProductById: false,
     error: null
   },
@@ -74,7 +76,6 @@ const productSlice = createSlice({
     setPage: (state, action) => {
       state.pagination.page = action.payload;
     },
-    setProducts: (state, action) => {},
     openProductDetailModal: (state, action) => {
       state.isDetailModalOpen = true;
       state.modalProductId = action.payload;
@@ -93,7 +94,6 @@ const productSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
-        // 👇 Đây là chỗ "giữ lại state cũ" và gộp thêm sản phẩm mới
         const currentPage = action.meta.arg.page;
 
         if (currentPage === 1) {
@@ -123,22 +123,29 @@ const productSlice = createSlice({
       .addCase(fetchProductById.rejected, (state, action) => {
         state.loadingFetchProductById = false;
         state.error = action.payload?.message || action.error.message;
-      });
+      })
 
-    // // FEATURED PRODUCTS
-    // .addCase(fetchFeaturedProducts.pending, (state) => {
-    //   state.loading = true;
-    //   state.error = null;
-    // })
-    // .addCase(fetchFeaturedProducts.fulfilled, (state, action) => {
-    //   state.loading = false;
-    //   // Không cập nhật state.products để tránh ảnh hưởng đến trang danh sách sản phẩm chính
-    //   // Bạn có thể thêm một thuộc tính riêng nếu cần: state.featuredProducts = action.payload.data;
-    // })
-    // .addCase(fetchFeaturedProducts.rejected, (state, action) => {
-    //   state.loading = false;
-    //   state.error = action.payload?.message || action.error.message;
-    // })
+      // FEATURED PRODUCTS
+      .addCase(fetchFeaturedProducts.pending, (state) => {
+        state.loadingFeatured = true;
+        state.error = null;
+      })
+      .addCase(fetchFeaturedProducts.fulfilled, (state, action) => {
+        state.loadingFeatured = false;
+        const { data, page } = action.payload;
+
+        if (page === 1) {
+          // Nếu là trang đầu tiên, reset danh sách
+          state.featuredProducts = data || [];
+        } else {
+          // Nếu không, gộp thêm vào danh sách hiện có
+          state.featuredProducts = [...state.featuredProducts, ...(data || [])];
+        }
+      })
+      .addCase(fetchFeaturedProducts.rejected, (state, action) => {
+        state.loadingFeatured = false;
+        state.error = action.payload?.message || action.error.message;
+      });
   }
 });
 

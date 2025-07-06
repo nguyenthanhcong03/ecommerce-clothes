@@ -19,6 +19,7 @@ const getAllProducts = async (req, res) => {
       color,
       rating,
       stockStatus,
+      featured,
       sortBy = "createdAt",
       sortOrder = "desc",
     } = req.query;
@@ -107,6 +108,11 @@ const getAllProducts = async (req, res) => {
       }
     }
 
+    // Lọc theo trạng thái nổi bật
+    if (featured !== undefined) {
+      query.featured = featured === "true" || featured === true;
+    }
+
     // Text search if provided
     if (search) {
       query.$or = [
@@ -192,6 +198,11 @@ const createProduct = async (req, res) => {
       });
     }
 
+    // Xử lý trường featured
+    if (productData.featured !== undefined) {
+      productData.featured = Boolean(productData.featured);
+    }
+
     const newProduct = await productService.createProduct(productData);
 
     res.status(201).json({
@@ -222,6 +233,11 @@ const updateProduct = async (req, res) => {
           message: "Danh mục không tồn tại",
         });
       }
+    }
+
+    // Xử lý trường featured
+    if (updateData.featured !== undefined) {
+      updateData.featured = Boolean(updateData.featured);
     }
 
     // Update product data
@@ -386,9 +402,9 @@ const searchProducts = async (req, res) => {
 // Get featured products
 const getFeaturedProducts = async (req, res) => {
   try {
-    const { limit = 8 } = req.query;
+    const { limit = 8, page = 1 } = req.query;
 
-    const featuredProducts = await productService.getFeaturedProducts(limit);
+    const featuredProducts = await productService.getFeaturedProducts(limit, page);
 
     res.status(200).json({
       success: true,

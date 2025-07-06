@@ -2,9 +2,8 @@ import { fetchCurrentUser } from '@/store/slices/accountSlice.js';
 import { getCart } from '@/store/slices/cartSlice.js';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RouterProvider, useLocation } from 'react-router-dom';
+import { RouterProvider } from 'react-router-dom';
 import router from './routes/routes.jsx';
-import { use } from 'react';
 
 function AppRouter() {
   const { isLoading, isAuthenticated, error, user } = useSelector((state) => state.account);

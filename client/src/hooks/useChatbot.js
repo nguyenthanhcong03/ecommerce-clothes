@@ -14,7 +14,6 @@ const useChatbot = () => {
     try {
       // Lấy trạng thái chatbot
       const statusResponse = await chatbotService.getChatbotStatus();
-      console.log('statusResponse', statusResponse);
       setStatus(statusResponse.data);
 
       // Lấy gợi ý
