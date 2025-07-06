@@ -6,8 +6,6 @@ const { vnpayConfig } = require("../config/payment");
 
 /**
  * Tạo URL thanh toán VNPay
- * @param {Object} order - Thông tin đơn hàng gồm amount, orderId, orderInfo
- * @returns {String} - URL thanh toán để chuyển hướng người dùng
  */
 const createVnpayPaymentUrl = (order) => {
   try {
@@ -48,8 +46,6 @@ const createVnpayPaymentUrl = (order) => {
 
 /**
  * Xác minh kết quả thanh toán từ VNPay
- * @param {Object} vnpayParams - Tham số trả về từ VNPay
- * @returns {Object} - Kết quả xác minh
  */
 const verifyVnpayReturn = (vnpayParams) => {
   try {
@@ -85,8 +81,6 @@ const verifyVnpayReturn = (vnpayParams) => {
 
 /**
  * Hàm tiện ích để sắp xếp đối tượng theo khóa
- * @param {Object} obj - Đối tượng cần sắp xếp
- * @returns {Object} - Đối tượng đã sắp xếp
  */
 function sortObject(obj) {
   let sorted = {};

@@ -3,8 +3,6 @@ const { createVnpayPaymentUrl, verifyVnpayReturn } = require("../services/paymen
 
 /**
  * Tạo URL thanh toán cho VNPay
- * @route POST /api/payment/vnpay/create
- * @access Private - Cần đăng nhập
  */
 const createVnpayPayment = async (req, res) => {
   console.log("đên đến đây rồi nè");
@@ -50,8 +48,6 @@ const createVnpayPayment = async (req, res) => {
 
 /**
  * Xử lý URL trả về từ VNPay
- * @route GET /api/payment/vnpay/return
- * @access Public - Công khai
  */
 const vnpayReturn = async (req, res) => {
   try {

@@ -10,12 +10,7 @@ router.get("/featured", productController.getFeaturedProducts);
 router.get("/category/:categoryId", productController.getProductsByCategory);
 router.get("/:pid", productController.getProductById);
 router.get("/:pid/related", productController.getRelatedProducts);
-router.get("/:pid/variants", productController.getProductVariants);
 router.get("/:pid/variant/:variantId", productController.getProductVariantById);
-router.get("/:pid/reviews", productController.getProductReviews);
-
-// Routes cần xác thực
-router.post("/:pid/reviews", verifyToken, productController.addProductReview);
 
 // Routes cho Admin
 router.post("/", verifyToken, checkRole("admin"), productController.createProduct);

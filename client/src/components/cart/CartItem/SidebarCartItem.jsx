@@ -60,7 +60,7 @@ function SidebarCartItem({ item }) {
           className='h-5'
           inputClassName='text-xs w-6'
           buttonClassName='!w-5'
-          value={debouncedQuantity}
+          value={localQuantity}
           min={1}
           onChange={handleQuantityChange}
           disabled={!isAvailable || isUpdating || debouncedQuantity !== item.quantity}

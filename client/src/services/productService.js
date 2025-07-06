@@ -51,21 +51,3 @@ export const getProductsByCategoryAPI = (categoryId, page = 1, limit = 10) => {
       return response.data;
     });
 };
-
-// Thêm đánh giá sản phẩm
-export const addProductReviewAPI = (productId, reviewData) => {
-  return axios.post(`/product/${productId}/reviews`, reviewData).then((response) => {
-    return response.data;
-  });
-};
-
-// Lấy đánh giá của sản phẩm
-export const getProductReviewsAPI = (productId, page = 1, limit = 10) => {
-  return axios
-    .get(`/product/${productId}/reviews`, {
-      params: { page, limit }
-    })
-    .then((response) => {
-      return response.data;
-    });
-};

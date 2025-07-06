@@ -1,14 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import {
-  addProductReviewAPI,
-  createProductAPI,
-  deleteProductByIdAPI,
-  getAllProductsAPI,
-  getFeaturedProductsAPI,
-  getProductByIdAPI,
-  getProductReviewsAPI,
-  updateProductByIdAPI
-} from '../../services/productService';
+import { getAllProductsAPI } from '../../services/productService';
 
 // Định nghĩa async thunk để gọi API
 export const fetchProducts = createAsyncThunk('product/fetchProducts', async (params, { rejectWithValue }) => {

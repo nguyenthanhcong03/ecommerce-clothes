@@ -59,7 +59,7 @@ const CartPageItem = ({ item, onSelect, isSelected }) => {
 
             <div className={`${isUpdating || !isAvailable ? 'opacity-50' : ''} relative`}>
               <QuantityInput
-                value={debouncedQuantity}
+                value={localQuantity}
                 min={1}
                 onChange={handleQuantityChange}
                 disabled={!isAvailable || isUpdating || debouncedQuantity !== item.quantity}
@@ -102,7 +102,7 @@ const CartPageItem = ({ item, onSelect, isSelected }) => {
           className={`relative col-span-2 flex items-center justify-center ${isUpdating || !isAvailable ? 'opacity-50' : ''}`}
         >
           <QuantityInput
-            value={debouncedQuantity}
+            value={localQuantity}
             min={1}
             onChange={handleQuantityChange}
             disabled={!isAvailable || isUpdating || debouncedQuantity !== item.quantity}

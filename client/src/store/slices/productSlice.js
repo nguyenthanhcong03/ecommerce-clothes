@@ -1,10 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import {
-  getAllProductsAPI,
-  getFeaturedProductsAPI,
-  getProductByIdAPI,
-  getProductReviewsAPI
-} from '../../services/productService';
+import { getAllProductsAPI, getFeaturedProductsAPI, getProductByIdAPI } from '../../services/productService';
 
 // Định nghĩa async thunk để gọi API
 export const fetchProducts = createAsyncThunk('product/fetchProducts', async (params, { rejectWithValue }) => {
@@ -32,18 +27,6 @@ export const fetchFeaturedProducts = createAsyncThunk(
     try {
       const response = await getFeaturedProductsAPI(limit, page);
       return { ...response, page };
-    } catch (error) {
-      return rejectWithValue(error.response?.data || { message: error.message });
-    }
-  }
-);
-
-export const fetchProductReviews = createAsyncThunk(
-  'product/fetchProductReviews',
-  async ({ productId, page = 1, limit = 10 }, { rejectWithValue }) => {
-    try {
-      const response = await getProductReviewsAPI(productId, page, limit);
-      return { ...response, productId };
     } catch (error) {
       return rejectWithValue(error.response?.data || { message: error.message });
     }

@@ -91,7 +91,7 @@ const reviewSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // CREATE REVIEW
+      // TẠO ĐÁNH GIÁ MỚI
       .addCase(createReview.pending, (state) => {
         state.submitting = true;
         state.error = null;
@@ -115,7 +115,7 @@ const reviewSlice = createSlice({
         state.success = false;
       })
 
-      // GET USER REVIEWS
+      // LẤY ĐÁNH GIÁ CỦA NGƯỜI DÙNG
       .addCase(getUserReviews.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -130,7 +130,7 @@ const reviewSlice = createSlice({
         state.error = action.payload?.message || action.error.message;
       })
 
-      // GET PRODUCT REVIEWS
+      // LẤY ĐÁNH GIÁ CỦA SẢN PHẨM
       .addCase(getProductReviews.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -150,7 +150,7 @@ const reviewSlice = createSlice({
         state.error = action.payload?.message || action.error.message;
       })
 
-      // GET REVIEWABLE PRODUCTS
+      // LẤY DANH SÁCH SẢN PHẨM CÓ THỂ ĐÁNH GIÁ
       .addCase(getReviewableProducts.pending, (state) => {
         state.loading = true;
         state.error = null;

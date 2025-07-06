@@ -67,8 +67,6 @@ const updateProduct = async (productId, updateData) => {
 
 /**
  * Xóa sản phẩm
- * @param {String} productId ID sản phẩm
- * @returns {Promise<Object>} Sản phẩm đã xóa
  */
 const deleteProduct = async (productId) => {
   try {
@@ -92,8 +90,6 @@ const deleteProduct = async (productId) => {
 
 /**
  * Lấy sản phẩm theo ID
- * @param {String} productId ID sản phẩm
- * @returns {Promise<Object>} Thông tin sản phẩm
  */
 const getProductById = async (productId) => {
   try {
@@ -111,8 +107,6 @@ const getProductById = async (productId) => {
 
 /**
  * Lấy các sản phẩm nổi bật
- * @param {Number} limit Số lượng sản phẩm muốn lấy
- * @returns {Promise<Array>} Danh sách sản phẩm nổi bật
  */
 const getFeaturedProducts = async (limit = 8, page = 1) => {
   try {
@@ -134,61 +128,10 @@ const getFeaturedProducts = async (limit = 8, page = 1) => {
   }
 };
 
-/**
- * Thêm đánh giá cho sản phẩm
- * @param {String} productId ID sản phẩm
- * @param {Object} reviewData Dữ liệu đánh giá
- * @returns {Promise<Object>} Sản phẩm đã cập nhật
- */
-const addReview = async (productId, userId, reviewData) => {
-  try {
-    const product = await Product.findById(productId);
-
-    if (!product) {
-      throw new Error("Product not found");
-    }
-
-    const { rating, comment, name } = reviewData;
-
-    // Kiểm tra xem người dùng đã đánh giá sản phẩm này chưa
-    const existingReviewIndex = product.reviews?.findIndex((r) => r.user?.toString() === userId.toString());
-
-    if (existingReviewIndex >= 0) {
-      // Cập nhật đánh giá hiện có
-      product.reviews[existingReviewIndex].rating = rating;
-      if (comment) product.reviews[existingReviewIndex].comment = comment;
-    } else {
-      // Thêm đánh giá mới
-      const review = {
-        user: userId,
-        rating,
-        comment: comment || "",
-        name: name,
-      };
-
-      if (!product.reviews) {
-        product.reviews = [];
-      }
-
-      product.reviews.push(review);
-    }
-
-    // Tính lại đánh giá trung bình
-    product.averageRating = product.reviews.reduce((acc, item) => item.rating + acc, 0) / product.reviews.length;
-    product.totalReviews = product.reviews.length;
-
-    await product.save();
-    return product;
-  } catch (error) {
-    throw error;
-  }
-};
-
 module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
   getProductById,
   getFeaturedProducts,
-  addReview,
 };

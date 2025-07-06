@@ -419,95 +419,6 @@ const getFeaturedProducts = async (req, res) => {
   }
 };
 
-// Add product review
-const addProductReview = async (req, res) => {
-  try {
-    const { pid } = req.params;
-    const { rating, comment } = req.body;
-    const userId = req.user._id;
-
-    if (!rating) {
-      return res.status(400).json({
-        success: false,
-        message: "Vui lòng cung cấp đánh giá",
-      });
-    }
-
-    const reviewData = {
-      rating,
-      comment: comment || "",
-      name: `${req.user.firstName} ${req.user.lastName}`,
-    };
-
-    try {
-      await productService.addReview(pid, userId, reviewData);
-
-      res.status(201).json({
-        success: true,
-        message: "Đánh giá sản phẩm thành công",
-      });
-    } catch (err) {
-      if (err.message === "Product not found") {
-        return res.status(404).json({
-          success: false,
-          message: "Không tìm thấy sản phẩm",
-        });
-      }
-      throw err;
-    }
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Lỗi server",
-      error: error.message,
-    });
-  }
-};
-
-// Get product reviews
-const getProductReviews = async (req, res) => {
-  try {
-    const { pid } = req.params;
-    const { page = 1, limit = 10 } = req.query;
-
-    const product = await Product.findById(pid).select("reviews averageRating totalReviews");
-
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Không tìm thấy sản phẩm",
-      });
-    }
-
-    const reviews = product.reviews || [];
-    const startIdx = (page - 1) * limit;
-    const endIdx = page * limit;
-
-    const paginatedReviews = reviews.slice(startIdx, endIdx);
-
-    res.status(200).json({
-      success: true,
-      data: {
-        reviews: paginatedReviews,
-        averageRating: product.averageRating || 0,
-        totalReviews: product.totalReviews || 0,
-      },
-      pagination: {
-        current: Number(page),
-        pageSize: Number(limit),
-        total: reviews.length,
-        totalPages: Math.ceil(reviews.length / limit),
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Lỗi server",
-      error: error.message,
-    });
-  }
-};
-
 // Get related products
 const getRelatedProducts = async (req, res) => {
   try {
@@ -535,33 +446,6 @@ const getRelatedProducts = async (req, res) => {
     res.status(200).json({
       success: true,
       data: relatedProducts,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Lỗi server",
-      error: error.message,
-    });
-  }
-};
-
-// Get product variants
-const getProductVariants = async (req, res) => {
-  try {
-    const { pid } = req.params;
-
-    const product = await Product.findById(pid).select("variants");
-
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Không tìm thấy sản phẩm",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: product.variants || [],
     });
   } catch (error) {
     res.status(500).json({
@@ -617,9 +501,6 @@ module.exports = {
   getProductsByCategory,
   searchProducts,
   getFeaturedProducts,
-  addProductReview,
-  getProductReviews,
   getRelatedProducts,
-  getProductVariants,
   getProductVariantById,
 };

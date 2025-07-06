@@ -187,7 +187,6 @@ const generateSKU = (productType, productName, brand, size, color) => {
     return `${typeCode}-${brandCode}-${productCode}-${sizeCode}-${colorCode}-${timestamp}`.toUpperCase();
   } catch (error) {
     console.error("Error generating SKU:", error);
-    // Fallback: tạo SKU đơn giản với timestamp
     return `SP-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`.toUpperCase();
   }
 };

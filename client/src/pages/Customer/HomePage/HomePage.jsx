@@ -13,7 +13,7 @@ function HomePage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreFeatured, setHasMoreFeatured] = useState(true);
-  const productsPerPage = 4;
+  const productsPerPage = 8;
 
   useEffect(() => {
     dispatch(fetchFeaturedProducts({ limit: productsPerPage, page: 1 }));

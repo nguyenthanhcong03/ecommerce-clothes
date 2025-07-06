@@ -32,9 +32,9 @@ require("./cron/cleanUnpaidOrders");
 // Khởi tạo các routes
 initRoutes(app);
 
-// convert error to ApiError, if needed
+// chuyển đổi lỗi sang ApiError nếu cần
 app.use(errorConverter);
-// handle error
+// xử lý lỗi
 app.use(errorHandler);
 
 app.listen(port, () => {

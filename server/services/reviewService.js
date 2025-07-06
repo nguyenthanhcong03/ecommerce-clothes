@@ -162,8 +162,6 @@ const updateProductRatingStats = async (productId, session) => {
     },
   ]).session(session);
 
-  console.log("reviewService.js - updateProductRatingStats - stats:", stats);
-
   let averageRating = 0;
   let totalReviews = 0;
 

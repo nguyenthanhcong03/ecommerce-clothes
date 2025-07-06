@@ -2,10 +2,7 @@ const catchAsync = require("../utils/catchAsync");
 const ApiError = require("../utils/ApiError");
 const reviewService = require("../services/reviewService");
 
-/**
- * Create a new review
- * @route POST /api/reviews
- */
+// Tạo mới đánh giá sản phẩm
 const createReview = catchAsync(async (req, res) => {
   const { productId, orderId, rating, comment } = req.body;
   const userId = req.user._id;
@@ -24,10 +21,7 @@ const createReview = catchAsync(async (req, res) => {
   });
 });
 
-/**
- * Get all reviews for a product
- * @route GET /api/reviews/product/:productId
- */
+// Lấy đánh giá của sản phẩm
 const getProductReviews = catchAsync(async (req, res) => {
   const { productId } = req.params;
   const { rating, page = 1, limit = 10, sort = "-createdAt" } = req.query;
@@ -51,10 +45,7 @@ const getProductReviews = catchAsync(async (req, res) => {
   });
 });
 
-/**
- * Get all reviews created by the current user
- * @route GET /api/reviews/user
- */
+// Lấy đánh giá của người dùng
 const getUserReviews = catchAsync(async (req, res) => {
   const userId = req.user._id;
   const { page = 1, limit = 10 } = req.query;
@@ -77,10 +68,7 @@ const getUserReviews = catchAsync(async (req, res) => {
   });
 });
 
-/**
- * Reply to a review (Admin only)
- * @route PATCH /api/reviews/:reviewId/reply
- */
+// Trả lời đánh giá (admin)
 const replyToReview = catchAsync(async (req, res) => {
   const { reviewId } = req.params;
   const { reply } = req.body;
@@ -93,10 +81,7 @@ const replyToReview = catchAsync(async (req, res) => {
   });
 });
 
-/**
- * Get products that can be reviewed from a delivered order
- * @route GET /api/reviews/order/:orderId/reviewable
- */
+// Lấy danh sách sản phẩm có thể đánh giá
 const getReviewableProducts = catchAsync(async (req, res) => {
   const { orderId } = req.params;
   const userId = req.user._id;
@@ -109,10 +94,7 @@ const getReviewableProducts = catchAsync(async (req, res) => {
   });
 });
 
-/**
- * Get all reviews (Admin only)
- * @route GET /api/reviews/all
- */
+// Lấy tất cả đánh giá (admin)
 const getAllReviews = catchAsync(async (req, res) => {
   const { page = 1, limit = 10, sort = "-createdAt" } = req.query;
 

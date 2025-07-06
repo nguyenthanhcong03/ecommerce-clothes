@@ -18,7 +18,7 @@ const syncCartItemSnapshots = async (cart) => {
       item.quantity = variant.stock;
     }
 
-    // Update snapshot
+    // Cập nhật snapshot
     item.snapshot.name = product.name;
     item.snapshot.price = variant.price;
     item.snapshot.originalPrice = variant.originalPrice || null;

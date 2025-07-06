@@ -19,12 +19,6 @@ const addressSchema = Joi.object({
   isDefault: Joi.boolean().default(false),
 });
 
-// Preference validation schema
-const preferencesSchema = Joi.object({
-  language: Joi.string().default("en"),
-  notifications: Joi.boolean().default(true),
-});
-
 // User registration validation
 const registerSchema = Joi.object({
   email: Joi.string().required().email().lowercase().trim().messages({
@@ -65,7 +59,6 @@ const registerSchema = Joi.object({
   gender: Joi.string().valid("male", "female", "other", null),
   dateOfBirth: Joi.string().allow(null, ""),
   address: Joi.array().items(addressSchema),
-  preferences: preferencesSchema,
 });
 
 // User update validation
@@ -92,7 +85,6 @@ const updateSchema = Joi.object({
   gender: Joi.string().valid("male", "female", "other", null),
   dateOfBirth: Joi.string().allow(null, ""),
   address: Joi.array().items(addressSchema),
-  preferences: preferencesSchema,
 
   // Admin can update these fields
   role: Joi.string().valid("customer", "admin"),

@@ -2,7 +2,6 @@ import axios from '@/config/axios';
 const BASE_API = '/api/reviews';
 
 export const getProductReviewsAPI = async (productId, params) => {
-  console.log('params:', params);
   const response = await axios.get(`${BASE_API}/product/${productId}`, {
     params: params
   });

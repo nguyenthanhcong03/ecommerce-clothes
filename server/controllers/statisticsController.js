@@ -4,11 +4,7 @@ const User = require("../models/user");
 const Category = require("../models/category");
 const statisticsService = require("../services/statisticsService");
 
-/**
- * Lấy thống kê tổng quan
- * @route GET /api/statistics/overview
- * @access Admin
- */
+// Lấy thống kê tổng quan
 const getOverviewStatistics = async (req, res) => {
   try {
     const stats = await statisticsService.getOverviewStatistics();
@@ -26,11 +22,7 @@ const getOverviewStatistics = async (req, res) => {
   }
 };
 
-/**
- * Lấy thống kê doanh thu
- * @route GET /api/statistics/revenue
- * @access Admin
- */
+// Lấy thống kê doanh thu
 const getRevenueStatistics = async (req, res) => {
   try {
     const { period, startDate, endDate } = req.query;
@@ -50,11 +42,7 @@ const getRevenueStatistics = async (req, res) => {
   }
 };
 
-/**
- * Lấy thống kê sản phẩm bán chạy
- * @route GET /api/statistics/top-products
- * @access Admin
- */
+// Lấy thống kê sản phẩm bán chạy
 const getTopProducts = async (req, res) => {
   try {
     const { limit = 10, period, startDate, endDate } = req.query;
@@ -74,11 +62,7 @@ const getTopProducts = async (req, res) => {
   }
 };
 
-/**
- * Lấy thống kê khách hàng
- * @route GET /api/statistics/customers
- * @access Admin
- */
+// Lấy thống kê khách hàng
 const getCustomerStatistics = async (req, res) => {
   try {
     const { period, startDate, endDate } = req.query;
@@ -98,11 +82,7 @@ const getCustomerStatistics = async (req, res) => {
   }
 };
 
-/**
- * Lấy thống kê theo danh mục sản phẩm
- * @route GET /api/statistics/categories
- * @access Admin
- */
+// Lấy thống kê theo danh mục sản phẩm
 const getCategoryStatistics = async (req, res) => {
   try {
     const { period, startDate, endDate } = req.query;
@@ -122,11 +102,7 @@ const getCategoryStatistics = async (req, res) => {
   }
 };
 
-/**
- * Lấy thống kê đơn hàng
- * @route GET /api/statistics/orders
- * @access Admin
- */
+// Lấy thống kê đơn hàng
 const getOrderStatistics = async (req, res) => {
   try {
     const { period, startDate, endDate } = req.query;
@@ -146,11 +122,7 @@ const getOrderStatistics = async (req, res) => {
   }
 };
 
-/**
- * Lấy thống kê tồn kho
- * @route GET /api/statistics/inventory
- * @access Admin
- */
+// Lấy thống kê tồn kho
 const getInventoryStatistics = async (req, res) => {
   try {
     const inventoryStats = await statisticsService.getInventoryStatistics();

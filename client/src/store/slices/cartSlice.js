@@ -31,7 +31,6 @@ export const updateCartItem = createAsyncThunk(
   async ({ itemId, quantity }, { rejectWithValue }) => {
     try {
       const response = await updateCartItemAPI(itemId, quantity);
-      console.log('response', response.data);
       return response;
     } catch (error) {
       console.log('cartSlice.js error', error);

@@ -61,6 +61,10 @@ function CartPage() {
   const { items, loading } = useSelector((state) => state.cart);
   const [showUnavailableModal, setShowUnavailableModal] = useState(false);
   const [unavailableItems, setUnavailableItems] = useState([]);
+  const [count, setCount] = useState(0);
+  const handleIncrement = () => {
+    setCount((prevCount) => prevCount + 1);
+  };
 
   useEffect(() => {
     dispatch(getCart())

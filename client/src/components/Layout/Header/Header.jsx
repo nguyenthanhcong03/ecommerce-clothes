@@ -3,12 +3,12 @@ import avatarDefault from '@/assets/images/user.png';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher/LanguageSwitcher';
 import MenuItem from '@/components/common/MenuItem/MenuItem';
 import UserDropdown from '@/components/layout/Header/UserDropdown/UserDropdown';
-import { fetchCurrentUser, logoutUser } from '@/store/slices/accountSlice';
+import { logoutUser } from '@/store/slices/accountSlice';
 import { toggleSearchModal } from '@/store/slices/searchSlice';
 import { setType, toggleSidebar } from '@/store/slices/sidebarSlice';
 import { SHOP_EMAIL } from '@/utils/constants';
 import { message, Tooltip } from 'antd';
-import { CircleUserRound, Facebook, Heart, Instagram, Mail, Menu, Search, ShoppingCart } from 'lucide-react';
+import { CircleUserRound, Facebook, Instagram, Mail, Menu, Search, ShoppingCart } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -29,7 +29,6 @@ function Header() {
   const handleToggleSideBar = (type) => {
     if (
       (location.pathname !== '/cart' && type === 'cart') ||
-      (location.pathname !== '/wishlist' && type === 'wishlist') ||
       (location.pathname !== '/search' && type === 'search') ||
       type === 'menu'
     ) {

@@ -77,8 +77,6 @@ const uploadMultipleFilesService = async (files, folder = "uploads") => {
 
 /**
  * Trích xuất public_id từ URL Cloudinary
- * @param {String} url - URL Cloudinary
- * @returns {String} - public_id
  */
 const extractPublicIdFromUrl = (url) => {
   try {
@@ -125,8 +123,6 @@ const extractPublicIdFromUrl = (url) => {
 
 /**
  * Xóa một file từ Cloudinary theo URL
- * @param {String} url - URL của file trên Cloudinary
- * @returns {Promise} - Trả về kết quả xóa từ Cloudinary
  */
 const deleteFileService = async (url) => {
   try {
@@ -163,8 +159,6 @@ const deleteFileService = async (url) => {
 
 /**
  * Xóa nhiều files từ Cloudinary
- * @param {Array} urls - Mảng các URLs của files cần xóa
- * @returns {Promise} - Trả về mảng kết quả xóa từ Cloudinary
  */
 const deleteMultipleFilesService = async (urls) => {
   try {
@@ -198,8 +192,6 @@ const deleteMultipleFilesService = async (urls) => {
 
 /**
  * Định dạng kết quả upload ảnh để lưu vào cơ sở dữ liệu
- * @param {Array} uploadResults - Kết quả từ uploadMultipleFiles
- * @returns {Array} - Mảng các đối tượng được định dạng cho MongoDB
  */
 const formatImagesForDB = (uploadResults) => {
   return uploadResults.map((result) => ({
