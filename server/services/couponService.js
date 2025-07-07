@@ -27,7 +27,7 @@ const createCoupon = async (couponData) => {
 
 const getCoupons = async (query) => {
   try {
-    const { page = 1, limit = 10, search, isActive, code, startDate, endDate } = query;
+    const { page = 1, limit = 5, search, isActive, code, startDate, endDate } = query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     // Xây dựng điều kiện lọc

@@ -130,6 +130,38 @@ const AnalyticsPage = () => {
     }).format(value);
   };
 
+  const formatTimeLabel = (value, period) => {
+    switch (period) {
+      case 'today':
+        return `${value}:00`; // Hiển thị giờ
+      case 'week':
+        const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+        return days[value - 1] || `Ngày ${value}`;
+      case 'month':
+        return `Ngày ${value}`;
+      case 'year':
+        const months = [
+          'Tháng 1',
+          'Tháng 2',
+          'Tháng 3',
+          'Tháng 4',
+          'Tháng 5',
+          'Tháng 6',
+          'Tháng 7',
+          'Tháng 8',
+          'Tháng 9',
+          'Tháng 10',
+          'Tháng 11',
+          'Tháng 12'
+        ];
+        return months[value - 1] || `Tháng ${value}`;
+      case 'custom':
+        return value; // Đã được format thành YYYY-MM-DD hoặc YYYY-MM
+      default:
+        return value;
+    }
+  };
+
   // Xử lý thay đổi khoảng thời gian
   const handleTimeRangeChange = (value) => {
     setTimeRange(value);
@@ -207,6 +239,7 @@ const AnalyticsPage = () => {
       ...item,
       revenue: Number(item.revenue) // Đảm bảo revenue là số
     }));
+    console.log('formattedData', revenueData);
 
     const paymentMethodData = revenueData.revenueByPaymentMethod.map((item) => ({
       name: item._id,
@@ -231,7 +264,7 @@ const AnalyticsPage = () => {
               />
               <Tooltip
                 formatter={(value) => [formatCurrency(value), 'Doanh thu']}
-                labelFormatter={(value) => `Thời gian: ${value}`}
+                labelFormatter={(value) => `Thời gian: ${formatTimeLabel(value, timeRange)}`}
               />
               <Legend />
               <Line type='monotone' dataKey='revenue' stroke='#8884d8' activeDot={{ r: 8 }} name='Doanh thu' />
@@ -461,7 +494,7 @@ const AnalyticsPage = () => {
                   if (name === 'revenue') return [formatCurrency(value), 'Doanh thu'];
                   return [value, name];
                 }}
-                labelFormatter={(value) => `Thời gian: ${value}`}
+                labelFormatter={(value) => `Thời gian: ${formatTimeLabel(value, timeRange)}`}
               />
               <Legend />
               <Line type='monotone' dataKey='count' stroke='#8884d8' activeDot={{ r: 8 }} name='Số đơn hàng' />
@@ -495,6 +528,7 @@ const AnalyticsPage = () => {
       name: item.stockLevel,
       value: item.uniqueProductCount
     }));
+    console.log('stockDistributionData', stockDistributionData);
 
     return (
       <div className='mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2'>

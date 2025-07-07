@@ -8,6 +8,7 @@ const statisticsService = require("../services/statisticsService");
 const getOverviewStatistics = async (req, res) => {
   try {
     const stats = await statisticsService.getOverviewStatistics();
+    console.log("stats", stats);
     res.json({
       success: true,
       statistics: stats,

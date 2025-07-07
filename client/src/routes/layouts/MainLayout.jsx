@@ -30,7 +30,7 @@ function MainLayout() {
           {isHomePage && <SaleHomePage />}
         </div>
         <Footer />
-        <ChatBot />
+        {/* <ChatBot /> */}
       </div>
     </ScrollToTop>
   );

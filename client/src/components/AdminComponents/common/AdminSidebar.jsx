@@ -11,10 +11,11 @@ import {
   ShoppingCart,
   Tag,
   TrendingUp,
-  Users
+  Users,
+  User
 } from 'lucide-react';
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, useNavigate } from 'react-router-dom';
 
 const SIDEBAR_ITEMS = [
@@ -31,6 +32,7 @@ const SIDEBAR_ITEMS = [
 const AdminSidebar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.account);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isOpenModalLogout, setIsOpenModalLogout] = useState(false);
 
@@ -124,6 +126,37 @@ const AdminSidebar = () => {
             )
           )}
         </nav>
+
+        {/* Thông tin tài khoản */}
+        <div className='mt-auto border-t border-[#e1e1e1] pt-4'>
+          <div className='flex items-center gap-3'>
+            <div className='flex h-10 w-10 items-center justify-center rounded-full bg-[#F4F4F4]'>
+              {user?.avatar ? (
+                <img src={user.avatar} alt={user.firstName} className='h-full w-full rounded-full object-cover' />
+              ) : (
+                <User size={20} color='#333' />
+              )}
+            </div>
+            <AnimatePresence>
+              {isSidebarOpen && (
+                <motion.div
+                  className='flex-1 overflow-hidden'
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.2, delay: 0.3 }}
+                >
+                  <div className='truncate text-sm font-medium'>
+                    {user?.firstName && user?.lastName ? `${user.lastName} ${user.firstName}` : user?.username}
+                  </div>
+                  <div className='truncate text-xs text-gray-500'>
+                    {user?.role === 'admin' ? 'Quản trị viên' : 'Người dùng'}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
       </div>
       {isOpenModalLogout && (
         <Modal

@@ -9,7 +9,7 @@ const getAllProducts = async (req, res) => {
   try {
     const {
       page = 1,
-      limit = 10,
+      limit = 5,
       search,
       category,
       minPrice,

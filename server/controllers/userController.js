@@ -12,7 +12,7 @@ const getAllUsers = catchAsync(async (req, res) => {
 
   const options = {
     page: parseInt(req.query.page) || 1,
-    limit: parseInt(req.query.limit) || 10,
+    limit: parseInt(req.query.limit) || 5,
     sortBy: req.query.sortBy || "createdAt",
     sortOrder: req.query.sortOrder === "asc" ? 1 : -1,
   };

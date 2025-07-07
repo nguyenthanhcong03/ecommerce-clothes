@@ -6,10 +6,6 @@ const mongoose = require("mongoose");
 
 /**
  * Hàm helper để lấy điều kiện tìm kiếm theo thời gian
- * @param {string} period - Khoảng thời gian: 'today', 'week', 'month', 'year', 'custom'
- * @param {string} startDate - Ngày bắt đầu (YYYY-MM-DD) - chỉ dùng với period='custom'
- * @param {string} endDate - Ngày kết thúc (YYYY-MM-DD) - chỉ dùng với period='custom'
- * @returns {Object} - Điều kiện MongoDB
  */
 const getDateCondition = (period, startDate, endDate) => {
   const now = new Date();
@@ -95,7 +91,8 @@ const getOverviewStatistics = async () => {
   const revenueTodayResult = await Order.aggregate([
     {
       $match: {
-        createdAt: { $gte: today },
+        "statusUpdatedAt.delivered": { $gte: today },
+        status: "Delivered",
         // "payment.isPaid": true,
       },
     },
@@ -657,9 +654,9 @@ const getInventoryStatistics = async () => {
     },
     {
       $project: {
-        stockLevel: "$_id",
+        stockLevel: "$_id", // Tạo trường mới tên là stockLevel, gán giá trị từ trường _id.
         count: 1,
-        uniqueProductCount: { $size: "$products" },
+        uniqueProductCount: { $size: "$products" }, // để đếm số lượng phần tử trong mảng products.
       },
     },
     { $sort: { _id: 1 } },
