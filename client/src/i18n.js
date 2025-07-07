@@ -1,14 +1,16 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import vi from './locales/vi.json';
+
+// Import translation files
+import enTranslation from './locales/en/home.json';
+import viTranslation from './locales/vi/home.json';
 
 const resources = {
   en: {
-    // gọi là namespace, có thể là tên file json
-    // translation: en
+    translation: enTranslation
   },
   vi: {
-    translation: vi
+    translation: viTranslation
   }
 };
 
