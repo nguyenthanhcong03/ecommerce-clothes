@@ -5,9 +5,9 @@ import { updatePaymentStatusAPI } from '@/services/orderService';
 import { updateOrderStatus } from '@/store/slices/adminOrderSlice';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import formatDate from '@/utils/format/formatDate';
-import { getValidStatusTransitions, orderStatuses } from '@/utils/helpers/orderStatusUtils';
-import { ClockCircleOutlined, DollarOutlined, EyeOutlined } from '@ant-design/icons';
-import { Button, Card, Input, message, Modal, Select, Space, Table, Tooltip } from 'antd';
+import { getValidStatusTransitions, translateOrderStatus } from '@/utils/helpers/orderStatusUtils';
+import { DollarOutlined, EyeOutlined } from '@ant-design/icons';
+import { Button, Card, Input, message, Modal, Select, Space, Table, Tag, Tooltip } from 'antd';
 import { RefreshCw, Search } from 'lucide-react';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -127,9 +127,6 @@ const OrderTable = ({ searchText, onSearch, onPageChange, onRefresh }) => {
               <div className='flex items-center gap-1'>
                 <img src={VNPayLogo} className='h-5 w-5' alt='VNPay' />
                 VNPay
-                {/* <Tag color={payment.isPaid ? 'green' : 'volcano'}>
-                  {payment.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
-                </Tag> */}
               </div>
             );
           default:
@@ -138,10 +135,21 @@ const OrderTable = ({ searchText, onSearch, onPageChange, onRefresh }) => {
       }
     },
     {
+      title: 'Trạng thái thanh toán',
+      dataIndex: 'payment',
+      key: 'payment.isPaid',
+      render: (payment) => (
+        <Tag color={payment.isPaid ? 'green' : 'volcano'}>
+          {payment.isPaid ? 'Đã thanh toán' : payment?.isPaid === false ? 'Chưa thanh toán' : 'Đã hủy'}
+        </Tag>
+      )
+    },
+    {
       title: 'Trạng thái đơn hàng',
       dataIndex: 'status',
       key: 'status',
       render: (status, record) => {
+        console.log('status', status);
         const isUpdating = updatingOrderIds.includes(record._id);
         if (status === 'Unpaid') {
           return (
@@ -155,21 +163,16 @@ const OrderTable = ({ searchText, onSearch, onPageChange, onRefresh }) => {
         }
         return (
           <Select
-            value={status}
-            // value={translateOrderStatus(status)}
+            value={translateOrderStatus(status)}
             style={{
               width: '100%'
             }}
             loading={isUpdating}
             disabled={isUpdating || status === 'Cancelled'}
             onChange={(value) => handleOrderStatusChange(record._id, value)}
-            options={orderStatuses}
-            // options={getValidStatusTransitions(status)}
+            // options={orderStatuses}
+            options={getValidStatusTransitions(status)}
             listItemHeight={30}
-            dropdownStyle={{
-              borderRadius: '4px',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
-            }}
           />
         );
       },
@@ -191,23 +194,25 @@ const OrderTable = ({ searchText, onSearch, onPageChange, onRefresh }) => {
           <Tooltip title='Xem chi tiết'>
             <Button type='primary' icon={<EyeOutlined />} size='small' onClick={() => showOrderDetails(record)} />
           </Tooltip>
-          <Tooltip title='Cập nhật trạng thái'>
+          {/* <Tooltip title='Cập nhật trạng thái'>
             <Button
               type='default'
               icon={<ClockCircleOutlined />}
               size='small'
               onClick={() => openStatusModal(record)}
             />
-          </Tooltip>
-          <Tooltip title={record.payment.isPaid ? 'Đánh dấu chưa thanh toán' : 'Đánh dấu đã thanh toán'}>
-            <Button
-              type={record.payment.isPaid ? 'default' : 'primary'}
-              danger={record.payment.isPaid}
-              icon={<DollarOutlined />}
-              size='small'
-              onClick={() => handlePaymentStatusChange(record._id, !record.payment.isPaid)}
-            />
-          </Tooltip>
+          </Tooltip> */}
+          {/* {record.payment.method !== 'COD' && (
+            <Tooltip title={record.payment.isPaid ? 'Đánh dấu chưa thanh toán' : 'Đánh dấu đã thanh toán'}>
+              <Button
+                type={record.payment.isPaid ? 'default' : 'primary'}
+                danger={record.payment.isPaid}
+                icon={<DollarOutlined />}
+                size='small'
+                onClick={() => handlePaymentStatusChange(record._id, !record.payment.isPaid)}
+              />
+            </Tooltip>
+          )} */}
         </Space>
       ),
       width: 180

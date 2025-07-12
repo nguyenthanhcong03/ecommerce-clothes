@@ -7,6 +7,8 @@ export const translateOrderStatus = (status) => {
   switch (status) {
     case 'Unpaid':
       return 'Chưa thanh toán';
+    case 'Pending':
+      return 'Chờ xác nhận';
     case 'Processing':
       return 'Đang xử lý';
     case 'Shipping':
@@ -18,15 +20,6 @@ export const translateOrderStatus = (status) => {
     default:
       return 'Đang xử lý';
   }
-};
-
-// Chuyển đổi tiếng Anh sang tiếng Việt
-export const statusTranslations = {
-  Pending: 'Chờ xác nhận',
-  Processing: 'Đang xử lý',
-  Shipping: 'Đang giao hàng',
-  Delivered: 'Đã giao hàng',
-  Cancelled: 'Đã hủy'
 };
 
 // Danh sách các trạng thái đơn hàng
@@ -72,11 +65,4 @@ export const canChangeStatus = (currentStatus, newStatus) => {
  */
 export const getValidStatusTransitions = (currentStatus) => {
   return orderStatuses.filter((status) => canChangeStatus(currentStatus, status.value));
-};
-
-export default {
-  statusTranslations,
-  orderStatuses,
-  canChangeStatus,
-  getValidStatusTransitions
 };

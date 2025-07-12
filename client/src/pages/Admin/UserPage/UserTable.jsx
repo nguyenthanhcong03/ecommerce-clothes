@@ -173,7 +173,7 @@ const UserTable = ({
           onChange: onPageChange,
           showSizeChanger: true,
           pageSizeOptions: ['5', '10', '20', '50'],
-          showTotal: (total) => `Tổng số ${total} sản phẩm`
+          showTotal: (total) => `Tổng số ${total} người dùng`
         }}
         locale={{
           emptyText: loading

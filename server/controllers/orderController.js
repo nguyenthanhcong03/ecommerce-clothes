@@ -514,6 +514,8 @@ const updateOrderStatus = catchAsync(async (req, res) => {
   order.status = status;
 
   if (status === "Delivered") {
+    order.payment.isPaid = true;
+    order.payment.paidAt = new Date();
     // Cập nhật số lượng đã bán cho sản phẩm
     for (const item of order.products) {
       const product = await Product.findById(item.productId);
@@ -525,6 +527,8 @@ const updateOrderStatus = catchAsync(async (req, res) => {
   }
 
   if (status === "Cancelled") {
+    order.payment.isPaid = null;
+    order.payment.paidAt = null;
     // Khôi phục số lượng sản phẩm trong kho
     for (const item of order.products) {
       const product = await Product.findById(item.productId);
@@ -578,7 +582,7 @@ const updatePaymentStatus = catchAsync(async (req, res) => {
     order.status = "Pending";
     order.payment.paidAt = new Date();
   } else {
-    order.status = "Unpaid";
+    // order.status = "Unpaid";
     order.payment.paidAt = null;
   }
 
