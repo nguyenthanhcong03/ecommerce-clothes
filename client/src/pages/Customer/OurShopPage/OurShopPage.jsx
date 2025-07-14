@@ -13,7 +13,6 @@ import { findCategoryById } from '@/utils/helpers/findCategoryById';
 import { generateNameId, getIdFromNameId } from '@/utils/helpers/fn';
 import { getCategoryPath } from '@/utils/helpers/getCategoryPath';
 import { AppstoreOutlined, BarsOutlined, FilterOutlined } from '@ant-design/icons';
-import { ChevronLeft } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -228,7 +227,6 @@ function OurShopPage() {
     }
   };
 
-  // Fetch products when filters change
   useEffect(() => {
     const queryParams = {
       search: params.get('search') || '',

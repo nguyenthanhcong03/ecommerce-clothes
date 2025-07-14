@@ -12,3 +12,14 @@ export const createVnpayPaymentAPI = async (orderId) => {
     throw error;
   }
 };
+
+export const vnpayRefundAPI = async (orderId, reason) => {
+  try {
+    const response = await axios.post(`${BASE_API}/vnpay/refund`, { orderId, reason });
+    console.log('response', response);
+    return response;
+  } catch (error) {
+    console.error('Lỗi khi tạo yêu cầu hoàn tiền VNPay:', error);
+    throw error;
+  }
+};

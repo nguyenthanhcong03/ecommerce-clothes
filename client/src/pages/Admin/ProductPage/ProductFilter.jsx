@@ -1,3 +1,4 @@
+import { useGetAllSizeColor } from '@/hooks/useGetAllSizeColor';
 import { getCategoriesTree } from '@/store/slices/categorySlice';
 import { ClearOutlined, DownOutlined, FilterOutlined, SearchOutlined, UpOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Form, InputNumber, Row, Select, Space, TreeSelect } from 'antd';
@@ -10,6 +11,8 @@ const ProductFilter = ({ onFilterChange, onResetFilter }) => {
   const dispatch = useDispatch();
   const { categoriesTree } = useSelector((state) => state.category);
   const [expanded, setExpanded] = useState(false);
+
+  const { allSizes, allColors } = useGetAllSizeColor();
 
   const headerStyle = {
     padding: '8px 16px',
@@ -173,19 +176,14 @@ const ProductFilter = ({ onFilterChange, onResetFilter }) => {
                       placeholder='Chọn màu sắc'
                       style={{ width: '100%' }}
                       maxTagCount='responsive'
-                      options={[
-                        { value: 'Đen', label: 'Đen' },
-                        { value: 'Trắng', label: 'Trắng' },
-                        { value: 'Đỏ', label: 'Đỏ' },
-                        { value: 'Xanh dương', label: 'Xanh dương' },
-                        { value: 'Xanh lá', label: 'Xanh lá' },
-                        { value: 'Vàng', label: 'Vàng' },
-                        { value: 'Tím', label: 'Tím' },
-                        { value: 'Hồng', label: 'Hồng' },
-                        { value: 'Xám', label: 'Xám' },
-                        { value: 'Nâu', label: 'Nâu' }
-                      ]}
-                    />
+                    >
+                      {allColors &&
+                        allColors.map((color) => (
+                          <Select.Option key={color} value={color}>
+                            {color}
+                          </Select.Option>
+                        ))}
+                    </Select>
                   )}
                 />
               </Form.Item>
@@ -203,24 +201,14 @@ const ProductFilter = ({ onFilterChange, onResetFilter }) => {
                       placeholder='Chọn kích thước'
                       style={{ width: '100%' }}
                       maxTagCount='responsive'
-                      options={[
-                        { value: 'XS', label: 'XS' },
-                        { value: 'S', label: 'S' },
-                        { value: 'M', label: 'M' },
-                        { value: 'L', label: 'L' },
-                        { value: 'XL', label: 'XL' },
-                        { value: 'XXL', label: 'XXL' },
-                        { value: '35', label: '35' },
-                        { value: '36', label: '36' },
-                        { value: '37', label: '37' },
-                        { value: '38', label: '38' },
-                        { value: '39', label: '39' },
-                        { value: '40', label: '40' },
-                        { value: '41', label: '41' },
-                        { value: '42', label: '42' },
-                        { value: '43', label: '43' }
-                      ]}
-                    />
+                    >
+                      {allSizes &&
+                        allSizes.map((size) => (
+                          <Select.Option key={size} value={size}>
+                            {size}
+                          </Select.Option>
+                        ))}
+                    </Select>
                   )}
                 />
               </Form.Item>

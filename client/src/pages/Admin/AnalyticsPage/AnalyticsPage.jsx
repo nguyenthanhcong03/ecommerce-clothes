@@ -86,7 +86,6 @@ const AnalyticsPage = () => {
           params.startDate,
           params.endDate
         );
-        console.log('topProductsResponse', topProductsResponse);
         setTopProductsData(topProductsResponse.products);
 
         // Fetch dữ liệu khách hàng
@@ -239,7 +238,6 @@ const AnalyticsPage = () => {
       ...item,
       revenue: Number(item.revenue) // Đảm bảo revenue là số
     }));
-    console.log('formattedData', revenueData);
 
     const paymentMethodData = revenueData.revenueByPaymentMethod.map((item) => ({
       name: item._id,
@@ -305,7 +303,7 @@ const AnalyticsPage = () => {
 
     return (
       <div className='mb-8 rounded-lg bg-white p-4 shadow'>
-        <h3 className='mb-4 text-lg font-semibold'>Top 10 sản phẩm bán chạy</h3>
+        {/* <h3 className='mb-4 text-lg font-semibold'>Top 10 sản phẩm bán chạy</h3>
         <ResponsiveContainer width='100%' height={400}>
           <BarChart data={topProductsData} layout='vertical' margin={{ top: 5, right: 30, left: 100, bottom: 5 }}>
             <CartesianGrid strokeDasharray='3 3' />
@@ -322,10 +320,11 @@ const AnalyticsPage = () => {
             <Bar dataKey='totalSold' fill='#8884d8' name='Số lượng đã bán' />
             <Bar dataKey='totalRevenue' fill='#82ca9d' name='Doanh thu' />
           </BarChart>
-        </ResponsiveContainer>
+        </ResponsiveContainer> */}
 
-        <div className='mt-6'>
-          <h4 className='text-md mb-2 font-semibold'>Chi tiết sản phẩm bán chạy</h4>
+        <div>
+          <h3 className='mb-4 text-lg font-semibold'>Top 10 sản phẩm bán chạy</h3>
+          {/* <h4 className='text-md mb-2 font-semibold'>Chi tiết sản phẩm bán chạy</h4> */}
           <div className='overflow-x-auto'>
             <table className='min-w-full divide-y divide-gray-200'>
               <thead className='bg-gray-50'>
@@ -504,7 +503,7 @@ const AnalyticsPage = () => {
 
         <div className='col-span-1 rounded-lg bg-white p-4 shadow lg:col-span-2'>
           <h3 className='mb-4 text-lg font-semibold'>Tỷ lệ hủy đơn: {orderData.cancellationRate.toFixed(2)}%</h3>
-          {orderData.topCancellationReasons.length > 0 && (
+          {/* {orderData.topCancellationReasons.length > 0 && (
             <div>
               <h4 className='text-md mb-2 font-semibold'>Top lý do hủy đơn:</h4>
               <ul className='list-disc pl-5'>
@@ -515,7 +514,7 @@ const AnalyticsPage = () => {
                 ))}
               </ul>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     );
@@ -528,11 +527,10 @@ const AnalyticsPage = () => {
       name: item.stockLevel,
       value: item.uniqueProductCount
     }));
-    console.log('stockDistributionData', stockDistributionData);
 
     return (
-      <div className='mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2'>
-        <div className='rounded-lg bg-white p-4 shadow'>
+      <div className='mb-8 grid grid-cols-1 gap-6'>
+        {/* <div className='rounded-lg bg-white p-4 shadow'>
           <h3 className='mb-4 text-lg font-semibold'>Phân bố tồn kho</h3>
           <ResponsiveContainer width='100%' height={300}>
             <PieChart>
@@ -555,7 +553,7 @@ const AnalyticsPage = () => {
               <Legend />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </div> */}
 
         <div className='rounded-lg bg-white p-4 shadow'>
           <h3 className='mb-4 text-lg font-semibold'>Tổng quan tồn kho</h3>

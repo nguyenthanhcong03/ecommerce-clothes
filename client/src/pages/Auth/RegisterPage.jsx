@@ -92,7 +92,9 @@ function RegisterPage() {
         navigate('/login', { state: location.state });
       }, 2000);
     }
-  }, [successMessage, dispatch, navigate, location.state]); // Kiểm tra username khi người dùng nhập
+  }, [successMessage, dispatch, navigate, location.state]);
+
+  // Kiểm tra username khi người dùng nhập
   useEffect(() => {
     const checkUsername = async () => {
       // Regex pattern cho username hợp lệ
@@ -155,7 +157,9 @@ function RegisterPage() {
     } catch (error) {
       console.error('Lỗi đăng ký:', error);
     }
-  }; // Kiểm tra email khi người dùng nhập
+  };
+
+  // Kiểm tra email khi người dùng nhập
   useEffect(() => {
     const checkEmail = async () => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

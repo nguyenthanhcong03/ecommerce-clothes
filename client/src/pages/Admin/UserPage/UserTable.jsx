@@ -22,6 +22,7 @@ const UserTable = ({
   onOpenBanModal
 }) => {
   const { users, pagination, filters, sort, loading, error } = useSelector((state) => state.adminUser);
+  const { user } = useSelector((state) => state.account);
   // Tạo cột cho bảng
   const columns = useMemo(
     () => [
@@ -96,12 +97,13 @@ const UserTable = ({
         fixed: 'right',
         render: (_, record) => (
           <Space size='small'>
-            <Tooltip title='Chỉnh sửa'>
-              <div>
-                <EditIcon onClick={() => onEdit(record)} />
-              </div>
-            </Tooltip>
-
+            {user.username !== record.username && (
+              <Tooltip title='Chỉnh sửa'>
+                <div>
+                  <EditIcon onClick={() => onEdit(record)} />
+                </div>
+              </Tooltip>
+            )}
             {/* Không cho phép chặn người dùng là admin */}
             {record.role !== 'admin' &&
               (record.isBlocked === true ? (
@@ -118,18 +120,20 @@ const UserTable = ({
                 </Tooltip>
               ))}
 
-            <Popconfirm
-              title='Bạn có chắc chắn muốn xóa người dùng này?'
-              onConfirm={() => onDelete(record._id)}
-              okText='Có'
-              cancelText='Không'
-            >
-              <Tooltip title='Xóa'>
-                <div>
-                  <DeleteIcon />
-                </div>
-              </Tooltip>
-            </Popconfirm>
+            {user.username !== record.username && (
+              <Popconfirm
+                title='Bạn có chắc chắn muốn xóa người dùng này?'
+                onConfirm={() => onDelete(record._id)}
+                okText='Có'
+                cancelText='Không'
+              >
+                <Tooltip title='Xóa'>
+                  <div>
+                    <DeleteIcon />
+                  </div>
+                </Tooltip>
+              </Popconfirm>
+            )}
           </Space>
         )
       }

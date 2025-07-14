@@ -2,10 +2,12 @@ import Button from '@/components/common/Button/Button';
 import Input from '@/components/common/Input/Input';
 import OrderItem from '@/pages/customer/AccountPage/OrderPage/components/OrderItem';
 import { cancelOrder, fetchUserOrders, setActiveTab } from '@/store/slices/userOrderSlice';
+import { vnpayRefundAPI } from '@/services/paymentService';
 import { ClipboardList, Loader2, Package, Search, Timer } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, Outlet } from 'react-router-dom';
+import { message } from 'antd';
 
 const OrderPage = () => {
   const dispatch = useDispatch();
@@ -16,7 +18,6 @@ const OrderPage = () => {
   const tabs = React.useMemo(
     () => [
       { id: 'all', label: 'Tất cả', status: '' },
-      { id: 'unpaid', label: 'Chưa thanh toán', status: 'Unpaid' },
       { id: 'pending', label: 'Chờ xác nhận', status: 'Pending' },
       { id: 'processing', label: 'Đang xử lý', status: 'Processing' },
       { id: 'shipping', label: 'Đang giao', status: 'Shipping' },
@@ -44,8 +45,22 @@ const OrderPage = () => {
   };
 
   // Xử lý hủy đơn hàng
-  const handleCancelOrder = (orderId, reason) => {
-    dispatch(cancelOrder({ orderId, reason }));
+  const handleCancelOrder = async (orderId, reason) => {
+    try {
+      // Gọi API hủy đơn hàng
+      await dispatch(cancelOrder({ orderId, reason })).unwrap();
+      message.success('Đơn hàng đã được hủy thành công và đang hoàn tiền');
+
+      // Gọi API hoàn tiền sau khi hủy đơn hàng thành công
+      try {
+        await vnpayRefundAPI(orderId, reason);
+        message.success('Đơn hàng đã được hủy và hoàn tiền thành công');
+      } catch (refundError) {
+        message.error('Đơn hàng đã được hủy nhưng không thể hoàn tiền. Vui lòng liên hệ hỗ trợ.');
+      }
+    } catch (error) {
+      message.error('Lỗi khi hủy đơn hàng:', error);
+    }
   };
 
   // Xử lý tìm kiếm

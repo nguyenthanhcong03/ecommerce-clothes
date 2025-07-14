@@ -1,9 +1,10 @@
-import Button from '@/components/common/Button/Button';
 import InputNumber from '@/components/common/InputNumber/InputNumber';
-import { COLOR_OPTIONS, SIZE_OPTIONS, PRICE_RANGES } from '@/utils/constants';
+import { useGetAllSizeColor } from '@/hooks/useGetAllSizeColor';
+import { getAllProductsAPI } from '@/services/productService';
+import { PRICE_RANGES, SIZE_OPTIONS } from '@/utils/constants';
 import { CloseOutlined, StarFilled } from '@ant-design/icons';
-import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
 
 export function FilterSidebar({ isFilterOpen, setIsFilterOpen, onFilterChange, onResetFilter, params }) {
   const [showCustomPrice, setShowCustomPrice] = useState(false);
@@ -15,6 +16,8 @@ export function FilterSidebar({ isFilterOpen, setIsFilterOpen, onFilterChange, o
   const maxPrice = params?.get('maxPrice') || '';
   const sizes = params?.get('size')?.split(',').filter(Boolean) || [];
   const colors = params?.get('color')?.split(',').filter(Boolean) || [];
+
+  const { allProducts, allSizes, allColors } = useGetAllSizeColor();
 
   let filterCounter = 0;
   const caculateFilterCounter = () => {
@@ -255,7 +258,21 @@ export function FilterSidebar({ isFilterOpen, setIsFilterOpen, onFilterChange, o
           )}
         </div>
         <div className='flex flex-wrap gap-3'>
-          {COLOR_OPTIONS.map((color, index) => (
+          {allColors &&
+            allColors.map((color, index) => (
+              <button
+                key={color}
+                onClick={() => handleToggleColor(color)}
+                className={`pitems-center flex justify-center rounded-sm border px-2 py-1 text-xs transition ${
+                  colors.includes(color)
+                    ? 'border-primaryColor bg-primaryColor font-medium text-white'
+                    : 'border-gray-300 bg-white text-gray-700 hover:border-primaryColor hover:bg-gray-50'
+                }`}
+              >
+                {color}
+              </button>
+            ))}
+          {/* {COLOR_OPTIONS.map((color, index) => (
             <div key={index} className='group relative'>
               <button
                 onClick={() => handleToggleColor(color.name)}
@@ -273,9 +290,9 @@ export function FilterSidebar({ isFilterOpen, setIsFilterOpen, onFilterChange, o
                 </div>
               )}
             </div>
-          ))}
+          ))} */}
         </div>
-      </div>{' '}
+      </div>
       {/* Sizes */}
       <div className='mb-6'>
         <div className='flex items-center justify-between'>
@@ -287,22 +304,22 @@ export function FilterSidebar({ isFilterOpen, setIsFilterOpen, onFilterChange, o
           )}
         </div>
         <div className='flex flex-wrap gap-2'>
-          {SIZE_OPTIONS.map((size) => (
-            <button
-              key={size.value}
-              onClick={() => handleToggleSize(size.value)}
-              className={`flex h-8 w-8 items-center justify-center rounded-sm border text-xs transition ${
-                sizes.includes(size.value)
-                  ? 'border-primaryColor bg-primaryColor font-medium text-white'
-                  : 'border-gray-300 bg-white text-gray-700 hover:border-primaryColor hover:bg-gray-50'
-              }`}
-              aria-pressed={sizes.includes(size.value)}
-            >
-              {size.name}
-            </button>
-          ))}
+          {allSizes &&
+            allSizes.map((size, index) => (
+              <button
+                key={size}
+                onClick={() => handleToggleSize(size)}
+                className={`flex h-8 w-8 items-center justify-center rounded-sm border text-xs transition ${
+                  sizes.includes(size)
+                    ? 'border-primaryColor bg-primaryColor font-medium text-white'
+                    : 'border-gray-300 bg-white text-gray-700 hover:border-primaryColor hover:bg-gray-50'
+                }`}
+              >
+                {size}
+              </button>
+            ))}
         </div>
-      </div>{' '}
+      </div>
       {/* Rating */}
       <div className='mb-6'>
         <div className='flex items-center justify-between'>
@@ -317,27 +334,6 @@ export function FilterSidebar({ isFilterOpen, setIsFilterOpen, onFilterChange, o
           )}
         </div>
         <div className='flex gap-2'>
-          {/* {[5, 4, 3, 2, 1].map((starCount) => (
-            <button
-              key={starCount}
-              onClick={() => handleRatingChange(starCount)}
-              className={`flex items-center gap-2 rounded-md p-2 transition ${
-                rating === starCount.toString() ? 'border border-primaryColor bg-primaryColor/10' : 'hover:bg-gray-50'
-              }`}
-            >
-              <div className='flex'>
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <StarFilled
-                    key={index}
-                    className={`text-sm ${index < starCount ? 'text-yellow-400' : 'text-gray-300'}`}
-                  />
-                ))}
-              </div>
-              <span className='text-sm text-gray-600'>
-                {starCount} sao {starCount === 5 ? 'trở lên' : ''}
-              </span>
-            </button>
-          ))} */}
           {Array.from({ length: 5 }).map((_, index) => (
             <button
               key={index}

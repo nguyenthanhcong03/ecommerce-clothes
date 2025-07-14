@@ -8,6 +8,7 @@ const {
   updatePaymentStatus,
   cancelOrder,
   searchOrders,
+  processRefund,
 } = require("../controllers/orderController");
 const { verifyToken, checkRole } = require("../middlewares/auth");
 

@@ -276,11 +276,6 @@ const ProductDetailModal = () => {
               {/* Mạng xã hội */}
               <div className='mt-6 flex items-center justify-between border-t border-gray-100 pt-4'>
                 <ShareButtons product={product} />
-
-                <button className='flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-all hover:border-red-300 hover:bg-red-50 hover:text-red-600'>
-                  <Heart strokeWidth={1.5} className='h-4 w-4' />
-                  <span className='hidden sm:inline'>Yêu thích</span>
-                </button>
               </div>
             </div>
 

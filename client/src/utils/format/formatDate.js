@@ -2,10 +2,6 @@ import dayjs from 'dayjs';
 
 /**
  * Định dạng ngày tháng theo định dạng mong muốn
- *
- * @param {string|Date} date - Chuỗi ngày hoặc đối tượng Date cần định dạng
- * @param {string} format - Định dạng mong muốn, mặc định là 'DD/MM/YYYY'
- * @returns {string} Chuỗi ngày tháng đã được định dạng
  */
 export const formatDate = (date, format = 'DD/MM/YYYY') => {
   if (!date) return '';
@@ -20,9 +16,6 @@ export const formatDate = (date, format = 'DD/MM/YYYY') => {
 
 /**
  * Định dạng ngày tháng kèm theo giờ
- *
- * @param {string|Date} date - Chuỗi ngày hoặc đối tượng Date cần định dạng
- * @returns {string} Chuỗi ngày tháng kèm giờ đã được định dạng
  */
 export const formatDateTime = (date) => {
   return formatDate(date, 'DD/MM/YYYY HH:mm');
@@ -30,9 +23,6 @@ export const formatDateTime = (date) => {
 
 /**
  * Định dạng ngày tháng theo kiểu thân thiện (hôm nay, hôm qua, vv)
- *
- * @param {string|Date} date - Chuỗi ngày hoặc đối tượng Date cần định dạng
- * @returns {string} Chuỗi ngày tháng đã được định dạng thân thiện
  */
 export const formatDateFromNow = (date) => {
   if (!date) return '';
@@ -47,9 +37,6 @@ export const formatDateFromNow = (date) => {
 
 /**
  * Kiểm tra xem một ngày đã qua hay chưa
- *
- * @param {string|Date} date - Chuỗi ngày hoặc đối tượng Date cần kiểm tra
- * @returns {boolean} true nếu ngày đã qua, false nếu không
  */
 export const isDatePast = (date) => {
   if (!date) return false;
@@ -64,10 +51,6 @@ export const isDatePast = (date) => {
 
 /**
  * So sánh hai ngày
- *
- * @param {string|Date} date1 - Ngày thứ nhất cần so sánh
- * @param {string|Date} date2 - Ngày thứ hai cần so sánh
- * @returns {number} 1 nếu date1 > date2, -1 nếu date1 < date2, 0 nếu bằng nhau
  */
 export const compareDates = (date1, date2) => {
   if (!date1 || !date2) return 0;

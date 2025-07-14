@@ -64,7 +64,6 @@ const useChatbot = () => {
       try {
         // Gửi tới server
         const response = await chatbotService.sendMessage(messageContent);
-        console.log('response', response);
 
         // Thêm phản hồi của bot
         const botMessage = {

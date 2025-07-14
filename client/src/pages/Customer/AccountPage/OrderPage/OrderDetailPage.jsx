@@ -3,7 +3,7 @@ import Modal from '@/components/common/Modal/Modal2';
 import CountdownTimer from '@/pages/customer/AccountPage/OrderPage/components/CountdownTimer';
 import OrderStatusBadge from '@/pages/customer/AccountPage/OrderPage/components/OrderStatusBadge';
 import OrderTimeline from '@/pages/customer/AccountPage/OrderPage/components/OrderTimeline';
-import { createVnpayPaymentAPI } from '@/services/paymentService';
+import { createVnpayPaymentAPI, vnpayRefundAPI } from '@/services/paymentService';
 import { cancelOrder, fetchOrderDetail, resetOrderDetail } from '@/store/slices/userOrderSlice';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import { formatDate } from '@/utils/format/formatDate';
@@ -52,17 +52,32 @@ const OrderDetailPage = () => {
   }, [dispatch, orderId]);
 
   // Xử lý hủy đơn hàng
-  const handleCancelOrder = () => {
+  const handleCancelOrder = async () => {
     if (!cancelReason.trim()) {
       message.error('Vui lòng nhập lý do hủy đơn hàng');
       return;
     }
 
-    dispatch(cancelOrder({ orderId, reason: cancelReason }))
-      .unwrap()
-      .then(() => {
-        setShowCancelModal(false);
-      });
+    try {
+      // Gọi API hủy đơn hàng
+      await dispatch(cancelOrder({ orderId, reason: cancelReason })).unwrap();
+      message.success('Đơn hàng đã được hủy thành công và đang hoàn tiền');
+
+      // Gọi API hoàn tiền sau khi hủy đơn hàng thành công
+      try {
+        await vnpayRefundAPI(orderId, cancelReason);
+        message.success('Đơn hàng đã được hủy và hoàn tiền thành công');
+
+        // Reload lại chi tiết đơn hàng
+        dispatch(fetchOrderDetail(orderId));
+      } catch (refundError) {
+        message.error('Đơn hàng đã được hủy nhưng không thể hoàn tiền. Vui lòng liên hệ hỗ trợ.');
+      }
+
+      setShowCancelModal(false);
+    } catch (error) {
+      message.error('Lỗi khi hủy đơn hàng');
+    }
   };
 
   const canBeCancelled = orderDetail && ['Pending', 'Processing'].includes(orderDetail.status);
@@ -114,13 +129,13 @@ const OrderDetailPage = () => {
         </div>
         <div className='flex items-center gap-3'>
           <OrderStatusBadge status={orderDetail.status} />
-          {orderDetail.status === 'Unpaid' && (
+          {orderDetail.payment?.status === 'Unpaid' && (
             <CountdownTimer createdAt={orderDetail.createdAt} onExpired={handleOrderExpired} />
           )}
         </div>
       </div>
       {/* Thông báo cảnh báo cho đơn hàng chưa thanh toán */}
-      {orderDetail.status === 'Unpaid' && (
+      {orderDetail?.payment?.status === 'Unpaid' && (
         <div className='mb-6 rounded-lg border border-orange-200 bg-orange-50 p-4'>
           <div className='flex items-start'>
             <Timer className='mt-0.5 h-5 w-5 flex-shrink-0 text-orange-600' />
@@ -207,7 +222,7 @@ const OrderDetailPage = () => {
           </div>
 
           {/* Trạng thái đơn hàng */}
-          <OrderTimeline orderDetail={orderDetail} />
+          {/* <OrderTimeline orderDetail={orderDetail} /> */}
         </div>
 
         {/* Sidebar */}
@@ -254,21 +269,39 @@ const OrderDetailPage = () => {
                     : 'Khác'}
               </p>
 
-              {orderDetail?.payment?.method !== 'COD' && (
-                <div className='mt-2 flex items-center'>
-                  <span
-                    className={`mr-2 inline-block h-3 w-3 rounded-full ${
-                      orderDetail?.payment?.isPaid ? 'bg-green-500' : 'bg-amber-500'
-                    }`}
-                  />
-                  <span className={orderDetail?.payment?.isPaid ? 'text-green-700' : 'text-amber-700'}>
-                    {orderDetail?.payment?.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
-                  </span>
-                </div>
+              <div className='mt-2 flex items-center'>
+                <span
+                  className={`mr-2 inline-block h-3 w-3 rounded-full ${
+                    orderDetail?.payment?.status === 'Paid'
+                      ? 'bg-green-500'
+                      : orderDetail?.payment?.status === 'Refunded'
+                        ? 'bg-purple-500'
+                        : 'bg-amber-500'
+                  }`}
+                />
+                <span
+                  className={
+                    orderDetail?.payment?.status === 'Paid'
+                      ? 'text-green-700'
+                      : orderDetail?.payment?.status === 'Refunded'
+                        ? 'text-purple-700'
+                        : 'text-amber-700'
+                  }
+                >
+                  {orderDetail?.payment?.status === 'Paid'
+                    ? 'Đã thanh toán'
+                    : orderDetail?.payment?.status === 'Refunded'
+                      ? 'Đã hoàn tiền'
+                      : 'Chưa thanh toán'}
+                </span>
+              </div>
+
+              {orderDetail?.payment?.status === 'Paid' && orderDetail?.payment?.paidAt && (
+                <p className='text-sm text-gray-500'>Thanh toán lúc: {formatDate(orderDetail?.payment?.paidAt)}</p>
               )}
 
-              {orderDetail?.payment?.isPaid && orderDetail?.payment?.paidAt && (
-                <p className='text-sm text-gray-500'>Thanh toán lúc: {formatDate(orderDetail?.payment?.paidAt)}</p>
+              {orderDetail?.payment?.status === 'Refunded' && orderDetail?.payment?.refundedAt && (
+                <p className='text-sm text-gray-500'>Hoàn tiền lúc: {formatDate(orderDetail?.payment?.refundedAt)}</p>
               )}
             </div>
           </div>
@@ -277,7 +310,7 @@ const OrderDetailPage = () => {
             <h2 className='mb-4 text-lg font-medium'>Hành động</h2>
 
             <div className='flex flex-col space-y-3'>
-              {orderDetail.status === 'Unpaid' && (
+              {orderDetail?.payment?.status === 'Unpaid' && (
                 <Button onClick={() => handleCreatePaymentUrl(orderDetail._id.toString())}>
                   <CreditCard className='mr-2 h-4 w-4' />
                   Thanh toán ngay

@@ -26,8 +26,8 @@ export const updateOrderStatusAPI = (orderId, status) => {
   return axios.patch(`${BASE_API}/${orderId}/status`, { status });
 };
 
-export const updatePaymentStatusAPI = (orderId, isPaid) => {
-  return axios.patch(`${BASE_API}/${orderId}/payment`, { isPaid });
+export const updatePaymentStatusAPI = (orderId, status) => {
+  return axios.patch(`${BASE_API}/${orderId}/payment`, { status });
 };
 
 export const searchOrdersAPI = (keyword) => {

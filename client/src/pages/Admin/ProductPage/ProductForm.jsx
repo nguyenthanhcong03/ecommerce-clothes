@@ -6,9 +6,9 @@ import { COLOR_OPTIONS } from '@/utils/constants';
 import { formatTree } from '@/utils/format/formatTree';
 import { PlusOutlined } from '@ant-design/icons';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, Form, Input, message, Modal, Radio, Select, Switch, Table, TreeSelect } from 'antd';
+import { Button, Form, Input, message, Modal, Radio, Select, Switch, Table, TreeSelect, Divider, Space } from 'antd';
 import PropTypes from 'prop-types';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import * as yup from 'yup';
@@ -98,8 +98,21 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
 
+  // State cho thêm size và color tùy chỉnh
+  const [customSizes, setCustomSizes] = useState([]);
+  const [customColors, setCustomColors] = useState([]);
+  const [newSizeName, setNewSizeName] = useState('');
+  const [newColorName, setNewColorName] = useState('');
+
   const categoryTreeFormatted = formatTree(categoriesTree);
-  const currentSizeOptions = useMemo(() => SIZES_BY_TYPE[productType] || [], [productType]);
+  const currentSizeOptions = useMemo(() => {
+    const baseSizes = SIZES_BY_TYPE[productType] || [];
+    return [...baseSizes, ...customSizes];
+  }, [productType, customSizes]);
+
+  const currentColorOptions = useMemo(() => {
+    return [...COLOR_OPTIONS, ...customColors];
+  }, [customColors]);
   const {
     control,
     handleSubmit,
@@ -167,7 +180,7 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
     } finally {
       setUploading(false);
     }
-  }, []); // Không có dependencies vì không phụ thuộc vào state
+  }, []);
 
   const handleAddProduct = useCallback(
     async (formData) => {
@@ -350,13 +363,58 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
     setVariantModalVisible(false);
     setSelectedSize('');
     setSelectedColor('');
+    setNewSizeName('');
+    setNewColorName('');
     message.success('Đã thêm biến thể mới!');
   }, [selectedSize, selectedColor, appendVariant, variantExists]);
 
   const openVariantModal = useCallback(() => {
     setSelectedSize('');
     setSelectedColor('');
+    setNewSizeName('');
+    setNewColorName('');
     setVariantModalVisible(true);
+  }, []);
+
+  // Hàm thêm size và color tùy chỉnh
+  const addNewSize = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (newSizeName.trim()) {
+        const newSize = {
+          label: newSizeName.trim(),
+          value: newSizeName.trim()
+        };
+        setCustomSizes((prev) => [...prev, newSize]);
+        setNewSizeName('');
+        message.success(`Đã thêm size mới: ${newSizeName.trim()}`);
+      }
+    },
+    [newSizeName]
+  );
+
+  const addNewColor = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (newColorName.trim()) {
+        const newColor = {
+          name: newColorName.trim(),
+          hex: '#000000' // Mặc định màu đen
+        };
+        setCustomColors((prev) => [...prev, newColor]);
+        setNewColorName('');
+        message.success(`Đã thêm màu mới: ${newColorName.trim()}`);
+      }
+    },
+    [newColorName]
+  );
+
+  const onSizeNameChange = useCallback((event) => {
+    setNewSizeName(event.target.value);
+  }, []);
+
+  const onColorNameChange = useCallback((event) => {
+    setNewColorName(event.target.value);
   }, []);
 
   const isEditMode = Boolean(selectedProduct);
@@ -382,7 +440,6 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
       onOk={handleSubmit(onSubmit)}
       maskClosable={false}
     >
-      {' '}
       <Form layout='vertical' onFinish={handleSubmit(onSubmit)}>
         {/* Product Name */}
         <Form.Item
@@ -477,7 +534,7 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
           <div className='mt-1 text-xs text-gray-500'>
             {productType === 'áo' ? 'Size áo: S, M, L, XL, XXL' : 'Size quần: 28, 29, 30, 31, 32,...'}
           </div>
-        </Form.Item>{' '}
+        </Form.Item>
         {/* Product Variants */}
         <Form.Item
           label='Biến thể sản phẩm'
@@ -626,16 +683,31 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
                   value={selectedColor}
                   onChange={setSelectedColor}
                   style={{ width: '100%' }}
+                  popupRender={(menu) => (
+                    <>
+                      {menu}
+                      <Divider style={{ margin: '8px 0' }} />
+                      <Space style={{ padding: '0 8px 4px' }}>
+                        <Input
+                          placeholder='Tên màu mới'
+                          value={newColorName}
+                          onChange={onColorNameChange}
+                          onKeyDown={(e) => {
+                            e.stopPropagation();
+                            if (e.key === 'Enter') {
+                              addNewColor(e);
+                            }
+                          }}
+                          style={{ width: '160px' }}
+                        />
+                        <Button type='text' icon={<PlusOutlined />} onClick={addNewColor}></Button>
+                      </Space>
+                    </>
+                  )}
                 >
-                  {COLOR_OPTIONS.map((color) => (
+                  {currentColorOptions.map((color) => (
                     <Option key={color.name} value={color.name}>
-                      <div className='flex items-center'>
-                        <span
-                          className='mr-2 inline-block h-4 w-4 rounded-full border border-gray-300'
-                          style={{ backgroundColor: color.hex }}
-                        ></span>
-                        {color.name}
-                      </div>
+                      <div className='flex items-center'>{color.name}</div>
                     </Option>
                   ))}
                 </Select>
@@ -648,6 +720,26 @@ const ProductForm = ({ selectedProduct, onClose, onRefresh }) => {
                   value={selectedSize}
                   onChange={setSelectedSize}
                   style={{ width: '100%' }}
+                  popupRender={(menu) => (
+                    <>
+                      {menu}
+                      <Divider style={{ margin: '8px 0' }} />
+                      <Space style={{ padding: '0 8px 4px' }}>
+                        <Input
+                          placeholder='Size mới'
+                          value={newSizeName}
+                          onChange={onSizeNameChange}
+                          onKeyDown={(e) => {
+                            e.stopPropagation();
+                            if (e.key === 'Enter') {
+                              addNewSize(e);
+                            }
+                          }}
+                        />
+                        <Button type='text' icon={<PlusOutlined />} onClick={addNewSize}></Button>
+                      </Space>
+                    </>
+                  )}
                 >
                   {currentSizeOptions.map((option) => (
                     <Option key={option.value} value={option.value}>

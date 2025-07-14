@@ -8,8 +8,8 @@ const { default: mongoose } = require("mongoose");
 const getAllProducts = async (req, res) => {
   try {
     const {
-      page = 1,
-      limit = 5,
+      page,
+      limit,
       search,
       category,
       minPrice,

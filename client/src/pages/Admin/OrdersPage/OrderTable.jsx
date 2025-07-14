@@ -2,11 +2,12 @@ import VNPayLogo from '@/assets/images/vnpay-logo-vinadesign-25-12-59-16.jpg';
 import OrderDetails from '@/pages/admin/OrdersPage/OrderDetails';
 import CountdownTimer from '@/pages/customer/AccountPage/OrderPage/components/CountdownTimer';
 import { updatePaymentStatusAPI } from '@/services/orderService';
+import { vnpayRefundAPI } from '@/services/paymentService';
 import { updateOrderStatus } from '@/store/slices/adminOrderSlice';
 import { formatCurrency } from '@/utils/format/formatCurrency';
 import formatDate from '@/utils/format/formatDate';
-import { getValidStatusTransitions, translateOrderStatus } from '@/utils/helpers/orderStatusUtils';
-import { DollarOutlined, EyeOutlined } from '@ant-design/icons';
+import { getValidStatusTransitions, orderStatuses, translateOrderStatus } from '@/utils/helpers/orderStatusUtils';
+import { DollarOutlined, EyeOutlined, UndoOutlined } from '@ant-design/icons';
 import { Button, Card, Input, message, Modal, Select, Space, Table, Tag, Tooltip } from 'antd';
 import { RefreshCw, Search } from 'lucide-react';
 import { useState } from 'react';
@@ -16,9 +17,11 @@ const OrderTable = ({ searchText, onSearch, onPageChange, onRefresh }) => {
   const dispatch = useDispatch();
   const { orders, pagination, filters, loading, error } = useSelector((state) => state.adminOrder);
   const [updatingOrderIds, setUpdatingOrderIds] = useState([]);
+  const [refundingOrderIds, setRefundingOrderIds] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [statusModalVisible, setStatusModalVisible] = useState(false);
+  const [refundModalVisible, setRefundModalVisible] = useState(false);
   const [newStatus, setNewStatus] = useState('');
 
   const handleOrderStatusChange = async (orderId, newStatus) => {
@@ -27,8 +30,8 @@ const OrderTable = ({ searchText, onSearch, onPageChange, onRefresh }) => {
 
     try {
       await dispatch(updateOrderStatus({ orderId, status: newStatus })).unwrap();
-      message.success(`Trạng thái đơn hàng đã cập nhật thành ${newStatus}`);
-      // fetchAllOrders();
+      message.success(`Trạng thái đơn hàng đã cập nhật thành ${translateOrderStatus(newStatus)}`);
+      // onRefresh();
     } catch (error) {
       message.error(`Lỗi khi cập nhật trạng thái đơn hàng: ${error.message}`);
     } finally {
@@ -37,14 +40,42 @@ const OrderTable = ({ searchText, onSearch, onPageChange, onRefresh }) => {
     }
   };
 
-  const handlePaymentStatusChange = async (orderId, isPaid) => {
+  const handlePaymentStatusChange = async (orderId, status) => {
     try {
-      await updatePaymentStatusAPI(orderId, isPaid);
+      await updatePaymentStatusAPI(orderId, status);
       message.success(`Trạng thái thanh toán đã được cập nhật`);
       onRefresh();
     } catch (error) {
       message.error(`Lỗi khi cập nhật trạng thái thanh toán: ${error.message}`);
     }
+  };
+
+  const handleRefundOrder = async (orderId) => {
+    // Thêm orderId vào danh sách đang hoàn tiền
+    setRefundingOrderIds((prev) => [...prev, orderId]);
+
+    try {
+      await vnpayRefundAPI(orderId, 'Hoàn tiền đơn hàng đã hủy');
+      message.success('Hoàn tiền đơn hàng thành công');
+      onRefresh(); // Refresh lại danh sách để cập nhật trạng thái
+    } catch (error) {
+      message.error(`Lỗi khi hoàn tiền: ${error.message || 'Không thể hoàn tiền'}`);
+    } finally {
+      // Xóa orderId khỏi danh sách đang hoàn tiền
+      setRefundingOrderIds((prev) => prev.filter((id) => id !== orderId));
+    }
+  };
+
+  const showRefundModal = (order) => {
+    setSelectedOrder(order);
+    setRefundModalVisible(true);
+  };
+
+  const confirmRefund = async () => {
+    if (!selectedOrder) return;
+
+    setRefundModalVisible(false);
+    await handleRefundOrder(selectedOrder._id);
   };
 
   const handleStatusChange = async () => {
@@ -137,85 +168,98 @@ const OrderTable = ({ searchText, onSearch, onPageChange, onRefresh }) => {
     {
       title: 'Trạng thái thanh toán',
       dataIndex: 'payment',
-      key: 'payment.isPaid',
-      render: (payment) => (
-        <Tag color={payment.isPaid ? 'green' : 'volcano'}>
-          {payment.isPaid ? 'Đã thanh toán' : payment?.isPaid === false ? 'Chưa thanh toán' : 'Đã hủy'}
-        </Tag>
-      )
+      key: 'payment.status',
+      render: (payment) => {
+        let color, text;
+        switch (payment.status) {
+          case 'Paid':
+            color = 'green';
+            text = 'Đã thanh toán';
+            break;
+          case 'Refunded':
+            color = 'purple';
+            text = 'Đã hoàn tiền';
+            break;
+          default:
+            color = 'volcano';
+            text = 'Chưa thanh toán';
+        }
+        return <Tag color={color}>{text}</Tag>;
+      }
     },
     {
       title: 'Trạng thái đơn hàng',
       dataIndex: 'status',
       key: 'status',
       render: (status, record) => {
-        console.log('status', status);
         const isUpdating = updatingOrderIds.includes(record._id);
-        if (status === 'Unpaid') {
+        if (record?.payment?.status === 'Unpaid') {
           return (
             <div className='flex flex-col items-center gap-1'>
-              <span className='rounded-md border border-[#f09535] bg-[#fffaef] px-2 text-[#f09535]'>
-                Chưa thanh toán
-              </span>
+              {/* <Tag color='orange'>Chưa thanh toán</Tag> */}
               <CountdownTimer createdAt={record.createdAt} />
             </div>
           );
         }
         return (
           <Select
-            value={translateOrderStatus(status)}
+            value={status}
+            // value={translateOrderStatus(status)}
             style={{
               width: '100%'
             }}
             loading={isUpdating}
             disabled={isUpdating || status === 'Cancelled'}
             onChange={(value) => handleOrderStatusChange(record._id, value)}
-            // options={orderStatuses}
-            options={getValidStatusTransitions(status)}
+            options={orderStatuses}
+            // options={getValidStatusTransitions(status)}
             listItemHeight={30}
           />
         );
       },
-      filters: [
-        { text: 'Chờ xác nhận', value: 'Pending' },
-        { text: 'Đang xử lý', value: 'Processing' },
-        { text: 'Đang giao', value: 'Shipping' },
-        { text: 'Đã giao', value: 'Delivered' },
-        { text: 'Đã hủy', value: 'Cancelled' }
-      ],
+      // filters: [
+      //   { text: 'Chờ xác nhận', value: 'Pending' },
+      //   { text: 'Đang xử lý', value: 'Processing' },
+      //   { text: 'Đang giao', value: 'Shipping' },
+      //   { text: 'Đã giao', value: 'Delivered' },
+      //   { text: 'Đã hủy', value: 'Cancelled' }
+      // ],
       width: 180
     },
     {
       title: 'Thao tác',
       key: 'action',
       fixed: 'right',
-      render: (_, record) => (
-        <Space size='small'>
-          <Tooltip title='Xem chi tiết'>
-            <Button type='primary' icon={<EyeOutlined />} size='small' onClick={() => showOrderDetails(record)} />
-          </Tooltip>
-          {/* <Tooltip title='Cập nhật trạng thái'>
-            <Button
-              type='default'
-              icon={<ClockCircleOutlined />}
-              size='small'
-              onClick={() => openStatusModal(record)}
-            />
-          </Tooltip> */}
-          {/* {record.payment.method !== 'COD' && (
-            <Tooltip title={record.payment.isPaid ? 'Đánh dấu chưa thanh toán' : 'Đánh dấu đã thanh toán'}>
-              <Button
-                type={record.payment.isPaid ? 'default' : 'primary'}
-                danger={record.payment.isPaid}
-                icon={<DollarOutlined />}
-                size='small'
-                onClick={() => handlePaymentStatusChange(record._id, !record.payment.isPaid)}
-              />
+      render: (_, record) => {
+        const isRefunding = refundingOrderIds.includes(record._id);
+        const canRefund =
+          record.status === 'Cancelled' && record.payment.status === 'Paid' && record.payment.method === 'VNPay';
+
+        return (
+          <Space size='small'>
+            <Tooltip title='Xem chi tiết'>
+              <Button type='primary' icon={<EyeOutlined />} size='small' onClick={() => showOrderDetails(record)} />
             </Tooltip>
-          )} */}
-        </Space>
-      ),
-      width: 180
+
+            {canRefund && (
+              <Tooltip title='Hoàn tiền'>
+                <Button
+                  type='default'
+                  icon={<UndoOutlined />}
+                  size='small'
+                  loading={isRefunding}
+                  disabled={isRefunding}
+                  onClick={() => showRefundModal(record)}
+                  className='border-purple-600 text-purple-600 hover:bg-purple-50'
+                >
+                  {/* Hoàn tiền */}
+                </Button>
+              </Tooltip>
+            )}
+          </Space>
+        );
+      },
+      width: 220
     }
   ];
 
@@ -329,6 +373,29 @@ const OrderTable = ({ searchText, onSearch, onPageChange, onRefresh }) => {
             style={{ width: '100%' }}
             options={() => getValidStatusTransitions(selectedOrder?.status)}
           ></Select>
+        </div>
+      </Modal>
+
+      {/* Refund Confirmation Modal */}
+      <Modal
+        title='Xác nhận hoàn tiền'
+        open={refundModalVisible}
+        onOk={confirmRefund}
+        onCancel={() => setRefundModalVisible(false)}
+        okText='Hoàn tiền'
+        cancelText='Hủy'
+        okButtonProps={{ danger: true }}
+      >
+        <div className='py-4'>
+          <p className='mb-4'>
+            Bạn có chắc chắn muốn hoàn tiền cho đơn hàng #{selectedOrder?._id?.substring(0, 10)}... ?
+          </p>
+          <div className='rounded-lg bg-yellow-50 p-4'>
+            <p className='text-sm text-yellow-800'>
+              <strong>Lưu ý:</strong> Thao tác này sẽ hoàn tiền {formatCurrency(selectedOrder?.totalPrice || 0)} về tài
+              khoản khách hàng và không thể hoàn tác.
+            </p>
+          </div>
         </div>
       </Modal>
     </Card>

@@ -5,8 +5,6 @@
 // Hàm hỗ trợ chuyển đổi trạng thái đơn hàng sang tiếng Việt
 export const translateOrderStatus = (status) => {
   switch (status) {
-    case 'Unpaid':
-      return 'Chưa thanh toán';
     case 'Pending':
       return 'Chờ xác nhận';
     case 'Processing':

@@ -4,8 +4,9 @@ const Cart = require("../models/cart");
 const Coupon = require("../models/coupon");
 const Product = require("../models/product");
 const orderService = require("../services/orderService");
-const { createVnpayPaymentUrl } = require("../services/paymentService");
+const { createVnpayPaymentUrl, createVnpayRefund } = require("../services/paymentService");
 const mongoose = require("mongoose");
+const dayjs = require("dayjs");
 const catchAsync = require("../utils/catchAsync");
 const ApiError = require("../utils/ApiError");
 
@@ -44,9 +45,9 @@ const getAllOrders = catchAsync(async (req, res) => {
   // Lọc theo trạng thái thanh toán
   if (paymentStatus) {
     if (Array.isArray(paymentStatus)) {
-      query["payment.isPaid"] = { $in: paymentStatus };
+      query["payment.status"] = { $in: paymentStatus };
     } else {
-      query["payment.isPaid"] = paymentStatus;
+      query["payment.status"] = paymentStatus;
     }
   }
 
@@ -151,7 +152,7 @@ const createOrder = catchAsync(async (req, res) => {
   const { products, shippingAddress, paymentMethod, couponCode, distance, note } = req.body;
   const userId = req.user._id;
 
-  // Validate required fields
+  // Kiểm tra các trường thông tin bắt buộc
   if (!products || !products.length || !shippingAddress || !paymentMethod) {
     await session.abortTransaction();
     session.endSession();
@@ -159,7 +160,7 @@ const createOrder = catchAsync(async (req, res) => {
   }
 
   // Kiểm tra giá sản phẩm hiện tại
-  const updatedProducts = [];
+  const updatedProducts = []; // Cập nhật các sản phẩm có thay đổi giá
   const changedProducts = [];
 
   for (const product of products) {
@@ -187,6 +188,7 @@ const createOrder = catchAsync(async (req, res) => {
     const currentPrice = currentVariant ? currentVariant.price : currentProduct.price;
     const snapshotPrice = product.snapshot.price || product.snapshot.originalPrice;
 
+    // So sánh giá
     if (currentPrice !== snapshotPrice) {
       changedProducts.push({
         productId: product.productId,
@@ -230,6 +232,7 @@ const createOrder = catchAsync(async (req, res) => {
     0
   );
 
+  // Tính toán phí vận chuyển
   let shippingFee = 0;
   if (distance) {
     shippingFee = orderService.calculateShippingFee(distance);
@@ -275,7 +278,7 @@ const createOrder = catchAsync(async (req, res) => {
       shippingAddress,
       payment: {
         method: paymentMethod,
-        isPaid: false,
+        status: "Unpaid",
         paidAt: null,
       },
       trackingNumber,
@@ -341,13 +344,10 @@ const createOrder = catchAsync(async (req, res) => {
       products,
       totalPrice: totalPrice,
       shippingAddress,
-      status: "Unpaid",
-      statusUpdatedAt: {
-        unpaid: new Date(),
-      },
+      status: "Pending",
       payment: {
         method: paymentMethod,
-        isPaid: false,
+        status: "Unpaid",
         paidAt: null,
       },
       trackingNumber,
@@ -435,7 +435,7 @@ const getUserOrders = catchAsync(async (req, res) => {
   }
 
   if (paymentStatus !== undefined) {
-    query["payment.isPaid"] = paymentStatus === "true";
+    query["payment.status"] = paymentStatus === "Paid";
   }
 
   // Tính toán phân trang
@@ -496,12 +496,12 @@ const getOrderById = catchAsync(async (req, res) => {
 
 const updateOrderStatus = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { status, reason } = req.body;
 
   // Validate status
   const validStatuses = ["Pending", "Processing", "Shipping", "Delivered", "Cancelled"];
   if (!validStatuses.includes(status)) {
-    throw new ApiError(400, "Invalid status");
+    throw new ApiError(400, "Trạng thái không hợp lệ");
   }
 
   const order = await Order.findById(id);
@@ -510,25 +510,13 @@ const updateOrderStatus = catchAsync(async (req, res) => {
     throw new ApiError(404, "Đơn hàng không tồn tại");
   }
 
-  // Update status
-  order.status = status;
+  // // Không cho phép cập nhật đơn hàng đã hủy hoặc đã giao
+  // if (order.status === "Cancelled" || order.status === "Delivered") {
+  //   throw new ApiError(400, "Không thể cập nhật trạng thái đơn hàng đã hủy hoặc đã giao");
+  // }
 
-  if (status === "Delivered") {
-    order.payment.isPaid = true;
-    order.payment.paidAt = new Date();
-    // Cập nhật số lượng đã bán cho sản phẩm
-    for (const item of order.products) {
-      const product = await Product.findById(item.productId);
-      if (product) {
-        product.salesCount = (product.salesCount || 0) + item.quantity;
-        await product.save();
-      }
-    }
-  }
-
+  // Xử lý khi admin set status = "Cancelled"
   if (status === "Cancelled") {
-    order.payment.isPaid = null;
-    order.payment.paidAt = null;
     // Khôi phục số lượng sản phẩm trong kho
     for (const item of order.products) {
       const product = await Product.findById(item.productId);
@@ -555,20 +543,53 @@ const updateOrderStatus = catchAsync(async (req, res) => {
         await coupon.save();
       }
     }
+
+    // Set lý do hủy
+    order.cancelReason = reason || "Admin hủy đơn hàng";
   }
 
+  // Xử lý khi admin set status = "Delivered"
+  if (status === "Delivered") {
+    // Chỉ cập nhật payment status và paidAt nếu chưa thanh toán
+    if (order.payment.status === "Unpaid") {
+      order.payment.status = "Paid";
+      order.payment.paidAt = new Date();
+    }
+
+    // Cập nhật số lượng đã bán cho sản phẩm
+    for (const item of order.products) {
+      const product = await Product.findById(item.productId);
+      if (product) {
+        product.salesCount = (product.salesCount || 0) + item.quantity;
+        await product.save();
+      }
+    }
+  }
+
+  // Cập nhật trạng thái đơn hàng
+  order.status = status;
   const updatedOrder = await order.save();
+
+  let message = "Cập nhật trạng thái đơn hàng thành công";
+
+  // Thêm thông báo nếu đơn hàng đã thanh toán và bị hủy
+  if (status === "Cancelled" && order.payment.status === "Paid") {
+    message += ". Đơn hàng đã thanh toán - cần thực hiện hoàn tiền thủ công qua API riêng";
+  }
 
   res.status(200).json({
     success: true,
-    message: "Cập nhật trạng thái đơn hàng thành công",
-    data: updatedOrder,
+    message: message,
+    data: {
+      order: updatedOrder,
+      needRefund: status === "Cancelled" && order.payment.status === "Paid",
+    },
   });
 });
 
 const updatePaymentStatus = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const { isPaid } = req.body;
+  const { status } = req.body;
 
   const order = await Order.findById(id);
 
@@ -576,9 +597,9 @@ const updatePaymentStatus = catchAsync(async (req, res) => {
     throw new ApiError(404, "Order not found");
   }
 
-  order.payment.isPaid = isPaid;
+  order.payment.status = status;
   // Nếu isPaid là true, cập nhật thời gian thanh toán
-  if (isPaid) {
+  if (status === "Paid") {
     order.status = "Pending";
     order.payment.paidAt = new Date();
   } else {
@@ -644,10 +665,20 @@ const cancelOrder = catchAsync(async (req, res) => {
     }
   }
 
+  let message = "Đơn hàng đã được hủy thành công";
+
+  // Thêm thông báo nếu đơn hàng đã thanh toán
+  if (order.payment.status === "Paid") {
+    message += ". Đơn hàng đã thanh toán - vui lòng liên hệ để hoàn tiền";
+  }
+
   res.status(200).json({
     success: true,
-    message: "Đơn hàng đã được hủy thành công",
-    data: updatedOrder,
+    message: message,
+    data: {
+      order: updatedOrder,
+      needRefund: order.payment.status === "Paid",
+    },
   });
 });
 

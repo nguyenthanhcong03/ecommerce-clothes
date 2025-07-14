@@ -196,7 +196,7 @@ const getRevenueStatistics = async (period, startDate, endDate) => {
     {
       $match: {
         ...dateCondition,
-        "payment.isPaid": true,
+        "payment.status": "Paid",
       },
     },
     {
@@ -307,6 +307,7 @@ const getCustomerStatistics = async (period, startDate, endDate) => {
     { $sort: { orderCount: -1 } },
     { $limit: 10 },
     {
+      // Join
       $lookup: {
         from: "users",
         localField: "_id",
@@ -315,11 +316,13 @@ const getCustomerStatistics = async (period, startDate, endDate) => {
       },
     },
     {
+      // thêm trường mới hoặc ghi đè trường hiện tại bằng giá trị tính toán.
       $addFields: {
         userDetails: { $arrayElemAt: ["$userDetails", 0] },
       },
     },
     {
+      // Hiển thị các trường cần thiết
       $project: {
         _id: 1,
         userId: "$_id",
@@ -338,7 +341,7 @@ const getCustomerStatistics = async (period, startDate, endDate) => {
     {
       $match: {
         ...dateCondition,
-        "payment.isPaid": true,
+        "payment.status": "Paid",
       },
     },
     {

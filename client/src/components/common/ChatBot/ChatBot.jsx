@@ -134,7 +134,7 @@ const ChatBot = () => {
           )}
         </AnimatePresence>
 
-        {/* Notification dot */}
+        {/* Chấm tròn */}
         {!isOpen && (
           <motion.div
             className='absolute -right-1 -top-1 h-4 w-4 rounded-full bg-red-500'
@@ -144,7 +144,7 @@ const ChatBot = () => {
         )}
       </motion.div>
 
-      {/* Chat Window */}
+      {/* Giao diện chat */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -197,7 +197,7 @@ const ChatBot = () => {
                       <Bot size={16} />
                     </div>
                   )}
-                  <div className={`max-w-[80%] ${message.type === 'user' ? 'order-first' : ''}`}>
+                  <div className='max-w-[80%]'>
                     <div
                       className={`rounded-2xl p-3 shadow-sm ${
                         message.type === 'bot'
@@ -244,7 +244,7 @@ const ChatBot = () => {
                 </div>
               ))}
 
-              {/* Loading indicator */}
+              {/* Loading 3 chấm */}
               {isLoading && (
                 <div className='flex justify-start gap-3'>
                   <div className='mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#333] text-white'>
@@ -312,7 +312,7 @@ const ChatBot = () => {
 
             {/* Footer */}
             <div className='border-t border-gray-200 bg-gray-50 px-4 py-2'>
-              <p className='text-center text-xs text-gray-500'>Phát triển bởi OpenAI • Hỗ trợ 24/7</p>
+              <p className='text-center text-xs text-gray-500'>Phát triển bởi Gemini • Hỗ trợ 24/7</p>
             </div>
           </motion.div>
         )}

@@ -21,11 +21,11 @@ const CountdownTimer = ({ createdAt, durationMs = 24 * 60 * 60 * 1000, onExpired
         setIsExpired(true);
         setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
 
-        // Chỉ gọi onExpired một lần duy nhất
-        if (onExpired && !hasNotifiedRef.current) {
-          hasNotifiedRef.current = true;
-          onExpired();
-        }
+        // // Chỉ gọi onExpired một lần duy nhất
+        // if (onExpired && !hasNotifiedRef.current) {
+        //   hasNotifiedRef.current = true;
+        //   onExpired();
+        // }
         return null;
       }
 
@@ -56,7 +56,8 @@ const CountdownTimer = ({ createdAt, durationMs = 24 * 60 * 60 * 1000, onExpired
 
     // Cleanup interval khi component unmount
     return () => clearInterval(timer);
-  }, [createdAt, onExpired]);
+  }, [createdAt]);
+  // , [createdAt, onExpired]);
 
   if (!timeLeft) return null;
 

@@ -7,7 +7,6 @@ import { translateOrderStatus } from '@/utils/helpers/orderStatusUtils';
 const { Title } = Typography;
 
 const statusColors = {
-  Unpaid: 'gold',
   Pending: 'orange',
   Processing: 'blue',
   Shipping: 'cyan',
@@ -43,14 +42,10 @@ const OrderDetails = ({ order }) => {
           </Tag>
         </p>
         <p>
-          {order.payment?.method !== 'COD' && order.payment?.isPaid && (
-            <>
-              <strong>Thanh toán:</strong>
-              <Tag color={order.payment?.isPaid ? 'green' : 'volcano'} className='ml-2'>
-                {order.payment?.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}
-              </Tag>
-            </>
-          )}
+          <strong>Thanh toán:</strong>
+          <Tag color={order.payment?.status === 'Paid' ? 'green' : 'volcano'} className='ml-2'>
+            {order.payment?.status === 'Paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}
+          </Tag>
         </p>
         <p>
           <strong>Phương thức thanh toán:</strong> {order.payment?.method}

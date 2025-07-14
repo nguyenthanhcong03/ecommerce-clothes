@@ -55,7 +55,7 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Unpaid", "Pending", "Processing", "Shipping", "Delivered", "Cancelled"],
+      enum: ["Pending", "Processing", "Shipping", "Delivered", "Cancelled"],
       default: "Pending",
     },
     shippingAddress: {
@@ -83,11 +83,14 @@ const orderSchema = new mongoose.Schema(
         required: true,
         enum: ["COD", "VNPay"],
       },
-      isPaid: {
-        type: Boolean,
-        default: false,
+      status: {
+        type: String,
+        enum: ["Unpaid", "Paid", "Refunded"],
+        default: "Unpaid",
       },
       paidAt: Date,
+      refundedAt: Date,
+      transactionNo: String, // Mã giao dịch từ VNPay
     },
     trackingNumber: {
       type: String,
@@ -114,9 +117,6 @@ const orderSchema = new mongoose.Schema(
     },
     // Lưu trữ thời gian cập nhật trạng thái đơn hàng
     statusUpdatedAt: {
-      unpaid: {
-        type: Date,
-      },
       pending: {
         type: Date,
         default: Date.now,

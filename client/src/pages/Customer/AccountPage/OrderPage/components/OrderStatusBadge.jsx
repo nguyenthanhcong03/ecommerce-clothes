@@ -1,5 +1,4 @@
 import { AlertCircle, CheckCircle, Clock, CreditCard, Package, TruckIcon } from 'lucide-react';
-import React from 'react';
 
 const OrderStatusBadge = ({ status }) => {
   const getStatusConfig = () => {

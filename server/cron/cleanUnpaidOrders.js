@@ -11,7 +11,9 @@ cron.schedule("*/30 * * * *", async () => {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     const orders = await Order.find({
-      status: "Unpaid",
+      status: "Pending",
+      "payment.method": "VNPay",
+      "payment.method": { $ne: "COD" }, // not equal
       createdAt: { $lt: oneDayAgo },
     });
 

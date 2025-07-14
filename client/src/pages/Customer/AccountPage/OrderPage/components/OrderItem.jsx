@@ -42,7 +42,7 @@ const OrderItem = ({ order, onCancel }) => {
     message.warning('Đơn hàng đã hết thời gian thanh toán và sẽ bị hủy tự động.');
   };
 
-  const canBeCancelled = ['Unpaid', 'Pending', 'Processing'].includes(order.status);
+  const canBeCancelled = ['Pending', 'Processing'].includes(order.status);
   const canBeReviewed = order.status === 'Delivered' && !order.isReviewed;
 
   return (
@@ -52,8 +52,8 @@ const OrderItem = ({ order, onCancel }) => {
         <div className='flex items-center'>
           <Package className='mr-2 h-5 w-5 text-gray-500' />
           <span className='mr-4 text-sm text-gray-500'>Mã đơn hàng: #{order?._id.substring(0, 8)}</span>
-          <OrderStatusBadge status={order?.status} />
-          {order?.status === 'Unpaid' && (
+          <OrderStatusBadge status={order?.payment?.status === 'Unpaid' ? 'Unpaid' : order?.status} />
+          {order?.payment?.status === 'Unpaid' && (
             <div className='ml-3'>
               <CountdownTimer createdAt={order?.createdAt} onExpired={handleOrderExpired} />
             </div>
@@ -96,7 +96,7 @@ const OrderItem = ({ order, onCancel }) => {
             <span className='ml-2 text-xl font-medium'>{formatCurrency(order.totalPrice)}</span>
           </div>
           <div className='flex items-center gap-2'>
-            {order.status === 'Unpaid' && (
+            {order.payment?.status === 'Unpaid' && (
               <Button size='sm' onClick={() => handleCreatePaymentUrl(order._id.toString())}>
                 Thanh toán
               </Button>

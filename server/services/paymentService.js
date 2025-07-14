@@ -80,6 +80,113 @@ const verifyVnpayReturn = (vnpayParams) => {
 };
 
 /**
+ * Tạo yêu cầu hoàn tiền VNPay
+ */
+const createVnpayRefund = async (refundData) => {
+  try {
+    const { orderId, transactionNo, amount, refundAmount, reason, refundOrderId, transactionDate, createBy } =
+      refundData;
+
+    const date = new Date();
+    const createDate = dayjs(date).format("YYYYMMDDHHmmss");
+    const requestId = dayjs(date).format("HHmmss");
+    const refundAmountInVND = parseInt(refundAmount) * 100; // VNPay yêu cầu amount * 100
+    const transactionType = refundAmount === amount ? "02" : "03"; // 02: Hoàn tiền toàn phần, 03: Hoàn tiền một phần
+
+    // Đảm bảo transactionDate có giá trị, nếu không thì dùng createDate
+    const vnpTransactionDate = transactionDate || createDate;
+
+    // Tạo chuỗi dữ liệu để tạo secure hash theo format của VNPay
+    const data = `${requestId}|2.1.0|refund|${
+      vnpayConfig.vnp_TmnCode
+    }|${transactionType}|${orderId}|${refundAmountInVND}|${transactionNo || "0"}|${vnpTransactionDate}|${
+      createBy || "System"
+    }|${createDate}|127.0.0.1|${reason || `Hoan tien GD ma:${orderId}`}`;
+
+    const hmac = crypto.createHmac("sha512", vnpayConfig.vnp_HashSecret);
+    const vnp_SecureHash = hmac.update(Buffer.from(data, "utf-8")).digest("hex");
+
+    const dataObj = {
+      vnp_RequestId: requestId,
+      vnp_Version: "2.1.0",
+      vnp_Command: "refund",
+      vnp_TmnCode: vnpayConfig.vnp_TmnCode,
+      vnp_TransactionType: transactionType,
+      vnp_TxnRef: orderId,
+      vnp_Amount: refundAmountInVND,
+      vnp_TransactionNo: transactionNo || "0",
+      vnp_CreateBy: createBy || "System",
+      vnp_OrderInfo: reason || `Hoan tien GD ma:${orderId}`,
+      vnp_TransactionDate: vnpTransactionDate,
+      vnp_CreateDate: createDate,
+      vnp_IpAddr: "127.0.0.1",
+      vnp_SecureHash: vnp_SecureHash,
+    };
+    console.log("dataObj", dataObj);
+
+    // Gửi yêu cầu hoàn tiền đến VNPay
+    const refundUrl = vnpayConfig.vnp_Api || "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
+
+    const response = await axios.post(refundUrl, dataObj, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("VNPay refund response:", response.data);
+
+    return {
+      success: response.data.vnp_ResponseCode === "00",
+      responseCode: response.data.vnp_ResponseCode,
+      message: getRefundResponseMessage(response.data.vnp_ResponseCode),
+      requestId: requestId,
+      transactionNo: response.data.vnp_TransactionNo,
+      refundAmount: refundAmount,
+      data: response.data,
+    };
+  } catch (error) {
+    console.error("Lỗi khi tạo yêu cầu hoàn tiền VNPay:", error);
+    throw new Error("Không thể tạo yêu cầu hoàn tiền VNPay");
+  }
+};
+
+/**
+ * Lấy thông báo phản hồi hoàn tiền từ mã phản hồi
+ */
+const getRefundResponseMessage = (responseCode) => {
+  const messages = {
+    "00": "Giao dịch thành công",
+    "01": "Đơn hàng không tồn tại",
+    "02": "Merchant không hợp lệ",
+    "03": "Dữ liệu gửi sang không đúng định dạng",
+    "04": "Số tiền không hợp lệ",
+    "05": "Giao dịch không thành công",
+    "06": "Giao dịch không tồn tại",
+    "07": "Trừ tiền thành công. Giao dịch bị nghi ngờ",
+    "08": "Giao dịch đã được xử lý",
+    "09": "Giao dịch không thành công",
+    10: "Giao dịch không thành công",
+    11: "Đã hết hạn chờ thanh toán",
+    12: "Thẻ/Tài khoản bị khóa",
+    13: "Mật khẩu OTP không đúng",
+    24: "Giao dịch bị hủy",
+    51: "Tài khoản không đủ số dư",
+    65: "Vượt quá hạn mức giao dịch",
+    75: "Ngân hàng đang bảo trì",
+    79: "Nhập sai mật khẩu quá số lần quy định",
+    91: "Không tìm thấy giao dịch yêu cầu",
+    93: "Đã hoàn tiền một phần",
+    94: "Yêu cầu hoàn tiền bị từ chối",
+    95: "Giao dịch đã được hoàn tiền",
+    97: "Chữ ký không hợp lệ",
+    98: "Timeout",
+    99: "Lỗi không xác định",
+  };
+
+  return messages[responseCode] || "Lỗi không xác định";
+};
+
+/**
  * Hàm tiện ích để sắp xếp đối tượng theo khóa
  */
 function sortObject(obj) {
@@ -101,4 +208,5 @@ function sortObject(obj) {
 module.exports = {
   createVnpayPaymentUrl,
   verifyVnpayReturn,
+  createVnpayRefund,
 };
