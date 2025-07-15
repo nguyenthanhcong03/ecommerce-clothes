@@ -193,7 +193,7 @@ const OrderTable = ({ searchText, onSearch, onPageChange, onRefresh }) => {
       key: 'status',
       render: (status, record) => {
         const isUpdating = updatingOrderIds.includes(record._id);
-        if (record?.payment?.status === 'Unpaid') {
+        if (record?.payment?.status === 'Unpaid' && record?.payment?.method !== 'COD') {
           return (
             <div className='flex flex-col items-center gap-1'>
               {/* <Tag color='orange'>Chưa thanh toán</Tag> */}

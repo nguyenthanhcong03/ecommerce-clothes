@@ -27,6 +27,7 @@ import AccountLayout from '@/components/layout/AccountLayout';
 import AnalyticsPage from '@/pages/admin/AnalyticsPage/AnalyticsPage.jsx';
 import CategoryPage from '@/pages/admin/CategoryPage/CategoryPage.jsx';
 import CouponPage from '@/pages/admin/CouponPage/CouponPage.jsx';
+import InventoryPage from '@/pages/admin/InventoryPage/InventoryPage.jsx';
 import OrdersPage from '@/pages/admin/OrdersPage/OrdersPage.jsx';
 import OverviewPage from '@/pages/admin/OverviewPage/OverviewPage.jsx';
 import ProductPage from '@/pages/admin/ProductPage/ProductPage.jsx';
@@ -183,6 +184,7 @@ const adminRoutes = [
   { index: true, element: <Navigate to='products' replace /> },
   { path: 'products', element: <ProductPage /> },
   { path: 'categories', element: <CategoryPage /> },
+  { path: 'inventory', element: <InventoryPage /> },
   { path: 'users', element: <UserPage /> },
   { path: 'orders', element: <OrdersPage /> },
   { path: 'analytics', element: <AnalyticsPage /> },

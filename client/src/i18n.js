@@ -2,15 +2,23 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 // Import translation files
-import enTranslation from './locales/en/home.json';
-import viTranslation from './locales/vi/home.json';
+import enHome from './locales/en/home.json';
+import viHome from './locales/vi/home.json';
+import enInventory from './locales/en/inventory.json';
+import viInventory from './locales/vi/inventory.json';
 
 const resources = {
   en: {
-    translation: enTranslation
+    translation: {
+      ...enHome,
+      ...enInventory
+    }
   },
   vi: {
-    translation: viTranslation
+    translation: {
+      ...viHome,
+      ...viInventory
+    }
   }
 };
 

@@ -1,6 +1,7 @@
 import { combineReducers } from '@reduxjs/toolkit';
 import accountReducer from './accountSlice';
 import adminCouponReducer from './adminCouponSlice';
+import adminInventoryReducer from './adminInventorySlice';
 import adminOrderReducer from './adminOrderSlice';
 import adminProductReducer from './adminProductSlice';
 import adminReviewReducer from './adminReviewSlice';
@@ -8,6 +9,7 @@ import adminUserReducer from './adminUserSlice';
 import cartReducer from './cartSlice';
 import categoryReducer from './categorySlice';
 import couponReducer from './couponSlice';
+import inventoryHistoryReducer from './inventoryHistorySlice';
 import orderReducer from './orderSlice';
 import productReducer from './productSlice';
 import reviewReducer from './reviewSlice';
@@ -34,7 +36,9 @@ const appReducer = combineReducers({
   adminOrder: adminOrderReducer,
   adminUser: adminUserReducer,
   adminCoupon: adminCouponReducer,
-  adminReview: adminReviewReducer
+  adminReview: adminReviewReducer,
+  adminInventory: adminInventoryReducer,
+  inventoryHistory: inventoryHistoryReducer
 });
 
 const rootReducer = (state, action) => {

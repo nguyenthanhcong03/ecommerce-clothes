@@ -13,7 +13,6 @@ import { Link } from 'react-router-dom';
 const OrderItem = ({ order, onCancel }) => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
-  const allReviewed = order.products.every((item) => item.isReviewed);
 
   const handleCreatePaymentUrl = async (orderId) => {
     try {
@@ -44,7 +43,7 @@ const OrderItem = ({ order, onCancel }) => {
 
   const canBeCancelled = ['Pending', 'Processing'].includes(order.status);
   const canBeReviewed = order.status === 'Delivered' && !order.isReviewed;
-
+  const allReviewed = order.products.every((item) => item.isReviewed);
   return (
     <div className='mb-4 overflow-hidden rounded-sm border border-gray-200 bg-white shadow-sm'>
       {/* Header */}
@@ -52,8 +51,10 @@ const OrderItem = ({ order, onCancel }) => {
         <div className='flex items-center'>
           <Package className='mr-2 h-5 w-5 text-gray-500' />
           <span className='mr-4 text-sm text-gray-500'>Mã đơn hàng: #{order?._id.substring(0, 8)}</span>
-          <OrderStatusBadge status={order?.payment?.status === 'Unpaid' ? 'Unpaid' : order?.status} />
-          {order?.payment?.status === 'Unpaid' && (
+          <OrderStatusBadge
+            status={order?.payment?.status === 'Unpaid' && order?.payment?.method !== 'COD' ? 'Unpaid' : order?.status}
+          />
+          {order?.payment?.status === 'Unpaid' && order?.payment?.method !== 'COD' && (
             <div className='ml-3'>
               <CountdownTimer createdAt={order?.createdAt} onExpired={handleOrderExpired} />
             </div>
@@ -93,10 +94,13 @@ const OrderItem = ({ order, onCancel }) => {
         <div className='flex items-center justify-between'>
           <div>
             <span className='text-gray-600'>Tổng thanh toán:</span>
-            <span className='ml-2 text-xl font-medium'>{formatCurrency(order.totalPrice)}</span>
+            <span className='ml-2 text-xl font-medium'>{formatCurrency(order?.totalPrice)}</span>
+            {order?.payment?.method !== 'COD' && order?.payment?.status === 'Paid' && (
+              <span className='ml-2 text-sm text-green-600'>Đã thanh toán với {order?.payment?.method}</span>
+            )}
           </div>
           <div className='flex items-center gap-2'>
-            {order.payment?.status === 'Unpaid' && (
+            {order.payment?.status === 'Unpaid' && order?.payment?.method !== 'COD' && (
               <Button size='sm' onClick={() => handleCreatePaymentUrl(order._id.toString())}>
                 Thanh toán
               </Button>

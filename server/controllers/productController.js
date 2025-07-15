@@ -369,9 +369,9 @@ const getProductsByCategory = async (req, res) => {
 // Search products
 const searchProducts = async (req, res) => {
   try {
-    const { q, page = 1, limit = 10 } = req.query;
+    const { keyword, page = 1, limit = 10 } = req.query;
 
-    if (!q) {
+    if (!keyword) {
       return res.status(400).json({
         success: false,
         message: "Cần cung cấp từ khóa tìm kiếm",
@@ -383,7 +383,7 @@ const searchProducts = async (req, res) => {
       limit,
     };
 
-    const result = await productService.searchProducts(q, options);
+    const result = await productService.searchProducts(keyword, options);
 
     res.status(200).json({
       success: true,

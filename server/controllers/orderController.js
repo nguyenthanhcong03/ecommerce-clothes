@@ -510,10 +510,10 @@ const updateOrderStatus = catchAsync(async (req, res) => {
     throw new ApiError(404, "Đơn hàng không tồn tại");
   }
 
-  // // Không cho phép cập nhật đơn hàng đã hủy hoặc đã giao
-  // if (order.status === "Cancelled" || order.status === "Delivered") {
-  //   throw new ApiError(400, "Không thể cập nhật trạng thái đơn hàng đã hủy hoặc đã giao");
-  // }
+  // Không cho phép cập nhật đơn hàng đã hủy hoặc đã giao
+  if (order.status === "Cancelled" || order.status === "Delivered") {
+    throw new ApiError(400, "Không thể cập nhật trạng thái đơn hàng đã hủy hoặc đã giao");
+  }
 
   // Xử lý khi admin set status = "Cancelled"
   if (status === "Cancelled") {

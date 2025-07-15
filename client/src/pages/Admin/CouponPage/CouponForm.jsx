@@ -304,7 +304,7 @@ const CouponForm = ({ isOpenForm, onClose, selectedCoupon }) => {
                 rules={{ required: 'Chọn ngày bắt đầu' }}
                 render={({ field }) => (
                   <DatePicker
-                    showTime
+                    // showTime
                     placeholder='Chọn ngày bắt đầu'
                     {...field}
                     format='DD/MM/YYYY'
@@ -330,7 +330,7 @@ const CouponForm = ({ isOpenForm, onClose, selectedCoupon }) => {
                 rules={{ required: 'Chọn ngày kết thúc' }}
                 render={({ field }) => (
                   <DatePicker
-                    showTime
+                    // showTime
                     placeholder='Chọn ngày kết thúc'
                     {...field}
                     format='DD/MM/YYYY'

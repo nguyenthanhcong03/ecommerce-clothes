@@ -2,6 +2,24 @@ const chatbotService = require("../services/chatbotService");
 const catchAsync = require("../utils/catchAsync");
 const ApiError = require("../utils/ApiError");
 
+// Lấy thông tin trạng thái chatbot
+const getChatbotStatus = catchAsync(async (req, res) => {
+  const isGeminiConfigured = !!process.env.GEMINI_API_KEY;
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      available: isGeminiConfigured,
+      features: {
+        naturalLanguageSearch: isGeminiConfigured,
+        productRecommendation: true,
+        multilingual: isGeminiConfigured,
+      },
+      timestamp: new Date().toISOString(),
+    },
+  });
+});
+
 // Xử lý chat với AI
 const processChat = catchAsync(async (req, res) => {
   const { message } = req.body;
@@ -37,24 +55,6 @@ const getChatSuggestions = catchAsync(async (req, res) => {
     data: {
       featuredProducts: suggestions.products,
       sampleQuestions: suggestions.suggestions,
-      timestamp: new Date().toISOString(),
-    },
-  });
-});
-
-// Lấy thông tin trạng thái chatbot
-const getChatbotStatus = catchAsync(async (req, res) => {
-  const isGeminiConfigured = !!process.env.GEMINI_API_KEY;
-
-  res.status(200).json({
-    status: "success",
-    data: {
-      available: isGeminiConfigured,
-      features: {
-        naturalLanguageSearch: isGeminiConfigured,
-        productRecommendation: true,
-        multilingual: isGeminiConfigured,
-      },
       timestamp: new Date().toISOString(),
     },
   });

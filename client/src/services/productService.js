@@ -41,6 +41,17 @@ export const getFeaturedProductsAPI = (limit = 8, page = 1) => {
   });
 };
 
+// Tìm kiếm sản phẩm
+export const searchProductsAPI = (keyword, limit = 10) => {
+  return axios
+    .get(`${BASE_API}/search`, {
+      params: { keyword, limit }
+    })
+    .then((response) => {
+      return response;
+    });
+};
+
 // Lấy sản phẩm theo danh mục
 export const getProductsByCategoryAPI = (categoryId, page = 1, limit = 10) => {
   return axios

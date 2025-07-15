@@ -28,7 +28,7 @@ const CouponApply = () => {
     try {
       // Tính tổng tiền hiện tại để kiểm tra điều kiện áp dụng coupon
       const subtotal = orderItems.reduce((total, item) => {
-        const price = item.snapshot.originalPrice || item.snapshot.price;
+        const price = item.snapshot.price || item.snapshot.originalPrice;
         return total + price * item.quantity;
       }, 0);
 
@@ -40,7 +40,8 @@ const CouponApply = () => {
 
         // Tính toán giảm giá
         const discountCalculation = calculateDiscount(couponData, subtotal);
-        dispatch(setCouponDiscount(discountCalculation.discount));
+        console.log('first discountCalculation', discountCalculation);
+        dispatch(setCouponDiscount(discountCalculation));
 
         message.success(`Đã áp dụng mã giảm giá: ${couponData.code}`);
       } else {

@@ -56,7 +56,6 @@ async function analyzeUserIntent(message) {
     return JSON.parse(jsonString);
   } catch (error) {
     console.error("Error analyzing user intent:", error);
-    // Fallback phân tích đơn giản
     return {
       intent: "search_product",
       searchParams: {

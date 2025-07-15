@@ -57,38 +57,53 @@ export const validateCouponAPI = async (code, orderTotal = null) => {
 export const calculateDiscount = (coupon, orderTotal) => {
   if (!coupon || !orderTotal) return { discount: 0, finalTotal: orderTotal };
 
-  let discount = 0;
+  // let discount = 0;
 
-  // Kiểm tra nếu đơn hàng đạt giá trị tối thiểu
-  if (orderTotal < coupon.minOrderValue) {
-    return { discount: 0, finalTotal: orderTotal };
-  }
+  // // Kiểm tra nếu đơn hàng đạt giá trị tối thiểu
+  // if (orderTotal < coupon.minOrderValue) {
+  //   return { discount: 0, finalTotal: orderTotal };
+  // }
 
-  // Tính toán giảm giá dựa vào loại coupon
+  // // Tính toán giảm giá dựa vào loại coupon
+  // if (coupon.discountType === 'percentage') {
+  //   // Giảm theo phần trăm
+  //   discount = (orderTotal * coupon.discountValue) / 100;
+
+  //   // Kiểm tra nếu có giới hạn giảm giá tối đa
+  //   if (coupon.maxDiscount > 0 && discount > coupon.maxDiscount) {
+  //     discount = coupon.maxDiscount;
+  //   }
+  // } else if (coupon.discountType === 'fixed') {
+  //   // Giảm giá cố định
+  //   discount = coupon.discountValue;
+
+  //   // Đảm bảo giảm giá không vượt quá tổng đơn hàng
+  //   if (discount > orderTotal) {
+  //     discount = orderTotal;
+  //   }
+  console.log('coupon', coupon);
+  console.log('orderTotal', orderTotal);
+  let discountAmount = 0;
+
   if (coupon.discountType === 'percentage') {
-    // Giảm theo phần trăm
-    discount = (orderTotal * coupon.discountValue) / 100;
-
-    // Kiểm tra nếu có giới hạn giảm giá tối đa
-    if (coupon.maxDiscount > 0 && discount > coupon.maxDiscount) {
-      discount = coupon.maxDiscount;
-    }
-  } else if (coupon.discountType === 'fixed') {
-    // Giảm giá cố định
-    discount = coupon.discountValue;
-
-    // Đảm bảo giảm giá không vượt quá tổng đơn hàng
-    if (discount > orderTotal) {
-      discount = orderTotal;
-    }
+    discountAmount = (orderTotal * coupon.discountValue) / 100;
+  } else {
+    discountAmount = coupon.discountValue;
   }
 
-  const finalTotal = orderTotal - discount;
+  // Áp dụng giảm giá tối đa nếu có
+  if (coupon.maxDiscountAmount && discountAmount > coupon.maxDiscountAmount) {
+    discountAmount = coupon.maxDiscountAmount;
+  }
+  // }
 
-  return {
-    discount,
-    finalTotal,
-    couponCode: coupon.code,
-    couponId: coupon._id
-  };
+  // const finalTotal = orderTotal - discount;
+
+  // return {
+  //   discount,
+  //   finalTotal,
+  //   couponCode: coupon.code,
+  //   couponId: coupon._id
+  // };
+  return discountAmount;
 };
