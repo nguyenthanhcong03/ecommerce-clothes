@@ -15,7 +15,7 @@ const errorConverter = (err, req, res, next) => {
     const statusCode = error.statusCode || (error instanceof mongoose.Error ? 400 : 500);
     const message = error.message || statusText[statusCode] || "Unknown Error";
 
-    error = new ApiError(statusCode, message, false, err.stack);
+    error = new ApiError(statusCode, message, null, false, err.stack);
   }
 
   next(error);

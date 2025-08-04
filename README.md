@@ -1,6 +1,5 @@
 # Website Thương Mại Điện Tử - Outfitory
 
-Đây là Đồ án tốt nghiệp của **Nguyễn Thành Công** với đề tài:  
 **"Xây dựng Website bán quần áo cho Công ty Outfitory"**, được phát triển bằng **React.js** (Frontend) và **Node.js** (Backend).
 
 ### 1. Cài Đặt

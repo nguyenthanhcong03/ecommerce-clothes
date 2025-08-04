@@ -1,4 +1,3 @@
-import { store } from '@/store/store';
 import { ConfigProvider } from 'antd';
 import viVN from 'antd/locale/vi_VN';
 import React from 'react';
@@ -7,6 +6,7 @@ import { Provider } from 'react-redux';
 import AppRouter from './AppRouter';
 import './i18n';
 import './index.scss';
+import { store } from '@/store/store';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
