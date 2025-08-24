@@ -186,11 +186,6 @@ const toggleCouponStatus = async (couponId, isActive) => {
   }
 };
 
-/**
- * Tăng số lượt sử dụng của coupon
- * @param {String} couponId ID của coupon
- * @returns {Promise<Object>} Coupon đã cập nhật
- */
 const incrementCouponUsage = async (couponId) => {
   try {
     const updatedCoupon = await Coupon.findByIdAndUpdate(couponId, { $inc: { usedCount: 1 } }, { new: true });
@@ -205,10 +200,6 @@ const incrementCouponUsage = async (couponId) => {
   }
 };
 
-/**
- * Lấy danh sách coupon có hiệu lực
- * @returns {Promise<Array>} Danh sách coupon
- */
 const getActiveCoupons = async () => {
   try {
     const now = new Date();
