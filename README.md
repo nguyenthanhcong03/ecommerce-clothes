@@ -1,6 +1,6 @@
 # Website Thương Mại Điện Tử - Outfitory
 
-**"Xây dựng Website bán quần áo cho Outfitory"**, được phát triển bằng **React.js** (Frontend) và **Node.js** (Backend).
+**"Xây dựng Website bán quần áo Outfitory"**, được phát triển bằng **React.js** (Frontend) và **Node.js** (Backend).
 
 ### 1. Cài Đặt
 
