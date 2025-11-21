@@ -27,6 +27,9 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
+  const cookie = req.cookies;
+  console.log("🚀 ~ authController.js:31 ~ login ~ cookie:", cookie);
+
   try {
     const { user, accessToken, refreshToken } = await authService.loginUser(req.body);
     // Lưu accessToken vào cookie
@@ -48,9 +51,11 @@ const login = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Đăng nhập thành công",
-      user,
-      accessToken,
-      refreshToken,
+      data: {
+        user,
+        accessToken,
+        refreshToken,
+      },
     });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });

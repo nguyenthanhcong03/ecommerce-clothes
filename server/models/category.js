@@ -40,5 +40,4 @@ categorySchema.index({ priority: -1 }); // Index on priority for sorting categor
 // Tạo model từ schema
 const Category = mongoose.model("Category", categorySchema);
 
-// Xuất model để sử dụng ở nơi khác
 module.exports = Category;
