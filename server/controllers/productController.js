@@ -144,28 +144,26 @@ const getAllProducts = async (req, res) => {
       sort[sortBy] = sortOrder === "asc" ? 1 : -1;
     }
 
-    const products = await Product.find(query)
+    const response = await Product.find(query)
       .populate("categoryId", "name") // Populate category data
       .sort(sort)
       .skip(skip)
       .limit(limitNumber)
+      .select("-__v")
       .lean(); // Convert to plain JS objects for better performance
 
-    const totalProducts = await Product.countDocuments(query);
-
-    const totalPages = Math.ceil(totalProducts / limitNumber);
-
+    // const totalProducts = await Product.countDocuments(query);
+    // const totalPages = Math.ceil(totalProducts / limitNumber);
     return res.status(200).json({
       success: true,
       data: {
-        products,
-        pagination: {
-          total: totalProducts,
-          page: Number(pageNumber),
-          limit: Number(limitNumber),
-          totalPages: totalPages,
-        },
+        data: response,
+        total: response.total,
+        page: response.page,
+        limit: response.limit,
+        totalPages: response.totalPages,
       },
+      message: "Lấy danh sách sản phẩm thành công",
     });
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -404,11 +402,17 @@ const getFeaturedProducts = async (req, res) => {
   try {
     const { limit = 8, page = 1 } = req.query;
 
-    const featuredProducts = await productService.getFeaturedProducts(limit, page);
-
+    const response = await productService.getFeaturedProducts(limit, page);
     res.status(200).json({
       success: true,
-      data: featuredProducts,
+      data: {
+        data: response,
+        total: response.total,
+        page: response.page,
+        limit: response.limit,
+        totalPages: response.totalPages,
+      },
+      message: "Lấy sản phẩm nổi bật thành công",
     });
   } catch (error) {
     res.status(500).json({

@@ -83,17 +83,7 @@ const getProductReviews = async (productId, options) => {
     .populate(options.populate || "")
     .lean();
 
-  const total = await Review.countDocuments(query);
-
-  return {
-    reviews,
-    pagination: {
-      page,
-      limit,
-      total,
-      pages: Math.ceil(total / limit),
-    },
-  };
+  return reviews;
 };
 
 /**

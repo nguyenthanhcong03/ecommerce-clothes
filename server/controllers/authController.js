@@ -27,9 +27,6 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const cookie = req.cookies;
-  console.log("🚀 ~ authController.js:31 ~ login ~ cookie:", cookie);
-
   try {
     const { user, accessToken, refreshToken } = await authService.loginUser(req.body);
     // Lưu accessToken vào cookie
@@ -128,6 +125,7 @@ const logout = async (req, res) => {
 };
 
 const refreshToken = async (req, res) => {
+  console.log("req.cookies", req.cookies);
   const { refreshToken } = req.cookies;
   if (!refreshToken) {
     return res.status(401).json({ success: false, message: "Không có token làm mới" });
@@ -144,7 +142,7 @@ const refreshToken = async (req, res) => {
       // secure: true, // Bắt buộc nếu dùng sameSite: "None"
     });
 
-    res.status(200).json({ success: true, accessToken: newAccessToken });
+    res.status(200).json({ success: true, message: "Làm mới token thành công", data: { accessToken: newAccessToken } });
   } catch (error) {
     if (error.name === "TokenExpiredError") {
       return res.status(400).json({ success: false, message: error.message });

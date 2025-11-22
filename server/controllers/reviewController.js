@@ -37,11 +37,17 @@ const getProductReviews = catchAsync(async (req, res) => {
     },
   };
 
-  const reviews = await reviewService.getProductReviews(productId, options);
-
+  const response = await reviewService.getProductReviews(productId, options);
   res.status(200).json({
     success: true,
-    data: reviews,
+    data: {
+      data: response,
+      page: response.page,
+      limit: response.limit,
+      total: response.total,
+      totalPages: response.totalPages,
+    },
+    message: "Lấy đánh giá sản phẩm thành công",
   });
 });
 
