@@ -3,29 +3,25 @@ const { generateSKU } = require("../utils/generateSKU");
 const { deleteMultipleFilesService } = require("./fileService");
 
 const createProduct = async (productData) => {
-  try {
-    // Xử lý SKU cho tất cả các biến thể
-    if (productData.variants && productData.variants.length > 0) {
-      for (const variant of productData.variants) {
-        // Tạo SKU tự động nếu chưa có
-        if (!variant.sku) {
-          variant.sku = generateSKU(
-            productData.productType || "sản phẩm",
-            productData.name,
-            productData.brand,
-            variant.size,
-            variant.color
-          );
-        }
+  // Xử lý SKU cho tất cả các biến thể
+  if (productData.variants && productData.variants.length > 0) {
+    for (const variant of productData.variants) {
+      // Tạo SKU tự động nếu chưa có
+      if (!variant.sku) {
+        variant.sku = generateSKU(
+          productData.productType || "sản phẩm",
+          productData.name,
+          productData.brand,
+          variant.size,
+          variant.color
+        );
       }
     }
-
-    const newProduct = new Product(productData);
-    await newProduct.save();
-    return newProduct;
-  } catch (error) {
-    throw error;
   }
+
+  const newProduct = new Product(productData);
+  await newProduct.save();
+  return newProduct;
 };
 
 const updateProduct = async (productId, updateData) => {

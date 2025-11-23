@@ -250,16 +250,14 @@ const updateCategory = async (categoryId, updateData) => {
   }
 };
 
-/**
- * Lấy tất cả ID của danh mục con (bao gồm cả cháu, chắt...) của một danh mục cha
- */
-async function getAllChildCategoryIds(categoryId) {
+// Lấy tất cả ID của danh mục con (bao gồm cả cháu, chắt...) của một danh mục cha
+const getAllChildCategoryIds = async (categoryId) => {
   try {
     // Khởi tạo mảng kết quả với ID của danh mục cha
     const allCategoryIds = [categoryId];
 
     // Hàm đệ quy để tìm tất cả con cháu
-    async function findChildren(parentId) {
+    const findChildren = async (parentId) => {
       // Tìm tất cả danh mục con trực tiếp
       const childCategories = await Category.find({ parentId });
 
@@ -272,16 +270,16 @@ async function getAllChildCategoryIds(categoryId) {
         // Tìm tiếp các con của con (cháu)
         await findChildren(child._id);
       }
-    }
+    };
 
     // Bắt đầu tìm kiếm đệ quy
     await findChildren(categoryId);
 
     return allCategoryIds;
   } catch (error) {
-    throw new Error(`Error getting child categories: ${error.message}`);
+    throw new ApiError(500, "Lỗi khi lấy danh mục con");
   }
-}
+};
 
 module.exports = {
   getCategories,

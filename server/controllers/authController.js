@@ -1,72 +1,57 @@
 const authService = require("../services/authService");
+const ApiError = require("../utils/ApiError");
+const catchAsync = require("../utils/catchAsync");
+const { responseSuccess } = require("../utils/responseHandler");
 
-const register = async (req, res) => {
-  try {
-    const { username, password, email, phone, firstName, lastName } = req.body;
-    console.log("req.body", req.body);
-    if (!username || !password || !email || !phone || !firstName || !lastName) {
-      return res.status(400).json({
-        success: false,
-        message: "Tất cả các trường là bắt buộc",
-      });
-    }
-
-    await authService.registerUser({
-      username,
-      password,
-      email,
-      phone,
-      firstName,
-      lastName,
-    });
-    res.status(201).json({ success: true, message: "Đăng ký tài khoản thành công" });
-  } catch (error) {
-    console.log("error", error);
-    res.status(400).json({ success: false, message: error.message });
+const register = catchAsync(async (req, res) => {
+  const { password, email, phone, firstName, lastName } = req.body;
+  if (!password || !email || !phone || !firstName || !lastName) {
+    throw new ApiError(400, "Vui lòng điền đầy đủ thông tin bắt buộc");
   }
-};
 
-const login = async (req, res) => {
-  try {
-    const { user, accessToken, refreshToken } = await authService.loginUser(req.body);
-    // Lưu accessToken vào cookie
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      // secure: true,
-      // sameSite: "Strict",
-      // maxAge: process.env.ACCESS_TOKEN_COOKIE_EXPIRES,
-    });
+  const response = await authService.registerUser({
+    password,
+    email,
+    phone,
+    firstName,
+    lastName,
+  });
+  responseSuccess(res, 201, "Đăng ký tài khoản thành công", response);
+});
 
-    // Lưu refreshToken vào cookie
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      // secure: true,
-      // sameSite: "Strict",
-      // maxAge: process.env.REFRESH_TOKEN_COOKIE_EXPIRES,
-    });
+const login = catchAsync(async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) throw new ApiError(400, "Vui lòng điền đầy đủ thông tin đăng nhập");
 
-    res.status(200).json({
-      success: true,
-      message: "Đăng nhập thành công",
-      data: {
-        user,
-        accessToken,
-        refreshToken,
-      },
-    });
-  } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
-  }
-};
+  const response = await authService.loginUser({ email, password });
+  // Lưu accessToken vào cookie
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    // secure: true,
+    // sameSite: "Strict",
+    maxAge: process.env.ACCESS_TOKEN_COOKIE_EXPIRES,
+  });
 
-const getCurrentUser = async (req, res) => {
-  try {
-    const user = await authService.getCurrentUserById(req.user._id);
-    return res.status(200).json({ success: true, data: user });
-  } catch (error) {
-    res.status(404).json({ success: false, message: error.message });
-  }
-};
+  // Lưu refreshToken vào cookie
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    // secure: true,
+    // sameSite: "Strict",
+    maxAge: process.env.REFRESH_TOKEN_COOKIE_EXPIRES,
+  });
+
+  responseSuccess(res, 200, "Đăng nhập thành công", {
+    user: response.user,
+    accessToken: response.accessToken,
+    refreshToken: response.refreshToken,
+  });
+});
+
+const getCurrentUser = catchAsync(async (req, res) => {
+  const userId = req.user._id;
+  const user = await authService.getCurrentUserById(userId);
+  return responseSuccess(res, 200, "Lấy thông tin người dùng thành công", user);
+});
 
 const forgotPassword = async (req, res) => {
   try {
@@ -102,120 +87,44 @@ const changePassword = async (req, res) => {
   }
 };
 
-const logout = async (req, res) => {
-  try {
-    const refreshToken = req.cookies.refreshToken;
+const logout = catchAsync(async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) return responseSuccess(res, 200, "Đã đăng xuất thành công");
+  // Xoá cookie
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+  });
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+  });
+  responseSuccess(res, 200, "Đăng xuất thành công");
+});
 
-    if (!refreshToken) {
-      return res.status(204).json({ success: true, message: "Đã đăng xuất rồi" });
-    }
-
-    // Xoá cookie
-    res.clearCookie("accessToken", {
-      httpOnly: true,
-    });
-
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-    });
-    res.status(200).json({ success: true, message: "Đăng xuất thành công" });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Lỗi máy chủ", error: error.message });
-  }
-};
-
-const refreshToken = async (req, res) => {
-  console.log("req.cookies", req.cookies);
+const refreshToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies;
-  if (!refreshToken) {
-    return res.status(401).json({ success: false, message: "Không có token làm mới" });
-  }
+  if (!refreshToken) throw new ApiError(401, "Không tìm thấy refresh token");
 
-  try {
-    const newAccessToken = await authService.refreshUserToken(refreshToken);
-    // console.log("newAccessToken", newAccessToken);
-    // Lưu accessToken vào cookie
-    res.cookie("accessToken", newAccessToken, {
-      httpOnly: true,
-      // maxAge: process.env.ACCESS_TOKEN_COOKIE_EXPIRES,
-      // sameSite: "Strict", // Quan trọng nếu frontend/backend khác domain
-      // secure: true, // Bắt buộc nếu dùng sameSite: "None"
-    });
+  const newAccessToken = await authService.refreshUserToken(refreshToken);
+  // Lưu accessToken vào cookie
+  res.cookie("accessToken", newAccessToken, {
+    httpOnly: true,
+    maxAge: process.env.ACCESS_TOKEN_COOKIE_EXPIRES,
+    // sameSite: "Strict", // Quan trọng nếu frontend/backend khác domain
+    // secure: true, // Bắt buộc nếu dùng sameSite: "None"
+  });
 
-    res.status(200).json({ success: true, message: "Làm mới token thành công", data: { accessToken: newAccessToken } });
-  } catch (error) {
-    if (error.name === "TokenExpiredError") {
-      return res.status(400).json({ success: false, message: error.message });
-    }
-    res.status(401).json({ success: false, message: error.message });
-  }
-};
-
-/**
- * Kiểm tra username đã tồn tại hay chưa
- */
-const checkUsernameExists = async (req, res) => {
-  try {
-    const { username } = req.params;
-
-    if (!username) {
-      return res.status(400).json({
-        success: false,
-        message: "Username là bắt buộc",
-      });
-    }
-    const exists = await authService.checkUsernameExists(username);
-
-    res.status(200).json({
-      success: true,
-      exists,
-      message: exists ? "Username đã tồn tại" : "Username có thể sử dụng",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Lỗi server khi kiểm tra username",
-    });
-  }
-};
+  responseSuccess(res, 200, "Làm mới token thành công", newAccessToken);
+});
 
 /**
  * Kiểm tra email đã tồn tại hay chưa
  */
-const checkEmailExists = async (req, res) => {
-  try {
-    const { email } = req.params;
+const checkEmailExists = catchAsync(async (req, res) => {
+  const { email } = req.params;
+  const exists = await authService.checkEmailExists(email);
 
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: "Email là bắt buộc",
-      });
-    }
-
-    // Kiểm tra định dạng email cơ bản
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        message: "Định dạng email không hợp lệ",
-      });
-    }
-
-    const exists = await authService.checkEmailExists(email);
-
-    res.status(200).json({
-      success: true,
-      exists,
-      message: exists ? "Email đã tồn tại" : "Email có thể sử dụng",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Lỗi server khi kiểm tra email",
-    });
-  }
-};
+  responseSuccess(res, 200, "Kiểm tra email thành công");
+});
 
 module.exports = {
   register,
@@ -226,6 +135,5 @@ module.exports = {
   logout,
   refreshToken,
   getCurrentUser,
-  checkUsernameExists,
   checkEmailExists,
 };

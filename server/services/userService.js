@@ -1,29 +1,18 @@
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
-const crypto = require("crypto");
 const ApiError = require("../utils/ApiError");
 
 // Kiểm tra trùng lặp thông tin
 const validateUserData = async (userData, userId = null) => {
+  const { email, phone } = userData;
   const errors = [];
 
-  // Kiểm tra username đã tồn tại chưa
-  if (userData.username) {
-    const query = { username: userData.username };
-    if (userId) query._id = { $ne: userId };
-
-    const existingUsername = await User.findOne(query);
-    if (existingUsername) {
-      errors.push({ field: "username", message: "Tên đăng nhập đã tồn tại" });
-    }
-  }
-
   // Kiểm tra email đã tồn tại chưa
-  if (userData.email) {
-    const query = { email: userData.email };
+  if (email) {
+    const query = { email: email };
     if (userId) query._id = { $ne: userId };
 
-    const existingEmail = await User.findOne(query);
+    const existingEmail = await User.findOne({ email });
     if (existingEmail) {
       errors.push({ field: "email", message: "Email đã tồn tại" });
     }

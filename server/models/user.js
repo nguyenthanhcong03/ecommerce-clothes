@@ -1,6 +1,4 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const crypto = require("crypto-js");
 
 const addressSchema = new mongoose.Schema({
   street: { type: String, required: true },
@@ -22,32 +20,24 @@ const userSchema = new mongoose.Schema(
   {
     email: {
       type: String,
-      required: [true, "Email is required"],
+      required: [true, "Email là bắt buộc"],
       trim: true,
       unique: true,
       lowercase: true,
-      match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, "Please enter a valid email address"],
+      match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, "Email không hợp lệ"],
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
+      required: [true, "Mật khẩu là bắt buộc"],
       trim: true,
-      minlength: [6, "Password should be at least 6 characters long"],
+      minlength: [6, "Mật khẩu phải có ít nhất 6 ký tự"],
     },
-    username: {
-      type: String,
-      required: [true, "Username is required"],
-      unique: true,
-      trim: true,
-      minlength: [3, "Username should be at least 3 characters long"],
-    },
-
-    firstName: { type: String, required: [true, "First name is required"], trim: true },
-    lastName: { type: String, required: [true, "Last name is required"], trim: true },
+    firstName: { type: String, required: [true, "Tên là bắt buộc"], trim: true },
+    lastName: { type: String, required: [true, "Họ là bắt buộc"], trim: true },
     phone: {
       type: String,
-      match: [/^(\+\d{1,3}[- ]?)?\d{10}$/, "Please enter a valid phone number"],
-      required: [true, "Phone number is required"],
+      match: [/^(\+\d{1,3}[- ]?)?\d{10}$/, "Số điện thoại không hợp lệ"],
+      required: [true, "Số điện thoại là bắt buộc"],
       trim: true,
     },
     avatar: { type: String, default: null, required: false },
@@ -63,11 +53,8 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
     address: addressSchema,
-
-    // Account status and roles
     role: { type: String, enum: ["customer", "admin"], default: "customer" },
     isBlocked: { type: Boolean, default: false },
-    lastLogin: { type: Date, default: Date.now },
   },
   {
     timestamps: true,

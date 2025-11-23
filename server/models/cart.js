@@ -41,21 +41,15 @@ const cartSchema = new mongoose.Schema(
       ref: "User",
       required: false,
     },
-    // sessionId: {
-    //   type: String, // Cho khách chưa đăng nhập
-    //   required: false,
-    // },
     items: [cartItemSchema],
   },
   {
-    timestamps: true, // createdAt, updatedAt
+    timestamps: true,
   }
 );
 
 // Index để tìm kiếm nhanh cart theo user hoặc session
 cartSchema.index({ userId: 1 }, { unique: true });
-// cartSchema.index({ sessionId: 1 });
-
 const Cart = mongoose.model("Cart", cartSchema);
 
 module.exports = Cart;

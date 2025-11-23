@@ -18,11 +18,7 @@ const categorySchema = new Schema(
       type: String,
       trim: true, // Loại bỏ khoảng trắng thừa
     },
-    images: [
-      {
-        type: String,
-      },
-    ],
+    image: { type: String, default: null }, // URL của hình ảnh đại diện cho danh mục
     priority: {
       type: Number,
       default: 0, // Mặc định priority là 0
@@ -39,5 +35,4 @@ categorySchema.index({ priority: -1 }); // Index on priority for sorting categor
 
 // Tạo model từ schema
 const Category = mongoose.model("Category", categorySchema);
-
 module.exports = Category;
