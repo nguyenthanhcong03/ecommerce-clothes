@@ -1,31 +1,31 @@
-const Product = require("../models/product");
-const InventoryHistory = require("../models/inventoryHistory");
-const ApiError = require("../utils/ApiError");
-const mongoose = require("mongoose");
+﻿import Product from "../models/product.js";
+import InventoryHistory from "../models/inventoryHistory.js";
+import ApiError from "../utils/ApiError.js";
+import mongoose from "mongoose";
 
 /**
- * Cập nhật số lượng tồn kho cho một biến thể sản phẩm
+ * Cáº­p nháº­t sá»‘ lÆ°á»£ng tá»“n kho cho má»™t biáº¿n thá»ƒ sáº£n pháº©m
  */
 const updateVariantStock = async (productId, variantId, quantity, reason, notes, userId) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    // Tìm sản phẩm và biến thể
+    // TÃ¬m sáº£n pháº©m vÃ  biáº¿n thá»ƒ
     const product = await Product.findById(productId).session(session);
     if (!product) {
-      throw new ApiError(404, "Sản phẩm không tồn tại");
+      throw new ApiError(404, "Sáº£n pháº©m khÃ´ng tá»“n táº¡i");
     }
 
     const variant = product.variants.id(variantId);
     if (!variant) {
-      throw new ApiError(404, "Biến thể sản phẩm không tồn tại");
+      throw new ApiError(404, "Biáº¿n thá»ƒ sáº£n pháº©m khÃ´ng tá»“n táº¡i");
     }
 
     const previousStock = variant.stock;
     const changeAmount = quantity - previousStock;
 
-    // Xác định loại thao tác (nhập/xuất/điều chỉnh)
+    // XÃ¡c Ä‘á»‹nh loáº¡i thao tÃ¡c (nháº­p/xuáº¥t/Ä‘iá»u chá»‰nh)
     let operationType = "adjustment";
     if (changeAmount > 0) {
       operationType = "import";
@@ -33,11 +33,11 @@ const updateVariantStock = async (productId, variantId, quantity, reason, notes,
       operationType = "export";
     }
 
-    // Cập nhật số lượng
+    // Cáº­p nháº­t sá»‘ lÆ°á»£ng
     variant.stock = quantity;
     await product.save({ session });
 
-    // Lưu lịch sử
+    // LÆ°u lá»‹ch sá»­
     await InventoryHistory.create(
       [
         {
@@ -45,7 +45,7 @@ const updateVariantStock = async (productId, variantId, quantity, reason, notes,
           variantId,
           sku: variant.sku,
           type: operationType,
-          quantity: Math.abs(changeAmount), // Giá trị tuyệt đối
+          quantity: Math.abs(changeAmount), // GiÃ¡ trá»‹ tuyá»‡t Ä‘á»‘i
           previousStock,
           currentStock: quantity,
           reason,
@@ -67,7 +67,7 @@ const updateVariantStock = async (productId, variantId, quantity, reason, notes,
 };
 
 /**
- * Cập nhật hàng loạt số lượng tồn kho cho nhiều biến thể
+ * Cáº­p nháº­t hÃ ng loáº¡t sá»‘ lÆ°á»£ng tá»“n kho cho nhiá»u biáº¿n thá»ƒ
  */
 const bulkUpdateStock = async (updateDataArray, reason, userId) => {
   const session = await mongoose.startSession();
@@ -80,21 +80,21 @@ const bulkUpdateStock = async (updateDataArray, reason, userId) => {
     for (const item of updateDataArray) {
       const { productId, variantId, quantity, notes } = item;
 
-      // Tìm sản phẩm và biến thể
+      // TÃ¬m sáº£n pháº©m vÃ  biáº¿n thá»ƒ
       const product = await Product.findById(productId).session(session);
       if (!product) {
-        throw new ApiError(404, `Sản phẩm ${productId} không tồn tại`);
+        throw new ApiError(404, `Sáº£n pháº©m ${productId} khÃ´ng tá»“n táº¡i`);
       }
 
       const variant = product.variants.id(variantId);
       if (!variant) {
-        throw new ApiError(404, `Biến thể ${variantId} không tồn tại`);
+        throw new ApiError(404, `Biáº¿n thá»ƒ ${variantId} khÃ´ng tá»“n táº¡i`);
       }
 
       const previousStock = variant.stock;
       const changeAmount = quantity - previousStock;
 
-      // Xác định loại thao tác (nhập/xuất/điều chỉnh)
+      // XÃ¡c Ä‘á»‹nh loáº¡i thao tÃ¡c (nháº­p/xuáº¥t/Ä‘iá»u chá»‰nh)
       let operationType = "adjustment";
       if (changeAmount > 0) {
         operationType = "import";
@@ -102,11 +102,11 @@ const bulkUpdateStock = async (updateDataArray, reason, userId) => {
         operationType = "export";
       }
 
-      // Cập nhật số lượng
+      // Cáº­p nháº­t sá»‘ lÆ°á»£ng
       variant.stock = quantity;
       await product.save({ session });
 
-      // Chuẩn bị lịch sử
+      // Chuáº©n bá»‹ lá»‹ch sá»­
       historyRecords.push({
         productId,
         variantId,
@@ -130,7 +130,7 @@ const bulkUpdateStock = async (updateDataArray, reason, userId) => {
       });
     }
 
-    // Lưu tất cả lịch sử một lúc
+    // LÆ°u táº¥t cáº£ lá»‹ch sá»­ má»™t lÃºc
     if (historyRecords.length > 0) {
       await InventoryHistory.insertMany(historyRecords, { session });
     }
@@ -146,17 +146,17 @@ const bulkUpdateStock = async (updateDataArray, reason, userId) => {
 };
 
 /**
- * Lấy danh sách sản phẩm có tồn kho thấp
+ * Láº¥y danh sÃ¡ch sáº£n pháº©m cÃ³ tá»“n kho tháº¥p
  */
 const getLowStockProducts = async (threshold = 5, page = 1, limit = 20) => {
   const skip = (page - 1) * limit;
 
   const pipeline = [
-    // Unwind variants array để xử lý từng biến thể
+    // Unwind variants array Ä‘á»ƒ xá»­ lÃ½ tá»«ng biáº¿n thá»ƒ
     { $unwind: "$variants" },
-    // Lọc các biến thể có tồn kho thấp hơn ngưỡng
+    // Lá»c cÃ¡c biáº¿n thá»ƒ cÃ³ tá»“n kho tháº¥p hÆ¡n ngÆ°á»¡ng
     { $match: { "variants.stock": { $lte: threshold } } },
-    // Nhóm lại theo sản phẩm
+    // NhÃ³m láº¡i theo sáº£n pháº©m
     {
       $group: {
         _id: "$_id",
@@ -175,7 +175,7 @@ const getLowStockProducts = async (threshold = 5, page = 1, limit = 20) => {
         },
       },
     },
-    // Lookup để lấy thông tin danh mục
+    // Lookup Ä‘á»ƒ láº¥y thÃ´ng tin danh má»¥c
     {
       $lookup: {
         from: "categories",
@@ -191,7 +191,7 @@ const getLowStockProducts = async (threshold = 5, page = 1, limit = 20) => {
     //     preserveNullAndEmptyArrays: true,
     //   },
     // },
-    // Project để định dạng kết quả cuối cùng
+    // Project Ä‘á»ƒ Ä‘á»‹nh dáº¡ng káº¿t quáº£ cuá»‘i cÃ¹ng
     {
       $project: {
         _id: 1,
@@ -201,9 +201,9 @@ const getLowStockProducts = async (threshold = 5, page = 1, limit = 20) => {
         lowStockVariants: 1,
       },
     },
-    // Sort theo số lượng tồn kho (từ thấp đến cao)
+    // Sort theo sá»‘ lÆ°á»£ng tá»“n kho (tá»« tháº¥p Ä‘áº¿n cao)
     { $sort: { "lowStockVariants.stock": 1 } },
-    // Skip và limit cho pagination
+    // Skip vÃ  limit cho pagination
     { $skip: skip },
     { $limit: parseInt(limit) },
   ];
@@ -232,13 +232,13 @@ const getLowStockProducts = async (threshold = 5, page = 1, limit = 20) => {
 };
 
 /**
- * Lấy lịch sử xuất nhập kho
+ * Láº¥y lá»‹ch sá»­ xuáº¥t nháº­p kho
  */
 const getInventoryHistory = async (filters = {}, page = 1, limit = 20, sortBy = "createdAt", sortOrder = "desc") => {
   const skip = (page - 1) * limit;
   const query = {};
 
-  // Áp dụng các bộ lọc
+  // Ãp dá»¥ng cÃ¡c bá»™ lá»c
   if (filters.productId) {
     query.productId = mongoose.Types.ObjectId.isValid(filters.productId)
       ? new mongoose.Types.ObjectId(filters.productId)
@@ -294,9 +294,4 @@ const getInventoryHistory = async (filters = {}, page = 1, limit = 20, sortBy = 
   };
 };
 
-module.exports = {
-  updateVariantStock,
-  bulkUpdateStock,
-  getLowStockProducts,
-  getInventoryHistory,
-};
+export default { updateVariantStock, bulkUpdateStock, getLowStockProducts, getInventoryHistory };

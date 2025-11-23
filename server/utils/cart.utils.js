@@ -1,4 +1,4 @@
-const Product = require("../models/product");
+﻿import Product from "../models/product.js";
 
 const syncCartItemSnapshots = async (cart) => {
   for (const item of cart.items) {
@@ -18,7 +18,7 @@ const syncCartItemSnapshots = async (cart) => {
       item.quantity = variant.stock;
     }
 
-    // Cập nhật snapshot
+    // Cáº­p nháº­t snapshot
     item.snapshot.name = product.name;
     item.snapshot.price = variant.price;
     item.snapshot.originalPrice = variant.originalPrice || null;
@@ -32,4 +32,4 @@ const syncCartItemSnapshots = async (cart) => {
   await cart.save();
 };
 
-module.exports = { syncCartItemSnapshots };
+export { syncCartItemSnapshots };

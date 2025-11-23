@@ -1,6 +1,8 @@
-const router = require("express").Router();
-const cartController = require("../controllers/cartController");
-const { checkRole, verifyToken } = require("../middlewares/auth");
+﻿import express from "express";
+import cartController from "../controllers/cartController.js";
+
+const router = express.Router();
+import { checkRole, verifyToken } from "../middlewares/auth.js";
 
 router.get("/", verifyToken, cartController.getCart);
 router.post("/", verifyToken, cartController.addToCart);
@@ -9,4 +11,4 @@ router.delete("/clear", verifyToken, cartController.clearCart);
 router.patch("/:itemId", verifyToken, cartController.updateCartItem);
 router.delete("/:itemId", verifyToken, cartController.removeCartItem);
 
-module.exports = router;
+export default router;

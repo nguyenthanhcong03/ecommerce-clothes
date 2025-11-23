@@ -1,31 +1,31 @@
-const express = require("express");
-const statisticsController = require("../controllers/statisticsController");
-const { verifyAccessToken, isAdmin } = require("../middlewares/auth");
+﻿import express from "express";
+import statisticsController from "../controllers/statisticsController.js";
+import { verifyToken, checkRole } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-// Middleware xác thực quyền admin cho tất cả các route
+// Middleware xÃ¡c thá»±c quyá»n admin cho táº¥t cáº£ cÃ¡c route
 // router.use(verifyAccessToken, isAdmin);
 
-// Lấy thống kê tổng quan
+// Láº¥y thá»‘ng kÃª tá»•ng quan
 router.get("/overview", statisticsController.getOverviewStatistics);
 
-// Lấy thống kê doanh thu
+// Láº¥y thá»‘ng kÃª doanh thu
 router.get("/revenue", statisticsController.getRevenueStatistics);
 
-// Lấy thống kê sản phẩm bán chạy
+// Láº¥y thá»‘ng kÃª sáº£n pháº©m bÃ¡n cháº¡y
 router.get("/top-products", statisticsController.getTopProducts);
 
-// Lấy thống kê khách hàng
+// Láº¥y thá»‘ng kÃª khÃ¡ch hÃ ng
 router.get("/customers", statisticsController.getCustomerStatistics);
 
-// Lấy thống kê theo danh mục sản phẩm
+// Láº¥y thá»‘ng kÃª theo danh má»¥c sáº£n pháº©m
 router.get("/categories", statisticsController.getCategoryStatistics);
 
-// Lấy thống kê đơn hàng
+// Láº¥y thá»‘ng kÃª Ä‘Æ¡n hÃ ng
 router.get("/orders", statisticsController.getOrderStatistics);
 
-// Lấy thống kê tồn kho
+// Láº¥y thá»‘ng kÃª tá»“n kho
 router.get("/inventory", statisticsController.getInventoryStatistics);
 
-module.exports = router;
+export default router;

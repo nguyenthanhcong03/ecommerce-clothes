@@ -1,38 +1,33 @@
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
+﻿import mongoose from "mongoose";
 
-// Định nghĩa schema cho Category
-const categorySchema = new Schema(
+// Äá»‹nh nghÄ©a schema cho Category
+const categorySchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true, // Tên danh mục là bắt buộc
-      trim: true, // Loại bỏ khoảng trắng thừa
-    },
-    parentId: {
-      type: Schema.Types.ObjectId,
-      ref: "Category", // Tham chiếu đến chính model Category
-      default: null, // Mặc định là null nếu không có danh mục cha
+      required: true, // TÃªn danh má»¥c lÃ  báº¯t buá»™c
+      trim: true, // Loáº¡i bá» khoáº£ng tráº¯ng thá»«a
     },
     description: {
       type: String,
-      trim: true, // Loại bỏ khoảng trắng thừa
+      trim: true, // Loáº¡i bá» khoáº£ng tráº¯ng thá»«a
     },
-    image: { type: String, default: null }, // URL của hình ảnh đại diện cho danh mục
+    image: { type: String, default: null }, // URL cá»§a hÃ¬nh áº£nh Ä‘áº¡i diá»‡n cho danh má»¥c
+    imagePublicId: { type: String, default: null }, // Public ID cá»§a hÃ¬nh áº£nh trÃªn Cloudinary
     priority: {
       type: Number,
-      default: 0, // Mặc định priority là 0
+      default: 0, // Máº·c Ä‘á»‹nh priority lÃ  0
     },
   },
   {
-    timestamps: true, // Tự động thêm createdAt và updatedAt
+    timestamps: true, // Tá»± Ä‘á»™ng thÃªm createdAt vÃ  updatedAt
   }
 );
 
-// Add index for better query performance
-categorySchema.index({ parentId: 1 }); // Index on parentId for efficient parent-child queries
-categorySchema.index({ priority: -1 }); // Index on priority for sorting categories
+categorySchema.index({ priority: -1 });
 
-// Tạo model từ schema
+// Táº¡o model tá»« schema
 const Category = mongoose.model("Category", categorySchema);
-module.exports = Category;
+export default Category;
+
+

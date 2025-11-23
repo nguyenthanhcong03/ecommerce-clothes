@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+﻿import mongoose from "mongoose";
 
 const reviewSchema = new mongoose.Schema(
   {
@@ -32,11 +32,11 @@ const reviewSchema = new mongoose.Schema(
     },
     likes: {
       type: Number,
-      default: 0, // Có thể thêm nếu muốn người dùng "thích" review này
+      default: 0, // CÃ³ thá»ƒ thÃªm náº¿u muá»‘n ngÆ°á»i dÃ¹ng "thÃ­ch" review nÃ y
     },
     reply: {
       type: String,
-      trim: true, // Admin/Shop có thể trả lời
+      trim: true, // Admin/Shop cÃ³ thá»ƒ tráº£ lá»i
     },
   },
   {
@@ -46,4 +46,4 @@ const reviewSchema = new mongoose.Schema(
 
 const Review = mongoose.model("Review", reviewSchema);
 
-module.exports = Review;
+export default Review;

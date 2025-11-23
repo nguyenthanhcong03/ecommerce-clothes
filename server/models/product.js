@@ -1,4 +1,18 @@
-const mongoose = require("mongoose");
+﻿import mongoose from "mongoose";
+
+const imageSchema = new mongoose.Schema(
+  {
+    url: {
+      type: String,
+      required: true,
+    },
+    publicId: {
+      type: String,
+      default: null,
+    },
+  },
+  { _id: false }
+);
 
 const variantSchema = new mongoose.Schema(
   {
@@ -49,12 +63,7 @@ const productSchema = new mongoose.Schema(
       required: true,
     },
     variants: [variantSchema],
-    images: [
-      {
-        type: String, // URL của hình ảnh
-        required: true,
-      },
-    ],
+    images: [imageSchema],
     tags: [
       {
         type: String,
@@ -74,32 +83,34 @@ const productSchema = new mongoose.Schema(
     },
     salesCount: {
       type: Number,
-      default: 0, // Số lượng đã bán
+      default: 0, // Sá»‘ lÆ°á»£ng Ä‘Ã£ bÃ¡n
     },
   },
   {
-    timestamps: true, // Tự động tạo createdAt và updatedAt
+    timestamps: true, // Tá»± Ä‘á»™ng táº¡o createdAt vÃ  updatedAt
   }
 );
 
-// 1. Index cho tìm kiếm văn bản (text search)
+// 1. Index cho tÃ¬m kiáº¿m vÄƒn báº£n (text search)
 productSchema.index({ name: "text", description: "text" });
-// Hỗ trợ truy vấn $regex trong API khi search theo tên hoặc mô tả
+// Há»— trá»£ truy váº¥n $regex trong API khi search theo tÃªn hoáº·c mÃ´ táº£
 
 // 2. Index cho field variants.price
 productSchema.index({ "variants.price": 1 });
-// Hỗ trợ filter theo giá (minPrice, maxPrice)
+// Há»— trá»£ filter theo giÃ¡ (minPrice, maxPrice)
 
 // 3. Index cho categoryId
 productSchema.index({ categoryId: 1 });
-// Hỗ trợ filter theo danh mục
+// Há»— trá»£ filter theo danh má»¥c
 
 // 4. Index cho brand
 productSchema.index({ brand: 1 });
-// Hỗ trợ filter theo thương hiệu
+// Há»— trá»£ filter theo thÆ°Æ¡ng hiá»‡u
 
 // 6. Index cho featured products
 productSchema.index({ featured: 1 });
-// Hỗ trợ query sản phẩm nổi bật
+// Há»— trá»£ query sáº£n pháº©m ná»•i báº­t
 
-module.exports = mongoose.model("Product", productSchema);
+export default mongoose.model("Product", productSchema);
+
+

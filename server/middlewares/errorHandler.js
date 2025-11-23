@@ -1,14 +1,14 @@
-const mongoose = require("mongoose"); // Nếu bạn dùng mongoose
-const ApiError = require("../utils/ApiError"); // Giả sử bạn có một lớp ApiError để xử lý lỗi
+﻿import mongoose from "mongoose";
+import ApiError from "../utils/ApiError.js";
 
 const errorConverter = (err, req, res, next) => {
   let error = err;
 
-  // Tạo object ánh xạ mã trạng thái HTTP
+  // Táº¡o object Ã¡nh xáº¡ mÃ£ tráº¡ng thÃ¡i HTTP
   const statusText = {
     400: "Bad Request",
     500: "Internal Server Error",
-    // Có thể thêm các mã khác nếu cần
+    // CÃ³ thá»ƒ thÃªm cÃ¡c mÃ£ khÃ¡c náº¿u cáº§n
   };
 
   if (!(error instanceof ApiError)) {
@@ -42,7 +42,5 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
-module.exports = {
-  errorConverter,
-  errorHandler,
-};
+export { errorConverter, errorHandler };
+

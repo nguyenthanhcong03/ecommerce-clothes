@@ -1,14 +1,33 @@
-const express = require("express");
-const categoryController = require("../controllers/categoryController");
+﻿import express from "express";
+import categoryController from "../controllers/categoryController.js";
+import { verifyToken, checkRole } from "../middlewares/auth.js";
+import { uploadSingleImage, handleMulterError } from "../middlewares/multer.js";
 
 const router = express.Router();
 
+// Public routes
 router.get("/tree", categoryController.getTreeCategories);
 router.get("/", categoryController.getAllCategories);
 router.get("/:id", categoryController.getCategoryById);
-router.post("/", categoryController.createCategory);
-router.put("/:id", categoryController.updateCategoryById);
-router.delete("/:id", categoryController.deleteCategory);
-router.get("/:id", categoryController.getCategoryById);
 
-module.exports = router;
+// Admin routes
+router.post(
+  "/",
+  verifyToken,
+  checkRole("admin"),
+  uploadSingleImage,
+  handleMulterError,
+  categoryController.createCategory
+);
+router.put(
+  "/:id",
+  verifyToken,
+  checkRole("admin"),
+  uploadSingleImage,
+  handleMulterError,
+  categoryController.updateCategoryById
+);
+router.delete("/:id", verifyToken, checkRole("admin"), categoryController.deleteCategory);
+router.delete("/:id/image", verifyToken, checkRole("admin"), categoryController.deleteCategoryImage);
+
+export default router;

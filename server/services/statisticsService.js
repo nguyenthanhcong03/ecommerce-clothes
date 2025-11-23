@@ -1,11 +1,11 @@
-const Order = require("../models/order");
-const Product = require("../models/product");
-const User = require("../models/user");
-const Category = require("../models/category");
-const mongoose = require("mongoose");
+﻿import Order from "../models/order.js";
+import Product from "../models/product.js";
+import User from "../models/user.js";
+import Category from "../models/category.js";
+import mongoose from "mongoose";
 
 /**
- * Hàm helper để lấy điều kiện tìm kiếm theo thời gian
+ * HÃ m helper Ä‘á»ƒ láº¥y Ä‘iá»u kiá»‡n tÃ¬m kiáº¿m theo thá»i gian
  */
 const getDateCondition = (period, startDate, endDate) => {
   const now = new Date();
@@ -34,7 +34,7 @@ const getDateCondition = (period, startDate, endDate) => {
       if (startDate && endDate) {
         const parsedStartDate = new Date(startDate);
         const parsedEndDate = new Date(endDate);
-        parsedEndDate.setHours(23, 59, 59, 999); // Đến cuối ngày
+        parsedEndDate.setHours(23, 59, 59, 999); // Äáº¿n cuá»‘i ngÃ y
         dateCondition = {
           createdAt: {
             $gte: parsedStartDate,
@@ -44,7 +44,7 @@ const getDateCondition = (period, startDate, endDate) => {
       }
       break;
     default:
-      // Mặc định lấy tất cả
+      // Máº·c Ä‘á»‹nh láº¥y táº¥t cáº£
       dateCondition = {};
   }
 
@@ -52,42 +52,42 @@ const getDateCondition = (period, startDate, endDate) => {
 };
 
 /**
- * Lấy thống kê tổng quan
+ * Láº¥y thá»‘ng kÃª tá»•ng quan
  */
 const getOverviewStatistics = async () => {
-  // Tổng số đơn hàng
+  // Tá»•ng sá»‘ Ä‘Æ¡n hÃ ng
   const totalOrders = await Order.countDocuments();
 
-  // Tổng doanh thu
+  // Tá»•ng doanh thu
   const revenueResult = await Order.aggregate([
-    { $match: { status: "Delivered" } }, // Chỉ tính doanh thu từ đơn hàng đã giao
+    { $match: { status: "Delivered" } }, // Chá»‰ tÃ­nh doanh thu tá»« Ä‘Æ¡n hÃ ng Ä‘Ã£ giao
     { $group: { _id: null, total: { $sum: "$totalPrice" } } },
   ]);
   const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
 
-  // Tổng số khách hàng
+  // Tá»•ng sá»‘ khÃ¡ch hÃ ng
   const totalCustomers = await User.countDocuments({ role: "customer" });
 
-  // Tổng số sản phẩm
+  // Tá»•ng sá»‘ sáº£n pháº©m
   const totalProducts = await Product.countDocuments();
 
-  // Đơn hàng đang xử lý
+  // ÄÆ¡n hÃ ng Ä‘ang xá»­ lÃ½
   const pendingOrders = await Order.countDocuments({ status: { $in: ["Pending", "Processing"] } });
 
-  // Đơn hàng đã giao
+  // ÄÆ¡n hÃ ng Ä‘Ã£ giao
   const deliveredOrders = await Order.countDocuments({ status: "Delivered" });
 
-  // Đơn hàng đã hủy
+  // ÄÆ¡n hÃ ng Ä‘Ã£ há»§y
   const cancelledOrders = await Order.countDocuments({ status: "Cancelled" });
 
-  // Đơn hàng hôm nay
+  // ÄÆ¡n hÃ ng hÃ´m nay
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const ordersToday = await Order.countDocuments({
     createdAt: { $gte: today },
   });
 
-  // Doanh thu hôm nay
+  // Doanh thu hÃ´m nay
   const revenueTodayResult = await Order.aggregate([
     {
       $match: {
@@ -114,14 +114,14 @@ const getOverviewStatistics = async () => {
 };
 
 /**
- * Lấy thống kê doanh thu
+ * Láº¥y thá»‘ng kÃª doanh thu
  */
 const getRevenueStatistics = async (period, startDate, endDate) => {
   let dateCondition = getDateCondition(period, startDate, endDate);
   let groupBy = {};
   let sortBy = {};
 
-  // Định dạng group by dựa trên period
+  // Äá»‹nh dáº¡ng group by dá»±a trÃªn period
   switch (period) {
     case "today":
       groupBy = {
@@ -148,7 +148,7 @@ const getRevenueStatistics = async (period, startDate, endDate) => {
       sortBy = { _id: 1 };
       break;
     case "custom":
-      // Nếu khoảng thời gian dưới 30 ngày thì group theo ngày
+      // Náº¿u khoáº£ng thá»i gian dÆ°á»›i 30 ngÃ y thÃ¬ group theo ngÃ y
       if (startDate && endDate) {
         const parsedStartDate = new Date(startDate);
         const parsedEndDate = new Date(endDate);
@@ -173,12 +173,12 @@ const getRevenueStatistics = async (period, startDate, endDate) => {
       sortBy = { _id: 1 };
   }
 
-  // Thống kê doanh thu
+  // Thá»‘ng kÃª doanh thu
   const revenueData = await Order.aggregate([
     {
       $match: {
         ...dateCondition,
-        status: "Delivered", // Chỉ tính doanh thu từ đơn hàng đã giao
+        status: "Delivered", // Chá»‰ tÃ­nh doanh thu tá»« Ä‘Æ¡n hÃ ng Ä‘Ã£ giao
       },
     },
     {
@@ -191,7 +191,7 @@ const getRevenueStatistics = async (period, startDate, endDate) => {
     { $sort: sortBy },
   ]);
 
-  // Thống kê doanh thu theo phương thức thanh toán
+  // Thá»‘ng kÃª doanh thu theo phÆ°Æ¡ng thá»©c thanh toÃ¡n
   const paymentMethodData = await Order.aggregate([
     {
       $match: {
@@ -215,7 +215,7 @@ const getRevenueStatistics = async (period, startDate, endDate) => {
 };
 
 /**
- * Lấy thống kê sản phẩm bán chạy
+ * Láº¥y thá»‘ng kÃª sáº£n pháº©m bÃ¡n cháº¡y
  */
 const getTopProducts = async (limit = 10, period, startDate, endDate) => {
   let dateCondition = getDateCondition(period, startDate, endDate);
@@ -224,7 +224,7 @@ const getTopProducts = async (limit = 10, period, startDate, endDate) => {
     {
       $match: {
         ...dateCondition,
-        status: { $nin: ["Cancelled"] }, // Loại bỏ đơn đã hủy
+        status: { $nin: ["Cancelled"] }, // Loáº¡i bá» Ä‘Æ¡n Ä‘Ã£ há»§y
       },
     },
     { $unwind: "$products" },
@@ -269,7 +269,7 @@ const getTopProducts = async (limit = 10, period, startDate, endDate) => {
     },
   ]);
 
-  // Thêm thông tin danh mục
+  // ThÃªm thÃ´ng tin danh má»¥c
   for (let product of topProducts) {
     if (product.category) {
       const category = await Category.findById(product.category).select("name");
@@ -283,18 +283,18 @@ const getTopProducts = async (limit = 10, period, startDate, endDate) => {
 };
 
 /**
- * Lấy thống kê khách hàng
+ * Láº¥y thá»‘ng kÃª khÃ¡ch hÃ ng
  */
 const getCustomerStatistics = async (period, startDate, endDate) => {
   let dateCondition = getDateCondition(period, startDate, endDate);
 
-  // Khách hàng mới trong khoảng thời gian
+  // KhÃ¡ch hÃ ng má»›i trong khoáº£ng thá»i gian
   const newCustomers = await User.countDocuments({
     ...dateCondition,
     role: "customer",
   });
 
-  // Top khách hàng có đơn hàng nhiều nhất
+  // Top khÃ¡ch hÃ ng cÃ³ Ä‘Æ¡n hÃ ng nhiá»u nháº¥t
   const topCustomersByOrders = await Order.aggregate([
     { $match: dateCondition },
     {
@@ -316,13 +316,13 @@ const getCustomerStatistics = async (period, startDate, endDate) => {
       },
     },
     {
-      // thêm trường mới hoặc ghi đè trường hiện tại bằng giá trị tính toán.
+      // thÃªm trÆ°á»ng má»›i hoáº·c ghi Ä‘Ã¨ trÆ°á»ng hiá»‡n táº¡i báº±ng giÃ¡ trá»‹ tÃ­nh toÃ¡n.
       $addFields: {
         userDetails: { $arrayElemAt: ["$userDetails", 0] },
       },
     },
     {
-      // Hiển thị các trường cần thiết
+      // Hiá»ƒn thá»‹ cÃ¡c trÆ°á»ng cáº§n thiáº¿t
       $project: {
         _id: 1,
         userId: "$_id",
@@ -336,7 +336,7 @@ const getCustomerStatistics = async (period, startDate, endDate) => {
     },
   ]);
 
-  // Top khách hàng chi tiêu nhiều nhất
+  // Top khÃ¡ch hÃ ng chi tiÃªu nhiá»u nháº¥t
   const topCustomersBySpending = await Order.aggregate([
     {
       $match: {
@@ -388,7 +388,7 @@ const getCustomerStatistics = async (period, startDate, endDate) => {
 };
 
 /**
- * Lấy thống kê theo danh mục sản phẩm
+ * Láº¥y thá»‘ng kÃª theo danh má»¥c sáº£n pháº©m
  */
 const getCategoryStatistics = async (period, startDate, endDate) => {
   let dateCondition = getDateCondition(period, startDate, endDate);
@@ -456,14 +456,14 @@ const getCategoryStatistics = async (period, startDate, endDate) => {
 };
 
 /**
- * Lấy thống kê đơn hàng
+ * Láº¥y thá»‘ng kÃª Ä‘Æ¡n hÃ ng
  */
 const getOrderStatistics = async (period, startDate, endDate) => {
   let dateCondition = getDateCondition(period, startDate, endDate);
   let groupBy = {};
   let sortBy = {};
 
-  // Định dạng group by dựa trên period
+  // Äá»‹nh dáº¡ng group by dá»±a trÃªn period
   switch (period) {
     case "today":
       groupBy = {
@@ -490,7 +490,7 @@ const getOrderStatistics = async (period, startDate, endDate) => {
       sortBy = { _id: 1 };
       break;
     case "custom":
-      // Nếu khoảng thời gian dưới 30 ngày thì group theo ngày
+      // Náº¿u khoáº£ng thá»i gian dÆ°á»›i 30 ngÃ y thÃ¬ group theo ngÃ y
       if (startDate && endDate) {
         const parsedStartDate = new Date(startDate);
         const parsedEndDate = new Date(endDate);
@@ -515,7 +515,7 @@ const getOrderStatistics = async (period, startDate, endDate) => {
       sortBy = { _id: 1 };
   }
 
-  // Thống kê số lượng đơn hàng theo thời gian
+  // Thá»‘ng kÃª sá»‘ lÆ°á»£ng Ä‘Æ¡n hÃ ng theo thá»i gian
   const ordersByTime = await Order.aggregate([
     { $match: dateCondition },
     {
@@ -528,7 +528,7 @@ const getOrderStatistics = async (period, startDate, endDate) => {
     { $sort: sortBy },
   ]);
 
-  // Thống kê theo trạng thái đơn hàng
+  // Thá»‘ng kÃª theo tráº¡ng thÃ¡i Ä‘Æ¡n hÃ ng
   const ordersByStatus = await Order.aggregate([
     { $match: dateCondition },
     {
@@ -540,7 +540,7 @@ const getOrderStatistics = async (period, startDate, endDate) => {
     },
   ]);
 
-  // Tỷ lệ đơn hàng hủy
+  // Tá»· lá»‡ Ä‘Æ¡n hÃ ng há»§y
   const totalOrders = await Order.countDocuments(dateCondition);
   const cancelledOrders = await Order.countDocuments({
     ...dateCondition,
@@ -549,7 +549,7 @@ const getOrderStatistics = async (period, startDate, endDate) => {
 
   const cancellationRate = totalOrders > 0 ? (cancelledOrders / totalOrders) * 100 : 0;
 
-  // Top lý do hủy đơn
+  // Top lÃ½ do há»§y Ä‘Æ¡n
   const topCancellationReasons = await Order.aggregate([
     {
       $match: {
@@ -577,20 +577,20 @@ const getOrderStatistics = async (period, startDate, endDate) => {
 };
 
 /**
- * Lấy thống kê tồn kho
+ * Láº¥y thá»‘ng kÃª tá»“n kho
  */
 const getInventoryStatistics = async () => {
-  // Tổng sản phẩm hiện có
+  // Tá»•ng sáº£n pháº©m hiá»‡n cÃ³
   const totalProducts = await Product.countDocuments();
 
-  // Tổng số lượng tồn kho
+  // Tá»•ng sá»‘ lÆ°á»£ng tá»“n kho
   const inventoryResult = await Product.aggregate([
     { $unwind: "$variants" },
     { $group: { _id: null, totalStock: { $sum: "$variants.stock" } } },
   ]);
   const totalInventory = inventoryResult.length > 0 ? inventoryResult[0].totalStock : 0;
 
-  // Sản phẩm gần hết hàng (stock < 10)
+  // Sáº£n pháº©m gáº§n háº¿t hÃ ng (stock < 10)
   const lowStockProducts = await Product.aggregate([
     { $unwind: "$variants" },
     { $match: { "variants.stock": { $lt: 10, $gt: 0 } } },
@@ -613,7 +613,7 @@ const getInventoryStatistics = async () => {
     { $sort: { totalLowStock: -1 } },
   ]);
 
-  // Sản phẩm đã hết hàng (stock = 0)
+  // Sáº£n pháº©m Ä‘Ã£ háº¿t hÃ ng (stock = 0)
   const outOfStockProducts = await Product.aggregate([
     { $unwind: "$variants" },
     { $match: { "variants.stock": 0 } },
@@ -635,7 +635,7 @@ const getInventoryStatistics = async () => {
     { $sort: { totalOutOfStock: -1 } },
   ]);
 
-  // Sản phẩm theo số lượng tồn kho (phân nhóm)
+  // Sáº£n pháº©m theo sá»‘ lÆ°á»£ng tá»“n kho (phÃ¢n nhÃ³m)
   const stockDistribution = await Product.aggregate([
     { $unwind: "$variants" },
     {
@@ -657,9 +657,9 @@ const getInventoryStatistics = async () => {
     },
     {
       $project: {
-        stockLevel: "$_id", // Tạo trường mới tên là stockLevel, gán giá trị từ trường _id.
+        stockLevel: "$_id", // Táº¡o trÆ°á»ng má»›i tÃªn lÃ  stockLevel, gÃ¡n giÃ¡ trá»‹ tá»« trÆ°á»ng _id.
         count: 1,
-        uniqueProductCount: { $size: "$products" }, // để đếm số lượng phần tử trong mảng products.
+        uniqueProductCount: { $size: "$products" }, // Ä‘á»ƒ Ä‘áº¿m sá»‘ lÆ°á»£ng pháº§n tá»­ trong máº£ng products.
       },
     },
     { $sort: { _id: 1 } },
@@ -674,7 +674,7 @@ const getInventoryStatistics = async () => {
   };
 };
 
-module.exports = {
+export default {
   getOverviewStatistics,
   getRevenueStatistics,
   getTopProducts,

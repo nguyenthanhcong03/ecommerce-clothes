@@ -1,15 +1,14 @@
-const express = require("express");
+﻿import express from "express";
 const router = express.Router();
-const chatbotController = require("../controllers/chatbotController");
-const { validateChatMessage } = require("../middlewares/validator");
+import chatbotController from "../controllers/chatbotController.js";
 
-// POST /api/chatbot/chat - Xử lý tin nhắn chat
-router.post("/chat", validateChatMessage, chatbotController.processChat);
+// POST /api/chatbot/chat - Xá»­ lÃ½ tin nháº¯n chat
+router.post("/chat", chatbotController.processChat);
 
-// GET /api/chatbot/suggestions - Lấy gợi ý sản phẩm và câu hỏi mẫu
+// GET /api/chatbot/suggestions - Láº¥y gá»£i Ã½ sáº£n pháº©m vÃ  cÃ¢u há»i máº«u
 router.get("/suggestions", chatbotController.getChatSuggestions);
 
-// GET /api/chatbot/status - Kiểm tra trạng thái chatbot
+// GET /api/chatbot/status - Kiá»ƒm tra tráº¡ng thÃ¡i chatbot
 router.get("/status", chatbotController.getChatbotStatus);
 
-module.exports = router;
+export default router;

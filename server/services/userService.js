@@ -1,43 +1,43 @@
-const User = require("../models/user");
-const bcrypt = require("bcryptjs");
-const ApiError = require("../utils/ApiError");
+﻿import User from "../models/user.js";
+import bcrypt from "bcryptjs";
+import ApiError from "../utils/ApiError.js";
 
-// Kiểm tra trùng lặp thông tin
+// Kiá»ƒm tra trÃ¹ng láº·p thÃ´ng tin
 const validateUserData = async (userData, userId = null) => {
   const { email, phone } = userData;
   const errors = [];
 
-  // Kiểm tra email đã tồn tại chưa
+  // Kiá»ƒm tra email Ä‘Ã£ tá»“n táº¡i chÆ°a
   if (email) {
     const query = { email: email };
     if (userId) query._id = { $ne: userId };
 
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
-      errors.push({ field: "email", message: "Email đã tồn tại" });
+      errors.push({ field: "email", message: "Email Ä‘Ã£ tá»“n táº¡i" });
     }
   }
 
-  // Kiểm tra phone đã tồn tại chưa
+  // Kiá»ƒm tra phone Ä‘Ã£ tá»“n táº¡i chÆ°a
   if (userData.phone) {
     const query = { phone: userData.phone };
     if (userId) query._id = { $ne: userId };
 
     const existingPhone = await User.findOne(query);
     if (existingPhone) {
-      errors.push({ field: "phone", message: "Số điện thoại đã tồn tại" });
+      errors.push({ field: "phone", message: "Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ tá»“n táº¡i" });
     }
   }
 
   return errors;
 };
 
-// Tìm tất cả người dùng với phân trang và lọc
+// TÃ¬m táº¥t cáº£ ngÆ°á»i dÃ¹ng vá»›i phÃ¢n trang vÃ  lá»c
 const getAllUsers = async (filters = {}, options = {}) => {
   const { page = 1, limit = 10, sortBy = "createdAt", sortOrder = -1 } = options;
   const skip = (page - 1) * limit;
 
-  // Xây dựng query filters
+  // XÃ¢y dá»±ng query filters
   const query = {};
   if (filters.role) query.role = filters.role;
   if (filters.isBlocked) query.isBlocked = filters.isBlocked;
@@ -51,7 +51,7 @@ const getAllUsers = async (filters = {}, options = {}) => {
     ];
   }
 
-  // Thực hiện truy vấn
+  // Thá»±c hiá»‡n truy váº¥n
   const users = await User.find(query)
     .select("-password -resetPasswordToken -resetPasswordExpires -verificationToken")
     .sort({ [sortBy]: sortOrder })
@@ -71,44 +71,47 @@ const getAllUsers = async (filters = {}, options = {}) => {
   };
 };
 
-// Lấy một người dùng theo ID
+// Láº¥y má»™t ngÆ°á»i dÃ¹ng theo ID
 const getUserById = async (userId) => {
   const user = await User.findById(userId).select(
     "-password -resetPasswordToken -resetPasswordExpires -verificationToken"
   );
   if (!user) {
-    throw new ApiError(404, "Người dùng không tồn tại");
+    throw new ApiError(404, "NgÆ°á»i dÃ¹ng khÃ´ng tá»“n táº¡i");
   }
   return user;
 };
 
-// Tạo người dùng mới bởi Admin
+// Táº¡o ngÆ°á»i dÃ¹ng má»›i bá»Ÿi Admin
 const createUserByAdmin = async (userData) => {
   const { firstName, lastName, email, username, phone, role, password } = userData;
-  // Kiểm tra dữ liệu bắt buộc
+  // Kiá»ƒm tra dá»¯ liá»‡u báº¯t buá»™c
   if (!firstName || !lastName || !email || !phone || !username || !role || !password) {
-    throw new ApiError(400, "Thiếu thông tin bắt buộc: firstName, lastName, email, username, phone, role, password");
+    throw new ApiError(
+      400,
+      "Thiáº¿u thÃ´ng tin báº¯t buá»™c: firstName, lastName, email, username, phone, role, password"
+    );
   }
 
-  // Kiểm tra trùng lặp thông tin
+  // Kiá»ƒm tra trÃ¹ng láº·p thÃ´ng tin
   const validationErrors = await validateUserData(userData);
   if (validationErrors.length > 0) {
-    throw new ApiError(400, "Lỗi xác thực dữ liệu", validationErrors);
+    throw new ApiError(400, "Lá»—i xÃ¡c thá»±c dá»¯ liá»‡u", validationErrors);
   }
 
-  // Hash mật khẩu
+  // Hash máº­t kháº©u
   const salt = await bcrypt.genSalt(10);
   userData.password = await bcrypt.hash(password, salt);
 
-  // Mặc định trạng thái active nếu không được cung cấp
+  // Máº·c Ä‘á»‹nh tráº¡ng thÃ¡i active náº¿u khÃ´ng Ä‘Æ°á»£c cung cáº¥p
   if (userData.isBlocked === undefined) {
     userData.isBlocked = false;
   }
 
-  // Tạo người dùng mới
+  // Táº¡o ngÆ°á»i dÃ¹ng má»›i
   const newUser = await User.create(userData);
 
-  // Trả về thông tin người dùng mà không có mật khẩu
+  // Tráº£ vá» thÃ´ng tin ngÆ°á»i dÃ¹ng mÃ  khÃ´ng cÃ³ máº­t kháº©u
   const userToReturn = newUser.toObject();
   delete userToReturn.password;
   delete userToReturn.resetPasswordToken;
@@ -118,18 +121,18 @@ const createUserByAdmin = async (userData) => {
   return userToReturn;
 };
 
-// Cập nhật thông tin người dùng
+// Cáº­p nháº­t thÃ´ng tin ngÆ°á»i dÃ¹ng
 const updateUser = async (userId, userData, currentUserId) => {
-  // Kiểm tra trùng lặp thông tin
+  // Kiá»ƒm tra trÃ¹ng láº·p thÃ´ng tin
   const validationErrors = await validateUserData(userData, userId);
   if (validationErrors.length > 0) {
-    throw new ApiError(400, "Lỗi xác thực dữ liệu", validationErrors);
+    throw new ApiError(400, "Lá»—i xÃ¡c thá»±c dá»¯ liá»‡u", validationErrors);
   }
 
-  // Không cho phép cập nhật một số trường nhạy cảm qua phương thức này
+  // KhÃ´ng cho phÃ©p cáº­p nháº­t má»™t sá»‘ trÆ°á»ng nháº¡y cáº£m qua phÆ°Æ¡ng thá»©c nÃ y
   const { password, resetPasswordToken, resetPasswordExpires, verificationToken, role, ...updateData } = userData;
 
-  // Chỉ admin mới có thể cập nhật role
+  // Chá»‰ admin má»›i cÃ³ thá»ƒ cáº­p nháº­t role
   if (userData.role && currentUserId) {
     const currentUser = await User.findById(currentUserId);
     if (currentUser && currentUser.role === "admin") {
@@ -142,26 +145,29 @@ const updateUser = async (userId, userData, currentUserId) => {
   );
 
   if (!updatedUser) {
-    throw new ApiError(404, "Người dùng không tồn tại");
+    throw new ApiError(404, "NgÆ°á»i dÃ¹ng khÃ´ng tá»“n táº¡i");
   }
 
   return updatedUser;
 };
 
-// Cập nhật thông tin người dùng bởi Admin (có nhiều quyền hạn hơn)
+// Cáº­p nháº­t thÃ´ng tin ngÆ°á»i dÃ¹ng bá»Ÿi Admin (cÃ³ nhiá»u quyá»n háº¡n hÆ¡n)
 const updateUserByAdmin = async (userId, userData) => {
   const { firstName, lastName, email, username, phone, role } = userData;
-  // Kiểm tra dữ liệu bắt buộc
+  // Kiá»ƒm tra dá»¯ liá»‡u báº¯t buá»™c
   if (!firstName || !lastName || !email || !phone || !username || !role) {
-    throw new ApiError(400, "Thiếu thông tin bắt buộc: firstName, lastName, email, username, phone, role, password");
+    throw new ApiError(
+      400,
+      "Thiáº¿u thÃ´ng tin báº¯t buá»™c: firstName, lastName, email, username, phone, role, password"
+    );
   }
-  // Kiểm tra trùng lặp thông tin
+  // Kiá»ƒm tra trÃ¹ng láº·p thÃ´ng tin
   const validationErrors = await validateUserData(userData, userId);
   if (validationErrors.length > 0) {
-    throw new ApiError(400, "Lỗi xác thực dữ liệu", validationErrors);
+    throw new ApiError(400, "Lá»—i xÃ¡c thá»±c dá»¯ liá»‡u", validationErrors);
   }
 
-  // Admin có thể cập nhật các trường nhạy cảm hơn như role, status,...
+  // Admin cÃ³ thá»ƒ cáº­p nháº­t cÃ¡c trÆ°á»ng nháº¡y cáº£m hÆ¡n nhÆ° role, status,...
   const { resetPasswordToken, resetPasswordExpires, verificationToken, ...updateData } = userData;
 
   const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true }).select(
@@ -169,57 +175,57 @@ const updateUserByAdmin = async (userId, userData) => {
   );
 
   if (!updatedUser) {
-    throw new ApiError(404, "Người dùng không tồn tại");
+    throw new ApiError(404, "NgÆ°á»i dÃ¹ng khÃ´ng tá»“n táº¡i");
   }
 
   return updatedUser;
 };
 
-// Thay đổi mật khẩu
+// Thay Ä‘á»•i máº­t kháº©u
 const changePassword = async (userId, currentPassword, newPassword) => {
   const user = await User.findById(userId);
   if (!user) {
-    throw new ApiError(404, "Người dùng không tồn tại");
+    throw new ApiError(404, "NgÆ°á»i dÃ¹ng khÃ´ng tá»“n táº¡i");
   }
 
-  // Kiểm tra mật khẩu hiện tại
+  // Kiá»ƒm tra máº­t kháº©u hiá»‡n táº¡i
   const isMatch = await bcrypt.compare(currentPassword, user.password);
   if (!isMatch) {
-    throw new ApiError(400, "Mật khẩu hiện tại không đúng");
+    throw new ApiError(400, "Máº­t kháº©u hiá»‡n táº¡i khÃ´ng Ä‘Ãºng");
   }
 
-  // Hash mật khẩu mới
+  // Hash máº­t kháº©u má»›i
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(newPassword, salt);
   await user.save();
 
-  return { success: true, message: "Mật khẩu đã thay đổi thành công" };
+  return { success: true, message: "Máº­t kháº©u Ä‘Ã£ thay Ä‘á»•i thÃ nh cÃ´ng" };
 };
 
-// Xóa người dùng
+// XÃ³a ngÆ°á»i dÃ¹ng
 const deleteUser = async (userId) => {
   const deletedUser = await User.findByIdAndDelete(userId);
   if (!deletedUser) {
-    throw new ApiError(404, "Người dùng không tồn tại");
+    throw new ApiError(404, "NgÆ°á»i dÃ¹ng khÃ´ng tá»“n táº¡i");
   }
-  return { success: true, message: "Xóa người dùng thành công" };
+  return { success: true, message: "XÃ³a ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng" };
 };
 
-// Chặn người dùng
+// Cháº·n ngÆ°á»i dÃ¹ng
 const banUser = async (userId, banInfo) => {
   const user = await User.findById(userId);
   if (!user) {
-    throw new ApiError(404, "Người dùng không tồn tại");
+    throw new ApiError(404, "NgÆ°á»i dÃ¹ng khÃ´ng tá»“n táº¡i");
   }
-  // Không thể chặn người dùng là admin
+  // KhÃ´ng thá»ƒ cháº·n ngÆ°á»i dÃ¹ng lÃ  admin
   if (user.role === "admin") {
-    throw new ApiError(400, "Không thể chặn người dùng có quyền admin");
+    throw new ApiError(400, "KhÃ´ng thá»ƒ cháº·n ngÆ°á»i dÃ¹ng cÃ³ quyá»n admin");
   }
 
-  // Cập nhật trạng thái người dùng
+  // Cáº­p nháº­t tráº¡ng thÃ¡i ngÆ°á»i dÃ¹ng
   user.isBlocked = true;
 
-  // Thêm thông tin về việc chặn nếu có
+  // ThÃªm thÃ´ng tin vá» viá»‡c cháº·n náº¿u cÃ³
   if (banInfo && banInfo.reason) {
     user.banReason = banInfo.reason;
   }
@@ -233,18 +239,18 @@ const banUser = async (userId, banInfo) => {
   return await User.findById(userId).select("-password -resetPasswordToken -resetPasswordExpires -verificationToken");
 };
 
-// Bỏ chặn người dùng
+// Bá» cháº·n ngÆ°á»i dÃ¹ng
 const unbanUser = async (userId) => {
   const user = await User.findById(userId);
   if (!user) {
-    throw new ApiError(404, "Người dùng không tồn tại");
+    throw new ApiError(404, "NgÆ°á»i dÃ¹ng khÃ´ng tá»“n táº¡i");
   }
-  // Kiểm tra nếu người dùng đang bị chặn
+  // Kiá»ƒm tra náº¿u ngÆ°á»i dÃ¹ng Ä‘ang bá»‹ cháº·n
   if (user.isBlocked !== true) {
-    throw new ApiError(400, "Người dùng này hiện không bị chặn");
+    throw new ApiError(400, "NgÆ°á»i dÃ¹ng nÃ y hiá»‡n khÃ´ng bá»‹ cháº·n");
   }
 
-  // Cập nhật trạng thái người dùng
+  // Cáº­p nháº­t tráº¡ng thÃ¡i ngÆ°á»i dÃ¹ng
   user.isBlocked = false;
   user.banReason = undefined;
   user.bannedUntil = undefined;
@@ -254,7 +260,7 @@ const unbanUser = async (userId) => {
   return await User.findById(userId).select("-password -resetPasswordToken -resetPasswordExpires -verificationToken");
 };
 
-module.exports = {
+export default {
   getAllUsers,
   getUserById,
   validateUserData,

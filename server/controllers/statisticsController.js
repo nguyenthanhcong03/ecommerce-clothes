@@ -1,10 +1,6 @@
-const Order = require("../models/order");
-const Product = require("../models/product");
-const User = require("../models/user");
-const Category = require("../models/category");
-const statisticsService = require("../services/statisticsService");
+﻿import statisticsService from "../services/statisticsService.js";
 
-// Lấy thống kê tổng quan
+// Láº¥y thá»‘ng kÃª tá»•ng quan
 const getOverviewStatistics = async (req, res) => {
   try {
     const stats = await statisticsService.getOverviewStatistics();
@@ -17,13 +13,13 @@ const getOverviewStatistics = async (req, res) => {
     console.error("Error fetching overview statistics:", error);
     res.status(500).json({
       success: false,
-      message: "Không thể lấy thống kê tổng quan",
+      message: "KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª tá»•ng quan",
       error: error.message,
     });
   }
 };
 
-// Lấy thống kê doanh thu
+// Láº¥y thá»‘ng kÃª doanh thu
 const getRevenueStatistics = async (req, res) => {
   try {
     const { period, startDate, endDate } = req.query;
@@ -37,13 +33,13 @@ const getRevenueStatistics = async (req, res) => {
     console.error("Error fetching revenue statistics:", error);
     res.status(500).json({
       success: false,
-      message: "Không thể lấy thống kê doanh thu",
+      message: "KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª doanh thu",
       error: error.message,
     });
   }
 };
 
-// Lấy thống kê sản phẩm bán chạy
+// Láº¥y thá»‘ng kÃª sáº£n pháº©m bÃ¡n cháº¡y
 const getTopProducts = async (req, res) => {
   try {
     const { limit = 10, period, startDate, endDate } = req.query;
@@ -57,13 +53,13 @@ const getTopProducts = async (req, res) => {
     console.error("Error fetching top products:", error);
     res.status(500).json({
       success: false,
-      message: "Không thể lấy thống kê sản phẩm bán chạy",
+      message: "KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª sáº£n pháº©m bÃ¡n cháº¡y",
       error: error.message,
     });
   }
 };
 
-// Lấy thống kê khách hàng
+// Láº¥y thá»‘ng kÃª khÃ¡ch hÃ ng
 const getCustomerStatistics = async (req, res) => {
   try {
     const { period, startDate, endDate } = req.query;
@@ -77,13 +73,13 @@ const getCustomerStatistics = async (req, res) => {
     console.error("Error fetching customer statistics:", error);
     res.status(500).json({
       success: false,
-      message: "Không thể lấy thống kê khách hàng",
+      message: "KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª khÃ¡ch hÃ ng",
       error: error.message,
     });
   }
 };
 
-// Lấy thống kê theo danh mục sản phẩm
+// Láº¥y thá»‘ng kÃª theo danh má»¥c sáº£n pháº©m
 const getCategoryStatistics = async (req, res) => {
   try {
     const { period, startDate, endDate } = req.query;
@@ -97,13 +93,13 @@ const getCategoryStatistics = async (req, res) => {
     console.error("Error fetching category statistics:", error);
     res.status(500).json({
       success: false,
-      message: "Không thể lấy thống kê theo danh mục sản phẩm",
+      message: "KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª theo danh má»¥c sáº£n pháº©m",
       error: error.message,
     });
   }
 };
 
-// Lấy thống kê đơn hàng
+// Láº¥y thá»‘ng kÃª Ä‘Æ¡n hÃ ng
 const getOrderStatistics = async (req, res) => {
   try {
     const { period, startDate, endDate } = req.query;
@@ -117,13 +113,13 @@ const getOrderStatistics = async (req, res) => {
     console.error("Error fetching order statistics:", error);
     res.status(500).json({
       success: false,
-      message: "Không thể lấy thống kê đơn hàng",
+      message: "KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª Ä‘Æ¡n hÃ ng",
       error: error.message,
     });
   }
 };
 
-// Lấy thống kê tồn kho
+// Láº¥y thá»‘ng kÃª tá»“n kho
 const getInventoryStatistics = async (req, res) => {
   try {
     const inventoryStats = await statisticsService.getInventoryStatistics();
@@ -136,13 +132,13 @@ const getInventoryStatistics = async (req, res) => {
     console.error("Error fetching inventory statistics:", error);
     res.status(500).json({
       success: false,
-      message: "Không thể lấy thống kê tồn kho",
+      message: "KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª tá»“n kho",
       error: error.message,
     });
   }
 };
 
-module.exports = {
+export default {
   getOverviewStatistics,
   getRevenueStatistics,
   getTopProducts,

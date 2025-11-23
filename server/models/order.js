@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+﻿import mongoose from "mongoose";
 
 const orderProductSchema = new mongoose.Schema(
   {
@@ -9,7 +9,7 @@ const orderProductSchema = new mongoose.Schema(
     },
     variantId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true, // Trỏ đến một variant cụ thể trong mảng variants của sản phẩm
+      required: true, // Trá» Ä‘áº¿n má»™t variant cá»¥ thá»ƒ trong máº£ng variants cá»§a sáº£n pháº©m
     },
     quantity: {
       type: Number,
@@ -30,7 +30,7 @@ const orderProductSchema = new mongoose.Schema(
       default: false,
     },
   },
-  { _id: false } // Không cần _id cho mỗi item nếu không dùng đến
+  { _id: false } // KhÃ´ng cáº§n _id cho má»—i item náº¿u khÃ´ng dÃ¹ng Ä‘áº¿n
 );
 
 const orderSchema = new mongoose.Schema(
@@ -64,16 +64,16 @@ const orderSchema = new mongoose.Schema(
       email: { type: String, required: true },
       street: { type: String, required: true },
       ward: {
-        code: { type: String, required: true }, // Mã phường/xã
-        name: { type: String, required: true }, // Tên phường/xã
+        code: { type: String, required: true }, // MÃ£ phÆ°á»ng/xÃ£
+        name: { type: String, required: true }, // TÃªn phÆ°á»ng/xÃ£
       },
       district: {
-        code: { type: String, required: true }, // Mã quận/huyện
-        name: { type: String, required: true }, // Tên quận/huyện
+        code: { type: String, required: true }, // MÃ£ quáº­n/huyá»‡n
+        name: { type: String, required: true }, // TÃªn quáº­n/huyá»‡n
       },
       province: {
-        code: { type: String, required: true }, // Mã tỉnh/thành phố
-        name: { type: String, required: true }, // Tên tỉnh/thành phố
+        code: { type: String, required: true }, // MÃ£ tá»‰nh/thÃ nh phá»‘
+        name: { type: String, required: true }, // TÃªn tá»‰nh/thÃ nh phá»‘
       },
       note: { type: String },
     },
@@ -90,12 +90,12 @@ const orderSchema = new mongoose.Schema(
       },
       paidAt: Date,
       refundedAt: Date,
-      transactionNo: String, // Mã giao dịch từ VNPay
+      transactionNo: String, // MÃ£ giao dá»‹ch tá»« VNPay
     },
     trackingNumber: {
       type: String,
       unique: true,
-      sparse: true, // Cho phép giá trị null hoặc không có
+      sparse: true, // Cho phÃ©p giÃ¡ trá»‹ null hoáº·c khÃ´ng cÃ³
     },
     discountAmount: {
       type: Number,
@@ -115,7 +115,7 @@ const orderSchema = new mongoose.Schema(
       type: String,
       maxlength: 1000,
     },
-    // Lưu trữ thời gian cập nhật trạng thái đơn hàng
+    // LÆ°u trá»¯ thá»i gian cáº­p nháº­t tráº¡ng thÃ¡i Ä‘Æ¡n hÃ ng
     statusUpdatedAt: {
       pending: {
         type: Date,
@@ -138,7 +138,7 @@ const orderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Middleware để cập nhật thời gian khi trạng thái đơn hàng thay đổi
+// Middleware Ä‘á»ƒ cáº­p nháº­t thá»i gian khi tráº¡ng thÃ¡i Ä‘Æ¡n hÃ ng thay Ä‘á»•i
 orderSchema.pre("save", function (next) {
   if (this.isModified("status")) {
     const status = this.status.toLowerCase();
@@ -149,4 +149,4 @@ orderSchema.pre("save", function (next) {
   next();
 });
 
-module.exports = mongoose.model("Order", orderSchema);
+export default mongoose.model("Order", orderSchema);

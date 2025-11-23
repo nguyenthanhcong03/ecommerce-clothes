@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+﻿import mongoose from "mongoose";
 
 const inventoryHistorySchema = new mongoose.Schema(
   {
@@ -50,13 +50,13 @@ const inventoryHistorySchema = new mongoose.Schema(
   }
 );
 
-// Index để tìm kiếm nhanh theo sản phẩm và biến thể
+// Index Ä‘á»ƒ tÃ¬m kiáº¿m nhanh theo sáº£n pháº©m vÃ  biáº¿n thá»ƒ
 inventoryHistorySchema.index({ productId: 1, variantId: 1 });
-// Index để tìm kiếm theo loại giao dịch
+// Index Ä‘á»ƒ tÃ¬m kiáº¿m theo loáº¡i giao dá»‹ch
 inventoryHistorySchema.index({ type: 1 });
-// Index để tìm kiếm theo ngày tạo
+// Index Ä‘á»ƒ tÃ¬m kiáº¿m theo ngÃ y táº¡o
 inventoryHistorySchema.index({ createdAt: 1 });
 
 const InventoryHistory = mongoose.model("InventoryHistory", inventoryHistorySchema);
 
-module.exports = InventoryHistory;
+export default InventoryHistory;

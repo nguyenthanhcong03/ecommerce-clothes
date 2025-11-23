@@ -1,5 +1,5 @@
-const jwt = require("jsonwebtoken");
-const User = require("../models/user");
+﻿import jwt from "jsonwebtoken";
+import User from "../models/user.js";
 
 /**
  * Verify user authentication token
@@ -20,7 +20,7 @@ const verifyToken = async (req, res, next) => {
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: "Không có access token, vui lòng đăng nhập",
+      message: "KhÃ´ng cÃ³ access token, vui lÃ²ng Ä‘Äƒng nháº­p",
     });
   }
 
@@ -33,14 +33,14 @@ const verifyToken = async (req, res, next) => {
     if (!currentUser) {
       return res.status(401).json({
         success: false,
-        message: "Người dùng không tồn tại",
+        message: "NgÆ°á»i dÃ¹ng khÃ´ng tá»“n táº¡i",
       });
     }
 
     if (currentUser.isBlocked === true) {
       return res.status(403).json({
         success: false,
-        message: "Tài khoản đã bị khóa hoặc vô hiệu hóa",
+        message: "TÃ i khoáº£n Ä‘Ã£ bá»‹ khÃ³a hoáº·c vÃ´ hiá»‡u hÃ³a",
       });
     }
 
@@ -63,7 +63,7 @@ const verifyToken = async (req, res, next) => {
     }
     res.status(500).json({
       success: false,
-      message: "Lỗi xác thực",
+      message: "Lá»—i xÃ¡c thá»±c",
       error: error.message,
     });
   }
@@ -78,14 +78,14 @@ const checkRole = (...allowedRoles) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: "Vui lòng đăng nhập",
+        message: "Vui lÃ²ng Ä‘Äƒng nháº­p",
       });
     }
 
     if (!allowedRoles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        message: "Bạn không có quyền truy cập chức năng này",
+        message: "Báº¡n khÃ´ng cÃ³ quyá»n truy cáº­p chá»©c nÄƒng nÃ y",
       });
     }
 
@@ -93,4 +93,4 @@ const checkRole = (...allowedRoles) => {
   };
 };
 
-module.exports = { verifyToken, checkRole };
+export { verifyToken, checkRole };

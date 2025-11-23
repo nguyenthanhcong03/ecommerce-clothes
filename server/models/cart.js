@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+﻿import mongoose from "mongoose";
 
 const cartItemSchema = new mongoose.Schema(
   {
@@ -9,7 +9,7 @@ const cartItemSchema = new mongoose.Schema(
     },
     variantId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true, // Trỏ đến một variant cụ thể trong mảng variants của sản phẩm
+      required: true, // Trá» Ä‘áº¿n má»™t variant cá»¥ thá»ƒ trong máº£ng variants cá»§a sáº£n pháº©m
     },
     quantity: {
       type: Number,
@@ -48,8 +48,9 @@ const cartSchema = new mongoose.Schema(
   }
 );
 
-// Index để tìm kiếm nhanh cart theo user hoặc session
+// Index Ä‘á»ƒ tÃ¬m kiáº¿m nhanh cart theo user hoáº·c session
 cartSchema.index({ userId: 1 }, { unique: true });
 const Cart = mongoose.model("Cart", cartSchema);
+export default Cart;
 
-module.exports = Cart;
+

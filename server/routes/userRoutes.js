@@ -1,37 +1,37 @@
-const express = require("express");
-const router = express.Router();
-const userController = require("../controllers/userController");
-const { verifyToken, checkRole } = require("../middlewares/auth");
+﻿import express from "express";
+import userController from "../controllers/userController.js";
+import { verifyToken, checkRole } from "../middlewares/auth.js";
 
-// Lấy thông tin của người dùng hiện tại
+const router = express.Router();
+// Láº¥y thÃ´ng tin cá»§a ngÆ°á»i dÃ¹ng hiá»‡n táº¡i
 router.get("/me", verifyToken, userController.getCurrentUser);
 
-// Lấy danh sách tất cả người dùng (chỉ admin)
+// Láº¥y danh sÃ¡ch táº¥t cáº£ ngÆ°á»i dÃ¹ng (chá»‰ admin)
 router.get("/", verifyToken, checkRole("admin"), userController.getAllUsers);
 
-// Tạo người dùng mới (chỉ admin)
+// Táº¡o ngÆ°á»i dÃ¹ng má»›i (chá»‰ admin)
 router.post("/admin/create", verifyToken, checkRole("admin"), userController.createUserByAdmin);
 
-// Lấy thông tin của một người dùng cụ thể
+// Láº¥y thÃ´ng tin cá»§a má»™t ngÆ°á»i dÃ¹ng cá»¥ thá»ƒ
 router.get("/:id", verifyToken, userController.getUserById);
 
-// Cập nhật thông tin người dùng
+// Cáº­p nháº­t thÃ´ng tin ngÆ°á»i dÃ¹ng
 router.put("/:id", verifyToken, userController.updateUser);
 // router.put("/:id", verifyToken, validator(updateSchema), userController.updateUser);
 
-// Cập nhật thông tin người dùng bởi Admin (có nhiều quyền hạn hơn)
+// Cáº­p nháº­t thÃ´ng tin ngÆ°á»i dÃ¹ng bá»Ÿi Admin (cÃ³ nhiá»u quyá»n háº¡n hÆ¡n)
 router.put("/admin/:id", verifyToken, checkRole("admin"), userController.updateUserByAdmin);
 
-// Thay đổi mật khẩu
+// Thay Ä‘á»•i máº­t kháº©u
 router.put("/password/change", verifyToken, userController.changePassword);
 
-// Chặn người dùng (chỉ admin)
+// Cháº·n ngÆ°á»i dÃ¹ng (chá»‰ admin)
 router.put("/:id/ban", verifyToken, checkRole("admin"), userController.banUser);
 
-// Bỏ chặn người dùng (chỉ admin)
+// Bá» cháº·n ngÆ°á»i dÃ¹ng (chá»‰ admin)
 router.put("/:id/unban", verifyToken, checkRole("admin"), userController.unbanUser);
 
-// Xóa người dùng (chỉ admin)
+// XÃ³a ngÆ°á»i dÃ¹ng (chá»‰ admin)
 router.delete("/:id", verifyToken, checkRole("admin"), userController.deleteUser);
 
-module.exports = router;
+export default router;

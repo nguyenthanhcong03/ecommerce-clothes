@@ -1,171 +1,185 @@
-const couponService = require("../services/couponService");
+﻿import Coupon from "../models/coupon.js";
+import ApiError from "../utils/ApiError.js";
+import catchAsync from "../utils/catchAsync.js";
+import { responseSuccess } from "../utils/responseHandler.js";
 
-const getCoupons = async (req, res) => {
-  try {
-    const result = await couponService.getCoupons(req.query);
-    res.status(200).json({
-      success: true,
-      message: "Lấy danh sách mã giảm giá thành công",
-      data: result,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message || "Có lỗi xảy ra khi lấy danh sách mã giảm giá",
-    });
+const getCoupons = catchAsync(async (req, res) => {
+  const { page = 1, limit = 5, search, isActive, code, startDate, endDate } = query;
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+
+  const filter = {};
+
+  // Text search if provided
+  if (search) {
+    filter.$or = [{ code: { $regex: search, $options: "i" } }, { description: { $regex: search, $options: "i" } }];
+
+    // Alternative: Use the text index if search term contains multiple words
+    // if (search.includes(' ')) {
+    //   filter.$text = { $search: search };
+    // } else {
+    //   filter.$or = [
+    //     { name: { $regex: search, $options: 'i' } },
+    //     { description: { $regex: search, $options: 'i' } }
+    //   ];
+    // }
   }
-};
 
-const createCoupon = async (req, res) => {
-  try {
-    const couponData = req.body;
-    const newCoupon = await couponService.createCoupon(couponData);
-    res.status(201).json({
-      success: true,
-      message: "Đã tạo mã giảm giá thành công",
-      data: newCoupon,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message || "Có lỗi xảy ra khi tạo mã giảm giá",
-    });
+  if (isActive !== undefined) {
+    filter.isActive = isActive === "true";
   }
-};
 
-const getCouponById = async (req, res) => {
-  try {
-    const coupon = await couponService.getCouponById(req.params.id);
-    res.status(200).json({
-      success: true,
-      message: "Lấy thông tin mã giảm giá thành công",
-      data: coupon,
-    });
-  } catch (error) {
-    res.status(404).json({
-      success: false,
-      message: error.message || "Không tìm thấy mã giảm giá",
-    });
+  if (code) {
+    filter.code = { $regex: new RegExp(code, "i") };
   }
-};
 
-const validateCoupon = async (req, res) => {
-  try {
-    const { code } = req.params;
-    const { orderTotal } = req.query;
+  if (startDate) {
+    if (!filter.startDate) filter.startDate = {};
+    filter.startDate.$gte = new Date(startDate);
+  }
 
-    if (!code) {
-      return res.status(400).json({
-        success: false,
-        message: "Vui lòng cung cấp mã giảm giá",
-      });
+  if (endDate) {
+    if (!filter.endDate) filter.endDate = {};
+    filter.endDate.$lte = new Date(endDate);
+  }
+
+  const coupons = await Coupon.find(filter).sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit));
+
+  const total = await Coupon.countDocuments(filter);
+
+  const response = {
+    data: coupons,
+    total,
+    page: parseInt(page),
+    limit: parseInt(limit),
+    totalPages: Math.ceil(total / limit),
+  };
+  responseSuccess(res, 200, "Lấy danh sách mã giảm giá thành công", response);
+});
+
+const createCoupon = catchAsync(async (req, res) => {
+  const couponData = req.body;
+  if (new Date(couponData.startDate) > new Date(couponData.endDate)) {
+    throw new ApiError(400, "Ngày bắt đầu không được sau ngày kết thúc");
+  }
+
+  couponData.code = couponData.code.toUpperCase();
+
+  // Kiểm tra coupon tồn tại
+  const existingCoupon = await Coupon.findOne({ code: couponData.code });
+  if (existingCoupon) throw new ApiError(400, "Mã giảm giá đã tồn tại");
+
+  const newCoupon = await Coupon.create(couponData);
+  responseSuccess(res, 201, "Tạo mã giảm giá thành công", newCoupon);
+});
+
+const getCouponById = catchAsync(async (req, res) => {
+  const couponId = req.params.id;
+  const coupon = await Coupon.findById(couponId);
+  if (!coupon) throw new ApiError(404, "Mã giảm giá không tồn tại");
+  responseSuccess(res, 200, "Lấy thông tin mã giảm giá thành công", coupon);
+});
+
+const validateCoupon = catchAsync(async (req, res) => {
+  const { code } = req.params;
+  const { orderTotal } = req.query;
+
+  const coupon = await Coupon.findOne({
+    code: code.toUpperCase(),
+    isActive: true,
+    startDate: { $lte: new Date() },
+    endDate: { $gte: new Date() },
+  });
+
+  if (!coupon) throw new ApiError(400, "Mã giảm giá không tồn tại hoặc đã hết hạn");
+
+  if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) {
+    throw new ApiError(400, "Mã giảm giá đã quá lượt sử dụng");
+  }
+
+  // Kiểm tra giá trị đơn hàng
+  if (orderTotal && parseFloat(orderTotal) < coupon.minOrderValue) {
+    throw new ApiError(400, "Giá trị đơn hàng không đủ");
+  }
+
+  responseSuccess(res, 200, "Mã giảm giá hợp lệ", coupon);
+});
+
+const updateCoupon = catchAsync(async (req, res) => {
+  const couponId = req.params.id;
+  const updateData = req.body;
+  if (updateData.startDate && updateData.endDate) {
+    if (new Date(updateData.startDate) > new Date(updateData.endDate)) {
+      throw new ApiError(400, "Ngày bắt đầu không được sau ngày kết thúc");
     }
+  }
 
-    const coupon = await couponService.getCouponByCode(code);
+  if (updateData.code) {
+    updateData.code = updateData.code.toUpperCase();
 
-    // Kiểm tra giá trị đơn hàng tối thiểu
-    if (orderTotal && parseFloat(orderTotal) < coupon.minOrderValue) {
-      return res.status(400).json({
-        success: false,
-        message: `Đơn hàng phải có giá trị tối thiểu ${coupon.minOrderValue.toLocaleString(
-          "vi-VN"
-        )} VND để sử dụng mã giảm giá này`,
-      });
+    const existingCoupon = await Coupon.findOne({
+      code: updateData.code,
+      _id: { $ne: couponId },
+    });
+
+    if (existingCoupon) {
+      throw new ApiError(400, "Mã giảm giá đã tồn tại");
     }
+  }
 
-    res.status(200).json({
-      success: true,
-      message: "Mã giảm giá hợp lệ",
-      data: coupon,
-    });
-  } catch (error) {
-    res.status(400).json({
+  const updatedCoupon = await Coupon.findByIdAndUpdate(couponId, updateData, { new: true, runValidators: true });
+  responseSuccess(res, 200, "Cập nhật mã giảm giá thành công", updatedCoupon);
+});
+
+const deleteCoupon = catchAsync(async (req, res) => {
+  const couponId = req.params.id;
+  const coupon = await Coupon.findById(couponId);
+  if (!coupon) {
+    throw new ApiError(404, "Không tìm thấy mã giảm giá");
+  }
+
+  if (coupon.usedCount > 0) {
+    throw new ApiError(400, "Không thể xóa mã giảm giá đã được sử dụng");
+  }
+
+  const result = await Coupon.findByIdAndDelete(couponId);
+
+  responseSuccess(res, 200, "Đã xóa mã giảm giá thành công", result);
+});
+
+const toggleCouponStatus = catchAsync(async (req, res) => {
+  const couponId = req.params.id;
+  const { isActive } = req.body;
+
+  if (isActive === undefined) {
+    return res.status(400).json({
       success: false,
-      message: error.message || "Mã giảm giá không hợp lệ",
+      message: "Vui lÃ²ng cung cáº¥p tráº¡ng thÃ¡i kÃ­ch hoáº¡t (isActive)",
     });
   }
-};
 
-const updateCoupon = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updateData = req.body;
-    const updatedCoupon = await couponService.updateCoupon(id, updateData);
+  const updatedCoupon = await Coupon.findByIdAndUpdate(couponId, { isActive }, { new: true });
 
-    res.status(200).json({
-      success: true,
-      message: "Đã cập nhật mã giảm giá thành công",
-      data: updatedCoupon,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message || "Có lỗi xảy ra khi cập nhật mã giảm giá",
-    });
-  }
-};
+  if (!updatedCoupon) throw new ApiError(404, "Không tìm thấy mã giảm giá");
 
-const deleteCoupon = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const result = await couponService.deleteCoupon(id);
+  responseSuccess(res, 200, "Cập nhật trạng thái mã giảm giá thành công", updatedCoupon);
+});
 
-    res.status(200).json({
-      success: true,
-      message: "Đã xóa mã giảm giá thành công",
-    });
-  } catch (error) {
-    res.status(404).json({
-      success: false,
-      message: error.message || "Có lỗi xảy ra khi xóa mã giảm giá",
-    });
-  }
-};
+const getActiveCoupons = catchAsync(async (req, res) => {
+  const now = new Date();
+  // Lấy tất cả mã giảm giá đang hoạt động
+  const coupons = await Coupon.find({
+    isActive: true,
+    startDate: { $lte: now },
+    endDate: { $gte: now },
+  }).sort({ createdAt: -1 });
 
-const toggleCouponStatus = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { isActive } = req.body;
+  // Lọc mã giảm giá còn lượt sử dụng
+  const filteredCoupons = coupons.filter((coupon) => coupon.usageLimit === 0 || coupon.usedCount < coupon.usageLimit);
 
-    if (isActive === undefined) {
-      return res.status(400).json({
-        success: false,
-        message: "Vui lòng cung cấp trạng thái kích hoạt (isActive)",
-      });
-    }
+  responseSuccess(res, 200, "Lấy danh sách mã giảm giá hoạt động thành công", filteredCoupons);
+});
 
-    const updatedCoupon = await couponService.toggleCouponStatus(id, isActive);
-
-    res.status(200).json({
-      success: true,
-      message: `Đã ${isActive ? "kích hoạt" : "vô hiệu hóa"} mã giảm giá thành công`,
-      data: updatedCoupon,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message || "Có lỗi xảy ra khi cập nhật trạng thái mã giảm giá",
-    });
-  }
-};
-
-const getActiveCoupons = async (req, res) => {
-  try {
-    const coupons = await couponService.getActiveCoupons();
-    res.status(200).json({
-      success: true,
-      message: "Lấy danh sách mã giảm giá đang có hiệu lực thành công",
-      data: coupons,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message || "Có lỗi xảy ra khi lấy danh sách mã giảm giá",
-    });
-  }
-};
-
-module.exports = {
+export default {
   createCoupon,
   getCoupons,
   getCouponById,

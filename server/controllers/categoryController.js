@@ -1,197 +1,198 @@
-const categoryService = require("../services/categoryService");
+﻿import Category from "../models/category.js";
+import Product from "../models/product.js";
+import imageService from "../services/imageService.js";
+import ApiError from "../utils/ApiError.js";
+import catchAsync from "../utils/catchAsync.js";
+import { responseSuccess } from "../utils/responseHandler.js";
 
-const getAllCategories = async (req, res) => {
-  try {
-    const { page, limit, sortBy, order, search, parentId } = req.query;
+const getTreeCategories = catchAsync(async (req, res) => {
+  const categories = await Category.find({}).sort({ priority: -1, name: 1 }).select("-__v");
 
-    const result = await categoryService.getCategories({
-      page,
-      limit,
-      sortBy,
-      order,
-      search,
-      parentId,
-    });
+  responseSuccess(res, 200, "Lấy cây danh mục thành công", categories);
+});
 
-    const response = {
-      success: true,
-      categories: result.categories,
-      pagination: result.pagination,
-    };
+const getAllCategories = catchAsync(async (req, res) => {
+  const { page = 1, limit = 10, sortBy = "createdAt", order = "desc", search } = req.query;
 
-    res.status(200).json(response);
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    });
+  // Build query
+  let query = {};
+
+  // Search by name or description
+  if (search) {
+    query.$or = [{ name: { $regex: search, $options: "i" } }, { description: { $regex: search, $options: "i" } }];
   }
-};
 
-const createCategory = async (req, res) => {
-  try {
-    const categoryData = req.body;
+  // Count total documents
+  const total = await Category.countDocuments(query);
 
-    if (!categoryData.images || !Array.isArray(categoryData.images) || categoryData.images.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Vui lòng cung cấp ít nhất một URL ảnh",
-      });
-    }
+  // Get categories with pagination and sorting
+  const categories = await Category.find(query)
+    .sort({ [sortBy]: order === "desc" ? -1 : 1 })
+    .skip((page - 1) * limit)
+    .limit(Number(limit))
+    .select("-__v");
 
-    const savedCategory = await categoryService.createCategory(categoryData);
+  const response = {
+    data: categories,
+    total,
+    page: Number(page),
+    limit: Number(limit),
+    totalPages: Math.ceil(total / limit),
+  };
 
-    res.status(201).json({
-      success: true,
-      message: "Tạo danh mục thành công",
-      data: savedCategory,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Lỗi server",
-      error: error.message,
-    });
+  responseSuccess(res, 200, "Lấy danh sách danh mục thành công", response);
+});
+
+const createCategory = catchAsync(async (req, res) => {
+  const { name, description, priority } = req.body;
+
+  if (!name) {
+    throw new ApiError(400, "Tên danh mục là bắt buộc");
   }
-};
 
-const updateCategoryById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updateData = req.body;
-
-    // Update category data
+  // Upload ảnh nếu có
+  let imageData = {};
+  if (req.file) {
     try {
-      const updatedCategory = await categoryService.updateCategory(id, updateData);
-
-      return res.status(200).json({
-        success: true,
-        message: "Cập nhật danh mục thành công",
-        data: updatedCategory,
-      });
-    } catch (err) {
-      if (err.message === "Category not found") {
-        return res.status(404).json({
-          success: false,
-          message: "Không tìm thấy danh mục",
-        });
-      }
-      throw err;
+      const uploadResult = await imageService.uploadSingleImageFromMulter(req.file, "categories");
+      imageData = {
+        image: uploadResult.url,
+        imagePublicId: uploadResult.publicId,
+      };
+    } catch (error) {
+      throw new ApiError(400, `Lỗi upload ảnh: ${error.message}`);
     }
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Lỗi server",
-      error: error.message,
-    });
   }
-};
 
-const getCategoryById = async (req, res) => {
-  try {
-    const { id } = req.params;
+  // Create new category
+  const newCategory = await Category.create({
+    name,
+    description,
+    priority: priority || 0,
+    ...imageData,
+  });
 
+  responseSuccess(res, 201, "Tạo danh mục thành công", newCategory);
+});
+
+const updateCategoryById = catchAsync(async (req, res) => {
+  const categoryId = req.params.id;
+  const { name, description, priority, removeImage } = req.body;
+
+  const category = await Category.findById(categoryId);
+  if (!category) throw new ApiError(404, "Danh mục không tồn tại");
+
+  const dataToUpdate = {};
+
+  if (name !== undefined) dataToUpdate.name = name;
+  if (description !== undefined) dataToUpdate.description = description;
+  if (priority !== undefined) dataToUpdate.priority = priority;
+
+  // Xử lý ảnh
+  if (req.file) {
+    // Xóa ảnh cũ nếu có
+    if (category.imagePublicId) {
+      try {
+        await imageService.deleteImageFromCloudinary(category.imagePublicId);
+      } catch (error) {
+        console.error("Lỗi xóa ảnh cũ:", error);
+      }
+    }
+
+    // Upload ảnh mới
     try {
-      const category = await categoryService.getCategoryById(id);
-
-      if (!category) {
-        return res.status(404).json({
-          success: false,
-          message: "Không tìm thấy danh mục",
-        });
-      }
-
-      return res.status(200).json({
-        success: true,
-        data: category,
-      });
-    } catch (err) {
-      if (err.message === "Invalid category ID") {
-        return res.status(400).json({
-          success: false,
-          message: "ID danh mục không hợp lệ",
-        });
-      }
-      throw err;
+      const uploadResult = await imageService.uploadSingleImageFromMulter(req.file, "categories");
+      dataToUpdate.image = uploadResult.url;
+      dataToUpdate.imagePublicId = uploadResult.publicId;
+    } catch (error) {
+      throw new ApiError(400, `Lỗi upload ảnh: ${error.message}`);
     }
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Lỗi server",
-      error: error.message,
-    });
-  }
-};
-
-const deleteCategory = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const hasChildren = await categoryService.hasChildCategories(id);
-    if (hasChildren) {
-      return res.status(400).json({
-        success: false,
-        message: "Không thể xóa danh mục đang có danh mục con",
-      });
-    }
-
-    const hasProducts = await categoryService.hasProducts(id);
-    if (hasProducts) {
-      return res.status(400).json({
-        success: false,
-        message: "Không thể xóa danh mục đang có sản phẩm",
-      });
-    }
-
+  } else if (removeImage === "true" && category.imagePublicId) {
+    // Xóa ảnh hiện tại nếu được yêu cầu
     try {
-      const deletedCategory = await categoryService.deleteCategory(id);
-
-      return res.status(200).json({
-        success: true,
-        data: deletedCategory,
-        message: "Xóa danh mục thành công",
-      });
-    } catch (err) {
-      if (err.message === "Category not found") {
-        return res.status(404).json({
-          success: false,
-          message: "Không tìm thấy danh mục",
-        });
-      }
-      throw err;
+      await imageService.deleteImageFromCloudinary(category.imagePublicId);
+      dataToUpdate.image = null;
+      dataToUpdate.imagePublicId = null;
+    } catch (error) {
+      console.error("Lỗi xóa ảnh:", error);
+      throw new ApiError(500, "Lỗi xóa ảnh từ Cloudinary");
     }
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Lỗi server",
-      error: error.message,
-    });
   }
-};
 
-const getTreeCategories = async (req, res) => {
+  const updatedCategory = await Category.findByIdAndUpdate(categoryId, dataToUpdate, { new: true });
+
+  responseSuccess(res, 200, "Cập nhật danh mục thành công", updatedCategory);
+});
+
+const getCategoryById = catchAsync(async (req, res) => {
+  const categoryId = req.params.id;
+  const category = await Category.findById(categoryId);
+  if (!category) throw new ApiError(404, "Danh mục không tồn tại");
+  responseSuccess(res, 200, "Lấy danh mục thành công", category);
+});
+
+const deleteCategory = catchAsync(async (req, res) => {
+  const categoryId = req.params.id;
+
+  const category = await Category.findById(categoryId);
+  if (!category) throw new ApiError(404, "Danh mục không tồn tại");
+
+  const count = await Product.countDocuments({ categoryId });
+  if (count > 0) throw new ApiError(400, "Không thể xóa danh mục vì vẫn còn sản phẩm liên quan");
+
+  // Xóa ảnh từ Cloudinary nếu có
+  if (category.imagePublicId) {
+    try {
+      await imageService.deleteImageFromCloudinary(category.imagePublicId);
+    } catch (error) {
+      console.error("Lỗi xóa ảnh từ Cloudinary:", error);
+      // Không throw error để vẫn có thể xóa category
+    }
+  }
+
+  const deletedCategory = await Category.findByIdAndDelete(categoryId);
+
+  responseSuccess(res, 200, "Xóa danh mục thành công", deletedCategory);
+});
+
+// Delete category image
+const deleteCategoryImage = catchAsync(async (req, res) => {
+  const categoryId = req.params.id;
+
+  const category = await Category.findById(categoryId);
+  if (!category) throw new ApiError(404, "Danh mục không tồn tại");
+
+  if (!category.imagePublicId) {
+    throw new ApiError(404, "Danh mục không có ảnh");
+  }
+
+  // Xóa ảnh từ Cloudinary
   try {
-    const categoriesTree = await categoryService.getCategoryTree();
-
-    return res.status(200).json({
-      success: true,
-      data: categoriesTree,
-    });
+    await imageService.deleteImageFromCloudinary(category.imagePublicId);
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    });
+    console.error("Lỗi xóa ảnh từ Cloudinary:", error);
+    throw new ApiError(500, "Lỗi xóa ảnh từ Cloudinary");
   }
-};
 
-module.exports = {
+  // Cập nhật category để xóa thông tin ảnh
+  const updatedCategory = await Category.findByIdAndUpdate(
+    categoryId,
+    {
+      image: null,
+      imagePublicId: null,
+    },
+    { new: true }
+  );
+
+  responseSuccess(res, 200, "Xóa ảnh danh mục thành công", updatedCategory);
+});
+
+export default {
+  getTreeCategories,
   getAllCategories,
   createCategory,
   updateCategoryById,
   getCategoryById,
   deleteCategory,
-  getTreeCategories,
+  deleteCategoryImage,
 };

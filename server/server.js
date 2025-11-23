@@ -1,13 +1,14 @@
-const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-require("dotenv").config();
-const connectDB = require("./config/dbconnect");
-const initRoutes = require("./routes");
-const cookieParser = require("cookie-parser");
-const fileUpload = require("express-fileupload");
-const { errorHandler } = require("./middlewares/errorHandler");
-const { errorConverter } = require("./middlewares/errorHandler");
+﻿import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import dotenv from "dotenv";
+import connectDB from "./config/dbconnect.js";
+import initRoutes from "./routes/index.js";
+import cookieParser from "cookie-parser";
+import fileUpload from "express-fileupload";
+import { errorHandler, errorConverter } from "./middlewares/errorHandler.js";
+
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 8888;
@@ -26,15 +27,11 @@ app.use(express.urlencoded({ extended: true }));
 
 connectDB();
 
-// Import và khởi động cron
-require("./cron/cleanUnpaidOrders");
+import "./cron/cleanUnpaidOrders.js";
 
-// Khởi tạo các routes
 initRoutes(app);
 
-// chuyển đổi lỗi sang ApiError nếu cần
 app.use(errorConverter);
-// xử lý lỗi
 app.use(errorHandler);
 
 app.listen(port, () => {

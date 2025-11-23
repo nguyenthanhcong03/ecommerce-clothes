@@ -1,142 +1,249 @@
-const userService = require("../services/userService");
-const ApiError = require("../utils/ApiError");
-const catchAsync = require("../utils/catchAsync");
+﻿import bcrypt from "bcryptjs";
+import User from "../models/user.js";
+import ApiError from "../utils/ApiError.js";
+import catchAsync from "../utils/catchAsync.js";
+import { responseSuccess } from "../utils/responseHandler.js";
 
-// Lấy danh sách người dùng với phân trang và lọc
+// Láº¥y danh sÃ¡ch ngÆ°á»i dÃ¹ng vá»›i phÃ¢n trang vÃ  lá»c
 const getAllUsers = catchAsync(async (req, res) => {
-  const filters = {
-    role: req.query.role,
-    isBlocked: req.query.isBlocked,
-    search: req.query.search,
-  };
-
+  const { page, limit, sortBy, sortOrder, role, isBlocked, search } = req.query;
+  const filters = {};
   const options = {
-    page: parseInt(req.query.page) || 1,
-    limit: parseInt(req.query.limit) || 5,
-    sortBy: req.query.sortBy || "createdAt",
-    sortOrder: req.query.sortOrder === "asc" ? 1 : -1,
+    page: parseInt(page) || 1,
+    limit: parseInt(limit) || 5,
+    sortBy: sortBy || "createdAt",
+    sortOrder: sortOrder === "asc" ? 1 : -1,
   };
 
-  const result = await userService.getAllUsers(filters, options);
-  res.status(200).json(result);
-});
-
-// Lấy thông tin của một người dùng
-const getUserById = catchAsync(async (req, res) => {
-  const user = await userService.getUserById(req.params.id);
-  res.status(200).json({ success: true, data: user });
-});
-
-// Lấy thông tin người dùng hiện tại
-const getCurrentUser = catchAsync(async (req, res) => {
-  const user = await userService.getUserById(req.user.id);
-  res.status(200).json({ success: true, data: user });
-});
-
-// Tạo người dùng mới bởi Admin
-const createUserByAdmin = catchAsync(async (req, res) => {
-  // Kiểm tra quyền: chỉ admin mới có thể tạo người dùng
-  if (req.user.role !== "admin") {
-    throw new ApiError(403, "Permission denied");
+  // Build filters
+  if (role) {
+    filters.role = role;
   }
 
-  const user = await userService.createUserByAdmin(req.body);
+  if (isBlocked !== undefined) {
+    filters.isBlocked = isBlocked === "true";
+  }
 
-  // Trả về kết quả với mật khẩu gốc nếu đã được tạo ngẫu nhiên
-  res.status(201).json({
-    success: true,
-    data: user,
-    message: "User created successfully",
+  if (search) {
+    filters.$or = [
+      { firstName: { $regex: search, $options: "i" } },
+      { lastName: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  // Calculate pagination
+  const skip = (options.page - 1) * options.limit;
+
+  // Build sort object
+  const sort = {};
+  sort[options.sortBy] = options.sortOrder;
+
+  // Execute query
+  const response = await User.find(filters).select("-password").sort(sort).skip(skip).limit(options.limit);
+
+  responseSuccess(res, 200, "Láº¥y danh sÃ¡ch ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", {
+    data: response,
+    page: response.page,
+    limit: response.limit,
+    total: response.total,
+    totalPages: response.totalPages,
   });
 });
 
-// Cập nhật thông tin người dùng
+// Láº¥y thÃ´ng tin cá»§a má»™t ngÆ°á»i dÃ¹ng
+const getUserById = catchAsync(async (req, res) => {
+  const userId = req.params.id;
+
+  const user = await User.findById(userId).select("-password");
+  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
+
+  responseSuccess(res, 200, "Láº¥y thÃ´ng tin ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", user);
+});
+
+// Láº¥y thÃ´ng tin ngÆ°á»i dÃ¹ng hiá»‡n táº¡i
+const getCurrentUser = catchAsync(async (req, res) => {
+  const userId = req.user._id;
+  const user = await User.findById(userId).select("-password");
+  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
+
+  responseSuccess(res, 200, "Láº¥y thÃ´ng tin ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", user);
+});
+
+// Táº¡o ngÆ°á»i dÃ¹ng má»›i bá»Ÿi Admin
+const createUserByAdmin = catchAsync(async (req, res) => {
+  const { email, password, firstName, lastName, phone, role = "customer" } = req.body;
+
+  // Kiá»ƒm tra email Ä‘Ã£ tá»“n táº¡i
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new ApiError(400, "Email Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng");
+  }
+
+  // Táº¡o password ngáº«u nhiÃªn náº¿u khÃ´ng cÃ³
+  const userPassword = password || Math.random().toString(36).slice(-8);
+
+  // Hash password
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(userPassword, saltRounds);
+
+  // Táº¡o user má»›i
+  const newUser = await User.create({
+    email,
+    password: hashedPassword,
+    firstName,
+    lastName,
+    phone,
+    role,
+  });
+
+  // Loáº¡i bá» password khá»i response
+  const userResponse = newUser.toObject();
+  delete userResponse.password;
+
+  responseSuccess(res, 201, "Táº¡o ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", {
+    user: userResponse,
+    temporaryPassword: password ? undefined : userPassword, // Chá»‰ tráº£ vá» password táº¡m náº¿u tá»± Ä‘á»™ng táº¡o
+  });
+});
+
+// Cáº­p nháº­t thÃ´ng tin ngÆ°á»i dÃ¹ng
 const updateUser = catchAsync(async (req, res) => {
   const userId = req.params.id;
+  const { firstName, lastName, phone, gender, dateOfBirth, address } = req.body;
 
-  // Kiểm tra quyền: admin có thể cập nhật bất kỳ user nào, user thường chỉ có thể cập nhật chính mình
-  if (req.user.role !== "admin" && req.user.id !== userId) {
-    throw new ApiError(403, "Truy cập bị từ chối");
-  }
+  // TÃ¬m user
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
 
-  // Chuyển việc xác thực dữ liệu sang service
-  const updatedUser = await userService.updateUser(userId, req.body, req.user.id);
-  res.status(200).json({ success: true, data: updatedUser });
+  // Cáº­p nháº­t thÃ´ng tin
+  const updateData = {};
+  if (firstName) updateData.firstName = firstName;
+  if (lastName) updateData.lastName = lastName;
+  if (phone) updateData.phone = phone;
+  if (gender) updateData.gender = gender;
+  if (dateOfBirth) updateData.dateOfBirth = dateOfBirth;
+  if (address) updateData.address = address;
+
+  const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true }).select(
+    "-password"
+  );
+
+  responseSuccess(res, 200, "Cáº­p nháº­t thÃ´ng tin ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", updatedUser);
 });
 
-// Cập nhật thông tin người dùng bởi Admin
+// Cáº­p nháº­t thÃ´ng tin ngÆ°á»i dÃ¹ng bá»Ÿi Admin
 const updateUserByAdmin = catchAsync(async (req, res) => {
   const userId = req.params.id;
+  const { email, firstName, lastName, phone, role, isBlocked, gender, dateOfBirth, address } = req.body;
 
-  // Kiểm tra quyền: chỉ admin mới có quyền
-  if (req.user.role !== "admin") {
-    throw new ApiError(403, "Truy cập bị từ chối");
+  // TÃ¬m user
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
+
+  // Kiá»ƒm tra email náº¿u thay Ä‘á»•i
+  if (email && email !== user.email) {
+    const existingUser = await User.findOne({ email, _id: { $ne: userId } });
+    if (existingUser) throw new ApiError(400, "Email Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng");
   }
 
-  const updatedUser = await userService.updateUserByAdmin(userId, req.body);
-  res.status(200).json({
-    success: true,
-    data: updatedUser,
-    message: "Cập nhật người dùng thành công",
-  });
+  // Cáº­p nháº­t thÃ´ng tin
+  const updateData = {};
+  if (email) updateData.email = email;
+  if (firstName) updateData.firstName = firstName;
+  if (lastName) updateData.lastName = lastName;
+  if (phone) updateData.phone = phone;
+  if (role) updateData.role = role;
+  if (isBlocked !== undefined) updateData.isBlocked = isBlocked;
+  if (gender) updateData.gender = gender;
+  if (dateOfBirth) updateData.dateOfBirth = dateOfBirth;
+  if (address) updateData.address = address;
+
+  const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true }).select(
+    "-password"
+  );
+
+  responseSuccess(res, 200, "Cáº­p nháº­t ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", updatedUser);
 });
 
-// Xóa người dùng (chỉ admin mới có quyền)
+// XÃ³a ngÆ°á»i dÃ¹ng (chá»‰ admin má»›i cÃ³ quyá»n)
 const deleteUser = catchAsync(async (req, res) => {
-  // Kiểm tra quyền: chỉ admin mới có thể xóa user
-  if (req.user.role !== "admin") {
-    throw new ApiError(403, "Truy cập bị từ chối");
-  }
+  const userId = req.params.id;
 
-  const result = await userService.deleteUser(req.params.id);
-  res.status(200).json(result);
+  // TÃ¬m user
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
+
+  // KhÃ´ng cho phÃ©p admin tá»± xÃ³a chÃ­nh mÃ¬nh
+  if (userId === req.user._id.toString()) throw new ApiError(400, "KhÃ´ng thá»ƒ xÃ³a tÃ i khoáº£n cá»§a chÃ­nh mÃ¬nh");
+
+  await User.findByIdAndDelete(userId);
+
+  responseSuccess(res, 200, "XÃ³a ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng");
 });
 
-// Thay đổi mật khẩu
+// Thay Ä‘á»•i máº­t kháº©u
 const changePassword = catchAsync(async (req, res) => {
+  const userId = req.user._id;
   const { currentPassword, newPassword } = req.body;
-  const userId = req.user.id;
 
-  const result = await userService.changePassword(userId, currentPassword, newPassword);
-  res.status(200).json(result);
+  // TÃ¬m user
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
+
+  // Verify current password
+  const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+  if (!isCurrentPasswordValid) throw new ApiError(400, "Máº­t kháº©u hiá»‡n táº¡i khÃ´ng Ä‘Ãºng");
+
+  // Hash new password
+  const saltRounds = 10;
+  user.password = await bcrypt.hash(newPassword, saltRounds);
+  await user.save();
+
+  responseSuccess(res, 200, "Äá»•i máº­t kháº©u thÃ nh cÃ´ng");
 });
 
-// Chặn người dùng
+// Cháº·n ngÆ°á»i dÃ¹ng
 const banUser = catchAsync(async (req, res) => {
-  // Kiểm tra quyền: chỉ admin mới có thể chặn người dùng
-  if (req.user.role !== "admin") {
-    throw new ApiError(403, "Permission denied");
-  }
-
   const userId = req.params.id;
-  const banInfo = req.body;
 
-  const user = await userService.banUser(userId, banInfo);
-  res.status(200).json({
-    success: true,
-    data: user,
-    message: "User has been banned successfully",
-  });
+  // TÃ¬m user
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
+
+  // KhÃ´ng cho phÃ©p admin tá»± cháº·n chÃ­nh mÃ¬nh
+  if (userId === req.user._id.toString())
+    throw new ApiError(400, "KhÃ´ng thá»ƒ cháº·n tÃ i khoáº£n cá»§a chÃ­nh mÃ¬nh");
+
+  // Cáº­p nháº­t tráº¡ng thÃ¡i cháº·n
+  user.isBlocked = true;
+  await user.save();
+
+  const userResponse = user.toObject();
+  delete userResponse.password;
+
+  responseSuccess(res, 200, "Cháº·n ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", userResponse);
 });
 
-// Bỏ chặn người dùng
+// Bá» cháº·n ngÆ°á»i dÃ¹ng
 const unbanUser = catchAsync(async (req, res) => {
-  // Kiểm tra quyền: chỉ admin mới có thể bỏ chặn người dùng
-  if (req.user.role !== "admin") {
-    throw new ApiError(403, "Permission denied");
-  }
-
   const userId = req.params.id;
-  const user = await userService.unbanUser(userId);
 
-  res.status(200).json({
-    success: true,
-    data: user,
-    message: "User has been unbanned successfully",
-  });
+  // TÃ¬m user
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
+
+  // Cáº­p nháº­t tráº¡ng thÃ¡i bá» cháº·n
+  user.isBlocked = false;
+  await user.save();
+
+  const userResponse = user.toObject();
+  delete userResponse.password;
+
+  responseSuccess(res, 200, "Bá» cháº·n ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", userResponse);
 });
 
-module.exports = {
+export default {
   getAllUsers,
   getUserById,
   getCurrentUser,

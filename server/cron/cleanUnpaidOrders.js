@@ -1,9 +1,9 @@
-const cron = require("node-cron");
-const Order = require("../models/order");
-const Product = require("../models/product");
-const Coupon = require("../models/coupon");
+﻿import cron from "node-cron";
+import Order from "../models/order.js";
+import Product from "../models/product.js";
+import Coupon from "../models/coupon.js";
 
-// Tự động xóa sau 30 phút
+// Tá»± Ä‘á»™ng xÃ³a sau 30 phÃºt
 cron.schedule("*/30 * * * *", async () => {
   try {
     const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
@@ -18,7 +18,7 @@ cron.schedule("*/30 * * * *", async () => {
     });
 
     for (const order of orders) {
-      // 1. Cập nhật lại stock cho từng biến thể
+      // 1. Cáº­p nháº­t láº¡i stock cho tá»«ng biáº¿n thá»ƒ
       for (const item of order.products) {
         const { productId, variantId, quantity } = item;
 
@@ -28,14 +28,14 @@ cron.schedule("*/30 * * * *", async () => {
             $inc: { "variants.$.stock": quantity },
           }
         );
-        // $inc: là toán tử MongoDB để cộng thêm giá trị cho một field.
+        // $inc: lÃ  toÃ¡n tá»­ MongoDB Ä‘á»ƒ cá»™ng thÃªm giÃ¡ trá»‹ cho má»™t field.
         // "variants.$.stock":
-        // variants.$ là toán tử positional ($) dùng để trỏ đến phần tử khớp đầu tiên trong mảng variants (ở điều kiện tìm kiếm).
-        // .stock: field bạn muốn cập nhật (ở trong mỗi variant).
-        // Vậy nghĩa là: Cộng thêm quantity vào stock của variant có variantId được chỉ định.
+        // variants.$ lÃ  toÃ¡n tá»­ positional ($) dÃ¹ng Ä‘á»ƒ trá» Ä‘áº¿n pháº§n tá»­ khá»›p Ä‘áº§u tiÃªn trong máº£ng variants (á»Ÿ Ä‘iá»u kiá»‡n tÃ¬m kiáº¿m).
+        // .stock: field báº¡n muá»‘n cáº­p nháº­t (á»Ÿ trong má»—i variant).
+        // Váº­y nghÄ©a lÃ : Cá»™ng thÃªm quantity vÃ o stock cá»§a variant cÃ³ variantId Ä‘Æ°á»£c chá»‰ Ä‘á»‹nh.
       }
 
-      // 2. Giảm lượt dùng mã giảm giá nếu có
+      // 2. Giáº£m lÆ°á»£t dÃ¹ng mÃ£ giáº£m giÃ¡ náº¿u cÃ³
       if (order?.couponId) {
         const coupon = await Coupon.findById(order?.couponId);
         if (coupon && coupon.usageLimit) {
@@ -44,12 +44,12 @@ cron.schedule("*/30 * * * *", async () => {
         }
       }
 
-      // 3. Xoá đơn hàng
+      // 3. XoÃ¡ Ä‘Æ¡n hÃ ng
       await Order.findByIdAndDelete(order._id);
     }
 
-    console.log(`[Cron] Đã xoá ${orders.length} đơn hàng chưa thanh toán đã tạo hơn 1 giờ trước`);
+    console.log(`[Cron] ÄÃ£ xoÃ¡ ${orders.length} Ä‘Æ¡n hÃ ng chÆ°a thanh toÃ¡n Ä‘Ã£ táº¡o hÆ¡n 1 giá» trÆ°á»›c`);
   } catch (err) {
-    console.error("[Cron] Lỗi khi xóa đơn hàng chưa thanh toán:", err);
+    console.error("[Cron] Lá»—i khi xÃ³a Ä‘Æ¡n hÃ ng chÆ°a thanh toÃ¡n:", err);
   }
 });

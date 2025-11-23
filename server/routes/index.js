@@ -1,17 +1,16 @@
-const userRoutes = require("./userRoutes");
-const productRoutes = require("./productRoutes");
-const authRoutes = require("./authRoutes");
-const categoryRoutes = require("./categoryRoutes");
-const cartRoutes = require("./cartRoutes");
-const fileRoutes = require("./fileRoutes");
-const couponRoutes = require("./couponRoutes");
-const orderRoutes = require("./orderRoutes");
-const paymentRoutes = require("./paymentRoutes");
-const statisticsRoutes = require("./statisticsRoutes");
-const reviewRoutes = require("./reviewRoutes");
-const chatbotRoutes = require("./chatbotRoutes");
-const inventoryRoutes = require("./inventoryRoutes");
-const ApiError = require("../utils/ApiError");
+﻿import userRoutes from "./userRoutes.js";
+import productRoutes from "./productRoutes.js";
+import authRoutes from "./authRoutes.js";
+import categoryRoutes from "./categoryRoutes.js";
+import cartRoutes from "./cartRoutes.js";
+import couponRoutes from "./couponRoutes.js";
+import orderRoutes from "./orderRoutes.js";
+import paymentRoutes from "./paymentRoutes.js";
+import statisticsRoutes from "./statisticsRoutes.js";
+import reviewRoutes from "./reviewRoutes.js";
+import chatbotRoutes from "./chatbotRoutes.js";
+import inventoryRoutes from "./inventoryRoutes.js";
+import ApiError from "../utils/ApiError.js";
 
 const initRoutes = (app) => {
   app.use("/api/auth", authRoutes);
@@ -19,7 +18,6 @@ const initRoutes = (app) => {
   app.use("/api/product", productRoutes);
   app.use("/api/category", categoryRoutes);
   app.use("/api/cart", cartRoutes);
-  app.use("/api/file", fileRoutes);
   app.use("/api/coupons", couponRoutes);
   app.use("/api/orders", orderRoutes);
   app.use("/api/payment", paymentRoutes);
@@ -28,10 +26,10 @@ const initRoutes = (app) => {
   app.use("/api/chatbot", chatbotRoutes);
   app.use("/api/inventory", inventoryRoutes);
 
-  // Xử lý 404
+  // Xá»­ lÃ½ 404
   app.use((req, res, next) => {
     next(new ApiError(404, "Not found"));
   });
 };
 
-module.exports = initRoutes;
+export default initRoutes;

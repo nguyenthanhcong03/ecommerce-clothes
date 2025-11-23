@@ -1,8 +1,9 @@
-const crypto = require("crypto");
-const querystring = require("qs");
-const dayjs = require("dayjs");
-const axios = require("axios");
-const { vnpayConfig } = require("../config/payment");
+﻿import axios from "axios";
+import { Buffer } from "buffer";
+import crypto from "crypto";
+import dayjs from "dayjs";
+import querystring from "qs";
+import { vnpayConfig } from "../config/payment.js";
 
 /**
  * Tạo URL thanh toán VNPay
@@ -39,13 +40,13 @@ const createVnpayPaymentUrl = (order) => {
 
     return paymentUrl;
   } catch (error) {
-    console.error("Lỗi khi tạo URL thanh toán VNPay:", error);
-    throw new Error("Không thể tạo URL thanh toán VNPay");
+    console.error("Lỗi khi tạo liên kết thanh toán VNPay:", error);
+    throw new Error("Lỗi khi tạo liên kết thanh toán VNPay");
   }
 };
 
 /**
- * Xác minh kết quả thanh toán từ VNPay
+ * Xác minh kết quả thanh toán VNPay
  */
 const verifyVnpayReturn = (vnpayParams) => {
   try {
@@ -66,7 +67,7 @@ const verifyVnpayReturn = (vnpayParams) => {
     return {
       isValid,
       orderId: vnpayParams.vnp_TxnRef,
-      amount: parseInt(vnpayParams.vnp_Amount) / 100, // Chia cho 100 để trở lại số tiền gốc
+      amount: parseInt(vnpayParams.vnp_Amount) / 100, // Chia cho 100
       transactionNo: vnpayParams.vnp_TransactionNo,
       responseCode: vnpayParams.vnp_ResponseCode,
       transactionStatus: vnpayParams.vnp_TransactionStatus,
@@ -75,7 +76,7 @@ const verifyVnpayReturn = (vnpayParams) => {
     };
   } catch (error) {
     console.error("Lỗi khi xác minh kết quả thanh toán VNPay:", error);
-    throw new Error("Không thể xác minh thanh toán VNPay");
+    throw new Error("Lỗi khi xác minh kết quả thanh toán VNPay");
   }
 };
 
@@ -90,13 +91,13 @@ const createVnpayRefund = async (refundData) => {
     const date = new Date();
     const createDate = dayjs(date).format("YYYYMMDDHHmmss");
     const requestId = dayjs(date).format("HHmmss");
-    const refundAmountInVND = parseInt(refundAmount) * 100; // VNPay yêu cầu amount * 100
-    const transactionType = refundAmount === amount ? "02" : "03"; // 02: Hoàn tiền toàn phần, 03: Hoàn tiền một phần
+    const refundAmountInVND = parseInt(refundAmount) * 100;
+    const transactionType = refundAmount === amount ? "02" : "03"; // 02: HoÃ n tiá»n toÃ n pháº§n, 03: HoÃ n tiá»n má»™t pháº§n
 
-    // Đảm bảo transactionDate có giá trị, nếu không thì dùng createDate
+    // Äáº£m báº£o transactionDate cÃ³ giÃ¡ trá»‹, náº¿u khÃ´ng thÃ¬ dÃ¹ng createDate
     const vnpTransactionDate = transactionDate || createDate;
 
-    // Tạo chuỗi dữ liệu để tạo secure hash theo format của VNPay
+    // Táº¡o chuá»—i dá»¯ liá»‡u Ä‘á»ƒ táº¡o secure hash theo format cá»§a VNPay
     const data = `${requestId}|2.1.0|refund|${
       vnpayConfig.vnp_TmnCode
     }|${transactionType}|${orderId}|${refundAmountInVND}|${transactionNo || "0"}|${vnpTransactionDate}|${
@@ -124,7 +125,7 @@ const createVnpayRefund = async (refundData) => {
     };
     console.log("dataObj", dataObj);
 
-    // Gửi yêu cầu hoàn tiền đến VNPay
+    // Gá»­i yÃªu cáº§u hoÃ n tiá»n Ä‘áº¿n VNPay
     const refundUrl = vnpayConfig.vnp_Api || "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
 
     const response = await axios.post(refundUrl, dataObj, {
@@ -145,49 +146,49 @@ const createVnpayRefund = async (refundData) => {
       data: response.data,
     };
   } catch (error) {
-    console.error("Lỗi khi tạo yêu cầu hoàn tiền VNPay:", error);
-    throw new Error("Không thể tạo yêu cầu hoàn tiền VNPay");
+    console.error("Lá»—i khi táº¡o yÃªu cáº§u hoÃ n tiá»n VNPay:", error);
+    throw new Error("KhÃ´ng thá»ƒ táº¡o yÃªu cáº§u hoÃ n tiá»n VNPay");
   }
 };
 
 /**
- * Lấy thông báo phản hồi hoàn tiền từ mã phản hồi
+ * Lấy thông báo
  */
 const getRefundResponseMessage = (responseCode) => {
   const messages = {
-    "00": "Giao dịch thành công",
-    "01": "Đơn hàng không tồn tại",
-    "02": "Merchant không hợp lệ",
-    "03": "Dữ liệu gửi sang không đúng định dạng",
-    "04": "Số tiền không hợp lệ",
-    "05": "Giao dịch không thành công",
-    "06": "Giao dịch không tồn tại",
-    "07": "Trừ tiền thành công. Giao dịch bị nghi ngờ",
-    "08": "Giao dịch đã được xử lý",
-    "09": "Giao dịch không thành công",
-    10: "Giao dịch không thành công",
-    11: "Đã hết hạn chờ thanh toán",
-    12: "Thẻ/Tài khoản bị khóa",
-    13: "Mật khẩu OTP không đúng",
-    24: "Giao dịch bị hủy",
-    51: "Tài khoản không đủ số dư",
-    65: "Vượt quá hạn mức giao dịch",
-    75: "Ngân hàng đang bảo trì",
-    79: "Nhập sai mật khẩu quá số lần quy định",
-    91: "Không tìm thấy giao dịch yêu cầu",
-    93: "Đã hoàn tiền một phần",
-    94: "Yêu cầu hoàn tiền bị từ chối",
-    95: "Giao dịch đã được hoàn tiền",
-    97: "Chữ ký không hợp lệ",
+    "00": "Giao dá»‹ch thÃ nh cÃ´ng",
+    "01": "ÄÆ¡n hÃ ng khÃ´ng tá»“n táº¡i",
+    "02": "Merchant khÃ´ng há»£p lá»‡",
+    "03": "Dá»¯ liá»‡u gá»­i sang khÃ´ng Ä‘Ãºng Ä‘á»‹nh dáº¡ng",
+    "04": "Sá»‘ tiá»n khÃ´ng há»£p lá»‡",
+    "05": "Giao dá»‹ch khÃ´ng thÃ nh cÃ´ng",
+    "06": "Giao dá»‹ch khÃ´ng tá»“n táº¡i",
+    "07": "Trá»« tiá»n thÃ nh cÃ´ng. Giao dá»‹ch bá»‹ nghi ngá»",
+    "08": "Giao dá»‹ch Ä‘Ã£ Ä‘Æ°á»£c xá»­ lÃ½",
+    "09": "Giao dá»‹ch khÃ´ng thÃ nh cÃ´ng",
+    10: "Giao dá»‹ch khÃ´ng thÃ nh cÃ´ng",
+    11: "ÄÃ£ háº¿t háº¡n chá» thanh toÃ¡n",
+    12: "Tháº»/TÃ i khoáº£n bá»‹ khÃ³a",
+    13: "Máº­t kháº©u OTP khÃ´ng Ä‘Ãºng",
+    24: "Giao dá»‹ch bá»‹ há»§y",
+    51: "TÃ i khoáº£n khÃ´ng Ä‘á»§ sá»‘ dÆ°",
+    65: "VÆ°á»£t quÃ¡ háº¡n má»©c giao dá»‹ch",
+    75: "NgÃ¢n hÃ ng Ä‘ang báº£o trÃ¬",
+    79: "Nháº­p sai máº­t kháº©u quÃ¡ sá»‘ láº§n quy Ä‘á»‹nh",
+    91: "KhÃ´ng tÃ¬m tháº¥y giao dá»‹ch yÃªu cáº§u",
+    93: "ÄÃ£ hoÃ n tiá»n má»™t pháº§n",
+    94: "YÃªu cáº§u hoÃ n tiá»n bá»‹ tá»« chá»‘i",
+    95: "Giao dá»‹ch Ä‘Ã£ Ä‘Æ°á»£c hoÃ n tiá»n",
+    97: "Chá»¯ kÃ½ khÃ´ng há»£p lá»‡",
     98: "Timeout",
-    99: "Lỗi không xác định",
+    99: "Lá»—i khÃ´ng xÃ¡c Ä‘á»‹nh",
   };
 
-  return messages[responseCode] || "Lỗi không xác định";
+  return messages[responseCode] || "Lá»—i khÃ´ng xÃ¡c Ä‘á»‹nh";
 };
 
 /**
- * Hàm tiện ích để sắp xếp đối tượng theo khóa
+ * HÃ m tiá»‡n Ã­ch Ä‘á»ƒ sáº¯p xáº¿p Ä‘á»‘i tÆ°á»£ng theo khÃ³a
  */
 function sortObject(obj) {
   let sorted = {};
@@ -205,8 +206,4 @@ function sortObject(obj) {
   return sorted;
 }
 
-module.exports = {
-  createVnpayPaymentUrl,
-  verifyVnpayReturn,
-  createVnpayRefund,
-};
+export default { createVnpayPaymentUrl, verifyVnpayReturn, createVnpayRefund };

@@ -1,5 +1,5 @@
-// models/Coupon.js
-const mongoose = require("mongoose");
+﻿// models/Coupon.js
+import mongoose from "mongoose";
 
 const couponSchema = new mongoose.Schema(
   {
@@ -48,7 +48,7 @@ const couponSchema = new mongoose.Schema(
     },
     usageLimit: {
       type: Number,
-      default: 0, // 0 = không giới hạn
+      default: 0, // 0 = khÃ´ng giá»›i háº¡n
       min: 0,
     },
     usedCount: {
@@ -61,5 +61,5 @@ const couponSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
-module.exports = mongoose.model("Coupon", couponSchema);
+const Coupon = mongoose.model("Coupon", couponSchema);
+export default Coupon;

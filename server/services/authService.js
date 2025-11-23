@@ -1,33 +1,33 @@
-const User = require("../models/user");
-const bcrypt = require("bcryptjs");
-const crypto = require("crypto");
-const jwt = require("jsonwebtoken");
-const { sendEmail } = require("./emailService");
-const { generateAccessToken, generateRefreshToken } = require("../utils/jwt");
-const ApiError = require("../utils/ApiError");
+﻿import User from "../models/user.js";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import { sendEmail } from "./emailService.js";
+import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
+import ApiError from "../utils/ApiError.js";
 
-// Kiểm tra email đã tồn tại hay chưa
+// Kiá»ƒm tra email Ä‘Ã£ tá»“n táº¡i hay chÆ°a
 const checkEmailExists = async (email) => {
   const user = await User.findOne({ email });
-  if (user) throw new ApiError(400, "Email đã được sử dụng");
+  if (user) throw new ApiError(400, "Email Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng");
   return email;
 };
 
 const registerUser = async (userData) => {
   const { password, email, phone, firstName, lastName } = userData;
 
-  // Kiểm tra email đã tồn tại
+  // Kiá»ƒm tra email Ä‘Ã£ tá»“n táº¡i
   const existedEmail = await User.findOne({ email });
-  if (existedEmail) throw new ApiError(400, "Email đã được sử dụng");
+  if (existedEmail) throw new ApiError(400, "Email Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng");
 
-  // Kiểm tra phonenumber đã tồn tại
+  // Kiá»ƒm tra phonenumber Ä‘Ã£ tá»“n táº¡i
   const existedPhone = await User.findOne({ phone });
-  if (existedPhone) throw new ApiError(400, "Số điện thoại đã được sử dụng");
+  if (existedPhone) throw new ApiError(400, "Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng");
 
-  // Mã hóa mật khẩu
+  // MÃ£ hÃ³a máº­t kháº©u
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-  // Tạo người dùng mới
+  // Táº¡o ngÆ°á»i dÃ¹ng má»›i
   const newUser = await User.create({
     email,
     phone,
@@ -40,25 +40,25 @@ const registerUser = async (userData) => {
 };
 
 /**
- * Đăng nhập người dùng
+ * ÄÄƒng nháº­p ngÆ°á»i dÃ¹ng
  */
 const loginUser = async (userData) => {
   const { email, password } = userData;
 
-  // Tìm người dùng
+  // TÃ¬m ngÆ°á»i dÃ¹ng
   const user = await User.findOne({ email });
-  if (!user) throw new ApiError(400, "Thông tin đăng nhập không hợp lệ");
+  if (!user) throw new ApiError(400, "ThÃ´ng tin Ä‘Äƒng nháº­p khÃ´ng há»£p lá»‡");
 
-  // Kiểm tra mật khẩu
+  // Kiá»ƒm tra máº­t kháº©u
   const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) throw new ApiError("Thông tin đăng nhập không hợp lệ");
+  if (!isMatch) throw new ApiError("ThÃ´ng tin Ä‘Äƒng nháº­p khÃ´ng há»£p lá»‡");
 
-  // Kiểm tra trạng thái tài khoản
+  // Kiá»ƒm tra tráº¡ng thÃ¡i tÃ i khoáº£n
   if (user.isBlocked) {
-    throw new ApiError(400, "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.");
+    throw new ApiError(400, "TÃ i khoáº£n cá»§a báº¡n Ä‘Ã£ bá»‹ khÃ³a. Vui lÃ²ng liÃªn há»‡ quáº£n trá»‹ viÃªn.");
   }
 
-  // Tạo tokens
+  // Táº¡o tokens
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
 
@@ -78,35 +78,35 @@ const loginUser = async (userData) => {
 };
 
 /**
- * Xử lý quên mật khẩu
+ * Xá»­ lÃ½ quÃªn máº­t kháº©u
  */
 const forgotUserPassword = async (email) => {
   const user = await User.findOne({ email });
   if (!user) {
-    throw new Error("Không tìm thấy email");
+    throw new Error("KhÃ´ng tÃ¬m tháº¥y email");
   }
 
-  // Tạo reset token
+  // Táº¡o reset token
   const resetToken = crypto.randomBytes(32).toString("hex");
   user.resetPasswordToken = resetToken;
-  user.resetPasswordExpires = Date.now() + 3600000; // Hết hạn sau 1 giờ
+  user.resetPasswordExpires = Date.now() + 3600000; // Háº¿t háº¡n sau 1 giá»
   await user.save();
 
-  // Gửi email reset
+  // Gá»­i email reset
   const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
   const html = `
-    <h1>Đặt lại mật khẩu</h1>
-    <p>Nhấp vào liên kết bên dưới để đặt lại mật khẩu của bạn:</p>
-    <a href="${resetUrl}">Đặt lại mật khẩu</a>
-    <p>Liên kết này sẽ hết hạn sau 1 giờ.</p>
+    <h1>Äáº·t láº¡i máº­t kháº©u</h1>
+    <p>Nháº¥p vÃ o liÃªn káº¿t bÃªn dÆ°á»›i Ä‘á»ƒ Ä‘áº·t láº¡i máº­t kháº©u cá»§a báº¡n:</p>
+    <a href="${resetUrl}">Äáº·t láº¡i máº­t kháº©u</a>
+    <p>LiÃªn káº¿t nÃ y sáº½ háº¿t háº¡n sau 1 giá».</p>
   `;
-  await sendEmail(email, "Yêu cầu đặt lại mật khẩu", html);
+  await sendEmail(email, "YÃªu cáº§u Ä‘áº·t láº¡i máº­t kháº©u", html);
 
   return true;
 };
 
 /**
- * Xác nhận đặt lại mật khẩu
+ * XÃ¡c nháº­n Ä‘áº·t láº¡i máº­t kháº©u
  */
 const confirmResetPassword = async (token, newPassword) => {
   const user = await User.findOne({
@@ -115,10 +115,10 @@ const confirmResetPassword = async (token, newPassword) => {
   });
 
   if (!user) {
-    throw new Error("Token đặt lại không hợp lệ hoặc đã hết hạn");
+    throw new Error("Token Ä‘áº·t láº¡i khÃ´ng há»£p lá»‡ hoáº·c Ä‘Ã£ háº¿t háº¡n");
   }
 
-  // Mã hóa mật khẩu mới
+  // MÃ£ hÃ³a máº­t kháº©u má»›i
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(newPassword, salt);
   user.resetPasswordToken = undefined;
@@ -129,22 +129,22 @@ const confirmResetPassword = async (token, newPassword) => {
 };
 
 /**
- * Thay đổi mật khẩu
+ * Thay Ä‘á»•i máº­t kháº©u
  */
 const changeUserPassword = async (userId, oldPassword, newPassword) => {
   const user = await User.findById(userId);
   if (!user) {
-    throw new Error("Người dùng không tồn tại");
+    throw new Error("NgÆ°á»i dÃ¹ng khÃ´ng tá»“n táº¡i");
   }
 
-  // Kiểm tra mật khẩu cũ
+  // Kiá»ƒm tra máº­t kháº©u cÅ©
   const isMatch = await bcrypt.compare(oldPassword, user.password);
   if (!isMatch) {
-    throw new Error("Mật khẩu cũ không đúng");
+    throw new Error("Máº­t kháº©u cÅ© khÃ´ng Ä‘Ãºng");
   }
-  console.log("đúng");
+  console.log("Ä‘Ãºng");
 
-  // Mã hóa mật khẩu mới
+  // MÃ£ hÃ³a máº­t kháº©u má»›i
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(newPassword, salt);
   await user.save();
@@ -153,28 +153,28 @@ const changeUserPassword = async (userId, oldPassword, newPassword) => {
 };
 
 /**
- * Làm mới access token
+ * LÃ m má»›i access token
  */
 const refreshUserToken = async (refreshToken) => {
   const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
   const user = await User.findById(decoded._id);
-  if (!user) throw new ApiError(404, "Người dùng không tồn tại");
+  if (!user) throw new ApiError(404, "NgÆ°á»i dÃ¹ng khÃ´ng tá»“n táº¡i");
 
-  // Tạo access token mới
+  // Táº¡o access token má»›i
   const newAccessToken = generateAccessToken(user);
   return newAccessToken;
 };
 
 /**
- * Lấy thông tin người dùng hiện tại
+ * Láº¥y thÃ´ng tin ngÆ°á»i dÃ¹ng hiá»‡n táº¡i
  */
 const getCurrentUserById = async (userId) => {
   const user = await User.findById(userId).select("-password -createdAt -updatedAt");
-  if (!user) throw new ApiError(404, "Người dùng không tồn tại");
+  if (!user) throw new ApiError(404, "NgÆ°á»i dÃ¹ng khÃ´ng tá»“n táº¡i");
   return user;
 };
 
-module.exports = {
+export default {
   registerUser,
   loginUser,
   forgotUserPassword,

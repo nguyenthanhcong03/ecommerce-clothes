@@ -1,4 +1,4 @@
-const transporter = require("../config/mailer");
+﻿import transporter from "../config/mailer.js";
 
 const sendEmail = async (to, subject, html) => {
   try {
@@ -8,11 +8,11 @@ const sendEmail = async (to, subject, html) => {
       subject,
       html,
     });
-    console.log(`📧 Email đã gửi thành công tới ${to}`);
+    console.log(`ðŸ“§ Email Ä‘Ã£ gá»­i thÃ nh cÃ´ng tá»›i ${to}`);
   } catch (error) {
-    console.error("❌ Lỗi khi gửi email:", error);
-    throw new Error("Gửi email thất bại.");
+    console.error("âŒ Lá»—i khi gá»­i email:", error);
+    throw new Error("Gá»­i email tháº¥t báº¡i.");
   }
 };
 
-module.exports = { sendEmail };
+export default { sendEmail };

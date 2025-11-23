@@ -1,6 +1,6 @@
-const express = require("express");
-const authController = require("../controllers/authController");
-const { verifyToken } = require("../middlewares/auth");
+﻿import express from "express";
+import authController from "../controllers/authController.js";
+import { verifyToken  } from "../middlewares/auth.js";
 
 const router = express.Router();
 
@@ -14,4 +14,6 @@ router.post("/refresh-token", authController.refreshToken);
 router.post("/change-password", verifyToken, authController.changePassword);
 router.get("/check-email/:email", authController.checkEmailExists);
 
-module.exports = router;
+export default router;
+
+
