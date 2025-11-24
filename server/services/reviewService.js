@@ -5,7 +5,7 @@ import Order from "../models/order.js";
 import ApiError from "../utils/ApiError.js";
 
 /**
- * ÄÃ¡nh giÃ¡ sáº£n pháº©m
+ * Đánh giá sản phẩm
  */
 const createReview = async (reviewData) => {
   const session = await mongoose.startSession();
@@ -14,7 +14,7 @@ const createReview = async (reviewData) => {
   try {
     const { userId, productId, orderId } = reviewData;
 
-    // Kiá»ƒm tra xem ngÆ°á»i dÃ¹ng Ä‘Ã£ mua sáº£n pháº©m nÃ y chÆ°a (thÃ´ng qua orderId)
+    // Kiểm tra xem người dùng đã mua sản phẩm này chưa (thông qua orderId)
     const order = await Order.findOne({
       _id: orderId,
       userId: userId,
@@ -23,20 +23,20 @@ const createReview = async (reviewData) => {
     }).session(session);
 
     if (!order) {
-      throw new ApiError(400, "Báº¡n chÆ°a mua sáº£n pháº©m nÃ y hoáº·c Ä‘Æ¡n hÃ ng khÃ´ng há»£p lá»‡");
+      throw new ApiError(400, "Bạn chưa mua sản phẩm này hoặc đơn hàng không hợp lệ");
     }
 
-    // Kiá»ƒm tra xem sáº£n pháº©m Ä‘Ã£ Ä‘Æ°á»£c Ä‘Ã¡nh giÃ¡ chÆ°a
+    // Kiểm tra xem sản phẩm đã được đánh giá chưa
     const productItem = order.products.find((item) => item.productId.toString() === productId && !item.isReviewed);
 
     if (!productItem) {
-      throw new ApiError(400, "Sáº£n pháº©m nÃ y Ä‘Ã£ Ä‘Æ°á»£c Ä‘Ã¡nh giÃ¡ hoáº·c khÃ´ng cÃ³ trong Ä‘Æ¡n hÃ ng");
+      throw new ApiError(400, "Sản phẩm này đã được đánh giá hoặc không có trong đơn hàng");
     }
 
-    // Táº¡o review má»›i
+    // Tạo review mới
     const review = await Review.create([reviewData], { session });
 
-    // Cáº­p nháº­t tráº¡ng thÃ¡i isReviewed cho sáº£n pháº©m trong Ä‘Æ¡n hÃ ng
+    // Cập nhật trạng thái isReviewed cho sản phẩm trong đơn hàng
     await Order.updateOne(
       {
         _id: orderId,
@@ -48,7 +48,7 @@ const createReview = async (reviewData) => {
       { session }
     );
 
-    // Cáº­p nháº­t thÃ´ng tin Ä‘Ã¡nh giÃ¡ trong sáº£n pháº©m
+    // Cập nhật thông tin đánh giá trong sản phẩm
     await updateProductRatingStats(productId, session);
 
     await session.commitTransaction();
@@ -63,7 +63,7 @@ const createReview = async (reviewData) => {
 };
 
 /**
- * Láº¥y táº¥t cáº£ Ä‘Ã¡nh giÃ¡ cá»§a má»™t sáº£n pháº©m
+ * Lấy tất cả đánh giá của một sản phẩm
  */
 const getProductReviews = async (productId, options) => {
   const query = { productId };
@@ -83,11 +83,21 @@ const getProductReviews = async (productId, options) => {
     .populate(options.populate || "")
     .lean();
 
-  return reviews;
+  const total = await Review.countDocuments(query);
+
+  return {
+    reviews,
+    pagination: {
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
+    },
+  };
 };
 
 /**
- * Láº¥y táº¥t cáº£ Ä‘Ã¡nh giÃ¡ cá»§a ngÆ°á»i dÃ¹ng hiá»‡n táº¡i
+ * Lấy tất cả đánh giá của người dùng hiện tại
  */
 const getUserReviews = async (userId, options) => {
   const query = { userId };
@@ -117,12 +127,12 @@ const getUserReviews = async (userId, options) => {
 };
 
 /**
- * Pháº£n há»“i Ä‘Ã¡nh giÃ¡ (Admin)
+ * Phản hồi đánh giá (Admin)
  */
 const replyToReview = async (reviewId, reply) => {
   // Validate reviewId
   if (!mongoose.Types.ObjectId.isValid(reviewId)) {
-    throw new ApiError(400, "ID Ä‘Ã¡nh giÃ¡ khÃ´ng há»£p lá»‡");
+    throw new ApiError(400, "ID đánh giá không hợp lệ");
   }
 
   const review = await Review.findByIdAndUpdate(reviewId, { reply }, { new: true }).populate(
@@ -131,14 +141,14 @@ const replyToReview = async (reviewId, reply) => {
   );
 
   if (!review) {
-    throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y Ä‘Ã¡nh giÃ¡");
+    throw new ApiError(404, "Không tìm thấy đánh giá");
   }
 
   return review;
 };
 
 /**
- * Cáº­p nháº­t thÃ´ng tin Ä‘Ã¡nh giÃ¡ trong sáº£n pháº©m
+ * Cập nhật thông tin đánh giá trong sản phẩm
  */
 const updateProductRatingStats = async (productId, session) => {
   const stats = await Review.aggregate([
@@ -156,7 +166,7 @@ const updateProductRatingStats = async (productId, session) => {
   let totalReviews = 0;
 
   if (stats.length > 0) {
-    averageRating = Math.round(stats[0].averageRating * 10) / 10; // LÃ m trÃ²n Ä‘áº¿n 1 chá»¯ sá»‘ tháº­p phÃ¢n
+    averageRating = Math.round(stats[0].averageRating * 10) / 10; // Làm tròn đến 1 chữ số thập phân
     totalReviews = stats[0].totalReviews;
   }
 
@@ -173,7 +183,7 @@ const updateProductRatingStats = async (productId, session) => {
 };
 
 /**
- * Láº¥y cÃ¡c sáº£n pháº©m cÃ³ thá»ƒ Ä‘Æ°á»£c Ä‘Ã¡nh giÃ¡ tá»« má»™t Ä‘Æ¡n hÃ ng Ä‘Ã£ giao.
+ * Lấy các sản phẩm có thể được đánh giá từ một đơn hàng đã giao.
  */
 const getReviewableProducts = async (userId, orderId) => {
   // Find the order and check if it's valid and delivered
@@ -187,10 +197,10 @@ const getReviewableProducts = async (userId, orderId) => {
   });
 
   if (!order) {
-    throw new ApiError(404, "ÄÆ¡n hÃ ng khÃ´ng tá»“n táº¡i hoáº·c chÆ°a giao hÃ ng thÃ nh cÃ´ng");
+    throw new ApiError(404, "Đơn hàng không tồn tại hoặc chưa giao hàng thành công");
   }
 
-  // Lá»c cÃ¡c sáº£n pháº©m chÆ°a Ä‘Æ°á»£c Ä‘Ã¡nh giÃ¡.
+  // Lọc các sản phẩm chưa được đánh giá.
   const reviewableProducts = order.products
     .filter((product) => !product.isReviewed)
     .map((product) => ({

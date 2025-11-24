@@ -4,7 +4,6 @@ import ApiError from "../utils/ApiError.js";
 import catchAsync from "../utils/catchAsync.js";
 import { responseSuccess } from "../utils/responseHandler.js";
 
-// Láº¥y danh sÃ¡ch ngÆ°á»i dÃ¹ng vá»›i phÃ¢n trang vÃ  lá»c
 const getAllUsers = catchAsync(async (req, res) => {
   const { page, limit, sortBy, sortOrder, role, isBlocked, search } = req.query;
   const filters = {};
@@ -42,7 +41,7 @@ const getAllUsers = catchAsync(async (req, res) => {
   // Execute query
   const response = await User.find(filters).select("-password").sort(sort).skip(skip).limit(options.limit);
 
-  responseSuccess(res, 200, "Láº¥y danh sÃ¡ch ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", {
+  responseSuccess(res, 200, "Lấy danh sách người dùng thành công", {
     data: response,
     page: response.page,
     limit: response.limit,
@@ -51,43 +50,37 @@ const getAllUsers = catchAsync(async (req, res) => {
   });
 });
 
-// Láº¥y thÃ´ng tin cá»§a má»™t ngÆ°á»i dÃ¹ng
 const getUserById = catchAsync(async (req, res) => {
   const userId = req.params.id;
 
   const user = await User.findById(userId).select("-password");
-  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
+  if (!user) throw new ApiError(404, "Không tìm thấy người dùng");
 
-  responseSuccess(res, 200, "Láº¥y thÃ´ng tin ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", user);
+  responseSuccess(res, 200, "Lấy thông tin người dùng thành công", user);
 });
 
-// Láº¥y thÃ´ng tin ngÆ°á»i dÃ¹ng hiá»‡n táº¡i
 const getCurrentUser = catchAsync(async (req, res) => {
   const userId = req.user._id;
   const user = await User.findById(userId).select("-password");
-  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
+  if (!user) throw new ApiError(404, "Không tìm thấy người dùng");
 
-  responseSuccess(res, 200, "Láº¥y thÃ´ng tin ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", user);
+  responseSuccess(res, 200, "Lấy thông tin người dùng thành công", user);
 });
 
-// Táº¡o ngÆ°á»i dÃ¹ng má»›i bá»Ÿi Admin
 const createUserByAdmin = catchAsync(async (req, res) => {
   const { email, password, firstName, lastName, phone, role = "customer" } = req.body;
 
-  // Kiá»ƒm tra email Ä‘Ã£ tá»“n táº¡i
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new ApiError(400, "Email Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng");
   }
 
-  // Táº¡o password ngáº«u nhiÃªn náº¿u khÃ´ng cÃ³
   const userPassword = password || Math.random().toString(36).slice(-8);
 
   // Hash password
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(userPassword, saltRounds);
 
-  // Táº¡o user má»›i
   const newUser = await User.create({
     email,
     password: hashedPassword,
@@ -97,26 +90,22 @@ const createUserByAdmin = catchAsync(async (req, res) => {
     role,
   });
 
-  // Loáº¡i bá» password khá»i response
   const userResponse = newUser.toObject();
   delete userResponse.password;
 
-  responseSuccess(res, 201, "Táº¡o ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", {
+  responseSuccess(res, 201, "Tạo người dùng thành công", {
     user: userResponse,
-    temporaryPassword: password ? undefined : userPassword, // Chá»‰ tráº£ vá» password táº¡m náº¿u tá»± Ä‘á»™ng táº¡o
+    temporaryPassword: password ? undefined : userPassword,
   });
 });
 
-// Cáº­p nháº­t thÃ´ng tin ngÆ°á»i dÃ¹ng
 const updateUser = catchAsync(async (req, res) => {
   const userId = req.params.id;
   const { firstName, lastName, phone, gender, dateOfBirth, address } = req.body;
 
-  // TÃ¬m user
   const user = await User.findById(userId);
-  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
+  if (!user) throw new ApiError(404, "Không tìm thấy người dùng");
 
-  // Cáº­p nháº­t thÃ´ng tin
   const updateData = {};
   if (firstName) updateData.firstName = firstName;
   if (lastName) updateData.lastName = lastName;
@@ -129,25 +118,21 @@ const updateUser = catchAsync(async (req, res) => {
     "-password"
   );
 
-  responseSuccess(res, 200, "Cáº­p nháº­t thÃ´ng tin ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", updatedUser);
+  responseSuccess(res, 200, "Cập nhật thông tin người dùng thành công", updatedUser);
 });
 
-// Cáº­p nháº­t thÃ´ng tin ngÆ°á»i dÃ¹ng bá»Ÿi Admin
 const updateUserByAdmin = catchAsync(async (req, res) => {
   const userId = req.params.id;
   const { email, firstName, lastName, phone, role, isBlocked, gender, dateOfBirth, address } = req.body;
 
-  // TÃ¬m user
   const user = await User.findById(userId);
-  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
+  if (!user) throw new ApiError(404, "Không tìm thấy người dùng");
 
-  // Kiá»ƒm tra email náº¿u thay Ä‘á»•i
   if (email && email !== user.email) {
     const existingUser = await User.findOne({ email, _id: { $ne: userId } });
-    if (existingUser) throw new ApiError(400, "Email Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng");
+    if (existingUser) throw new ApiError(400, "Email đã được sử dụng bởi người dùng khác");
   }
 
-  // Cáº­p nháº­t thÃ´ng tin
   const updateData = {};
   if (email) updateData.email = email;
   if (firstName) updateData.firstName = firstName;
@@ -163,75 +148,67 @@ const updateUserByAdmin = catchAsync(async (req, res) => {
     "-password"
   );
 
-  responseSuccess(res, 200, "Cáº­p nháº­t ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", updatedUser);
+  responseSuccess(res, 200, "Cập nhật người dùng thành công", updatedUser);
 });
 
-// XÃ³a ngÆ°á»i dÃ¹ng (chá»‰ admin má»›i cÃ³ quyá»n)
 const deleteUser = catchAsync(async (req, res) => {
   const userId = req.params.id;
 
-  // TÃ¬m user
   const user = await User.findById(userId);
-  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
+  if (!user) throw new ApiError(404, "Không tìm thấy người dùng");
 
-  // KhÃ´ng cho phÃ©p admin tá»± xÃ³a chÃ­nh mÃ¬nh
-  if (userId === req.user._id.toString()) throw new ApiError(400, "KhÃ´ng thá»ƒ xÃ³a tÃ i khoáº£n cá»§a chÃ­nh mÃ¬nh");
+  // Không cho admin xóa chính mình
+  if (userId === req.user._id.toString()) throw new ApiError(400, "Không thể xóa tài khoản của chính mình");
 
   await User.findByIdAndDelete(userId);
 
-  responseSuccess(res, 200, "XÃ³a ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng");
+  responseSuccess(res, 200, "Xóa người dùng thành công");
 });
 
-// Thay Ä‘á»•i máº­t kháº©u
 const changePassword = catchAsync(async (req, res) => {
   const userId = req.user._id;
   const { currentPassword, newPassword } = req.body;
 
-  // TÃ¬m user
   const user = await User.findById(userId);
-  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
+  if (!user) throw new ApiError(404, "Không tìm thấy người dùng");
 
   // Verify current password
   const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
-  if (!isCurrentPasswordValid) throw new ApiError(400, "Máº­t kháº©u hiá»‡n táº¡i khÃ´ng Ä‘Ãºng");
+  if (!isCurrentPasswordValid) throw new ApiError(400, "Mật khẩu hiện tại không đúng");
 
   // Hash new password
   const saltRounds = 10;
   user.password = await bcrypt.hash(newPassword, saltRounds);
   await user.save();
 
-  responseSuccess(res, 200, "Äá»•i máº­t kháº©u thÃ nh cÃ´ng");
+  responseSuccess(res, 200, "Đổi mật khẩu thành công");
 });
 
-// Cháº·n ngÆ°á»i dÃ¹ng
 const banUser = catchAsync(async (req, res) => {
   const userId = req.params.id;
 
-  // TÃ¬m user
   const user = await User.findById(userId);
-  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
+  if (!user) throw new ApiError(404, "Không tìm thấy người dùng");
 
-  // KhÃ´ng cho phÃ©p admin tá»± cháº·n chÃ­nh mÃ¬nh
-  if (userId === req.user._id.toString())
-    throw new ApiError(400, "KhÃ´ng thá»ƒ cháº·n tÃ i khoáº£n cá»§a chÃ­nh mÃ¬nh");
+  // Không cho admin chặn chính mình
+  if (userId === req.user._id.toString()) throw new ApiError(400, "Không thể chặn tài khoản của chính mình");
 
-  // Cáº­p nháº­t tráº¡ng thÃ¡i cháº·n
+  // Cập nhật trạng thái chặn
   user.isBlocked = true;
   await user.save();
 
   const userResponse = user.toObject();
   delete userResponse.password;
 
-  responseSuccess(res, 200, "Cháº·n ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", userResponse);
+  responseSuccess(res, 200, "Chặn người dùng thành công", userResponse);
 });
 
-// Bá» cháº·n ngÆ°á»i dÃ¹ng
 const unbanUser = catchAsync(async (req, res) => {
   const userId = req.params.id;
 
   // TÃ¬m user
   const user = await User.findById(userId);
-  if (!user) throw new ApiError(404, "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng");
+  if (!user) throw new ApiError(404, "Không tìm thấy người dùng");
 
   // Cáº­p nháº­t tráº¡ng thÃ¡i bá» cháº·n
   user.isBlocked = false;
@@ -240,7 +217,7 @@ const unbanUser = catchAsync(async (req, res) => {
   const userResponse = user.toObject();
   delete userResponse.password;
 
-  responseSuccess(res, 200, "Bá» cháº·n ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng", userResponse);
+  responseSuccess(res, 200, "Bỏ chặn người dùng thành công", userResponse);
 });
 
 export default {

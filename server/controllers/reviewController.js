@@ -1,7 +1,7 @@
 ﻿import reviewService from "../services/reviewService.js";
 import catchAsync from "../utils/catchAsync.js";
 
-// Táº¡o má»›i Ä‘Ã¡nh giÃ¡ sáº£n pháº©m
+// Tạo mới đánh giá sản phẩm
 const createReview = catchAsync(async (req, res) => {
   const { productId, orderId, rating, comment } = req.body;
   const userId = req.user._id;
@@ -20,7 +20,7 @@ const createReview = catchAsync(async (req, res) => {
   });
 });
 
-// Láº¥y Ä‘Ã¡nh giÃ¡ cá»§a sáº£n pháº©m
+// Lấy đánh giá của sản phẩm
 const getProductReviews = catchAsync(async (req, res) => {
   const { productId } = req.params;
   const { rating, page = 1, limit = 10, sort = "-createdAt" } = req.query;
@@ -36,21 +36,15 @@ const getProductReviews = catchAsync(async (req, res) => {
     },
   };
 
-  const response = await reviewService.getProductReviews(productId, options);
+  const reviews = await reviewService.getProductReviews(productId, options);
+
   res.status(200).json({
     success: true,
-    data: {
-      data: response,
-      page: response.page,
-      limit: response.limit,
-      total: response.total,
-      totalPages: response.totalPages,
-    },
-    message: "Láº¥y Ä‘Ã¡nh giÃ¡ sáº£n pháº©m thÃ nh cÃ´ng",
+    data: reviews,
   });
 });
 
-// Láº¥y Ä‘Ã¡nh giÃ¡ cá»§a ngÆ°á»i dÃ¹ng
+// Lấy đánh giá của người dùng
 const getUserReviews = catchAsync(async (req, res) => {
   const userId = req.user._id;
   const { page = 1, limit = 10 } = req.query;
@@ -73,7 +67,7 @@ const getUserReviews = catchAsync(async (req, res) => {
   });
 });
 
-// Tráº£ lá»i Ä‘Ã¡nh giÃ¡ (admin)
+// Trả lời đánh giá (admin)
 const replyToReview = catchAsync(async (req, res) => {
   const { reviewId } = req.params;
   const { reply } = req.body;
@@ -86,7 +80,7 @@ const replyToReview = catchAsync(async (req, res) => {
   });
 });
 
-// Láº¥y danh sÃ¡ch sáº£n pháº©m cÃ³ thá»ƒ Ä‘Ã¡nh giÃ¡
+// Lấy danh sách sản phẩm có thể đánh giá
 const getReviewableProducts = catchAsync(async (req, res) => {
   const { orderId } = req.params;
   const userId = req.user._id;
@@ -99,7 +93,7 @@ const getReviewableProducts = catchAsync(async (req, res) => {
   });
 });
 
-// Láº¥y táº¥t cáº£ Ä‘Ã¡nh giÃ¡ (admin)
+// Lấy tất cả đánh giá (admin)
 const getAllReviews = catchAsync(async (req, res) => {
   const { page = 1, limit = 10, sort = "-createdAt" } = req.query;
 

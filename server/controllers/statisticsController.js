@@ -1,6 +1,6 @@
 ﻿import statisticsService from "../services/statisticsService.js";
 
-// Láº¥y thá»‘ng kÃª tá»•ng quan
+// Lấy thống kê tổng quan
 const getOverviewStatistics = async (req, res) => {
   try {
     const stats = await statisticsService.getOverviewStatistics();
@@ -13,13 +13,13 @@ const getOverviewStatistics = async (req, res) => {
     console.error("Error fetching overview statistics:", error);
     res.status(500).json({
       success: false,
-      message: "KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª tá»•ng quan",
+      message: "Không thể lấy thống kê tổng quan",
       error: error.message,
     });
   }
 };
 
-// Láº¥y thá»‘ng kÃª doanh thu
+// Lấy thống kê doanh thu
 const getRevenueStatistics = async (req, res) => {
   try {
     const { period, startDate, endDate } = req.query;
@@ -33,13 +33,13 @@ const getRevenueStatistics = async (req, res) => {
     console.error("Error fetching revenue statistics:", error);
     res.status(500).json({
       success: false,
-      message: "KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª doanh thu",
+      message: "Không thể lấy thống kê doanh thu",
       error: error.message,
     });
   }
 };
 
-// Láº¥y thá»‘ng kÃª sáº£n pháº©m bÃ¡n cháº¡y
+// Lấy thống kê sản phẩm bán chạy
 const getTopProducts = async (req, res) => {
   try {
     const { limit = 10, period, startDate, endDate } = req.query;
@@ -53,13 +53,13 @@ const getTopProducts = async (req, res) => {
     console.error("Error fetching top products:", error);
     res.status(500).json({
       success: false,
-      message: "KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª sáº£n pháº©m bÃ¡n cháº¡y",
+      message: "Không thể lấy thống kê sản phẩm bán chạy",
       error: error.message,
     });
   }
 };
 
-// Láº¥y thá»‘ng kÃª khÃ¡ch hÃ ng
+// Lấy thống kê khách hàng
 const getCustomerStatistics = async (req, res) => {
   try {
     const { period, startDate, endDate } = req.query;
@@ -73,13 +73,13 @@ const getCustomerStatistics = async (req, res) => {
     console.error("Error fetching customer statistics:", error);
     res.status(500).json({
       success: false,
-      message: "KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª khÃ¡ch hÃ ng",
+      message: "Không thể lấy thống kê khách hàng",
       error: error.message,
     });
   }
 };
 
-// Láº¥y thá»‘ng kÃª theo danh má»¥c sáº£n pháº©m
+// Lấy thống kê theo danh mục sản phẩm
 const getCategoryStatistics = async (req, res) => {
   try {
     const { period, startDate, endDate } = req.query;
@@ -93,13 +93,13 @@ const getCategoryStatistics = async (req, res) => {
     console.error("Error fetching category statistics:", error);
     res.status(500).json({
       success: false,
-      message: "KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª theo danh má»¥c sáº£n pháº©m",
+      message: "Không thể lấy thống kê theo danh mục sản phẩm",
       error: error.message,
     });
   }
 };
 
-// Láº¥y thá»‘ng kÃª Ä‘Æ¡n hÃ ng
+// Lấy thống kê đơn hàng
 const getOrderStatistics = async (req, res) => {
   try {
     const { period, startDate, endDate } = req.query;
@@ -113,13 +113,13 @@ const getOrderStatistics = async (req, res) => {
     console.error("Error fetching order statistics:", error);
     res.status(500).json({
       success: false,
-      message: "KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª Ä‘Æ¡n hÃ ng",
+      message: "Không thể lấy thống kê đơn hàng",
       error: error.message,
     });
   }
 };
 
-// Láº¥y thá»‘ng kÃª tá»“n kho
+// Lấy thống kê tồn kho
 const getInventoryStatistics = async (req, res) => {
   try {
     const inventoryStats = await statisticsService.getInventoryStatistics();
@@ -132,7 +132,7 @@ const getInventoryStatistics = async (req, res) => {
     console.error("Error fetching inventory statistics:", error);
     res.status(500).json({
       success: false,
-      message: "KhÃ´ng thá»ƒ láº¥y thá»‘ng kÃª tá»“n kho",
+      message: "Không thể lấy thống kê tồn kho",
       error: error.message,
     });
   }

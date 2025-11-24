@@ -2,7 +2,7 @@
 import ApiError from "../utils/ApiError.js";
 import catchAsync from "../utils/catchAsync.js";
 
-// Láº¥y thÃ´ng tin tráº¡ng thÃ¡i chatbot
+// Lấy thông tin trạng thái chatbot
 const getChatbotStatus = catchAsync(async (req, res) => {
   const isGeminiConfigured = !!process.env.GEMINI_API_KEY;
 
@@ -20,16 +20,16 @@ const getChatbotStatus = catchAsync(async (req, res) => {
   });
 });
 
-// Xá»­ lÃ½ chat vá»›i AI
+// Xử lý chat với AI
 const processChat = catchAsync(async (req, res) => {
   const { message } = req.body;
 
   if (!message || typeof message !== "string" || message.trim().length === 0) {
-    throw new ApiError(400, "Tin nháº¯n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
+    throw new ApiError(400, "Tin nhắn không được để trống");
   }
 
   if (message.trim().length > 500) {
-    throw new ApiError(400, "Tin nháº¯n quÃ¡ dÃ i (tá»‘i Ä‘a 500 kÃ½ tá»±)");
+    throw new ApiError(400, "Tin nhắn quá dài (tối đa 500 ký tự)");
   }
 
   const result = await chatbotService.processChat(message.trim());
@@ -46,7 +46,7 @@ const processChat = catchAsync(async (req, res) => {
   });
 });
 
-// Láº¥y gá»£i Ã½ sáº£n pháº©m ná»•i báº­t vÃ  cÃ¢u há»i máº«u
+// Lấy gợi ý sản phẩm nổi bật và câu hỏi mẫu
 const getChatSuggestions = catchAsync(async (req, res) => {
   const suggestions = await chatbotService.getFeaturedSuggestions();
 

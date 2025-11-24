@@ -4,28 +4,28 @@ import ApiError from "../utils/ApiError.js";
 import catchAsync from "../utils/catchAsync.js";
 
 /**
- * Cáº­p nháº­t sá»‘ lÆ°á»£ng tá»“n kho cho má»™t biáº¿n thá»ƒ sáº£n pháº©m
+ * Cập nhật số lượng tồn kho cho một biến thể sản phẩm
  */
 const updateVariantStock = catchAsync(async (req, res) => {
   const { productId, variantId } = req.params;
   const { quantity, reason, notes } = req.body;
   const userId = req.user.id;
 
-  // Kiá»ƒm tra tham sá»‘ Ä‘áº§u vÃ o
+  // Kiểm tra tham số đầu vào
   if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
-    throw new ApiError(400, "ID sáº£n pháº©m khÃ´ng há»£p lá»‡");
+    throw new ApiError(400, "ID sản phẩm không hợp lệ");
   }
 
   if (!variantId || !mongoose.Types.ObjectId.isValid(variantId)) {
-    throw new ApiError(400, "ID biáº¿n thá»ƒ khÃ´ng há»£p lá»‡");
+    throw new ApiError(400, "ID biến thể không hợp lệ");
   }
 
   if (quantity === undefined || !Number.isInteger(Number(quantity)) || Number(quantity) < 0) {
-    throw new ApiError(400, "Sá»‘ lÆ°á»£ng tá»“n kho pháº£i lÃ  sá»‘ nguyÃªn khÃ´ng Ã¢m");
+    throw new ApiError(400, "Số lượng tồn kho phải là số nguyên không âm");
   }
 
   if (!reason) {
-    throw new ApiError(400, "LÃ½ do cáº­p nháº­t lÃ  báº¯t buá»™c");
+    throw new ApiError(400, "Lý do cập nhật là bắt buộc");
   }
 
   const updatedVariant = await inventoryService.updateVariantStock(
@@ -39,38 +39,38 @@ const updateVariantStock = catchAsync(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Cáº­p nháº­t sá»‘ lÆ°á»£ng tá»“n kho thÃ nh cÃ´ng",
+    message: "Cập nhật số lượng tồn kho thành công",
     data: updatedVariant,
   });
 });
 
 /**
- * Cáº­p nháº­t hÃ ng loáº¡t sá»‘ lÆ°á»£ng tá»“n kho
+ * Cập nhật hàng loạt số lượng tồn kho
  */
 const bulkUpdateStock = catchAsync(async (req, res) => {
   const { items, reason } = req.body;
   const userId = req.user.id;
 
   if (!Array.isArray(items) || items.length === 0) {
-    throw new ApiError(400, "Danh sÃ¡ch cáº­p nháº­t khÃ´ng há»£p lá»‡");
+    throw new ApiError(400, "Danh sách cập nhật không hợp lệ");
   }
 
   if (!reason) {
-    throw new ApiError(400, "LÃ½ do cáº­p nháº­t lÃ  báº¯t buá»™c");
+    throw new ApiError(400, "Lý do cập nhật là bắt buộc");
   }
 
-  // Kiá»ƒm tra cáº¥u trÃºc má»—i item
+  // Kiểm tra cấu trúc mỗi item
   items.forEach((item, index) => {
     if (!item.productId || !mongoose.Types.ObjectId.isValid(item.productId)) {
-      throw new ApiError(400, `ID sáº£n pháº©m khÃ´ng há»£p lá»‡ táº¡i vá»‹ trÃ­ ${index}`);
+      throw new ApiError(400, `ID sản phẩm không hợp lệ tại vị trí ${index}`);
     }
 
     if (!item.variantId || !mongoose.Types.ObjectId.isValid(item.variantId)) {
-      throw new ApiError(400, `ID biáº¿n thá»ƒ khÃ´ng há»£p lá»‡ táº¡i vá»‹ trÃ­ ${index}`);
+      throw new ApiError(400, `ID biến thể không hợp lệ tại vị trí ${index}`);
     }
 
     if (item.quantity === undefined || !Number.isInteger(Number(item.quantity)) || Number(item.quantity) < 0) {
-      throw new ApiError(400, `Sá»‘ lÆ°á»£ng tá»“n kho pháº£i lÃ  sá»‘ nguyÃªn khÃ´ng Ã¢m táº¡i vá»‹ trÃ­ ${index}`);
+      throw new ApiError(400, `Số lượng tồn kho phải là số nguyên không âm tại vị trí ${index}`);
     }
   });
 
@@ -78,13 +78,13 @@ const bulkUpdateStock = catchAsync(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Cáº­p nháº­t hÃ ng loáº¡t sá»‘ lÆ°á»£ng tá»“n kho thÃ nh cÃ´ng",
+    message: "Cập nhật hàng loạt số lượng tồn kho thành công",
     data: results,
   });
 });
 
 /**
- * Láº¥y danh sÃ¡ch sáº£n pháº©m cÃ³ tá»“n kho tháº¥p
+ * Lấy danh sách sản phẩm có tồn kho thấp
  */
 const getLowStockProducts = catchAsync(async (req, res) => {
   const { threshold = 5, page = 1, limit = 20 } = req.query;
@@ -99,7 +99,7 @@ const getLowStockProducts = catchAsync(async (req, res) => {
 });
 
 /**
- * Láº¥y lá»‹ch sá»­ xuáº¥t nháº­p kho
+ * Lấy lịch sử xuất nhập kho
  */
 const getInventoryHistory = catchAsync(async (req, res) => {
   const {
