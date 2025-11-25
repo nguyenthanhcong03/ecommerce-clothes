@@ -4,11 +4,15 @@ import ApiError from "../utils/ApiError.js";
 const errorConverter = (err, req, res, next) => {
   let error = err;
 
-  // Táº¡o object Ã¡nh xáº¡ mÃ£ tráº¡ng thÃ¡i HTTP
+  // Tạo ánh xạ lỗi
   const statusText = {
     400: "Bad Request",
     500: "Internal Server Error",
-    // CÃ³ thá»ƒ thÃªm cÃ¡c mÃ£ khÃ¡c náº¿u cáº§n
+    401: "Unauthorized",
+    403: "Forbidden",
+    404: "Not Found",
+    409: "Conflict",
+    422: "Unprocessable Entity",
   };
 
   if (!(error instanceof ApiError)) {
@@ -22,14 +26,14 @@ const errorConverter = (err, req, res, next) => {
 };
 
 const errorHandler = (err, req, res, next) => {
-  // console.log("ERROR LOG ", new Date().toLocaleString());
-  // console.log("Request:", req.method, req.originalUrl);
-  // console.log("Params:", req.params);
-  // console.log("Body:", req.body);
-  // console.log("Query:", req.query);
-  // console.log("Error: ", err);
-  // console.log("Error stack: ", err.stack);
-  // console.log("--------------------------------------------------------------------------------------");
+  console.log("ERROR LOG ", new Date().toLocaleString());
+  console.log("Request:", req.method, req.originalUrl);
+  console.log("Params:", req.params);
+  console.log("Body:", req.body);
+  console.log("Query:", req.query);
+  console.log("Error: ", err);
+  console.log("Error stack: ", err.stack);
+  console.log("--------------------------------------------------------------------------------------");
   const statusCode = err.statusCode || 500;
 
   res.status(statusCode).json({
@@ -43,4 +47,3 @@ const errorHandler = (err, req, res, next) => {
 };
 
 export { errorConverter, errorHandler };
-

@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 import connectDB from "./config/dbconnect.js";
 import initRoutes from "./routes/index.js";
 import cookieParser from "cookie-parser";
-import fileUpload from "express-fileupload";
 import { errorHandler, errorConverter } from "./middlewares/errorHandler.js";
 
 dotenv.config();
@@ -19,7 +18,6 @@ app.use(
     credentials: true,
   })
 );
-app.use(fileUpload());
 app.use(helmet());
 app.use(cookieParser());
 app.use(express.json());

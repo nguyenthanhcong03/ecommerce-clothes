@@ -25,11 +25,6 @@ const initRoutes = (app) => {
   app.use("/api/reviews", reviewRoutes);
   app.use("/api/chatbot", chatbotRoutes);
   app.use("/api/inventory", inventoryRoutes);
-
-  // Xá»­ lÃ½ 404
-  app.use((req, res, next) => {
-    next(new ApiError(404, "Not found"));
-  });
 };
 
 export default initRoutes;

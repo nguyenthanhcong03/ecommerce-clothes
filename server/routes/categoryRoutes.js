@@ -6,7 +6,6 @@ import { uploadSingleImage, handleMulterError } from "../middlewares/multer.js";
 const router = express.Router();
 
 // Public routes
-router.get("/tree", categoryController.getTreeCategories);
 router.get("/", categoryController.getAllCategories);
 router.get("/:id", categoryController.getCategoryById);
 

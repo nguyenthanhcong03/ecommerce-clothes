@@ -9,6 +9,7 @@ router.get("/", productController.getAllProducts);
 router.get("/featured", productController.getFeaturedProducts);
 router.get("/category/:categoryId", productController.getProductsByCategory);
 router.get("/:pid", productController.getProductById);
+router.get("/:pid/related", productController.getRelatedProducts);
 
 // Routes cho Admin
 router.post(

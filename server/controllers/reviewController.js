@@ -1,5 +1,6 @@
 ﻿import reviewService from "../services/reviewService.js";
 import catchAsync from "../utils/catchAsync.js";
+import { responseSuccess } from "../utils/responseHandler.js";
 
 // Tạo mới đánh giá sản phẩm
 const createReview = catchAsync(async (req, res) => {
@@ -38,10 +39,7 @@ const getProductReviews = catchAsync(async (req, res) => {
 
   const reviews = await reviewService.getProductReviews(productId, options);
 
-  res.status(200).json({
-    success: true,
-    data: reviews,
-  });
+  responseSuccess(res, 200, "Lấy đánh giá sản phẩm thành công", reviews);
 });
 
 // Lấy đánh giá của người dùng

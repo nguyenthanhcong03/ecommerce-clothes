@@ -26,9 +26,7 @@
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "express-fileupload": "^1.5.1",
     "helmet": "^8.1.0",
-    "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "kill-port": "^2.0.1",
     "mongoose": "^8.12.0",
@@ -40,8 +38,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
-    "@typescript-eslint/eslint-plugin": "^8.47.0",
-    "@typescript-eslint/parser": "^8.47.0",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",

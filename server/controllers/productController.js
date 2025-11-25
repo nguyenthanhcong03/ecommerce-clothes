@@ -181,8 +181,8 @@ const createProduct = catchAsync(async (req, res) => {
 
 // Get product by ID
 const getProductById = catchAsync(async (req, res) => {
-  const { id } = req.params;
-  const product = await Product.findById(id).populate("categoryId", "name");
+  const { pid } = req.params;
+  const product = await Product.findById(pid).populate("categoryId", "name");
   if (!product) {
     throw new ApiError(404, "Không tìm thấy sản phẩm");
   }
@@ -302,7 +302,7 @@ const deleteProduct = catchAsync(async (req, res) => {
 
 // Get featured products
 const getFeaturedProducts = catchAsync(async (req, res) => {
-  const { limit = 10 } = req.query;
+  const { limit = 8 } = req.query;
 
   const products = await Product.find({ featured: true })
     .populate("categoryId", "name")
@@ -339,6 +339,26 @@ const getProductsByCategory = catchAsync(async (req, res) => {
   });
 });
 
+const getRelatedProducts = catchAsync(async (req, res) => {
+  const { pid } = req.params;
+  const { limit = 4 } = req.query;
+
+  const product = await Product.findById(pid);
+
+  if (!product) throw new ApiError(404, "Không tìm thấy sản phẩm");
+
+  // Tìm các sản phẩm có cùng danh mục, nhưng không phải sản phẩm hiện tại
+  const relatedProducts = await Product.find({
+    categoryId: product.categoryId,
+    _id: { $ne: pid },
+  })
+    .limit(Number(limit))
+    .populate("categoryId", "name")
+    .select("-__v");
+
+  responseSuccess(res, 200, "Lấy sản phẩm liên quan thành công", relatedProducts);
+});
+
 export default {
   getAllProducts,
   createProduct,
@@ -347,4 +367,5 @@ export default {
   deleteProduct,
   getFeaturedProducts,
   getProductsByCategory,
+  getRelatedProducts,
 };

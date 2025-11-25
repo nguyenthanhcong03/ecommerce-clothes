@@ -5,12 +5,6 @@ import ApiError from "../utils/ApiError.js";
 import catchAsync from "../utils/catchAsync.js";
 import { responseSuccess } from "../utils/responseHandler.js";
 
-const getTreeCategories = catchAsync(async (req, res) => {
-  const categories = await Category.find({}).sort({ priority: -1, name: 1 }).select("-__v");
-
-  responseSuccess(res, 200, "Lấy cây danh mục thành công", categories);
-});
-
 const getAllCategories = catchAsync(async (req, res) => {
   const { page = 1, limit = 10, sortBy = "createdAt", order = "desc", search } = req.query;
 
@@ -188,7 +182,6 @@ const deleteCategoryImage = catchAsync(async (req, res) => {
 });
 
 export default {
-  getTreeCategories,
   getAllCategories,
   createCategory,
   updateCategoryById,
